@@ -1,0 +1,185 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<class-diagram version="1.1.8" icons="false" automaticImage="PNG" always-add-relationships="true" generalizations="true" 
+  realizations="true" associations="true" dependencies="true" nesting-relationships="true">  
+  <interface id="1" language="java" name="edu.harvard.hms.dbmi.bd2k.irct.action.Action" project="queryEngine" 
+    file="/queryEngine/src/main/java/edu/harvard/hms/dbmi/bd2k/irct/action/Action.java" binary="false" 
+    corner="BOTTOM_RIGHT">    
+    <position height="36" width="189" x="770" y="265"/>    
+    <display autosize="true" stereotype="false" package="true" initial-value="false" signature="false" 
+      sort-features="false" accessors="true" visibility="false">      
+      <attributes public="false" package="false" protected="false" private="false" static="false"/>      
+      <operations public="false" package="false" protected="false" private="false" static="false"/>    
+    </display>  
+  </interface>  
+  <interface id="2" language="java" name="edu.harvard.hms.dbmi.bd2k.irct.action.BinaryTreeExecutable" 
+    project="queryEngine" 
+    file="/queryEngine/src/main/java/edu/harvard/hms/dbmi/bd2k/irct/action/BinaryTreeExecutable.java" binary="false" 
+    corner="BOTTOM_RIGHT">    
+    <position height="36" width="189" x="291" y="113"/>    
+    <display autosize="true" stereotype="false" package="true" initial-value="false" signature="false" 
+      sort-features="false" accessors="true" visibility="false">      
+      <attributes public="false" package="false" protected="false" private="false" static="false"/>      
+      <operations public="false" package="false" protected="false" private="false" static="false"/>    
+    </display>  
+  </interface>  
+  <class id="3" language="java" name="edu.harvard.hms.dbmi.bd2k.irct.action.JoinExecutable" project="queryEngine" 
+    file="/queryEngine/src/main/java/edu/harvard/hms/dbmi/bd2k/irct/action/JoinExecutable.java" binary="false" 
+    corner="BOTTOM_RIGHT">    
+    <position height="36" width="189" x="501" y="37"/>    
+    <display autosize="true" stereotype="false" package="true" initial-value="false" signature="false" 
+      sort-features="false" accessors="true" visibility="false">      
+      <attributes public="false" package="false" protected="false" private="false" static="false"/>      
+      <operations public="false" package="false" protected="false" private="false" static="false"/>    
+    </display>  
+  </class>  
+  <class id="4" language="java" name="edu.harvard.hms.dbmi.bd2k.irct.action.ProcessExecutable" project="queryEngine" 
+    file="/queryEngine/src/main/java/edu/harvard/hms/dbmi/bd2k/irct/action/ProcessExecutable.java" binary="false" 
+    corner="BOTTOM_RIGHT">    
+    <position height="36" width="189" x="770" y="113"/>    
+    <display autosize="true" stereotype="false" package="true" initial-value="false" signature="false" 
+      sort-features="false" accessors="true" visibility="false">      
+      <attributes public="false" package="false" protected="false" private="false" static="false"/>      
+      <operations public="false" package="false" protected="false" private="false" static="false"/>    
+    </display>  
+  </class>  
+  <class id="5" language="java" name="edu.harvard.hms.dbmi.bd2k.irct.action.QueryExecutable" project="queryEngine" 
+    file="/queryEngine/src/main/java/edu/harvard/hms/dbmi/bd2k/irct/action/QueryExecutable.java" binary="false" 
+    corner="BOTTOM_RIGHT">    
+    <position height="36" width="189" x="541" y="113"/>    
+    <display autosize="true" stereotype="false" package="true" initial-value="false" signature="false" 
+      sort-features="false" accessors="true" visibility="false">      
+      <attributes public="false" package="false" protected="false" private="false" static="false"/>      
+      <operations public="false" package="false" protected="false" private="false" static="false"/>    
+    </display>  
+  </class>  
+  <class id="6" language="java" name="edu.harvard.hms.dbmi.bd2k.irct.action.ExecutionPlan" project="queryEngine" 
+    file="/queryEngine/src/main/java/edu/harvard/hms/dbmi/bd2k/irct/action/ExecutionPlan.java" binary="false" 
+    corner="BOTTOM_RIGHT">    
+    <position height="36" width="189" x="62" y="113"/>    
+    <display autosize="true" stereotype="false" package="true" initial-value="false" signature="false" 
+      sort-features="false" accessors="true" visibility="false">      
+      <attributes public="false" package="false" protected="false" private="false" static="false"/>      
+      <operations public="false" package="false" protected="false" private="false" static="false"/>    
+    </display>  
+  </class>  
+  <enumeration id="7" language="java" name="edu.harvard.hms.dbmi.bd2k.irct.action.ExecutableState" project="queryEngine" 
+    file="/queryEngine/src/main/java/edu/harvard/hms/dbmi/bd2k/irct/action/ExecutableState.java" binary="false" 
+    corner="BOTTOM_RIGHT">    
+    <position height="36" width="189" x="331" y="265"/>    
+    <display autosize="true" stereotype="false" package="true" initial-value="false" signature="false" 
+      sort-features="false" accessors="true" visibility="false">      
+      <attributes public="false" package="false" protected="false" private="false" static="false"/>      
+      <operations public="false" package="false" protected="false" private="false" static="false"/>    
+    </display>  
+  </enumeration>  
+  <interface id="8" language="java" name="edu.harvard.hms.dbmi.bd2k.irct.action.Executable" project="queryEngine" 
+    file="/queryEngine/src/main/java/edu/harvard/hms/dbmi/bd2k/irct/action/Executable.java" binary="false" 
+    corner="BOTTOM_RIGHT">    
+    <position height="36" width="189" x="331" y="189"/>    
+    <display autosize="true" stereotype="false" package="true" initial-value="false" signature="false" 
+      sort-features="false" accessors="true" visibility="false">      
+      <attributes public="false" package="false" protected="false" private="false" static="false"/>      
+      <operations public="false" package="false" protected="false" private="false" static="false"/>    
+    </display>  
+  </interface>  
+  <dependency id="9">    
+    <end type="SOURCE" refId="8"/>    
+    <end type="TARGET" refId="1"/>  
+  </dependency>  
+  <dependency id="10">    
+    <bendpoint x="31" y="113"/>    
+    <bendpoint x="31" y="189"/>    
+    <end type="SOURCE" refId="3"/>    
+    <end type="TARGET" refId="7"/>  
+  </dependency>  
+  <realization id="11">    
+    <end type="SOURCE" refId="5"/>    
+    <end type="TARGET" refId="8"/>  
+  </realization>  
+  <dependency id="12">    
+    <bendpoint x="779" y="189"/>    
+    <end type="SOURCE" refId="4"/>    
+    <end type="TARGET" refId="1"/>  
+  </dependency>  
+  <dependency id="13">    
+    <bendpoint x="571" y="189"/>    
+    <end type="SOURCE" refId="4"/>    
+    <end type="TARGET" refId="7"/>  
+  </dependency>  
+  <association id="14">    
+    <end type="SOURCE" refId="6" navigable="false">      
+      <attribute id="15" name="executable">        
+        <position height="0" width="0" x="0" y="0"/>      
+      </attribute>      
+      <multiplicity id="16" minimum="0" maximum="1">        
+        <position height="0" width="0" x="0" y="0"/>      
+      </multiplicity>    
+    </end>    
+    <end type="TARGET" refId="8" navigable="true"/>    
+    <display labels="true" multiplicity="true"/>  
+  </association>  
+  <association id="17">    
+    <bendpoint x="206" y="189"/>    
+    <end type="SOURCE" refId="6" navigable="false">      
+      <attribute id="18" name="state">        
+        <position height="0" width="0" x="0" y="0"/>      
+      </attribute>      
+      <multiplicity id="19" minimum="0" maximum="1">        
+        <position height="0" width="0" x="0" y="0"/>      
+      </multiplicity>    
+    </end>    
+    <end type="TARGET" refId="7" navigable="true"/>    
+    <display labels="true" multiplicity="true"/>  
+  </association>  
+  <dependency id="20">    
+    <bendpoint x="664" y="189"/>    
+    <end type="SOURCE" refId="5"/>    
+    <end type="TARGET" refId="1"/>  
+  </dependency>  
+  <association id="21">    
+    <bendpoint x="550" y="189"/>    
+    <end type="SOURCE" refId="5" navigable="false">      
+      <attribute id="22" name="state">        
+        <position height="0" width="0" x="0" y="0"/>      
+      </attribute>      
+      <multiplicity id="23" minimum="0" maximum="1">        
+        <position height="0" width="0" x="0" y="0"/>      
+      </multiplicity>    
+    </end>    
+    <end type="TARGET" refId="7" navigable="true"/>    
+    <display labels="true" multiplicity="true"/>  
+  </association>  
+  <dependency id="24">    
+    <bendpoint x="989" y="113"/>    
+    <bendpoint x="989" y="189"/>    
+    <end type="SOURCE" refId="3"/>    
+    <end type="TARGET" refId="1"/>  
+  </dependency>  
+  <dependency id="25">    
+    <end type="SOURCE" refId="8"/>    
+    <end type="TARGET" refId="7"/>  
+  </dependency>  
+  <dependency id="26">    
+    <end type="SOURCE" refId="2"/>    
+    <end type="TARGET" refId="8"/>  
+  </dependency>  
+  <realization id="27">    
+    <end type="SOURCE" refId="3"/>    
+    <end type="TARGET" refId="2"/>  
+  </realization>  
+  <realization id="28">    
+    <end type="SOURCE" refId="4"/>    
+    <end type="TARGET" refId="8"/>  
+  </realization>  
+  <realization id="29">    
+    <bendpoint x="510" y="113"/>    
+    <end type="SOURCE" refId="3"/>    
+    <end type="TARGET" refId="8"/>  
+  </realization>  
+  <classifier-display autosize="true" stereotype="false" package="true" initial-value="false" signature="false" 
+    sort-features="false" accessors="true" visibility="false">    
+    <attributes public="false" package="false" protected="false" private="false" static="false"/>    
+    <operations public="false" package="false" protected="false" private="false" static="false"/>  
+  </classifier-display>  
+  <association-display labels="true" multiplicity="true"/>
+</class-diagram>

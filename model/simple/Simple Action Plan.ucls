@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<class-diagram version="1.1.8" icons="false" automaticImage="PNG" always-add-relationships="true" generalizations="true" 
+  realizations="true" associations="true" dependencies="true" nesting-relationships="true">  
+  <interface id="1" language="java" name="edu.harvard.hms.dbmi.bd2k.irct.action.Action" project="queryEngine" 
+    file="/queryEngine/src/main/java/edu/harvard/hms/dbmi/bd2k/irct/action/Action.java" binary="false" 
+    corner="BOTTOM_RIGHT">    
+    <position height="36" width="189" x="1074" y="113"/>    
+    <display autosize="true" stereotype="false" package="true" initial-value="false" signature="false" 
+      sort-features="false" accessors="true" visibility="false">      
+      <attributes public="false" package="false" protected="false" private="false" static="false"/>      
+      <operations public="false" package="false" protected="false" private="false" static="false"/>    
+    </display>  
+  </interface>  
+  <class id="2" language="java" name="edu.harvard.hms.dbmi.bd2k.irct.action.join.RightOuterJoin" project="queryEngine" 
+    file="/queryEngine/src/main/java/edu/harvard/hms/dbmi/bd2k/irct/action/join/RightOuterJoin.java" binary="false" 
+    corner="BOTTOM_RIGHT">    
+    <position height="36" width="208" x="41" y="113"/>    
+    <display autosize="true" stereotype="false" package="true" initial-value="false" signature="false" 
+      sort-features="false" accessors="true" visibility="false">      
+      <attributes public="false" package="false" protected="false" private="false" static="false"/>      
+      <operations public="false" package="false" protected="false" private="false" static="false"/>    
+    </display>  
+  </class>  
+  <interface id="3" language="java" name="edu.harvard.hms.dbmi.bd2k.irct.action.process.ProcessAction" 
+    project="queryEngine" 
+    file="/queryEngine/src/main/java/edu/harvard/hms/dbmi/bd2k/irct/action/process/ProcessAction.java" binary="false" 
+    corner="BOTTOM_RIGHT">    
+    <position height="36" width="228" x="931" y="189"/>    
+    <display autosize="true" stereotype="false" package="true" initial-value="false" signature="false" 
+      sort-features="false" accessors="true" visibility="false">      
+      <attributes public="false" package="false" protected="false" private="false" static="false"/>      
+      <operations public="false" package="false" protected="false" private="false" static="false"/>    
+    </display>  
+  </interface>  
+  <class id="4" language="java" name="edu.harvard.hms.dbmi.bd2k.irct.action.query.ExecuteQuery" project="queryEngine" 
+    file="/queryEngine/src/main/java/edu/harvard/hms/dbmi/bd2k/irct/action/query/ExecuteQuery.java" binary="false" 
+    corner="BOTTOM_RIGHT">    
+    <position height="36" width="218" x="1303" y="113"/>    
+    <display autosize="true" stereotype="false" package="true" initial-value="false" signature="false" 
+      sort-features="false" accessors="true" visibility="false">      
+      <attributes public="false" package="false" protected="false" private="false" static="false"/>      
+      <operations public="false" package="false" protected="false" private="false" static="false"/>    
+    </display>  
+  </class>  
+  <interface id="5" language="java" name="edu.harvard.hms.dbmi.bd2k.irct.action.join.JoinAction" project="queryEngine" 
+    file="/queryEngine/src/main/java/edu/harvard/hms/dbmi/bd2k/irct/action/join/JoinAction.java" binary="false" 
+    corner="BOTTOM_RIGHT">    
+    <position height="36" width="208" x="579" y="189"/>    
+    <display autosize="true" stereotype="false" package="true" initial-value="false" signature="false" 
+      sort-features="false" accessors="true" visibility="false">      
+      <attributes public="false" package="false" protected="false" private="false" static="false"/>      
+      <operations public="false" package="false" protected="false" private="false" static="false"/>    
+    </display>  
+  </interface>  
+  <class id="6" language="java" name="edu.harvard.hms.dbmi.bd2k.irct.action.process.ExecuteProcess" 
+    project="queryEngine" 
+    file="/queryEngine/src/main/java/edu/harvard/hms/dbmi/bd2k/irct/action/process/ExecuteProcess.java" binary="false" 
+    corner="BOTTOM_RIGHT">    
+    <position height="36" width="228" x="806" y="113"/>    
+    <display autosize="true" stereotype="false" package="true" initial-value="false" signature="false" 
+      sort-features="false" accessors="true" visibility="false">      
+      <attributes public="false" package="false" protected="false" private="false" static="false"/>      
+      <operations public="false" package="false" protected="false" private="false" static="false"/>    
+    </display>  
+  </class>  
+  <class id="7" language="java" name="edu.harvard.hms.dbmi.bd2k.irct.action.join.FullOuterJoin" project="queryEngine" 
+    file="/queryEngine/src/main/java/edu/harvard/hms/dbmi/bd2k/irct/action/join/FullOuterJoin.java" binary="false" 
+    corner="BOTTOM_RIGHT">    
+    <position height="36" width="208" x="766" y="37"/>    
+    <display autosize="true" stereotype="false" package="true" initial-value="false" signature="false" 
+      sort-features="false" accessors="true" visibility="false">      
+      <attributes public="false" package="false" protected="false" private="false" static="false"/>      
+      <operations public="false" package="false" protected="false" private="false" static="false"/>    
+    </display>  
+  </class>  
+  <class id="8" language="java" name="edu.harvard.hms.dbmi.bd2k.irct.action.join.LeftOuterJoin" project="queryEngine" 
+    file="/queryEngine/src/main/java/edu/harvard/hms/dbmi/bd2k/irct/action/join/LeftOuterJoin.java" binary="false" 
+    corner="BOTTOM_RIGHT">    
+    <position height="36" width="208" x="537" y="113"/>    
+    <display autosize="true" stereotype="false" package="true" initial-value="false" signature="false" 
+      sort-features="false" accessors="true" visibility="false">      
+      <attributes public="false" package="false" protected="false" private="false" static="false"/>      
+      <operations public="false" package="false" protected="false" private="false" static="false"/>    
+    </display>  
+  </class>  
+  <interface id="9" language="java" name="edu.harvard.hms.dbmi.bd2k.irct.action.query.QueryAction" project="queryEngine" 
+    file="/queryEngine/src/main/java/edu/harvard/hms/dbmi/bd2k/irct/action/query/QueryAction.java" binary="false" 
+    corner="BOTTOM_RIGHT">    
+    <position height="36" width="218" x="1199" y="189"/>    
+    <display autosize="true" stereotype="false" package="true" initial-value="false" signature="false" 
+      sort-features="false" accessors="true" visibility="false">      
+      <attributes public="false" package="false" protected="false" private="false" static="false"/>      
+      <operations public="false" package="false" protected="false" private="false" static="false"/>    
+    </display>  
+  </interface>  
+  <class id="10" language="java" name="edu.harvard.hms.dbmi.bd2k.irct.action.join.InnerJoin" project="queryEngine" 
+    file="/queryEngine/src/main/java/edu/harvard/hms/dbmi/bd2k/irct/action/join/InnerJoin.java" binary="false" 
+    corner="BOTTOM_RIGHT">    
+    <position height="36" width="208" x="289" y="113"/>    
+    <display autosize="true" stereotype="false" package="true" initial-value="false" signature="false" 
+      sort-features="false" accessors="true" visibility="false">      
+      <attributes public="false" package="false" protected="false" private="false" static="false"/>      
+      <operations public="false" package="false" protected="false" private="false" static="false"/>    
+    </display>  
+  </class>  
+  <generalization id="11">    
+    <end type="SOURCE" refId="9"/>    
+    <end type="TARGET" refId="1"/>  
+  </generalization>  
+  <realization id="12">    
+    <end type="SOURCE" refId="4"/>    
+    <end type="TARGET" refId="9"/>  
+  </realization>  
+  <generalization id="13">    
+    <end type="SOURCE" refId="5"/>    
+    <end type="TARGET" refId="1"/>  
+  </generalization>  
+  <realization id="14">    
+    <end type="SOURCE" refId="6"/>    
+    <end type="TARGET" refId="3"/>  
+  </realization>  
+  <realization id="15">    
+    <end type="SOURCE" refId="8"/>    
+    <end type="TARGET" refId="5"/>  
+  </realization>  
+  <realization id="16">    
+    <end type="SOURCE" refId="2"/>    
+    <end type="TARGET" refId="5"/>  
+  </realization>  
+  <generalization id="17">    
+    <end type="SOURCE" refId="3"/>    
+    <end type="TARGET" refId="1"/>  
+  </generalization>  
+  <realization id="18">    
+    <bendpoint x="775" y="113"/>    
+    <end type="SOURCE" refId="7"/>    
+    <end type="TARGET" refId="5"/>  
+  </realization>  
+  <dependency id="19">    
+    <end type="SOURCE" refId="7"/>    
+    <end type="TARGET" refId="8"/>  
+  </dependency>  
+  <realization id="20">    
+    <end type="SOURCE" refId="10"/>    
+    <end type="TARGET" refId="5"/>  
+  </realization>  
+  <classifier-display autosize="true" stereotype="false" package="true" initial-value="false" signature="false" 
+    sort-features="false" accessors="true" visibility="false">    
+    <attributes public="false" package="false" protected="false" private="false" static="false"/>    
+    <operations public="false" package="false" protected="false" private="false" static="false"/>  
+  </classifier-display>  
+  <association-display labels="true" multiplicity="true"/>
+</class-diagram>
