@@ -26,30 +26,34 @@ import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 
 /**
- * The Path class represents a path in a resource. Paths can be linked to other paths through ontology relationships.
+ * The Path class represents a path in a resource. Paths can be linked to other
+ * paths through ontology relationships.
  * 
  * @author Jeremy R. Easton-Marks
  */
 public class Path {
 	private String pui;
-	
+
 	private String name;
 	private String definition;
-	
+
 	private String concept;
 	private String conceptId;
-	
+
 	private DataType dataType;
-	
+
 	private Map<OntologyRelationship, List<Path>> relationships;
-	
+
+	private Map<String, String> attributes;
+
 	public Path() {
 		relationships = new HashMap<OntologyRelationship, List<Path>>();
+		setAttributes(new HashMap<String, String>());
 		this.definition = "";
 		this.concept = "";
 		this.conceptId = "";
 	}
-	
+
 	/**
 	 * Returns a JSONObject representation of the object. This returns only the
 	 * attributes associated with this object and not their representation.
@@ -79,32 +83,46 @@ public class Path {
 		jsonBuilder.add("definition", this.definition);
 		jsonBuilder.add("concept", this.concept);
 		jsonBuilder.add("conceptId", this.conceptId);
-		if(this.dataType != null) {
+		if (this.dataType != null) {
 			jsonBuilder.add("dataType", this.dataType.toString());
 		}
 		JsonObjectBuilder relationshipsObject = Json.createObjectBuilder();
-		if(depth > 1) {
-		for(OntologyRelationship relationship : relationships.keySet()) {
-			JsonArrayBuilder relationshipArray = Json.createArrayBuilder();
-			
-			for(Path relPath : relationships.get(relationship)) {
-				relationshipArray.add(relPath.toJson(depth));
+		
+		if (depth > 1) {
+			for (OntologyRelationship relationship : relationships.keySet()) {
+				JsonArrayBuilder relationshipArray = Json.createArrayBuilder();
+
+				for (Path relPath : relationships.get(relationship)) {
+					relationshipArray.add(relPath.toJson(depth));
+				}
+
+				relationshipsObject.add(relationship.toString(),
+						relationshipArray.build());
 			}
 			
-			relationshipsObject.add(relationship.toString(), relationshipArray.build());
-		}
+		
+			
 		}
 		jsonBuilder.add("relationships", relationshipsObject.build());
 		
-		return jsonBuilder.build();
+		JsonObjectBuilder attributesObject = Json.createObjectBuilder();
+		for(String key : attributes.keySet()) {
+			String value = attributes.get(key);
+			if(value != null) {
+				attributesObject.add(key, value);
+			}
+		}
 		
+		jsonBuilder.add("attributes", attributesObject.build());
+
+		return jsonBuilder.build();
+
 	}
-	
+
 	// -------------------------------------------------------------------------
 	// SETTERS AND GETTERS
 	// -------------------------------------------------------------------------
 
-	
 	public String getPui() {
 		return pui;
 	}
@@ -157,10 +175,17 @@ public class Path {
 		return relationships;
 	}
 
-	public void setRelationships(Map<OntologyRelationship, List<Path>> relationships) {
+	public void setRelationships(
+			Map<OntologyRelationship, List<Path>> relationships) {
 		this.relationships = relationships;
 	}
-	
-	
-	
+
+	public Map<String, String> getAttributes() {
+		return attributes;
+	}
+
+	public void setAttributes(Map<String, String> attributes) {
+		this.attributes = attributes;
+	}
+
 }

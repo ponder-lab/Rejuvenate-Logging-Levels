@@ -19,5 +19,10 @@
 			<version>3.4</version>
 		</dependency>
 
-	</dependencies>
+		<dependency>
+			<groupId>edu.harvard.hms.dbmi.bd2k.irct</groupId>
+			<artifactId>IRCT-RI</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
+		</dependency>
+  </dependencies>
 </project>

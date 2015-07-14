@@ -21,6 +21,7 @@ import java.util.List;
 import edu.harvard.hms.dbmi.bd2k.irct.model.ontology.OntologyRelationship;
 import edu.harvard.hms.dbmi.bd2k.irct.model.ontology.OntologyType;
 import edu.harvard.hms.dbmi.bd2k.irct.model.ontology.Path;
+import edu.harvard.hms.dbmi.bd2k.irct.ri.exception.ResourceInterfaceException;
 
 /**
  * Provides an implemntation that descripes tha API for any resource that has
@@ -44,8 +45,9 @@ public interface PathResourceImplementationInterface extends
 	 * @param path Path
 	 * @param relationship Relationships
 	 * @return Paths
+	 * @throws ResourceInterfaceException 
 	 */
-	List<Path> getPathRelationship(Path path, OntologyRelationship relationship);
+	List<Path> getPathRelationship(Path path, OntologyRelationship relationship) throws ResourceInterfaceException;
 
 	/**
 	 * Get the ontology type of this resource

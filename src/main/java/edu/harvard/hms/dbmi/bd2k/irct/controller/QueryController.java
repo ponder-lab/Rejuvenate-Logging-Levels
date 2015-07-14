@@ -74,95 +74,95 @@ public class QueryController {
 	 * @return The select clause id
 	 * @throws SubQueryNotFoundException
 	 */
-	public Long addSelectClause(Long sqId, String... parameters)
-			throws SubQueryNotFoundException {
-		SelectClause sc = new SelectClause(lastId++);
-		for (String parameter : parameters) {
-			sc.addParameter(parameter);
-		}
-		if (sqId != null) {
-			SubQuery sq = findSubQuery(sqId);
-			sq.addClause(sc.getId(), sc);
-		}
-		return sc.getId();
-	}
+//	public Long addSelectClause(Long sqId, String... parameters)
+//			throws SubQueryNotFoundException {
+//		SelectClause sc = new SelectClause(lastId++);
+//		for (String parameter : parameters) {
+//			sc.addParameter(parameter);
+//		}
+//		if (sqId != null) {
+//			SubQuery sq = findSubQuery(sqId);
+//			sq.addClause(sc.getId(), sc);
+//		}
+//		return sc.getId();
+//	}
 
-	public Long addJoinClause(Long sqId1, Long sqId2, String joinType,
-			Long fieldId1, Long fieldId2, String relationship, Long joinId)
-			throws ClauseNotFoundException, ClauseIsNotTheCorrectType,
-			SubQueryNotFoundException, JoinTypeNotSupported {
-		if (joinId != null) {
-			hasClause(joinId, JoinClause.class);
-		} else {
-			joinId = lastId++;
-		}
-		SubQuery sq1 = findSubQuery(sqId1);
-		SubQuery sq2 = findSubQuery(sqId2);
-		JoinType jt = findJoinType(joinType);
+//	public Long addJoinClause(Long sqId1, Long sqId2, String joinType,
+//			Long fieldId1, Long fieldId2, String relationship, Long joinId)
+//			throws ClauseNotFoundException, ClauseIsNotTheCorrectType,
+//			SubQueryNotFoundException, JoinTypeNotSupported {
+//		if (joinId != null) {
+//			hasClause(joinId, JoinClause.class);
+//		} else {
+//			joinId = lastId++;
+//		}
+//		SubQuery sq1 = findSubQuery(sqId1);
+//		SubQuery sq2 = findSubQuery(sqId2);
+//		JoinType jt = findJoinType(joinType);
+//
+//		
+//
+//		// Has subqueries
+//		checkSubQueryJoinSupport(sq1, jt, fieldId1, relationship);
+//		checkSubQueryJoinSupport(sq2, jt, fieldId2, relationship);
+//
+//		JoinClause jc = new JoinClause();
+//		jc.setId(joinId);
+//		
+//		jc.setSubQuery1(sq1);
+//		jc.setSubQuery2(sq2);
+//		jc.setJoinType(jt);
+//		jc.setFieldId1(fieldId1);
+//		jc.setFieldId2(fieldId2);
+//		jc.setRelationship(relationship);
+//
+//		query.addClause(joinId, jc);
+//		return joinId;
+//	}
 
-		
+//	public Long addWhereClause(Long sqId, String logicalOperator, Long fieldId,
+//			String predicateName, String value, String additionalValue,
+//			Long whereId) throws ClauseNotFoundException,
+//			ClauseIsNotTheCorrectType, SubQueryNotFoundException,
+//			LogicalOperatorNotFound, PredicateTypeNotSupported {
+//		if (whereId != null) {
+//			hasClause(whereId, WhereClause.class);
+//		} else {
+//			whereId = lastId++;
+//		}
+//		SubQuery sq = findSubQuery(sqId);
+//		LogicalOperator lo = findLogicalOperator(logicalOperator);
+//		PredicateType predicate = findPredicateType(predicateName);
+//
+//		checkSubQueryPredicateSupport(sq, lo, fieldId, predicate, value, additionalValue);
+//		
+//		WhereClause wc = new WhereClause();
+//		wc.setId(whereId);
+//		
+//		wc.setSubQuery(sq);
+//		wc.setLogicalOperator(lo);
+//		wc.setFieldId(fieldId);
+//		wc.setPredicateType(predicate);
+//		wc.setValue(value);
+//		wc.setAdditionalValue(additionalValue);
+//
+//		return null;
+//	}
 
-		// Has subqueries
-		checkSubQueryJoinSupport(sq1, jt, fieldId1, relationship);
-		checkSubQueryJoinSupport(sq2, jt, fieldId2, relationship);
+//	public void cancelQuery() {
+//		this.query = null;
+//		this.lastId = 0L;
+//	}
 
-		JoinClause jc = new JoinClause();
-		jc.setId(joinId);
-		
-		jc.setSubQuery1(sq1);
-		jc.setSubQuery2(sq2);
-		jc.setJoinType(jt);
-		jc.setFieldId1(fieldId1);
-		jc.setFieldId2(fieldId2);
-		jc.setRelationship(relationship);
-
-		query.addClause(joinId, jc);
-		return joinId;
-	}
-
-	public Long addWhereClause(Long sqId, String logicalOperator, Long fieldId,
-			String predicateName, String value, String additionalValue,
-			Long whereId) throws ClauseNotFoundException,
-			ClauseIsNotTheCorrectType, SubQueryNotFoundException,
-			LogicalOperatorNotFound, PredicateTypeNotSupported {
-		if (whereId != null) {
-			hasClause(whereId, WhereClause.class);
-		} else {
-			whereId = lastId++;
-		}
-		SubQuery sq = findSubQuery(sqId);
-		LogicalOperator lo = findLogicalOperator(logicalOperator);
-		PredicateType predicate = findPredicateType(predicateName);
-
-		checkSubQueryPredicateSupport(sq, lo, fieldId, predicate, value, additionalValue);
-		
-		WhereClause wc = new WhereClause();
-		wc.setId(whereId);
-		
-		wc.setSubQuery(sq);
-		wc.setLogicalOperator(lo);
-		wc.setFieldId(fieldId);
-		wc.setPredicateType(predicate);
-		wc.setValue(value);
-		wc.setAdditionalValue(additionalValue);
-
-		return null;
-	}
-
-	public void cancelQuery() {
-		this.query = null;
-		this.lastId = 0L;
-	}
-
-	public void deleteClause(Long clauseId) throws ClauseNotFoundException {
-		if (query.getClauses().containsKey(clauseId)) {
-			query.removeClause(clauseId);
-		} else if (query.getSubQueries().containsKey(clauseId)) {
-			query.removeSubQuery(clauseId);
-		} else {
-			throw new ClauseNotFoundException(clauseId);
-		}
-	}
+//	public void deleteClause(Long clauseId) throws ClauseNotFoundException {
+//		if (query.getClauses().containsKey(clauseId)) {
+//			query.removeClause(clauseId);
+//		} else if (query.getSubQueries().containsKey(clauseId)) {
+//			query.removeSubQuery(clauseId);
+//		} else {
+//			throw new ClauseNotFoundException(clauseId);
+//		}
+//	}
 
 	public Query getQuery() {
 		return query;
@@ -193,77 +193,77 @@ public class QueryController {
 		return ipctApp.getResources().get(resourceName);
 	}
 
-	private void checkSubQueryJoinSupport(SubQuery sq, JoinType joinType,
-			Long fieldId, String relationship)
-			throws SubQueryNotFoundException, JoinTypeNotSupported {
+//	private void checkSubQueryJoinSupport(SubQuery sq, JoinType joinType,
+//			Long fieldId, String relationship)
+//			throws SubQueryNotFoundException, JoinTypeNotSupported {
+//
+//		boolean supported = false;
+//		List<Resource> resources = sq.getResources();
+//		if (resources.isEmpty()) {
+//			resources = sq.getParent().getResources();
+//		}
+//
+//		for (Resource resource : resources) {
+//			if (resource.getSupportedJoins().contains(joinType)) {
+//
+//				if (joinType.isRequireFields()) {
+//					Field field = resource.getImplementingInterface().getField(
+//							fieldId);
+//
+//					if (joinType.supportsDataType(field.getDataType())) {
+//						supported = true;
+//					}
+//				} else {
+//					supported = true;
+//				}
+//
+//				if (joinType.isRequireRelationships() && relationship == null) {
+//					supported = false;
+//				}
+//
+//				if (supported) {
+//					break;
+//				}
+//			}
+//		}
+//
+//		if (!supported) {
+//			throw new JoinTypeNotSupported(joinType.getName());
+//		}
+//
+//	}
 
-		boolean supported = false;
-		List<Resource> resources = sq.getResources();
-		if (resources.isEmpty()) {
-			resources = sq.getParent().getResources();
-		}
-
-		for (Resource resource : resources) {
-			if (resource.getSupportedJoins().contains(joinType)) {
-
-				if (joinType.isRequireFields()) {
-					Field field = resource.getImplementingInterface().getField(
-							fieldId);
-
-					if (joinType.supportsDataType(field.getDataType())) {
-						supported = true;
-					}
-				} else {
-					supported = true;
-				}
-
-				if (joinType.isRequireRelationships() && relationship == null) {
-					supported = false;
-				}
-
-				if (supported) {
-					break;
-				}
-			}
-		}
-
-		if (!supported) {
-			throw new JoinTypeNotSupported(joinType.getName());
-		}
-
-	}
-
-	private void checkSubQueryPredicateSupport(SubQuery sq, LogicalOperator lo,
-			Long fieldId, PredicateType predicate, String value, String additionalValue)
-			throws PredicateTypeNotSupported {
-		boolean supported = false;
-		List<ResourceAbstract> resources = sq.getResources();
-		if (resources.isEmpty()) {
-			resources = sq.getParent().getResources();
-		}
-
-		for (Resource resource : resources) {
-			if(resource.getSupportedPredicates().contains(predicate)) {
-				if(predicate.isRequiresValue()) {
-					if(predicate.isRequiresAdditionalValue()) {
-						Field field = resource.getImplementingInterface().getField(fieldId);
-						if(predicate.supportsDataType(field.getDataType())) {
-							supported = true;
-						}
-					}
-				} else {
-					supported = true;
-				}
-				
-			}
-		}
-		
-
-		if (!supported) {
-			throw new PredicateTypeNotSupported(predicate.getName());
-		}
-
-	}
+//	private void checkSubQueryPredicateSupport(SubQuery sq, LogicalOperator lo,
+//			Long fieldId, PredicateType predicate, String value, String additionalValue)
+//			throws PredicateTypeNotSupported {
+//		boolean supported = false;
+//		List<ResourceAbstract> resources = sq.getResources();
+//		if (resources.isEmpty()) {
+//			resources = sq.getParent().getResources();
+//		}
+//
+//		for (Resource resource : resources) {
+//			if(resource.getSupportedPredicates().contains(predicate)) {
+//				if(predicate.isRequiresValue()) {
+//					if(predicate.isRequiresAdditionalValue()) {
+//						Field field = resource.getImplementingInterface().getField(fieldId);
+//						if(predicate.supportsDataType(field.getDataType())) {
+//							supported = true;
+//						}
+//					}
+//				} else {
+//					supported = true;
+//				}
+//				
+//			}
+//		}
+//		
+//
+//		if (!supported) {
+//			throw new PredicateTypeNotSupported(predicate.getName());
+//		}
+//
+//	}
 
 	private JoinType findJoinType(String joinType) throws JoinTypeNotSupported {
 		JoinType jt = ipctApp.getSupportedJoinTypes().get(joinType);
@@ -273,15 +273,15 @@ public class QueryController {
 		return jt;
 	}
 
-	private PredicateType findPredicateType(String predicateName)
-			throws PredicateTypeNotSupported {
-		PredicateType pt = ipctApp.getSupportedPredicateTypes().get(
-				predicateName);
-		if (pt == null) {
-			throw new PredicateTypeNotSupported(predicateName);
-		}
-		return null;
-	}
+//	private PredicateType findPredicateType(String predicateName)
+//			throws PredicateTypeNotSupported {
+//		PredicateType pt = ipctApp.getSupportedPredicateTypes().get(
+//				predicateName);
+//		if (pt == null) {
+//			throw new PredicateTypeNotSupported(predicateName);
+//		}
+//		return null;
+//	}
 
 	private SubQuery findSubQuery(Long sqId) throws SubQueryNotFoundException {
 		SubQuery sq = query.getSubQueries().get(sqId);

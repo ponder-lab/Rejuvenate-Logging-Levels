@@ -87,7 +87,7 @@ public class IRCTApplication {
 		criteria.select(load);
 		for (JoinType jt : oem.createQuery(criteria).getResultList()) {
 			jt.setup();
-			addJoin(jt.getName(), jt);
+			this.supportedJoinTypes.put(jt.getName(), jt);
 		}
 		log.info("Loaded " + this.supportedJoinTypes.size() + " joins");
 	}
@@ -106,7 +106,7 @@ public class IRCTApplication {
 		criteria.select(load);
 		for (Resource resource : oem.createQuery(criteria).getResultList()) {
 			resource.setup();
-			addResource(resource.getName(), resource);
+			this.resources.put(resource.getName(), resource);
 		}
 		log.info("Loaded " + this.resources.size() + " resources");
 	}

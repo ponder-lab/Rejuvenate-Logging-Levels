@@ -10,6 +10,7 @@ import edu.harvard.hms.dbmi.bd2k.irct.model.ontology.OntologyType;
 import edu.harvard.hms.dbmi.bd2k.irct.model.ontology.Path;
 import edu.harvard.hms.dbmi.bd2k.irct.model.resource.PathResourceImplementationInterface;
 import edu.harvard.hms.dbmi.bd2k.irct.model.resource.Resource;
+import edu.harvard.hms.dbmi.bd2k.irct.ri.exception.ResourceInterfaceException;
 
 @Stateless
 public class PathController {
@@ -18,7 +19,7 @@ public class PathController {
 		return ((PathResourceImplementationInterface) resource.getImplementingInterface()).getPathRoot();
 	}
 	
-	public List<Path> getPathRelationship(Resource resource, Path path, OntologyRelationship relationship) {
+	public List<Path> getPathRelationship(Resource resource, Path path, OntologyRelationship relationship) throws ResourceInterfaceException {
 		if(path == null) {
 			return new ArrayList<Path>();
 		}

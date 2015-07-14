@@ -17,7 +17,7 @@ public class ExecuteQuery implements QueryAction {
 
 	public void run() {
 		((QueryResourceImplementationInterface)resource.getImplementingInterface()).run(query);
-		this.results = ((QueryResourceImplementationInterface)resource.getImplementingInterface()).getResults();
+//		this.results = ((QueryResourceImplementationInterface)resource.getImplementingInterface()).getResults();
 	}
 
 	public ResultSet getResults() {

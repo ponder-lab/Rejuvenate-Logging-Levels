@@ -58,7 +58,7 @@ public class Resource {
 	@ElementCollection
 	@MapKeyColumn(name = "name")
 	@Column(name = "value")
-	@CollectionTable(name = "jointype_parameters", joinColumns = @JoinColumn(name = "id"))
+	@CollectionTable(name = "resource_parameters", joinColumns = @JoinColumn(name = "id"))
 	private Map<String, String> parameters;
 
 	@Enumerated(EnumType.STRING)
