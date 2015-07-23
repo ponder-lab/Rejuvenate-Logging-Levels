@@ -18,12 +18,13 @@ package edu.harvard.hms.dbmi.bd2k.irct.action;
 
 import edu.harvard.hms.dbmi.bd2k.irct.model.resource.Resource;
 import edu.harvard.hms.dbmi.bd2k.irct.model.result.ResultSet;
+import edu.harvard.hms.dbmi.bd2k.irct.ri.exception.ResourceInterfaceException;
 
 public interface Executable {
 	void setup(Action action);
-	void run();
+	void run() throws ResourceInterfaceException;
 	ExecutableState getState();
-	ResultSet getResults();
+	ResultSet getResults() throws ResourceInterfaceException;
 	Resource getResource();
 	void setResource(Resource resource);
 }

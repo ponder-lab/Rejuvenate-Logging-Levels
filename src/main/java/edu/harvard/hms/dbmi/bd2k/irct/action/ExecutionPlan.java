@@ -17,6 +17,7 @@
 package edu.harvard.hms.dbmi.bd2k.irct.action;
 
 import edu.harvard.hms.dbmi.bd2k.irct.model.result.ResultSet;
+import edu.harvard.hms.dbmi.bd2k.irct.ri.exception.ResourceInterfaceException;
 
 public class ExecutionPlan {
 	private ExecutableState state;
@@ -31,8 +32,13 @@ public class ExecutionPlan {
 	
 	public void run() {
 		this.state = ExecutableState.RUNNING;
-		this.executable.run();
-		this.results = this.executable.getResults();
+		try {
+			this.executable.run();
+			this.results = this.executable.getResults();
+		} catch (ResourceInterfaceException e) {
+			e.printStackTrace();
+		}
+		
 		this.state = ExecutableState.COMPLETED;
 	}
 

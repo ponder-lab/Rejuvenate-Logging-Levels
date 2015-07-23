@@ -14,30 +14,18 @@
  *  You should have received a copy of the GNU General Public License
  *  along with IRCT.  If not, see <http://www.gnu.org/licenses/>.
  */
-package edu.harvard.hms.dbmi.bd2k.irct.action;
-
-import edu.harvard.hms.dbmi.bd2k.irct.model.result.ResultSet;
-import edu.harvard.hms.dbmi.bd2k.irct.ri.exception.ResourceInterfaceException;
+package edu.harvard.hms.dbmi.bd2k.irct.exception;
 
 /**
- * Interface provides a set of basic functionality that all actions must
- * accomplish. An action can be a Join, Query, or Process with each subtype
- * having their own interface that should be used.
+ * An exception occurred in a predicate
  * 
  * @author Jeremy R. Easton-Marks
  *
  */
-public interface Action {
-	/**
-	 * Runs the given action
-	 * @throws ResourceInterfaceException 
-	 */
-	void run() throws ResourceInterfaceException;
+public class PredicateException extends Exception {
+	private static final long serialVersionUID = 2350119710872195996L;
 
-	/**
-	 * Gets the results
-	 * 
-	 * @return Results
-	 */
-	ResultSet getResults() throws ResourceInterfaceException;
+	public PredicateException(String message) {
+		super(message);
+	}
 }

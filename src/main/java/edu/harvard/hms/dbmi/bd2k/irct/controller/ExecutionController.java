@@ -28,6 +28,7 @@ import edu.harvard.hms.dbmi.bd2k.irct.action.query.ExecuteQuery;
 import edu.harvard.hms.dbmi.bd2k.irct.model.query.Query;
 import edu.harvard.hms.dbmi.bd2k.irct.model.result.ResultSet;
 import edu.harvard.hms.dbmi.bd2k.irct.model.result.exception.ResultSetException;
+import edu.harvard.hms.dbmi.bd2k.irct.ri.exception.ResourceInterfaceException;
 
 @Stateless
 public class ExecutionController {
@@ -51,7 +52,7 @@ public class ExecutionController {
 				e.printStackTrace();
 			}
 			Thread.sleep(10000);
-		} catch (InterruptedException e) {
+		} catch (InterruptedException | ResourceInterfaceException e) {
 			e.printStackTrace();
 		}
 		log.info("End: " + query.getId());

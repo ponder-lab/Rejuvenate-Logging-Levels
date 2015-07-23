@@ -20,6 +20,7 @@ import edu.harvard.hms.dbmi.bd2k.irct.model.query.Query;
 import edu.harvard.hms.dbmi.bd2k.irct.model.resource.QueryResourceImplementationInterface;
 import edu.harvard.hms.dbmi.bd2k.irct.model.resource.Resource;
 import edu.harvard.hms.dbmi.bd2k.irct.model.result.ResultSet;
+import edu.harvard.hms.dbmi.bd2k.irct.ri.exception.ResourceInterfaceException;
 
 public class ExecuteQuery implements QueryAction {
 	private Long runId;
@@ -31,11 +32,11 @@ public class ExecuteQuery implements QueryAction {
 		this.resource = resource;
 	}
 
-	public void run() {
+	public void run() throws ResourceInterfaceException {
 		runId = ((QueryResourceImplementationInterface)resource.getImplementingInterface()).run(query);
 	}
 
-	public ResultSet getResults() {
+	public ResultSet getResults() throws ResourceInterfaceException {
 		return ((QueryResourceImplementationInterface)resource.getImplementingInterface()).getResults(runId);
 	}
 
