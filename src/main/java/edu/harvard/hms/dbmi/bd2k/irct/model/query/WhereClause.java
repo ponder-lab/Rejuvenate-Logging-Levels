@@ -148,7 +148,7 @@ public class WhereClause extends ClauseAbstract {
 	 * @param field
 	 *            Field
 	 */
-	public void setFieldId(Path field) {
+	public void setField(Path field) {
 		this.field = field;
 	}
 

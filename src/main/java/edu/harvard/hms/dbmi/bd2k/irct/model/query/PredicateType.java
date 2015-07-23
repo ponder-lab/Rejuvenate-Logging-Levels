@@ -24,6 +24,7 @@ import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 import javax.persistence.CollectionTable;
 import javax.persistence.Column;
+import javax.persistence.Convert;
 import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
@@ -32,6 +33,8 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 
 import edu.harvard.hms.dbmi.bd2k.irct.model.ontology.DataType;
+import edu.harvard.hms.dbmi.bd2k.irct.model.query.predicate.PredicateImplementationInterface;
+import edu.harvard.hms.dbmi.bd2k.irct.util.converter.PredicateImplementationConverter;
 
 /**
  * The predicate type class provides a way for the IRCT application to keep
@@ -55,6 +58,9 @@ public class PredicateType {
 	@Column(name = "supportedDataType", nullable = false)
 	@Enumerated(EnumType.STRING)
 	private List<DataType> supportedDataTypes;
+	
+	@Convert(converter = PredicateImplementationConverter.class)
+	private PredicateImplementationInterface implementingInterface;
 	
 	/**
 	 * Returns if the predicate supports a given Data Type
@@ -101,6 +107,9 @@ public class PredicateType {
 		predicateTypeJSON.add("description", getDescription());
 		predicateTypeJSON.add("requiresValue", isRequiresValue());
 		predicateTypeJSON.add("requiresAdditionalValue", isRequiresAdditionalValue());
+		if(this.getImplementingInterface() != null) {
+			predicateTypeJSON.add("implementation", this.getImplementingInterface().toJson(depth));
+		}
 		
 		JsonArrayBuilder dataTypes = Json.createArrayBuilder();
 		for(DataType dt : supportedDataTypes) {
@@ -204,5 +213,22 @@ public class PredicateType {
 	 */
 	public void setSupportedDataTypes(List<DataType> supportedDataTypes) {
 		this.supportedDataTypes = supportedDataTypes;
+	}
+
+	/**
+	 * Returns a list of supported predicate types
+	 * 
+	 * @return Supported predicate types
+	 */
+	public PredicateImplementationInterface getImplementingInterface() {
+		return implementingInterface;
+	}
+
+	/**
+	 * Sets the list of supported predicates types 
+	 * @param implementingInterface Supported predicate types
+	 */
+	public void setImplementingInterface(PredicateImplementationInterface implementingInterface) {
+		this.implementingInterface = implementingInterface;
 	}
 }

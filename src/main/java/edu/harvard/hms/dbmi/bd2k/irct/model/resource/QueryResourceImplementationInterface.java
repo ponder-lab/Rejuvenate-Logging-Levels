@@ -19,6 +19,7 @@ package edu.harvard.hms.dbmi.bd2k.irct.model.resource;
 import edu.harvard.hms.dbmi.bd2k.irct.model.ontology.Path;
 import edu.harvard.hms.dbmi.bd2k.irct.model.query.Query;
 import edu.harvard.hms.dbmi.bd2k.irct.model.result.ResultSet;
+import edu.harvard.hms.dbmi.bd2k.irct.ri.exception.ResourceInterfaceException;
 
 /**
  * Provides an implementation that describes the API for any resource that has
@@ -35,8 +36,9 @@ public interface QueryResourceImplementationInterface extends
 	 * @param qep
 	 *            Query to be run
 	 * @return The id of the query that is running
+	 * @throws ResourceInterfaceException 
 	 */
-	Long run(Query qep);
+	Long run(Query qep) throws ResourceInterfaceException;
 
 	/**
 	 * Returns the results of the query if they are available
@@ -44,8 +46,9 @@ public interface QueryResourceImplementationInterface extends
 	 * @param queryId
 	 *            Query ID
 	 * @return Results
+	 * @throws ResourceInterfaceException 
 	 */
-	ResultSet getResults(Long queryId);
+	ResultSet getResults(Long queryId) throws ResourceInterfaceException;
 
 	/**
 	 * Returns the state of the resource

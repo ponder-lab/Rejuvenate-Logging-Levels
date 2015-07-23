@@ -16,6 +16,7 @@
  */
 package edu.harvard.hms.dbmi.bd2k.irct.model.query;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -45,6 +46,7 @@ public class Query {
 	public Query() {
 		this.setSubQueries(new LinkedHashMap<Long, SubQuery>());
 		this.setClauses(new LinkedHashMap<Long, ClauseAbstract>());
+		this.setResources(new ArrayList<Resource>());
 	}
 
 	/**
