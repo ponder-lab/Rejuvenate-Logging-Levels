@@ -19,7 +19,7 @@ package edu.harvard.hms.dbmi.bd2k.irct.action;
 import edu.harvard.hms.dbmi.bd2k.irct.model.resource.Resource;
 import edu.harvard.hms.dbmi.bd2k.irct.model.result.ResultSet;
 
-public class ProcessExecutable implements Executable {
+public class ProcessExecutable implements Executable, BinaryTreeExecutable {
 	private Resource resource;
 	public void setup(Action action) {
 		// TODO Auto-generated method stub

@@ -16,7 +16,9 @@
  */
 package edu.harvard.hms.dbmi.bd2k.irct.model.query;
 
+import java.io.Serializable;
 import java.util.List;
+import java.util.Map;
 
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
@@ -31,6 +33,7 @@ import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
+import javax.persistence.MapKeyColumn;
 
 import edu.harvard.hms.dbmi.bd2k.irct.model.ontology.DataType;
 import edu.harvard.hms.dbmi.bd2k.irct.model.query.predicate.PredicateImplementationInterface;
@@ -44,20 +47,28 @@ import edu.harvard.hms.dbmi.bd2k.irct.util.converter.PredicateImplementationConv
  *
  */
 @Entity
-public class PredicateType {
+public class PredicateType implements Serializable {
+	private static final long serialVersionUID = -8767223525164395205L;
+
 	@Id
 	private long id;
 	
 	private String name;
 	private String description;
-	private boolean requiresValue;
-	private boolean requiresAdditionalValue;
+	
+	@ElementCollection
+	@MapKeyColumn(name = "name")
+	@Column(name = "value")
+	@CollectionTable(name ="predicateType_values", joinColumns = @JoinColumn(name = "id"))
+	private Map<String, PredicateTypeValue> values;
 
-	@ElementCollection(targetClass = DataType.class)
+	@ElementCollection(targetClass = PredicateTypeValueDataType.class)
 	@CollectionTable(name = "PredicateType_SupportedDataType", joinColumns = @JoinColumn(name = "id"))
 	@Column(name = "supportedDataType", nullable = false)
 	@Enumerated(EnumType.STRING)
-	private List<DataType> supportedDataTypes;
+	private List<PredicateTypeValueDataType> supportedDataTypes;
+	
+	private boolean defaultPredicate;
 	
 	@Convert(converter = PredicateImplementationConverter.class)
 	private PredicateImplementationInterface implementingInterface;
@@ -104,18 +115,30 @@ public class PredicateType {
 		JsonObjectBuilder predicateTypeJSON = Json.createObjectBuilder();
 		
 		predicateTypeJSON.add("name", getName());
-		predicateTypeJSON.add("description", getDescription());
-		predicateTypeJSON.add("requiresValue", isRequiresValue());
-		predicateTypeJSON.add("requiresAdditionalValue", isRequiresAdditionalValue());
+		predicateTypeJSON.add("default", isDefaultPredicate());
+		
 		if(this.getImplementingInterface() != null) {
 			predicateTypeJSON.add("implementation", this.getImplementingInterface().toJson(depth));
 		}
 		
 		JsonArrayBuilder dataTypes = Json.createArrayBuilder();
-		for(DataType dt : supportedDataTypes) {
-			dataTypes.add(dt.toString());
+		if(this.supportedDataTypes != null) {
+			for(PredicateTypeValueDataType dt : supportedDataTypes) {
+				dataTypes.add(dt.toString());
+			}
 		}
-		predicateTypeJSON.add("dataTypes", dataTypes);
+		predicateTypeJSON.add("dataTypes", dataTypes.build());
+		
+		JsonArrayBuilder valuesType = Json.createArrayBuilder();
+		if(this.values != null) {
+			for(String valueName : this.values.keySet()) {
+				JsonObjectBuilder singleValue = Json.createObjectBuilder();
+				singleValue.add("name", valueName);
+				singleValue.add("values", this.values.get(valueName).toJson(depth));
+				valuesType.add(singleValue);
+			}
+		}
+		predicateTypeJSON.add("values", valuesType.build());
 		
 		return predicateTypeJSON.build();
 	}
@@ -158,51 +181,13 @@ public class PredicateType {
 		this.description = description;
 	}
 
-	/**
-	 * Returns if the predicate requires a value
-	 * 
-	 * @return If the predicate requires a value
-	 */
-	public boolean isRequiresValue() {
-		return requiresValue;
-	}
-
-	/**
-	 * Sets if the predicate requires a value
-	 * 
-	 * @param requiresValue
-	 *            If the predicate requires a value
-	 */
-	public void setRequiresValue(boolean requiresValue) {
-		this.requiresValue = requiresValue;
-	}
-
-	/**
-	 * Returns if the predicate requires an additional value
-	 * 
-	 * @return If the predicate requires an additional value
-	 */
-	public boolean isRequiresAdditionalValue() {
-		return requiresAdditionalValue;
-	}
-
-	/**
-	 * Returns if the predicate requires an additional value
-	 * 
-	 * @param requiresAdditionalValue
-	 *            If the predicate requires an additional value
-	 * 
-	 */
-	public void setRequiresAdditionalValue(boolean requiresAdditionalValue) {
-		this.requiresAdditionalValue = requiresAdditionalValue;
-	}
 	
 	/**
 	 * Returns a list of supported data types
 	 * 
 	 * @return Supported data types
 	 */
-	public List<DataType> getSupportedDataTypes() {
+	public List<PredicateTypeValueDataType> getSupportedDataTypes() {
 		return supportedDataTypes;
 	}
 
@@ -211,7 +196,7 @@ public class PredicateType {
 	 * 
 	 * @param supportedDataTypes Supported data types
 	 */
-	public void setSupportedDataTypes(List<DataType> supportedDataTypes) {
+	public void setSupportedDataTypes(List<PredicateTypeValueDataType> supportedDataTypes) {
 		this.supportedDataTypes = supportedDataTypes;
 	}
 
@@ -230,5 +215,13 @@ public class PredicateType {
 	 */
 	public void setImplementingInterface(PredicateImplementationInterface implementingInterface) {
 		this.implementingInterface = implementingInterface;
+	}
+
+	public boolean isDefaultPredicate() {
+		return defaultPredicate;
+	}
+
+	public void setDefaultPredicate(boolean defaultPredicate) {
+		this.defaultPredicate = defaultPredicate;
 	}
 }

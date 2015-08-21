@@ -27,6 +27,7 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
+import javax.persistence.FlushModeType;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
@@ -65,6 +66,7 @@ public class IRCTApplication {
 		log.info("Starting IRCT Application");
 
 		this.oem = objectEntityManager.createEntityManager();
+		this.oem.setFlushMode(FlushModeType.COMMIT);
 
 		log.info("Loading Join Types");
 		loadJoins();

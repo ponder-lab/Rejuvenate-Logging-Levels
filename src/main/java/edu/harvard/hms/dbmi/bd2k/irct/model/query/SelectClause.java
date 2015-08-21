@@ -16,9 +16,6 @@
  */
 package edu.harvard.hms.dbmi.bd2k.irct.model.query;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
@@ -33,11 +30,11 @@ import edu.harvard.hms.dbmi.bd2k.irct.model.ontology.Path;
  *
  */
 public class SelectClause extends ClauseAbstract {
-	private List<Path> parameters;
+	private Path parameter;
+	private String alias;
 
 	public SelectClause(Long id) {
 		super(id);
-		this.parameters = new ArrayList<Path>();
 	}
 
 	/**
@@ -77,8 +74,8 @@ public class SelectClause extends ClauseAbstract {
 	 * 
 	 * @return Select parameters
 	 */
-	public List<Path> getParameters() {
-		return parameters;
+	public Path getParameter() {
+		return parameter;
 	}
 
 	/**
@@ -87,28 +84,25 @@ public class SelectClause extends ClauseAbstract {
 	 * @param parameters
 	 *            Select parameters
 	 */
-	public void setParameters(List<Path> parameters) {
-		this.parameters = parameters;
+	public void setParameters(Path parameter) {
+		this.parameter = parameter;
 	}
 
 	/**
-	 * Adds a new parameter to the select clause
+	 * Returns the alias for the select clause
 	 * 
-	 * @param parameter
-	 *            Select parameter
+	 * @return Alias
 	 */
-	public void addParameter(Path parameter) {
-		this.parameters.add(parameter);
+	public String getAlias() {
+		return alias;
 	}
 
 	/**
-	 * Removes a parameter from the select clause
-	 * 
-	 * @param parameter
-	 *            Select parameter
+	 * Sets the alias for the select clause
+	 * @param alias Alias
 	 */
-	public void removeParameter(Path parameter) {
-		this.parameters.remove(parameter);
+	public void setAlias(String alias) {
+		this.alias = alias;
 	}
 
 }

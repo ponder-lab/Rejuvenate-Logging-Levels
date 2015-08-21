@@ -2,6 +2,7 @@ package edu.harvard.hms.dbmi.bd2k.irct.controller;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 import javax.ejb.Stateful;
 import javax.inject.Inject;
@@ -10,6 +11,7 @@ import edu.harvard.hms.dbmi.bd2k.irct.IRCTApplication;
 import edu.harvard.hms.dbmi.bd2k.irct.exception.ClauseIsNotTheCorrectType;
 import edu.harvard.hms.dbmi.bd2k.irct.exception.ClauseNotFoundException;
 import edu.harvard.hms.dbmi.bd2k.irct.exception.JoinTypeNotSupported;
+import edu.harvard.hms.dbmi.bd2k.irct.exception.PredicateTypeNotSupported;
 import edu.harvard.hms.dbmi.bd2k.irct.exception.ResourceNotFoundException;
 import edu.harvard.hms.dbmi.bd2k.irct.exception.SubQueryNotFoundException;
 import edu.harvard.hms.dbmi.bd2k.irct.model.ontology.Path;
@@ -73,12 +75,11 @@ public class QueryController {
 	 * @return The select clause id
 	 * @throws SubQueryNotFoundException
 	 */
-	public Long addSelectClause(Long sqId, Path... parameters)
+	public Long addSelectClause(Long sqId, String alias, Path parameter)
 			throws SubQueryNotFoundException {
 		SelectClause sc = new SelectClause(lastId++);
-		for (Path parameter : parameters) {
-			sc.addParameter(parameter);
-		}
+		sc.setAlias(alias);
+		sc.setParameters(parameter);
 		if (sqId != null) {
 			SubQuery sq = findSubQuery(sqId);
 			sq.addClause(sc.getId(), sc);
@@ -118,8 +119,8 @@ public class QueryController {
 	}
 
 	public Long addWhereClause(Long sqId, String logicalOperator, Path field,
-			String predicateName, String value, String additionalValue,
-			Long whereId) throws ClauseNotFoundException,
+			String predicateName, Map<String, String> values, Long whereId,
+			Resource resource) throws ClauseNotFoundException,
 			ClauseIsNotTheCorrectType, SubQueryNotFoundException,
 			LogicalOperatorNotFound, PredicateTypeNotSupported {
 		if (whereId != null) {
@@ -127,24 +128,33 @@ public class QueryController {
 		} else {
 			whereId = lastId++;
 		}
-		SubQuery sq = findSubQuery(sqId);
-		LogicalOperator lo = findLogicalOperator(logicalOperator);
-		PredicateType predicate = findPredicateType(predicateName);
-
-		checkSubQueryPredicateSupport(sq, lo, field, predicate, value,
-				additionalValue);
 
 		WhereClause wc = new WhereClause();
 		wc.setId(whereId);
 
-		wc.setSubQuery(sq);
+		LogicalOperator lo = findLogicalOperator(logicalOperator);
+		if (predicateName != null) {
+			wc.setPredicateType(findPredicateType(resource, predicateName));
+		}
+
 		wc.setLogicalOperator(lo);
 		wc.setField(field);
-		wc.setPredicateType(predicate);
-		wc.setValue(value);
-		wc.setAdditionalValue(additionalValue);
+		wc.setValues(values);
 
-		return null;
+		if (sqId != null) {
+			SubQuery whereQuery = findSubQuery(sqId);
+			// checkSubQueryPredicateSupport(whereQuery, lo, field, predicate,
+			// value,
+			// additionalValue);
+			wc.setSubQuery(whereQuery);
+			whereQuery.getResources().add(resource);
+			whereQuery.getClauses().put(whereId, wc);
+		} else {
+			query.getResources().add(resource);
+			query.getClauses().put(whereId, wc);
+		}
+
+		return wc.getId();
 	}
 
 	public void cancelQuery() {
@@ -169,8 +179,7 @@ public class QueryController {
 	public void setQuery(Query query) {
 		this.query = query;
 	}
-	
-	
+
 	public SubQuery findSubQuery(Long sqId) throws SubQueryNotFoundException {
 		SubQuery sq = query.getSubQueries().get(sqId);
 		if (sq == null) {
@@ -192,8 +201,6 @@ public class QueryController {
 
 		return lo;
 	}
-
-	
 
 	private void checkSubQueryJoinSupport(SubQuery sq, JoinType joinType,
 			Path field, String relationship) throws SubQueryNotFoundException,
@@ -241,24 +248,24 @@ public class QueryController {
 			resources = sq.getParent().getResources();
 		}
 
-		for (Resource resource : resources) {
-			if (resource.getSupportedPredicates().contains(predicate)) {
-				if (predicate.isRequiresValue()) {
-					if (predicate.isRequiresAdditionalValue()) {
-						if (predicate.supportsDataType(field.getDataType())) {
-							supported = true;
-						}
-					}
-				} else {
-					supported = true;
-				}
+		// for (Resource resource : resources) {
+		// if (resource.getSupportedPredicates().contains(predicate)) {
+		// if (predicate.isRequiresValue()) {
+		// if (predicate.isRequiresAdditionalValue()) {
+		// if (predicate.supportsDataType(field.getDataType())) {
+		// supported = true;
+		// }
+		// }
+		// } else {
+		// supported = true;
+		// }
 
-			}
-		}
+		// }
+		// }
 
-		if (!supported) {
-			throw new PredicateTypeNotSupported(predicate.getName());
-		}
+		// if (!supported) {
+		// throw new PredicateTypeNotSupported(predicate.getName());
+		// }
 
 	}
 
@@ -270,14 +277,15 @@ public class QueryController {
 		return jt;
 	}
 
-	private PredicateType findPredicateType(String predicateName)
-			throws PredicateTypeNotSupported {
+	private PredicateType findPredicateType(Resource resource,
+			String predicateName) throws PredicateTypeNotSupported {
 
-		PredicateType pt = irctApp.getSupportedPredicateTypes().get(
-				predicateName);
-		if (pt == null) {
-			throw new PredicateTypeNotSupported(predicateName);
+		for (PredicateType predicateType : resource.getSupportedPredicates()) {
+			if (predicateType.getName().equals(predicateName)) {
+				return predicateType;
+			}
 		}
+
 		return null;
 	}
 

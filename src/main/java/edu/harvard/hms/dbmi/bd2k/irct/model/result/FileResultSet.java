@@ -1,9 +1,6 @@
 package edu.harvard.hms.dbmi.bd2k.irct.model.result;
 
-import java.io.BufferedOutputStream;
-import java.io.DataOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.io.StringReader;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
@@ -46,16 +43,27 @@ public class FileResultSet extends ResultSetImpl implements Persistable {
 	private FileChannel dataReadFC;
 
 	private ByteBuffer read;
-//	private long rowPosition = -1;
+	// private long rowPosition = -1;
 	private Row currentRow;
 
 	private boolean current = false;
 	private boolean persisted = false;
 
 	private Map<Long, Row> pendingData;
-	private int MAXPENDING = 1000;
+	private int MAXPENDING = 5000;
+	
+	public FileResultSet() {
+		this.pendingData = new HashMap<Long, Row>();
+	}
 
-	public FileResultSet(String fileName) throws ResultSetException,
+	@Override
+	public boolean isAvailable(String location) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public void load(String fileName) throws ResultSetException,
 			PersistableException {
 
 		// Setup the initial variables
@@ -114,16 +122,15 @@ public class FileResultSet extends ResultSetImpl implements Persistable {
 		if (getRow() == MAXPENDING) {
 			throw new PersistableException("Maximum Pending Size Reached");
 		}
-		
+
 		Row newRow = new Row(this.getColumnSize());
 		this.currentRow = newRow;
-		
-		
+
 		pendingData.put(getSize(), newRow);
-		
+
 		this.setRowPosition(this.getSize());
 		this.setSize(this.getSize() + 1);
-		
+
 	}
 
 	/**
@@ -182,7 +189,7 @@ public class FileResultSet extends ResultSetImpl implements Persistable {
 			throw new ResultSetException("Unable to read the result set", e);
 		}
 	}
-	
+
 	public void afterLast() throws ResultSetException {
 		if (isClosed()) {
 			throw new ResultSetException("ResultSet is closed");
@@ -349,8 +356,10 @@ public class FileResultSet extends ResultSetImpl implements Persistable {
 				char charRead = (char) readByte;
 
 				if ((charRead == '\r') || (charRead == '\n')) {
+//					row.setColumn(currentColumn, getColumn(currentColumn)
+//							.getDataType().fromBytes(line.array()));
 					row.setColumn(currentColumn, getColumn(currentColumn)
-							.getDataType().fromBytes(line.array()));
+							.getDataType().fromBytes(Arrays.copyOf(line.array(), line.position())));
 					line.clear();
 					dataReadFC.position(originalPosition);
 					break;
@@ -361,8 +370,10 @@ public class FileResultSet extends ResultSetImpl implements Persistable {
 					// If a delimiter is found and the current position is
 					// outside a quote
 
+//					row.setColumn(currentColumn, getColumn(currentColumn)
+//							.getDataType().fromBytes(line.array()));
 					row.setColumn(currentColumn, getColumn(currentColumn)
-							.getDataType().fromBytes(line.array()));
+							.getDataType().fromBytes(Arrays.copyOf(line.array(), line.position())));
 					currentColumn++;
 					line.clear();
 				} else {
@@ -411,14 +422,49 @@ public class FileResultSet extends ResultSetImpl implements Persistable {
 		return this.currentRow.getColumn(columnIndex);
 	}
 
+	@Override
+	public void persist(String fileName) throws PersistableException {
+		if (this.persisted) {
+			throw new PersistableException(this.fileName
+					+ " has been persisted");
+		}
+
+		this.fileName = fileName;
+
+		// Initialize the buffer to read
+		read = ByteBuffer.allocate(maxReadSize);
+		// Set up the paths
+		infoFile = Paths.get(fileName + ".info");
+		dataFile = Paths.get(fileName + ".data");
+		// Check to see if the file exists
+		try {
+			Files.createFile(dataFile);
+			dataReadFC = FileChannel.open(dataFile, StandardOpenOption.READ);
+		} catch (IOException e) {
+			if (dataReadFC != null) {
+				try {
+					dataReadFC.close();
+				} catch (IOException closeException) {
+					throw new PersistableException(
+							"Unable to initiate the result set", closeException);
+				}
+			}
+			throw new PersistableException("Unable to initiate the result set",
+					e);
+		}
+		
+		persist();
+	}
+
 	public void persist() throws PersistableException {
 		// Throw an exception if the file has not been initially persisted
 		if (this.persisted) {
 			throw new PersistableException(this.fileName
 					+ " has been persisted");
 		}
-		
-		try (SeekableByteChannel dataOutStream = Files.newByteChannel(dataFile, StandardOpenOption.CREATE, StandardOpenOption.APPEND)) {
+
+		try (SeekableByteChannel dataOutStream = Files.newByteChannel(dataFile,
+				StandardOpenOption.CREATE, StandardOpenOption.APPEND)) {
 			// Write the information to the info File
 			Files.write(infoFile, toJson().toString().getBytes());
 
@@ -429,15 +475,16 @@ public class FileResultSet extends ResultSetImpl implements Persistable {
 
 			for (Long key : keys) {
 				writeRowToFile(dataOutStream, this.pendingData.get(key));
-				ByteBuffer bb = ByteBuffer.wrap(new byte[] {(byte) ((byte) '\n' & 0x00FF)});
+				ByteBuffer bb = ByteBuffer
+						.wrap(new byte[] { (byte) ((byte) '\n' & 0x00FF) });
 				dataOutStream.write(bb);
 			}
 
-			//Reset the FileChannel and position
+			// Reset the FileChannel and position
 			dataReadFC.close();
 			dataReadFC = FileChannel.open(dataFile, StandardOpenOption.READ);
-			
-			//Reset the variables and clear out the pending results
+
+			// Reset the variables and clear out the pending results
 			dataOutStream.close();
 			this.current = true;
 			this.persisted = true;
@@ -458,37 +505,41 @@ public class FileResultSet extends ResultSetImpl implements Persistable {
 		if (this.current) {
 			return;
 		}
-		
-		//Create temporary file
+
+		// Create temporary file
 		Path tempDataFile = Paths.get(fileName + ".temp");
-		
-		//Write all changes to temporary file
-		try (SeekableByteChannel dataOutStream = Files.newByteChannel(tempDataFile, StandardOpenOption.CREATE, StandardOpenOption.APPEND)) {
+
+		// Write all changes to temporary file
+		try (SeekableByteChannel dataOutStream = Files.newByteChannel(
+				tempDataFile, StandardOpenOption.CREATE,
+				StandardOpenOption.APPEND)) {
 			// Write the information to the info File
 			Files.write(infoFile, toJson().toString().getBytes());
-			
-			
-			for(long rowIndex = 0; rowIndex < this.getSize(); rowIndex++) {
-				if(this.pendingData.containsKey(rowIndex)) {
-					writeRowToFile(dataOutStream, this.pendingData.get(rowIndex));	
+
+			for (long rowIndex = 0; rowIndex < this.getSize(); rowIndex++) {
+				if (this.pendingData.containsKey(rowIndex)) {
+					writeRowToFile(dataOutStream,
+							this.pendingData.get(rowIndex));
 				} else {
 					this.absolute(rowIndex);
 					writeRowToFile(dataOutStream, this.currentRow);
 				}
-				ByteBuffer bb = ByteBuffer.wrap(new byte[] {(byte) ((byte) '\n' & 0x00FF)});
+				ByteBuffer bb = ByteBuffer
+						.wrap(new byte[] { (byte) ((byte) '\n' & 0x00FF) });
 				dataOutStream.write(bb);
 			}
 			dataOutStream.close();
-			
-			//Replace the current file with the temporary file
-			Files.copy(tempDataFile, dataFile, StandardCopyOption.REPLACE_EXISTING);
+
+			// Replace the current file with the temporary file
+			Files.copy(tempDataFile, dataFile,
+					StandardCopyOption.REPLACE_EXISTING);
 			Files.delete(tempDataFile);
-			
-			//Reset the FileChannel and position
+
+			// Reset the FileChannel and position
 			dataReadFC.close();
 			dataReadFC = FileChannel.open(dataFile, StandardOpenOption.READ);
-			
-			//Reset the variables and clear out the pending results
+
+			// Reset the variables and clear out the pending results
 			this.current = true;
 			this.persisted = true;
 			this.pendingData.clear();
@@ -496,7 +547,6 @@ public class FileResultSet extends ResultSetImpl implements Persistable {
 			throw new PersistableException("Unable to persist the result set",
 					e);
 		}
-		
 
 	}
 
@@ -558,11 +608,12 @@ public class FileResultSet extends ResultSetImpl implements Persistable {
 		for (int columnIndex = 0; columnIndex < this.getColumnSize(); columnIndex++) {
 			byte[] outBytes = this.getColumn(columnIndex).getDataType()
 					.toBytes(row.getColumn(columnIndex));
-			
+
 			ByteBuffer bb = ByteBuffer.wrap(outBytes);
 			dataOutStream.write(bb);
 			if (columnIndex != this.getColumnSize() - 1) {
-				bb = ByteBuffer.wrap(new byte[] {(byte) ((byte) this.DELIMITER & 0x00FF)});
+				bb = ByteBuffer
+						.wrap(new byte[] { (byte) ((byte) this.DELIMITER & 0x00FF) });
 				dataOutStream.write(bb);
 			}
 
@@ -830,8 +881,10 @@ public class FileResultSet extends ResultSetImpl implements Persistable {
 		jsonBuilder.add("size", this.size);
 		JsonArrayBuilder jsonColArray = Json.createArrayBuilder();
 		try {
-			for (Column column : getColumns()) {
-				jsonColArray.add(column.toJson());
+			if(getColumns() != null) {
+				for (Column column : getColumns()) {
+					jsonColArray.add(column.toJson());
+				}
 			}
 		} catch (ResultSetException e) {
 			// TODO Auto-generated catch block
@@ -842,5 +895,4 @@ public class FileResultSet extends ResultSetImpl implements Persistable {
 		return jsonBuilder.build();
 
 	}
-
 }

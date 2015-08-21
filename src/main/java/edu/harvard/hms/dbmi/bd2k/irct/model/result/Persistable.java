@@ -1,12 +1,32 @@
 package edu.harvard.hms.dbmi.bd2k.irct.model.result;
 
+import edu.harvard.hms.dbmi.bd2k.irct.model.result.exception.ResultSetException;
+
 /**
- * Interface used to donate a result set as being able to be persisted
+ * Interface used to designate a result set as being able to be persisted
  * 
  * @author Jeremy R. Easton-Marks
  *
  */
 public interface Persistable {
+	
+	/**
+	 * Load the Result Set from the location specified
+	 * 
+	 * @param location Location
+	 * @throws PersistableException 
+	 * @throws ResultSetException 
+	 */
+	public void load(String location) throws ResultSetException, PersistableException;
+	
+	/**
+	 * Returns if the result set can be loaded.
+	 * 
+	 * @param location Location of the Result Set
+	 * @return Available
+	 */
+	public boolean isAvailable(String location);
+	
 	/**
 	 * Returns if the current result set has been persisted.
 	 * 
@@ -30,6 +50,14 @@ public interface Persistable {
 	 * @throws PersistableException An error occur persisting the object
 	 */
 	public void persist() throws PersistableException;
+	
+	/**
+	 * Persists the result set to the long term storage
+	 * 
+	 * @param location Location
+	 * @throws PersistableException An error occur persisting the object
+	 */
+	public void persist(String location) throws PersistableException;
 
 	/**
 	 * Updates the current persisted state with any changes

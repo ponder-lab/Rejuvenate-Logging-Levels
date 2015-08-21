@@ -16,23 +16,41 @@
  */
 package edu.harvard.hms.dbmi.bd2k.irct.action.process;
 
+
+import edu.harvard.hms.dbmi.bd2k.irct.model.process.IRCTProcess;
+import edu.harvard.hms.dbmi.bd2k.irct.model.resource.ProcessResourceImplementationInterface;
 import edu.harvard.hms.dbmi.bd2k.irct.model.resource.Resource;
 import edu.harvard.hms.dbmi.bd2k.irct.model.result.ResultSet;
 
 public class ExecuteProcess implements ProcessAction {
+	private IRCTProcess process ;
+	private Resource resource;
+	private Long runId;
 	
-	public void setup(Resource resource, ResultSet... resultSets) {
-		// TODO Auto-generated method stub
-
+	@Override
+	public void setup(Resource resource, IRCTProcess process) {
+		this.resource = resource;
+		this.process = process;
+		
 	}
 	
+	@Override
 	public void run() {
-		// TODO Auto-generated method stub
-
+		runId = ((ProcessResourceImplementationInterface)resource.getImplementingInterface()).run(process);
 	}
 
+	@Override
 	public ResultSet getResults() {
-		// TODO Auto-generated method stub
-		return null;
+		return ((ProcessResourceImplementationInterface)resource.getImplementingInterface()).getResults(runId);
+	}
+
+	@Override
+	public IRCTProcess getProcess() {
+		return this.process;
+	}
+
+	@Override
+	public void setProcess(IRCTProcess process) {
+		this.process = process;
 	}
 }

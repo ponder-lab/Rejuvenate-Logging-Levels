@@ -66,11 +66,19 @@ public class Resource {
 	
 	@ManyToMany
 	private List<JoinType> supportedJoins;
+	
 	@ManyToMany
 	private List<PredicateType> supportedPredicates;
 
 	@Convert(converter = ResourceImplementationConverter.class)
 	private ResourceImplementationInterface implementingInterface;
+	
+	/**
+	 * Sets up the Resource and the implementing interface
+	 */
+	public void setup() {
+		implementingInterface.setup(this.parameters);
+	}
 
 	/**
 	 * Returns a JSONObject representation of the object. This returns only the
@@ -98,7 +106,7 @@ public class Resource {
 		JsonObjectBuilder jsonBuilder = Json.createObjectBuilder();
 		jsonBuilder.add("id", this.id);
 		jsonBuilder.add("name", this.name);
-		jsonBuilder.add("parameters", JsonUtilities.mapToJson(this.parameters));
+//		jsonBuilder.add("parameters", JsonUtilities.mapToJson(this.parameters));
 		jsonBuilder.add("ontologyType", this.ontologyType.toString());
 
 		JsonArrayBuilder joinArray = Json.createArrayBuilder();
@@ -113,9 +121,10 @@ public class Resource {
 			for (PredicateType predicate : this.supportedPredicates) {
 				predicateArray.add(predicate.getName());
 			}
-
-			jsonBuilder.add("implementation",
+			if(this.implementingInterface != null) {
+				jsonBuilder.add("implementation",
 					this.implementingInterface.getType());
+			}
 
 		} else {
 			for (JoinType join : this.supportedJoins) {
@@ -124,9 +133,10 @@ public class Resource {
 			for (PredicateType predicate : this.supportedPredicates) {
 				predicateArray.add(predicate.toJson(depth));
 			}
-
-			jsonBuilder.add("implementation",
+			if(this.implementingInterface != null) {
+				jsonBuilder.add("implementation",
 					this.implementingInterface.toJson(depth));
+			}
 		}
 
 		jsonBuilder.add("supportedJoins", joinArray.build());
@@ -138,13 +148,6 @@ public class Resource {
 	// -------------------------------------------------------------------------
 	// SETTERS AND GETTERS
 	// -------------------------------------------------------------------------
-	/**
-	 * Sets up the Resource and the implementing interface
-	 */
-	public void setup() {
-		implementingInterface.setup(this.parameters);
-	}
-
 	/**
 	 * Returns the id of the resource
 	 * 

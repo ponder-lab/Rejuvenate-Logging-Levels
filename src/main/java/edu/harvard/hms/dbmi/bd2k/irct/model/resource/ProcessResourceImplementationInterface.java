@@ -16,6 +16,9 @@
  */
 package edu.harvard.hms.dbmi.bd2k.irct.model.resource;
 
+import java.util.List;
+
+import edu.harvard.hms.dbmi.bd2k.irct.model.process.IRCTProcess;
 import edu.harvard.hms.dbmi.bd2k.irct.model.result.ResultSet;
 
 /**
@@ -32,7 +35,7 @@ public interface ProcessResourceImplementationInterface extends ResourceImplemen
 	 * @param pep Process to be run
 	 * @return The id of the process that is running
 	 */
-	Long run(Process pep);
+	Long run(IRCTProcess pep);
 
 	/**
 	 * Returns the results of the process if they are available
@@ -48,4 +51,11 @@ public interface ProcessResourceImplementationInterface extends ResourceImplemen
 	 * @return Resource State
 	 */
 	ResourceState getState();
+	
+	/**
+	 * Returns a list of the available process
+	 * 
+	 * @return Available Processes
+	 */
+	List<IRCTProcess> availableProcesses();
 }

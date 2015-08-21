@@ -16,6 +16,7 @@
  */
 package edu.harvard.hms.dbmi.bd2k.irct.model.resource;
 
+
 import edu.harvard.hms.dbmi.bd2k.irct.model.ontology.Path;
 import edu.harvard.hms.dbmi.bd2k.irct.model.query.Query;
 import edu.harvard.hms.dbmi.bd2k.irct.model.result.ResultSet;
@@ -38,7 +39,7 @@ public interface QueryResourceImplementationInterface extends
 	 * @return The id of the query that is running
 	 * @throws ResourceInterfaceException 
 	 */
-	Long run(Query qep) throws ResourceInterfaceException;
+	Long runQuery(Query qep) throws ResourceInterfaceException;
 
 	/**
 	 * Returns the results of the query if they are available
@@ -61,5 +62,4 @@ public interface QueryResourceImplementationInterface extends
 	 * Returns the the default entity that is returned with a query
 	 */
 	Path getReturnEntity();
-
 }

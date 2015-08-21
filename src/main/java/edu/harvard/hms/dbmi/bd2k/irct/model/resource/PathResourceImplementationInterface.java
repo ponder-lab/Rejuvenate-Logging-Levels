@@ -37,7 +37,21 @@ public interface PathResourceImplementationInterface extends
 	 * 
 	 * @return Root
 	 */
-	Path getPathRoot();
+	List<Path> getPathRoot();
+	
+	/**
+	 * Returns the Ontology relationships 
+	 * @return Ontology Relationships
+	 */
+	List<OntologyRelationship> relationships();
+	
+	/**
+	 * Turns a string into a relationship
+	 * 
+	 * @param relationship String Representation
+	 * @return Relationship
+	 */
+	OntologyRelationship getRelationshipFromString(String relationship);
 
 	/**
 	 * Given a path give all the associated paths of that type of relationship

@@ -2,7 +2,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>edu.harvard.hms.dbmi.bd2k.irct</groupId>
   <artifactId>IRCT-API</artifactId>
-  <version>0.0.1-SNAPSHOT</version>
+  <version>0.1</version>
   <name>INTER-RESOURCE COMMUNICATION TOOL : API</name>
    <description></description>
   <dependencies>
@@ -22,7 +22,7 @@
 		<dependency>
 			<groupId>edu.harvard.hms.dbmi.bd2k.irct</groupId>
 			<artifactId>IRCT-RI</artifactId>
-			<version>0.0.1-SNAPSHOT</version>
+			<version>0.1</version>
 		</dependency>
   </dependencies>
 </project>

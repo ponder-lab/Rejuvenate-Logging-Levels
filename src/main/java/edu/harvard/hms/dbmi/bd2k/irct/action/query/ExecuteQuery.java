@@ -33,7 +33,7 @@ public class ExecuteQuery implements QueryAction {
 	}
 
 	public void run() throws ResourceInterfaceException {
-		runId = ((QueryResourceImplementationInterface)resource.getImplementingInterface()).run(query);
+		runId = ((QueryResourceImplementationInterface)resource.getImplementingInterface()).runQuery(query);
 	}
 
 	public ResultSet getResults() throws ResourceInterfaceException {

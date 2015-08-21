@@ -1,4 +1,4 @@
-package edu.harvard.hms.dbmi.bd2k.irct.controller;
+package edu.harvard.hms.dbmi.bd2k.irct.exception;
 
 public class PredicateTypeNotSupported extends Exception {
 

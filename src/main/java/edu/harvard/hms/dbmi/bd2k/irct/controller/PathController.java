@@ -15,7 +15,15 @@ import edu.harvard.hms.dbmi.bd2k.irct.ri.exception.ResourceInterfaceException;
 @Stateless
 public class PathController {
 
-	public Path getPathRoot(Resource resource) {
+	public List<OntologyRelationship> getRelationships(Resource resource) {
+		return ((PathResourceImplementationInterface) resource.getImplementingInterface()).relationships();
+	}
+	
+	public OntologyRelationship getRelationshipFromString(Resource resource, String relationsShipName) {
+		return ((PathResourceImplementationInterface) resource.getImplementingInterface()).getRelationshipFromString(relationsShipName);
+	}
+	
+	public List<Path> getPathRoot(Resource resource) {
 		return ((PathResourceImplementationInterface) resource.getImplementingInterface()).getPathRoot();
 	}
 	

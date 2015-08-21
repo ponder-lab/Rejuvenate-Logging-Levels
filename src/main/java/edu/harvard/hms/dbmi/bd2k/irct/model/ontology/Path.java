@@ -45,10 +45,13 @@ public class Path {
 	private Map<OntologyRelationship, List<Path>> relationships;
 
 	private Map<String, String> attributes;
+	
+	private Map<String, Integer> counts;
 
 	public Path() {
 		relationships = new HashMap<OntologyRelationship, List<Path>>();
 		setAttributes(new HashMap<String, String>());
+		setCounts(new HashMap<String, Integer>());
 		this.definition = "";
 		this.concept = "";
 		this.conceptId = "";
@@ -105,6 +108,17 @@ public class Path {
 		}
 		jsonBuilder.add("relationships", relationshipsObject.build());
 		
+		JsonObjectBuilder countsObject = Json.createObjectBuilder();
+		for(String key : counts.keySet()) {
+			Integer value = counts.get(key);
+			if(value != null) {
+				countsObject.add(key, value);
+			}
+		}
+		
+		jsonBuilder.add("counts", countsObject.build());
+		
+		
 		JsonObjectBuilder attributesObject = Json.createObjectBuilder();
 		for(String key : attributes.keySet()) {
 			String value = attributes.get(key);
@@ -114,6 +128,8 @@ public class Path {
 		}
 		
 		jsonBuilder.add("attributes", attributesObject.build());
+		
+		
 
 		return jsonBuilder.build();
 
@@ -186,6 +202,14 @@ public class Path {
 
 	public void setAttributes(Map<String, String> attributes) {
 		this.attributes = attributes;
+	}
+
+	public Map<String, Integer> getCounts() {
+		return counts;
+	}
+
+	public void setCounts(Map<String, Integer> counts) {
+		this.counts = counts;
 	}
 
 }

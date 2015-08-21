@@ -16,7 +16,10 @@
  */
 package edu.harvard.hms.dbmi.bd2k.irct.model.query;
 
+import java.util.Map;
+
 import javax.json.Json;
+import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 
@@ -34,8 +37,7 @@ public class WhereClause extends ClauseAbstract {
 	private LogicalOperator logicalOperator;
 	private Path field;
 	private PredicateType predicateType;
-	private String value;
-	private String additionalValue;
+	private Map<String, String> values;
 
 	/**
 	 * Returns the subquery associated with the where clause
@@ -45,7 +47,7 @@ public class WhereClause extends ClauseAbstract {
 	public SubQuery getSubQuery() {
 		return subQuery;
 	}
-	
+
 	/**
 	 * Returns a JSONObject representation of the object. This returns only the
 	 * attributes associated with this object and not their representation.
@@ -72,30 +74,32 @@ public class WhereClause extends ClauseAbstract {
 		JsonObjectBuilder jsonBuilder = Json.createObjectBuilder();
 		jsonBuilder.add("id", super.getId());
 		jsonBuilder.add("logicalOperator", this.logicalOperator.toString());
-		
-		if(subQuery != null) {
-			if(depth > 1) {
+
+		if (subQuery != null) {
+			if (depth > 1) {
 				jsonBuilder.add("subQuery", this.subQuery.toJson(depth));
 			} else {
 				jsonBuilder.add("subQuery", this.subQuery.toJson());
 			}
 		} else if (field != null) {
-			if(depth > 1) {
+			if (depth > 1) {
 				jsonBuilder.add("field", this.field.toJson(depth));
 			} else {
 				jsonBuilder.add("field", this.field.getName());
 			}
 		}
-		
+
 		jsonBuilder.add("predicateType", predicateType.toJson(depth));
-		
-		if(value != null) {
-			jsonBuilder.add("value", this.value);
+
+		if (values != null) {
+			JsonArrayBuilder jsonValues = Json.createArrayBuilder();
+			for(String valueKey : this.values.keySet()) {
+				JsonObjectBuilder valueInstance = Json.createObjectBuilder();
+				valueInstance.add(valueKey, this.values.get(valueKey));
+			}
+			jsonBuilder.add("value", jsonValues);
 		}
-		if(additionalValue != null) {
-			jsonBuilder.add("additionalValue", this.additionalValue);
-		}
-		
+
 		return jsonBuilder.build();
 	}
 
@@ -171,13 +175,13 @@ public class WhereClause extends ClauseAbstract {
 	}
 
 	/**
-	 * Returns the value that the predicate type operates against if it is
+	 * Returns the values that the predicate type operates against if it is
 	 * needed.
 	 * 
 	 * @return Value
 	 */
-	public String getValue() {
-		return value;
+	public Map<String, String> getValues() {
+		return values;
 	}
 
 	/**
@@ -186,29 +190,8 @@ public class WhereClause extends ClauseAbstract {
 	 * @param value
 	 *            Value
 	 */
-	public void setValue(String value) {
-		this.value = value;
-	}
-
-	/**
-	 * Returns the additional value that is associated with a where clause if it
-	 * is needed.
-	 * 
-	 * @return Additional Value
-	 */
-	public String getAdditionalValue() {
-		return additionalValue;
-	}
-
-	/**
-	 * Sets the additional value that is associated with a where clause if it is
-	 * needed.
-	 * 
-	 * @param additionalValue
-	 *            Additional Value
-	 */
-	public void setAdditionalValue(String additionalValue) {
-		this.additionalValue = additionalValue;
+	public void setValues(Map<String, String> values) {
+		this.values = values;
 	}
 
 }

@@ -16,46 +16,71 @@
  */
 package edu.harvard.hms.dbmi.bd2k.irct.controller;
 
-import java.util.concurrent.Future;
+import java.util.Date;
 import java.util.logging.Logger;
 
-import javax.ejb.AsyncResult;
 import javax.ejb.Asynchronous;
 import javax.ejb.Stateless;
 import javax.inject.Inject;
+import javax.persistence.EntityManager;
+import javax.persistence.EntityManagerFactory;
 
+import edu.harvard.hms.dbmi.bd2k.irct.action.ExecutionPlan;
+import edu.harvard.hms.dbmi.bd2k.irct.action.QueryExecutable;
 import edu.harvard.hms.dbmi.bd2k.irct.action.query.ExecuteQuery;
 import edu.harvard.hms.dbmi.bd2k.irct.model.query.Query;
+import edu.harvard.hms.dbmi.bd2k.irct.model.result.Persistable;
+import edu.harvard.hms.dbmi.bd2k.irct.model.result.PersistableException;
+import edu.harvard.hms.dbmi.bd2k.irct.model.result.Result;
 import edu.harvard.hms.dbmi.bd2k.irct.model.result.ResultSet;
-import edu.harvard.hms.dbmi.bd2k.irct.model.result.exception.ResultSetException;
-import edu.harvard.hms.dbmi.bd2k.irct.ri.exception.ResourceInterfaceException;
+import edu.harvard.hms.dbmi.bd2k.irct.model.result.ResultStatus;
 
 @Stateless
 public class ExecutionController {
-	
+
 	@Inject
 	Logger log;
-	
-	
-	@Asynchronous
-	public Future<String> runQuery(Query query) {
+
+	@Inject
+	private EntityManagerFactory objectEntityManager;
+
+	public Long runQuery(Query query) throws PersistableException {
 		log.info("Start: " + query.getId());
-		String resultSize = "";
-		try {
-			ExecuteQuery eq = new ExecuteQuery();
-			eq.setQuery(query);
-			eq.run();
-			ResultSet rs = eq.getResults();
-			try {
-				resultSize = resultSize + rs.getSize();
-			} catch (ResultSetException e) {
-				e.printStackTrace();
-			}
-			Thread.sleep(10000);
-		} catch (InterruptedException | ResourceInterfaceException e) {
-			e.printStackTrace();
-		}
-		log.info("End: " + query.getId());
-		return new AsyncResult<String>("Complete: " + resultSize);
+		Result newResult = new Result();
+
+		EntityManager oem = objectEntityManager.createEntityManager();
+		oem.persist(newResult);
+
+		ExecuteQuery eq = new ExecuteQuery();
+		eq.setup(query.getResources().get(0), query);
+
+		QueryExecutable qe = new QueryExecutable();
+		qe.setup(eq);
+
+		ExecutionPlan ep = new ExecutionPlan();
+		ep.setup(qe);
+
+		// ep.run();
+		runExecutionPlan(ep, newResult);
+
+		log.info("Stop: " + query.getId());
+
+		return newResult.getId();
+	}
+
+	@Asynchronous
+	public void runExecutionPlan(ExecutionPlan executionPlan, Result result)
+			throws PersistableException {
+
+		result.setRunTime(new Date());
+		executionPlan.run();
+
+		ResultSet rs = executionPlan.getResults();
+		((Persistable) rs).persist("" + result.getId());
+		result.setResultSetLocation("" + result.getId());
+		result.setImplementingResultSet(rs);
+		result.setResultStatus(ResultStatus.Available);
+		
+
 	}
 }
