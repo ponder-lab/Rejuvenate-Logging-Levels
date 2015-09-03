@@ -217,10 +217,20 @@ public class PredicateType implements Serializable {
 		this.implementingInterface = implementingInterface;
 	}
 
+	/**
+	 * Returns if the predicate that is default for that resource
+	 * 
+	 * @return Default predicate
+	 */
 	public boolean isDefaultPredicate() {
 		return defaultPredicate;
 	}
 
+	/**
+	 * Sets the predicate that is the default for that resource
+	 * 
+	 * @param defaultPredicate Default predicate
+	 */
 	public void setDefaultPredicate(boolean defaultPredicate) {
 		this.defaultPredicate = defaultPredicate;
 	}

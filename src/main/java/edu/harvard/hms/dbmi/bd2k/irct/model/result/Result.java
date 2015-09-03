@@ -188,7 +188,7 @@ public class Result {
 	/**
 	 * Sets the class that is used to implement the result status
 	 * 
-	 * @param implementingResultSet
+	 * @param implementingResultSet Implementing Result Set
 	 */
 	public void setImplementingResultSet(ResultSet implementingResultSet) {
 		this.implementingResultSet = implementingResultSet;

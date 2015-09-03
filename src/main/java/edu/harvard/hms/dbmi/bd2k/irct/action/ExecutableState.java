@@ -16,6 +16,36 @@
  */
 package edu.harvard.hms.dbmi.bd2k.irct.action;
 
+/**
+ * An enumeration of the available executable states
+ * 
+ * @author Jeremy R. Easton-Marks
+ *
+ */
 public enum ExecutableState {
-	CREATED, WAITING, RUNNING, BLOCKED, TERMINATED, COMPLETED
+	/**
+	 * Created but not running
+	 */
+	CREATED,
+	/**
+	 * Waiting for the next action
+	 */
+	WAITING,
+	/**
+	 * Currently running
+	 * 
+	 */
+	RUNNING,
+	/**
+	 * Currently blocked
+	 */
+	BLOCKED,
+	/**
+	 * The executable has been terminated
+	 */
+	TERMINATED, 
+	/**
+	 * The executable has completed
+	 */
+	COMPLETED
 }

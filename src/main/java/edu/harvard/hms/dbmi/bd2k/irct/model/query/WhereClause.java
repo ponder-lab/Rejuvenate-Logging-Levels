@@ -187,7 +187,7 @@ public class WhereClause extends ClauseAbstract {
 	/**
 	 * Sets the value that the predicate type operates against if it is needed.
 	 * 
-	 * @param value
+	 * @param values
 	 *            Value
 	 */
 	public void setValues(Map<String, String> values) {

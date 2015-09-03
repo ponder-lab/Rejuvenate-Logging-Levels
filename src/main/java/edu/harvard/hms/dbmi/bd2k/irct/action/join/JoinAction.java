@@ -27,6 +27,7 @@ import edu.harvard.hms.dbmi.bd2k.irct.model.result.Joinable;
  * The JoinAction interface extends the Action interface for Joins. All joins
  * must implement this interface.
  * 
+ * 
  * @author Jeremy R. Easton-Marks
  *
  */

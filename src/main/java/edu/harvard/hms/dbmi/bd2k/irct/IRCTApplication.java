@@ -61,6 +61,11 @@ public class IRCTApplication {
 
 	private EntityManager oem;
 
+	/**
+	 * Initiates the IRCT Application and loading of the joins, resources, and
+	 * predicates.
+	 * 
+	 */
 	@PostConstruct
 	public void init() {
 		log.info("Starting IRCT Application");

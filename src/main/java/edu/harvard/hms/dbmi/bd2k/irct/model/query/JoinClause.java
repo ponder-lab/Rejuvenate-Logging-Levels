@@ -100,7 +100,7 @@ public class JoinClause extends ClauseAbstract {
 
 	/**
 	 * Sets the second subQuery
-	 * @param subQuery2
+	 * @param subQuery2 Sub Query 2
 	 */
 	public void setSubQuery2(SubQuery subQuery2) {
 		this.subQuery2 = subQuery2;

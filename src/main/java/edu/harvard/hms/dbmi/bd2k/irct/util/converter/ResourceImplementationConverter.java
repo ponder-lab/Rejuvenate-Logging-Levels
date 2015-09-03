@@ -32,6 +32,7 @@ import edu.harvard.hms.dbmi.bd2k.irct.model.resource.ResourceImplementationInter
 public class ResourceImplementationConverter implements
 		AttributeConverter<ResourceImplementationInterface, String> {
 
+	@Override
 	public String convertToDatabaseColumn(
 			ResourceImplementationInterface joinAction) {
 		if (joinAction != null) {
@@ -40,6 +41,7 @@ public class ResourceImplementationConverter implements
 		return null;
 	}
 
+	@Override
 	public ResourceImplementationInterface convertToEntityAttribute(
 			String className) {
 		if (className != null) {

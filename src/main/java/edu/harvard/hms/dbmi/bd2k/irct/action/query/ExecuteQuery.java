@@ -22,6 +22,11 @@ import edu.harvard.hms.dbmi.bd2k.irct.model.resource.Resource;
 import edu.harvard.hms.dbmi.bd2k.irct.model.result.ResultSet;
 import edu.harvard.hms.dbmi.bd2k.irct.ri.exception.ResourceInterfaceException;
 
+/**
+ * Implements the QueryAction interface to run a query on a specific instance
+ * @author Jeremy R. Easton-Marks
+ *
+ */
 public class ExecuteQuery implements QueryAction {
 	private Long runId;
 	private Query query;

@@ -16,7 +16,23 @@
  */
 package edu.harvard.hms.dbmi.bd2k.irct.action;
 
+/**
+ * The binary tree executable interface provides an implementation for branches
+ * that can have two different child executables.
+ * 
+ * @author Jeremy R. Easton-Marks
+ *
+ */
 public interface BinaryTreeExecutable {
+	/**
+	 * Returns the left executable
+	 * @return Left Executable
+	 */
 	Executable getLeft();
+
+	/**
+	 * Returns the right executable
+	 * @return Right Executable
+	 */
 	Executable getRight();
 }

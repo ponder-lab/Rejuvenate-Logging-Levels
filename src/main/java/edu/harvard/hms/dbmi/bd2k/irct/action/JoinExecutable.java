@@ -19,6 +19,16 @@ package edu.harvard.hms.dbmi.bd2k.irct.action;
 import edu.harvard.hms.dbmi.bd2k.irct.model.resource.Resource;
 import edu.harvard.hms.dbmi.bd2k.irct.model.result.ResultSet;
 
+/**
+ * The query executable implements the Executable interface for executing
+ * local joins. It also supports binary tree executions through the
+ * BinaryTreeExecutable interface.
+ * 
+ * NOTE: The current implementation has not been implemented
+ * 
+ * @author Jeremy R. Easton-Marks
+ *
+ */
 public class JoinExecutable implements Executable, BinaryTreeExecutable {
 	private Resource resource;
 	

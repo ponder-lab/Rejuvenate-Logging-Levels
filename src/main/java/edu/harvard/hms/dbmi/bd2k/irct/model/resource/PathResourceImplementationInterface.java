@@ -58,8 +58,8 @@ public interface PathResourceImplementationInterface extends
 	 * 
 	 * @param path Path
 	 * @param relationship Relationships
-	 * @return Paths
-	 * @throws ResourceInterfaceException 
+	 * @return Paths 
+	 * @throws ResourceInterfaceException A resource exception occurred 
 	 */
 	List<Path> getPathRelationship(Path path, OntologyRelationship relationship) throws ResourceInterfaceException;
 

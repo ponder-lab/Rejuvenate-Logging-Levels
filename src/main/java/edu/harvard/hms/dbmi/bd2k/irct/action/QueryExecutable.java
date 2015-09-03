@@ -20,16 +20,25 @@ import edu.harvard.hms.dbmi.bd2k.irct.model.resource.Resource;
 import edu.harvard.hms.dbmi.bd2k.irct.model.result.ResultSet;
 import edu.harvard.hms.dbmi.bd2k.irct.ri.exception.ResourceInterfaceException;
 
+/**
+ * The query executable implements the Executable interface for executing
+ * queries.
+ * 
+ * NOTE: The current implementation does not support any child processes.
+ * 
+ * @author Jeremy R. Easton-Marks
+ *
+ */
 public class QueryExecutable implements Executable {
 	private Resource resource;
-	
+
 	private ExecutableState state;
 	private Action action;
 
 	public void setup(Action action) {
 		this.action = action;
 		this.state = ExecutableState.CREATED;
-		
+
 	}
 
 	public void run() throws ResourceInterfaceException {
@@ -45,10 +54,11 @@ public class QueryExecutable implements Executable {
 	public ExecutableState getState() {
 		return this.state;
 	}
-	
+
 	public void setResource(Resource resource) {
 		this.resource = resource;
 	}
+
 	public Resource getResource() {
 		return this.resource;
 	}

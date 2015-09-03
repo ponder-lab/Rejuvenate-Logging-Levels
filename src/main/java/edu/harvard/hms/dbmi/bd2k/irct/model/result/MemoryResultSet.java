@@ -314,10 +314,12 @@ public class MemoryResultSet extends ResultSetImpl {
 	}
 
 	// OBJECT
+	@Override
 	public Object getObject(int columnIndex) throws ResultSetException {
 		return (Object) getCell(columnIndex);
 	}
 
+	@Override
 	public void updateObject(int columnIndex, Object obj)
 			throws ResultSetException {
 		setCell(columnIndex, obj);

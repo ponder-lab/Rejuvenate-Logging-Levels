@@ -19,13 +19,24 @@ package edu.harvard.hms.dbmi.bd2k.irct.action;
 import edu.harvard.hms.dbmi.bd2k.irct.model.resource.Resource;
 import edu.harvard.hms.dbmi.bd2k.irct.model.result.ResultSet;
 
+/**
+ * The query executable implements the Executable interface for executing
+ * processes. It also supports binary tree executions through the
+ * BinaryTreeExecutable interface.
+ * 
+ * NOTE: The current implementation has not been implemented
+ * 
+ * @author Jeremy R. Easton-Marks
+ *
+ */
 public class ProcessExecutable implements Executable, BinaryTreeExecutable {
 	private Resource resource;
+
 	public void setup(Action action) {
 		// TODO Auto-generated method stub
-		
+
 	}
-	
+
 	public void run() {
 		// TODO Auto-generated method stub
 
@@ -54,6 +65,7 @@ public class ProcessExecutable implements Executable, BinaryTreeExecutable {
 	public void setResource(Resource resource) {
 		this.resource = resource;
 	}
+
 	public Resource getResource() {
 		return this.resource;
 	}

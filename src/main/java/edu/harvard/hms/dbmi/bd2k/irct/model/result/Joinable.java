@@ -83,7 +83,7 @@ public interface Joinable {
 	/**
 	 * Sets the designated columns by index to be joined on
 	 * 
-	 * @param columnIndex
+	 * @param columnIndexes
 	 *            the column indexes to join on
 	 * @throws ResultSetException
 	 *             If a ResultSetException occurs
@@ -93,7 +93,7 @@ public interface Joinable {
 	/**
 	 * Sets the designated column label to be joined on
 	 * 
-	 * @param columnIndex
+	 * @param columnLabel
 	 *            the column index to join on
 	 * @throws ResultSetException
 	 *             If a ResultSetException occurs
@@ -103,7 +103,7 @@ public interface Joinable {
 	/**
 	 * Sets the designated columns by label to be joined on
 	 * 
-	 * @param columnIndex
+	 * @param columnLabels
 	 *            the column labels to join on
 	 * @throws ResultSetException
 	 *             If a ResultSetException occurs

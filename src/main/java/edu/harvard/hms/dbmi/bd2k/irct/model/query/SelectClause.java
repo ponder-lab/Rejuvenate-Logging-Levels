@@ -81,7 +81,7 @@ public class SelectClause extends ClauseAbstract {
 	/**
 	 * Sets the parameters for the select clause
 	 * 
-	 * @param parameters
+	 * @param parameter
 	 *            Select parameters
 	 */
 	public void setParameters(Path parameter) {

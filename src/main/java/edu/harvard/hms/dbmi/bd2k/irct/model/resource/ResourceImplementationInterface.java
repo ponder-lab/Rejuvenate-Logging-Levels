@@ -23,6 +23,7 @@ import javax.json.JsonObject;
 import edu.harvard.hms.dbmi.bd2k.irct.model.ontology.Path;
 
 /**
+ * Provides a base interface that is used by a resource implementation 
  * 
  * @author Jeremy R. Easton-Marks
  *

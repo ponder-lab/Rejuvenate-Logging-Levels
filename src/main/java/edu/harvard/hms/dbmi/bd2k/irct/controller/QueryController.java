@@ -11,6 +11,7 @@ import edu.harvard.hms.dbmi.bd2k.irct.IRCTApplication;
 import edu.harvard.hms.dbmi.bd2k.irct.exception.ClauseIsNotTheCorrectType;
 import edu.harvard.hms.dbmi.bd2k.irct.exception.ClauseNotFoundException;
 import edu.harvard.hms.dbmi.bd2k.irct.exception.JoinTypeNotSupported;
+import edu.harvard.hms.dbmi.bd2k.irct.exception.LogicalOperatorNotFound;
 import edu.harvard.hms.dbmi.bd2k.irct.exception.PredicateTypeNotSupported;
 import edu.harvard.hms.dbmi.bd2k.irct.exception.ResourceNotFoundException;
 import edu.harvard.hms.dbmi.bd2k.irct.exception.SubQueryNotFoundException;
@@ -26,6 +27,17 @@ import edu.harvard.hms.dbmi.bd2k.irct.model.query.SubQuery;
 import edu.harvard.hms.dbmi.bd2k.irct.model.query.WhereClause;
 import edu.harvard.hms.dbmi.bd2k.irct.model.resource.Resource;
 
+/**
+ * This a stateful controller that creates queries and ensures that the
+ * predicates, selects, and other attributes added to them are created
+ * correctly.
+ * 
+ * NOTE: NOT ALL CHECKS ARE IMPLEMENTED NOTE: NOT ALL METHODS HAVE BEEN FULLY
+ * IMPLEMENTED AND VETTED
+ * 
+ * @author Jeremy R. Easton-Marks
+ *
+ */
 @Stateful
 public class QueryController {
 
@@ -70,8 +82,8 @@ public class QueryController {
 	 * 
 	 * @param sqId
 	 *            The subQuery Id
-	 * @param parameters
-	 *            An array of parameters
+	 * @param parameter
+	 *            A parameters
 	 * @return The select clause id
 	 * @throws SubQueryNotFoundException
 	 */
@@ -87,6 +99,25 @@ public class QueryController {
 		return sc.getId();
 	}
 
+	/**
+	 * Adds a join clause between to different subqueries
+	 *
+	 * NOTE: NOT CURRENTLY TESTED OR FULLY IMPEMENTED
+	 *
+	 * 
+	 * @param sqId1
+	 * @param sqId2
+	 * @param joinType
+	 * @param fieldId1
+	 * @param fieldId2
+	 * @param relationship
+	 * @param joinId
+	 * @return
+	 * @throws ClauseNotFoundException
+	 * @throws ClauseIsNotTheCorrectType
+	 * @throws SubQueryNotFoundException
+	 * @throws JoinTypeNotSupported
+	 */
 	public Long addJoinClause(Long sqId1, Long sqId2, String joinType,
 			Path fieldId1, Path fieldId2, String relationship, Long joinId)
 			throws ClauseNotFoundException, ClauseIsNotTheCorrectType,
@@ -118,6 +149,35 @@ public class QueryController {
 		return joinId;
 	}
 
+	/**
+	 * Adds a where clause to a given query or subquery
+	 * 
+	 * @param sqId
+	 *            Subquery Id if applicable
+	 * @param logicalOperator
+	 *            Logical Operator
+	 * @param field
+	 *            Field
+	 * @param predicateName
+	 *            Name of the predicate
+	 * @param values
+	 *            A map of values
+	 * @param whereId
+	 *            If replacing an existing one
+	 * @param resource
+	 *            Resource to run against
+	 * @return The where clause id
+	 * @throws ClauseNotFoundException
+	 *             Clause not found
+	 * @throws ClauseIsNotTheCorrectType
+	 *             Clause is not of the correct type
+	 * @throws SubQueryNotFoundException
+	 *             Could not find the subQuery requested
+	 * @throws LogicalOperatorNotFound
+	 *             Logical Operator not found
+	 * @throws PredicateTypeNotSupported
+	 *             Predicate type is not supported by the resource
+	 */
 	public Long addWhereClause(Long sqId, String logicalOperator, Path field,
 			String predicateName, Map<String, String> values, Long whereId,
 			Resource resource) throws ClauseNotFoundException,
@@ -157,11 +217,23 @@ public class QueryController {
 		return wc.getId();
 	}
 
+	/**
+	 * Cancels the query
+	 * 
+	 */
 	public void cancelQuery() {
 		this.query = null;
 		this.lastId = 0L;
 	}
 
+	/**
+	 * Deletes the last clause
+	 * 
+	 * @param clauseId
+	 *            Clause Id
+	 * @throws ClauseNotFoundException
+	 *             Clause not found
+	 */
 	public void deleteClause(Long clauseId) throws ClauseNotFoundException {
 		if (query.getClauses().containsKey(clauseId)) {
 			query.removeClause(clauseId);
@@ -172,14 +244,34 @@ public class QueryController {
 		}
 	}
 
+	/**
+	 * Returns the query
+	 * 
+	 * @return Query
+	 */
 	public Query getQuery() {
 		return query;
 	}
 
+	/**
+	 * Sets the query
+	 * 
+	 * @param query
+	 *            Query
+	 */
 	public void setQuery(Query query) {
 		this.query = query;
 	}
 
+	/**
+	 * Returns the subquery
+	 * 
+	 * @param sqId
+	 *            The subquery id
+	 * @return The Subquery
+	 * @throws SubQueryNotFoundException
+	 *             No subQuery found
+	 */
 	public SubQuery findSubQuery(Long sqId) throws SubQueryNotFoundException {
 		SubQuery sq = query.getSubQueries().get(sqId);
 		if (sq == null) {
@@ -239,35 +331,36 @@ public class QueryController {
 
 	}
 
-	private void checkSubQueryPredicateSupport(SubQuery sq, LogicalOperator lo,
-			Path field, PredicateType predicate, String value,
-			String additionalValue) throws PredicateTypeNotSupported {
-		boolean supported = false;
-		List<Resource> resources = sq.getResources();
-		if (resources.isEmpty()) {
-			resources = sq.getParent().getResources();
-		}
+	// private void checkSubQueryPredicateSupport(SubQuery sq, LogicalOperator
+	// lo,
+	// Path field, PredicateType predicate, String value,
+	// String additionalValue) throws PredicateTypeNotSupported {
+	// boolean supported = false;
+	// List<Resource> resources = sq.getResources();
+	// if (resources.isEmpty()) {
+	// resources = sq.getParent().getResources();
+	// }
 
-		// for (Resource resource : resources) {
-		// if (resource.getSupportedPredicates().contains(predicate)) {
-		// if (predicate.isRequiresValue()) {
-		// if (predicate.isRequiresAdditionalValue()) {
-		// if (predicate.supportsDataType(field.getDataType())) {
-		// supported = true;
-		// }
-		// }
-		// } else {
-		// supported = true;
-		// }
+	// for (Resource resource : resources) {
+	// if (resource.getSupportedPredicates().contains(predicate)) {
+	// if (predicate.isRequiresValue()) {
+	// if (predicate.isRequiresAdditionalValue()) {
+	// if (predicate.supportsDataType(field.getDataType())) {
+	// supported = true;
+	// }
+	// }
+	// } else {
+	// supported = true;
+	// }
 
-		// }
-		// }
+	// }
+	// }
 
-		// if (!supported) {
-		// throw new PredicateTypeNotSupported(predicate.getName());
-		// }
+	// if (!supported) {
+	// throw new PredicateTypeNotSupported(predicate.getName());
+	// }
 
-	}
+	// }
 
 	private JoinType findJoinType(String joinType) throws JoinTypeNotSupported {
 		JoinType jt = irctApp.getSupportedJoinTypes().get(joinType);
@@ -302,17 +395,17 @@ public class QueryController {
 		return true;
 	}
 
-	private ClauseAbstract findClause(Long clauseId,
-			Class<ClauseAbstract> clauseType) throws ClauseIsNotTheCorrectType,
-			ClauseNotFoundException {
-		ClauseAbstract clause = query.getClauses().get(clauseId);
-		if (clause == null) {
-			throw new ClauseNotFoundException(clauseId);
-		}
-		if (!clauseType.isInstance(clause)) {
-			throw new ClauseIsNotTheCorrectType(clauseId);
-		}
-
-		return clause;
-	}
+	// private ClauseAbstract findClause(Long clauseId,
+	// Class<ClauseAbstract> clauseType) throws ClauseIsNotTheCorrectType,
+	// ClauseNotFoundException {
+	// ClauseAbstract clause = query.getClauses().get(clauseId);
+	// if (clause == null) {
+	// throw new ClauseNotFoundException(clauseId);
+	// }
+	// if (!clauseType.isInstance(clause)) {
+	// throw new ClauseIsNotTheCorrectType(clauseId);
+	// }
+	//
+	// return clause;
+	// }
 }

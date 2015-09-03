@@ -26,6 +26,10 @@ public class RowSetExeception extends ResultSetException {
 
 	private static final long serialVersionUID = 7742706330823781183L;
 	
+	/**
+	 * Creates a row set exception and pass in a message describing it
+	 * @param message Message
+	 */
 	public RowSetExeception(String message) {
 		super(message);
 	}

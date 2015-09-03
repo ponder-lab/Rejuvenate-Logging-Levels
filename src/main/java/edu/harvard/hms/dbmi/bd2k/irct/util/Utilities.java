@@ -6,7 +6,21 @@ import org.apache.commons.lang3.ArrayUtils;
 
 import edu.harvard.hms.dbmi.bd2k.irct.model.ontology.Path;
 
+/**
+ * A set of utilities for the IRCT
+ * 
+ * @author Jeremy R. Easton-Marks
+ *
+ */
 public class Utilities {
+	
+	/**
+	 * Traverses the paths
+	 * 
+	 * @param currentPosition Current position
+	 * @param components Components 
+	 * @return Path
+	 */
 	public static Path traversePath(Path currentPosition, String[] components){
 		
 		if(currentPosition.getName().equals(components[0])) {

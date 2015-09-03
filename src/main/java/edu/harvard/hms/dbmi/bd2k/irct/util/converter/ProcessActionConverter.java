@@ -32,6 +32,7 @@ import edu.harvard.hms.dbmi.bd2k.irct.action.process.ProcessAction;
 public class ProcessActionConverter implements
 		AttributeConverter<ProcessAction, String> {
 
+	@Override
 	public String convertToDatabaseColumn(ProcessAction joinAction) {
 		if (joinAction != null) {
 			return joinAction.getClass().getName();
@@ -39,6 +40,7 @@ public class ProcessActionConverter implements
 		return null;
 	}
 
+	@Override
 	public ProcessAction convertToEntityAttribute(String className) {
 		if (className != null) {
 			ClassLoader cl = ProcessActionConverter.class.getClassLoader();

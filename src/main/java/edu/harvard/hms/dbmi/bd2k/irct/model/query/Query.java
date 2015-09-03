@@ -179,7 +179,7 @@ public class Query {
 	 * Sets a map of Clauses where the key is the clause id, and the Clause is
 	 * the value
 	 * 
-	 * @param clauses
+	 * @param clauses Map of Clauses
 	 */
 	public void setClauses(LinkedHashMap<Long, ClauseAbstract> clauses) {
 		this.clauses = clauses;

@@ -37,7 +37,7 @@ public interface QueryResourceImplementationInterface extends
 	 * @param qep
 	 *            Query to be run
 	 * @return The id of the query that is running
-	 * @throws ResourceInterfaceException 
+	 * @throws ResourceInterfaceException A resource exception occurred
 	 */
 	Long runQuery(Query qep) throws ResourceInterfaceException;
 
@@ -47,7 +47,7 @@ public interface QueryResourceImplementationInterface extends
 	 * @param queryId
 	 *            Query ID
 	 * @return Results
-	 * @throws ResourceInterfaceException 
+	 * @throws ResourceInterfaceException A resource exception occurred
 	 */
 	ResultSet getResults(Long queryId) throws ResourceInterfaceException;
 

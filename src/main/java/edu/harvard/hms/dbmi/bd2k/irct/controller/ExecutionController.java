@@ -30,11 +30,20 @@ import edu.harvard.hms.dbmi.bd2k.irct.action.QueryExecutable;
 import edu.harvard.hms.dbmi.bd2k.irct.action.query.ExecuteQuery;
 import edu.harvard.hms.dbmi.bd2k.irct.model.query.Query;
 import edu.harvard.hms.dbmi.bd2k.irct.model.result.Persistable;
-import edu.harvard.hms.dbmi.bd2k.irct.model.result.PersistableException;
 import edu.harvard.hms.dbmi.bd2k.irct.model.result.Result;
 import edu.harvard.hms.dbmi.bd2k.irct.model.result.ResultSet;
 import edu.harvard.hms.dbmi.bd2k.irct.model.result.ResultStatus;
+import edu.harvard.hms.dbmi.bd2k.irct.model.result.exception.PersistableException;
 
+/**
+ * The execution controller is a stateless controller that manages the
+ * executions of different processes, queries, and joins by creating an
+ * execution plan and running it.
+ * 
+ * 
+ * @author Jeremy R. Easton-Marks
+ *
+ */
 @Stateless
 public class ExecutionController {
 
@@ -44,6 +53,15 @@ public class ExecutionController {
 	@Inject
 	private EntityManagerFactory objectEntityManager;
 
+	/**
+	 * Run a query by creating an execution plan
+	 * 
+	 * @param query
+	 *            Query
+	 * @return Result Id
+	 * @throws PersistableException
+	 *             An error occurred
+	 */
 	public Long runQuery(Query query) throws PersistableException {
 		log.info("Start: " + query.getId());
 		Result newResult = new Result();
@@ -68,6 +86,12 @@ public class ExecutionController {
 		return newResult.getId();
 	}
 
+	/**
+	 * 
+	 * @param executionPlan
+	 * @param result
+	 * @throws PersistableException
+	 */
 	@Asynchronous
 	public void runExecutionPlan(ExecutionPlan executionPlan, Result result)
 			throws PersistableException {
@@ -80,7 +104,6 @@ public class ExecutionController {
 		result.setResultSetLocation("" + result.getId());
 		result.setImplementingResultSet(rs);
 		result.setResultStatus(ResultStatus.Available);
-		
 
 	}
 }

@@ -27,6 +27,16 @@ import edu.harvard.hms.dbmi.bd2k.irct.model.result.MemoryResultSet;
 import edu.harvard.hms.dbmi.bd2k.irct.model.result.ResultSet;
 import edu.harvard.hms.dbmi.bd2k.irct.model.result.exception.ResultSetException;
 
+/**
+ * Performs a inner join between two result sets that implements the
+ * Joinable interface
+ * 
+ * NOTE: Currently returns a MemoryResultSet which may limit the size of joins
+ * that can be performed
+ * 
+ * @author Jeremy R. Easton-Marks
+ *
+ */
 public class InnerJoin implements JoinAction {
 	ResultSet rs1;
 	int rs1MatchIndex;

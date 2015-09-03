@@ -28,6 +28,7 @@ import edu.harvard.hms.dbmi.bd2k.irct.model.ontology.DataType;
 import edu.harvard.hms.dbmi.bd2k.irct.model.result.Column;
 import edu.harvard.hms.dbmi.bd2k.irct.model.result.ResultSetImpl;
 import edu.harvard.hms.dbmi.bd2k.irct.model.result.Row;
+import edu.harvard.hms.dbmi.bd2k.irct.model.result.exception.PersistableException;
 import edu.harvard.hms.dbmi.bd2k.irct.model.result.exception.ResultSetException;
 import edu.harvard.hms.dbmi.bd2k.irct.model.result.exception.RowSetExeception;
 
@@ -356,8 +357,6 @@ public class FileResultSet extends ResultSetImpl implements Persistable {
 				char charRead = (char) readByte;
 
 				if ((charRead == '\r') || (charRead == '\n')) {
-//					row.setColumn(currentColumn, getColumn(currentColumn)
-//							.getDataType().fromBytes(line.array()));
 					row.setColumn(currentColumn, getColumn(currentColumn)
 							.getDataType().fromBytes(Arrays.copyOf(line.array(), line.position())));
 					line.clear();
@@ -370,8 +369,6 @@ public class FileResultSet extends ResultSetImpl implements Persistable {
 					// If a delimiter is found and the current position is
 					// outside a quote
 
-//					row.setColumn(currentColumn, getColumn(currentColumn)
-//							.getDataType().fromBytes(line.array()));
 					row.setColumn(currentColumn, getColumn(currentColumn)
 							.getDataType().fromBytes(Arrays.copyOf(line.array(), line.position())));
 					currentColumn++;

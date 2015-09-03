@@ -41,8 +41,6 @@ public interface ResultSet {
 	 * Returns the status of the connection to the datasource
 	 * 
 	 * @return true if closed
-	 * @throws ResultSetException
-	 *             If a ResultSetException occurs
 	 */
 	boolean isClosed();
 
@@ -97,7 +95,7 @@ public interface ResultSet {
 	/**
 	 * Moves the cursor a given number of rows forward
 	 * 
-	 * @param row
+	 * @param rows
 	 *            The number of rows to move forward
 	 * @return true if the cursor moved to the new row
 	 * @throws ResultSetException
@@ -109,6 +107,8 @@ public interface ResultSet {
 	 * Moves the cursor to the previous row in the ResultSet object
 	 * 
 	 * @return true if the cursor moved to the previous row, false otherwise
+	 * @throws ResultSetException
+	 *             If a ResultSetException occurs
 	 */
 	boolean previous() throws ResultSetException;
 

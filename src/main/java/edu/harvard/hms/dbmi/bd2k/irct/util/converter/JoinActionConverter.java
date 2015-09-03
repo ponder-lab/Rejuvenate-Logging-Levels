@@ -32,6 +32,7 @@ import edu.harvard.hms.dbmi.bd2k.irct.action.join.JoinAction;
 public class JoinActionConverter implements
 		AttributeConverter<JoinAction, String> {
 
+	@Override
 	public String convertToDatabaseColumn(JoinAction joinAction) {
 		if (joinAction != null) {
 			return joinAction.getClass().getName();
@@ -39,6 +40,7 @@ public class JoinActionConverter implements
 		return null;
 	}
 
+	@Override
 	public JoinAction convertToEntityAttribute(String className) {
 		if (className != null) {
 			ClassLoader cl = JoinActionConverter.class.getClassLoader();

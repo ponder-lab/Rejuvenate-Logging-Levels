@@ -38,7 +38,6 @@ import javax.persistence.MapKeyColumn;
 import edu.harvard.hms.dbmi.bd2k.irct.model.ontology.OntologyType;
 import edu.harvard.hms.dbmi.bd2k.irct.model.query.JoinType;
 import edu.harvard.hms.dbmi.bd2k.irct.model.query.PredicateType;
-import edu.harvard.hms.dbmi.bd2k.irct.util.JsonUtilities;
 import edu.harvard.hms.dbmi.bd2k.irct.util.converter.ResourceImplementationConverter;
 
 /**

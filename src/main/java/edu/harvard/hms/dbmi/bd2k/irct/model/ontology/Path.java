@@ -45,7 +45,7 @@ public class Path {
 	private Map<OntologyRelationship, List<Path>> relationships;
 
 	private Map<String, String> attributes;
-	
+
 	private Map<String, Integer> counts;
 
 	public Path() {
@@ -90,7 +90,7 @@ public class Path {
 			jsonBuilder.add("dataType", this.dataType.toString());
 		}
 		JsonObjectBuilder relationshipsObject = Json.createObjectBuilder();
-		
+
 		if (depth > 1) {
 			for (OntologyRelationship relationship : relationships.keySet()) {
 				JsonArrayBuilder relationshipArray = Json.createArrayBuilder();
@@ -102,34 +102,29 @@ public class Path {
 				relationshipsObject.add(relationship.toString(),
 						relationshipArray.build());
 			}
-			
-		
-			
+
 		}
 		jsonBuilder.add("relationships", relationshipsObject.build());
-		
+
 		JsonObjectBuilder countsObject = Json.createObjectBuilder();
-		for(String key : counts.keySet()) {
+		for (String key : counts.keySet()) {
 			Integer value = counts.get(key);
-			if(value != null) {
+			if (value != null) {
 				countsObject.add(key, value);
 			}
 		}
-		
+
 		jsonBuilder.add("counts", countsObject.build());
-		
-		
+
 		JsonObjectBuilder attributesObject = Json.createObjectBuilder();
-		for(String key : attributes.keySet()) {
+		for (String key : attributes.keySet()) {
 			String value = attributes.get(key);
-			if(value != null) {
+			if (value != null) {
 				attributesObject.add(key, value);
 			}
 		}
-		
+
 		jsonBuilder.add("attributes", attributesObject.build());
-		
-		
 
 		return jsonBuilder.build();
 
@@ -139,75 +134,176 @@ public class Path {
 	// SETTERS AND GETTERS
 	// -------------------------------------------------------------------------
 
+	/**
+	 * Returns the Path Unique Identifier (PUI)
+	 * 
+	 * @return PUI
+	 */
 	public String getPui() {
 		return pui;
 	}
 
+	/**
+	 * Sets the Path Unique Identifier (PUI)
+	 * 
+	 * @param pui
+	 *            PUI
+	 */
 	public void setPui(String pui) {
 		this.pui = pui;
 	}
 
+	/**
+	 * Returns the name of the path
+	 * 
+	 * @return Path Name
+	 */
 	public String getName() {
 		return name;
 	}
 
+	/**
+	 * Sets the path name
+	 * 
+	 * @param name
+	 *            Path name
+	 */
 	public void setName(String name) {
 		this.name = name;
 	}
 
+	/**
+	 * Returns the path definition
+	 * 
+	 * @return Path definition
+	 */
 	public String getDefinition() {
 		return definition;
 	}
 
+	/**
+	 * Sets the path definition
+	 * 
+	 * @param definition
+	 *            Path definition
+	 */
 	public void setDefinition(String definition) {
 		this.definition = definition;
 	}
 
+	/**
+	 * Returns the path concept
+	 * 
+	 * @return Concept
+	 */
 	public String getConcept() {
 		return concept;
 	}
 
+	/**
+	 * Sets the path concept
+	 * 
+	 * @param concept Concept
+	 */
 	public void setConcept(String concept) {
 		this.concept = concept;
 	}
 
+	/**
+	 * Returns the path concept id
+	 * 
+	 * @return Concept Id
+	 */
 	public String getConceptId() {
 		return conceptId;
 	}
 
+	/**
+	 * Sets the paths concept id
+	 * 
+	 * @param conceptId
+	 *            Concept id
+	 */
 	public void setConceptId(String conceptId) {
 		this.conceptId = conceptId;
 	}
 
+	/**
+	 * Returns the data type of the path
+	 * 
+	 * @return Data Type
+	 */
 	public DataType getDataType() {
 		return dataType;
 	}
 
+	/**
+	 * Sets the data type of the path
+	 * 
+	 * @param dataType
+	 *            Data Type
+	 */
 	public void setDataType(DataType dataType) {
 		this.dataType = dataType;
 	}
 
+	/**
+	 * Returns a map of the relationships where the key is relationship type,
+	 * and the value is a list of paths
+	 * 
+	 * 
+	 * @return Relationships
+	 */
 	public Map<OntologyRelationship, List<Path>> getRelationships() {
 		return relationships;
 	}
 
+	/**
+	 * Sets the relationship map where the key is the relationship type, and the
+	 * value is a list of paths.
+	 * 
+	 * @param relationships
+	 *            Relationships
+	 */
 	public void setRelationships(
 			Map<OntologyRelationship, List<Path>> relationships) {
 		this.relationships = relationships;
 	}
 
+	/**
+	 * Returns a map of attributes
+	 * 
+	 * @return Attributes map
+	 */
 	public Map<String, String> getAttributes() {
 		return attributes;
 	}
 
+	/**
+	 * Sets a map of the attributes
+	 * 
+	 * @param attributes
+	 *            Attributes map
+	 */
 	public void setAttributes(Map<String, String> attributes) {
 		this.attributes = attributes;
 	}
 
+	/**
+	 * Returns a map of all the counts, where the key is the count name, and the
+	 * value is the count as an integer value
+	 * 
+	 * @return Counts map
+	 */
 	public Map<String, Integer> getCounts() {
 		return counts;
 	}
 
+	/**
+	 * Sets a map of all the counts of the path
+	 * 
+	 * @param counts Counts map
+	 */
 	public void setCounts(Map<String, Integer> counts) {
 		this.counts = counts;
 	}

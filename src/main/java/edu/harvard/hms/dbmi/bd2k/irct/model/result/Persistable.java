@@ -1,5 +1,6 @@
 package edu.harvard.hms.dbmi.bd2k.irct.model.result;
 
+import edu.harvard.hms.dbmi.bd2k.irct.model.result.exception.PersistableException;
 import edu.harvard.hms.dbmi.bd2k.irct.model.result.exception.ResultSetException;
 
 /**
@@ -14,8 +15,8 @@ public interface Persistable {
 	 * Load the Result Set from the location specified
 	 * 
 	 * @param location Location
-	 * @throws PersistableException 
-	 * @throws ResultSetException 
+	 * @throws PersistableException A persistable exception occurred
+	 * @throws ResultSetException  A result set exception occurred
 	 */
 	public void load(String location) throws ResultSetException, PersistableException;
 	

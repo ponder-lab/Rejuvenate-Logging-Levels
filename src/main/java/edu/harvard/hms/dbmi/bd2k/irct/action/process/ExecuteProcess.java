@@ -22,6 +22,12 @@ import edu.harvard.hms.dbmi.bd2k.irct.model.resource.ProcessResourceImplementati
 import edu.harvard.hms.dbmi.bd2k.irct.model.resource.Resource;
 import edu.harvard.hms.dbmi.bd2k.irct.model.result.ResultSet;
 
+/**
+ * Implements the ProcessAction interface to run a process
+ * 
+ * @author Jeremy R. Easton-Marks
+ *
+ */
 public class ExecuteProcess implements ProcessAction {
 	private IRCTProcess process ;
 	private Resource resource;

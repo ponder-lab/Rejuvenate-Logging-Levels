@@ -27,6 +27,16 @@ import edu.harvard.hms.dbmi.bd2k.irct.model.result.MemoryResultSet;
 import edu.harvard.hms.dbmi.bd2k.irct.model.result.ResultSet;
 import edu.harvard.hms.dbmi.bd2k.irct.model.result.exception.ResultSetException;
 
+/**
+ * Performs a right outer join between two result sets that implements the
+ * Joinable interface
+ * 
+ * NOTE: Currently returns a MemoryResultSet which may limit the size of joins
+ * that can be performed
+ * 
+ * @author Jeremy R. Easton-Marks
+ *
+ */
 public class RightOuterJoin implements JoinAction {
 	ResultSet rs1;
 	int rs1MatchIndex;
@@ -35,11 +45,11 @@ public class RightOuterJoin implements JoinAction {
 
 	ResultSet results;
 
-public void setup(Map<String, String> parameters) {
-		
+	public void setup(Map<String, String> parameters) {
+
 	}
-	
-	public void setJoins(Joinable...joinables ) throws Exception{
+
+	public void setJoins(Joinable... joinables) throws Exception {
 		Joinable rs1 = joinables[0];
 		Joinable rs2 = joinables[1];
 
@@ -130,24 +140,23 @@ public void setup(Map<String, String> parameters) {
 	public ResultSet getResults() {
 		return this.results;
 	}
-	
+
 	public String getType() {
 		return "Right Outer Join";
 	}
 
-	
 	public JsonObject toJson() {
 		return toJson(1);
 	}
 
 	public JsonObject toJson(int depth) {
 		depth--;
-		
+
 		JsonObjectBuilder jsonBuilder = Json.createObjectBuilder();
 		jsonBuilder.add("type", getType());
 		jsonBuilder.add("rs1MatchIndex", this.rs1MatchIndex);
 		jsonBuilder.add("rs2MatchIndex", this.rs2MatchIndex);
-		
+
 		return jsonBuilder.build();
 	}
 
