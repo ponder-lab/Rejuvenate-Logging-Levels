@@ -2,7 +2,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>edu.harvard.hms.dbmi.bd2k.irct</groupId>
   <artifactId>IRCT-API</artifactId>
-  <version>0.1</version>
+  <version>0.2</version>
   <name>INTER-RESOURCE COMMUNICATION TOOL : API</name>
    <description></description>
   <dependencies>
@@ -17,12 +17,6 @@
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-lang3</artifactId>
 			<version>3.4</version>
-		</dependency>
-
-		<dependency>
-			<groupId>edu.harvard.hms.dbmi.bd2k.irct</groupId>
-			<artifactId>IRCT-RI</artifactId>
-			<version>0.1</version>
 		</dependency>
   </dependencies>
 </project>

@@ -1,3 +1,6 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 package edu.harvard.hms.dbmi.bd2k.irct.model.query;
 
 import java.io.Serializable;
@@ -16,7 +19,7 @@ import javax.persistence.Enumerated;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 
-import edu.harvard.hms.dbmi.bd2k.irct.model.ontology.DataType;
+import edu.harvard.hms.dbmi.bd2k.irct.model.ontology.PrimitiveDataType;
 
 /**
  * A predicate type value that is associated with a predicate
@@ -31,8 +34,9 @@ public class PredicateTypeValue implements Serializable {
 
 	@Id
 	private long id;
-
 	private String name;
+	private String field;
+	
 
 	private boolean required;
 
@@ -44,6 +48,8 @@ public class PredicateTypeValue implements Serializable {
 
 	@ElementCollection
 	private List<String> permittedValues;
+	
+	private String relationship;
 
 	/**
 	 * Returns if the predicate supports a given Data Type
@@ -52,7 +58,7 @@ public class PredicateTypeValue implements Serializable {
 	 *            The Data Type
 	 * @return If the data type is supported
 	 */
-	public boolean supportsDataType(DataType dataType) {
+	public boolean supportsDataType(PrimitiveDataType dataType) {
 		if (getSupportedDataTypes().isEmpty()
 				|| getSupportedDataTypes().contains(dataType)) {
 			return true;
@@ -87,6 +93,7 @@ public class PredicateTypeValue implements Serializable {
 		JsonObjectBuilder predicateTypeValueJSON = Json.createObjectBuilder();
 
 		predicateTypeValueJSON.add("name", getName());
+		predicateTypeValueJSON.add("field", getField());
 
 		JsonArrayBuilder dataTypes = Json.createArrayBuilder();
 		for (PredicateTypeValueDataType dt : supportedDataTypes) {
@@ -95,12 +102,16 @@ public class PredicateTypeValue implements Serializable {
 
 		predicateTypeValueJSON.add("dataTypes", dataTypes);
 
-		JsonArrayBuilder permittedValues = Json.createArrayBuilder();
-		for (String permittedValue : this.permittedValues) {
-			permittedValues.add(permittedValue);
+		if(!this.permittedValues.isEmpty()) {
+			JsonArrayBuilder permittedValues = Json.createArrayBuilder();
+			for (String permittedValue : this.permittedValues) {
+				permittedValues.add(permittedValue);
+			}
+			predicateTypeValueJSON.add("permittedValues", permittedValues);
 		}
-		predicateTypeValueJSON.add("permittedValues", permittedValues);
-
+		if(this.relationship != null && !this.relationship.isEmpty()) {
+			predicateTypeValueJSON.add("relationship", this.relationship);
+		}
 		return predicateTypeValueJSON.build();
 	}
 
@@ -124,22 +135,31 @@ public class PredicateTypeValue implements Serializable {
 	}
 
 	/**
-	 * Returns the name of the predicate type value
-	 * 
-	 * @return Name
+	 * @return the name
 	 */
 	public String getName() {
 		return name;
 	}
 
 	/**
-	 * Sets the name of the predicate type
-	 * 
-	 * @param name
-	 *            Name
+	 * @param name the name to set
 	 */
 	public void setName(String name) {
 		this.name = name;
+	}
+
+	/**
+	 * @return the field
+	 */
+	public String getField() {
+		return field;
+	}
+
+	/**
+	 * @param field the field to set
+	 */
+	public void setField(String field) {
+		this.field = field;
 	}
 
 	/**
@@ -196,6 +216,20 @@ public class PredicateTypeValue implements Serializable {
 	 */
 	public void setPermittedValues(List<String> permittedValues) {
 		this.permittedValues = permittedValues;
+	}
+
+	/**
+	 * @return the relationship
+	 */
+	public String getRelationship() {
+		return relationship;
+	}
+
+	/**
+	 * @param relationship the relationship to set
+	 */
+	public void setRelationship(String relationship) {
+		this.relationship = relationship;
 	}
 
 }

@@ -1,3 +1,6 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 package edu.harvard.hms.dbmi.bd2k.irct.model.result;
 
 import java.io.IOException;
@@ -24,7 +27,7 @@ import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 
-import edu.harvard.hms.dbmi.bd2k.irct.model.ontology.DataType;
+import edu.harvard.hms.dbmi.bd2k.irct.model.ontology.PrimitiveDataType;
 import edu.harvard.hms.dbmi.bd2k.irct.model.result.Column;
 import edu.harvard.hms.dbmi.bd2k.irct.model.result.ResultSetImpl;
 import edu.harvard.hms.dbmi.bd2k.irct.model.result.Row;
@@ -32,6 +35,12 @@ import edu.harvard.hms.dbmi.bd2k.irct.model.result.exception.PersistableExceptio
 import edu.harvard.hms.dbmi.bd2k.irct.model.result.exception.ResultSetException;
 import edu.harvard.hms.dbmi.bd2k.irct.model.result.exception.RowSetExeception;
 
+/**
+ * An implementation of a Result Set that is persistable to the file system
+ * 
+ * @author Jeremy R. Easton-Marks
+ *
+ */
 public class FileResultSet extends ResultSetImpl implements Persistable {
 	private long size;
 	private int maxReadSize = 4096;
@@ -51,8 +60,8 @@ public class FileResultSet extends ResultSetImpl implements Persistable {
 	private boolean persisted = false;
 
 	private Map<Long, Row> pendingData;
-	private int MAXPENDING = 5000;
-	
+	private int MAXPENDING = 100000;
+
 	public FileResultSet() {
 		this.pendingData = new HashMap<Long, Row>();
 	}
@@ -357,8 +366,12 @@ public class FileResultSet extends ResultSetImpl implements Persistable {
 				char charRead = (char) readByte;
 
 				if ((charRead == '\r') || (charRead == '\n')) {
-					row.setColumn(currentColumn, getColumn(currentColumn)
-							.getDataType().fromBytes(Arrays.copyOf(line.array(), line.position())));
+					row.setColumn(
+							currentColumn,
+							getColumn(currentColumn).getDataType()
+									.fromBytes(
+											Arrays.copyOf(line.array(),
+													line.position())));
 					line.clear();
 					dataReadFC.position(originalPosition);
 					break;
@@ -369,8 +382,12 @@ public class FileResultSet extends ResultSetImpl implements Persistable {
 					// If a delimiter is found and the current position is
 					// outside a quote
 
-					row.setColumn(currentColumn, getColumn(currentColumn)
-							.getDataType().fromBytes(Arrays.copyOf(line.array(), line.position())));
+					row.setColumn(
+							currentColumn,
+							getColumn(currentColumn).getDataType()
+									.fromBytes(
+											Arrays.copyOf(line.array(),
+													line.position())));
 					currentColumn++;
 					line.clear();
 				} else {
@@ -449,7 +466,7 @@ public class FileResultSet extends ResultSetImpl implements Persistable {
 			throw new PersistableException("Unable to initiate the result set",
 					e);
 		}
-		
+
 		persist();
 	}
 
@@ -571,7 +588,7 @@ public class FileResultSet extends ResultSetImpl implements Persistable {
 			for (int i = 0; i < jsonColArray.size(); i++) {
 				JsonObject job = (JsonObject) jsonColArray.get(i);
 				Column newColumn = new Column();
-				newColumn.setDataType(DataType.valueOf(job
+				newColumn.setDataType(PrimitiveDataType.valueOf(job
 						.getString("dataType")));
 				newColumn.setName(job.getString("name"));
 				this.appendColumn(newColumn);
@@ -677,14 +694,14 @@ public class FileResultSet extends ResultSetImpl implements Persistable {
 	public Date getDate(int columnIndex) throws ResultSetException {
 		String dateString = getString(columnIndex);
 
-		DataType dt = getColumn(columnIndex).getDataType();
+		PrimitiveDataType dt = getColumn(columnIndex).getDataType();
 
 		String pattern = null;
-		if (dt == DataType.DATE) {
+		if (dt == PrimitiveDataType.DATE) {
 			pattern = "YYYY-MM-dd";
-		} else if (dt == DataType.DATETIME) {
+		} else if (dt == PrimitiveDataType.DATETIME) {
 			pattern = "YYYY-MM-dd HH:mm:ss";
-		} else if (dt == DataType.TIME) {
+		} else if (dt == PrimitiveDataType.TIME) {
 			pattern = "HH:mm:ss";
 		}
 		DateFormat formatter = new SimpleDateFormat(pattern);
@@ -706,14 +723,14 @@ public class FileResultSet extends ResultSetImpl implements Persistable {
 	@Override
 	public void updateDate(int columnIndex, Date value)
 			throws ResultSetException {
-		DataType dt = getColumn(columnIndex).getDataType();
+		PrimitiveDataType dt = getColumn(columnIndex).getDataType();
 
 		String pattern = null;
-		if (dt == DataType.DATE) {
+		if (dt == PrimitiveDataType.DATE) {
 			pattern = "yyyy-MM-dd";
-		} else if (dt == DataType.DATETIME) {
+		} else if (dt == PrimitiveDataType.DATETIME) {
 			pattern = "yyyy-MM-dd HH:mm:ss";
-		} else if (dt == DataType.TIME) {
+		} else if (dt == PrimitiveDataType.TIME) {
 			pattern = "HH:mm:ss";
 		}
 		DateFormat formatter = new SimpleDateFormat(pattern);
@@ -878,7 +895,7 @@ public class FileResultSet extends ResultSetImpl implements Persistable {
 		jsonBuilder.add("size", this.size);
 		JsonArrayBuilder jsonColArray = Json.createArrayBuilder();
 		try {
-			if(getColumns() != null) {
+			if (getColumns() != null) {
 				for (Column column : getColumns()) {
 					jsonColArray.add(column.toJson());
 				}

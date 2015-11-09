@@ -1,26 +1,13 @@
-/*
- *  This file is part of Inter-Resource Communication Tool (IRCT).
- *
- *  IRCT is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
- *
- *  IRCT is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with IRCT.  If not, see <http://www.gnu.org/licenses/>.
- */
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 package edu.harvard.hms.dbmi.bd2k.irct.model.result;
 
 import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 
-import edu.harvard.hms.dbmi.bd2k.irct.model.ontology.DataType;
+import edu.harvard.hms.dbmi.bd2k.irct.model.ontology.PrimitiveDataType;
 
 /**
  * Describes a column of a Result Set
@@ -30,7 +17,7 @@ import edu.harvard.hms.dbmi.bd2k.irct.model.ontology.DataType;
  */
 public class Column {
 	private String name;
-	private DataType dataType;
+	private PrimitiveDataType dataType;
 
 	/**
 	 * Returns the name of the column
@@ -56,7 +43,7 @@ public class Column {
 	 * 
 	 * @return Column Data Type
 	 */
-	public DataType getDataType() {
+	public PrimitiveDataType getDataType() {
 		return dataType;
 	}
 
@@ -66,7 +53,7 @@ public class Column {
 	 * @param dataType
 	 *            Column Data Type
 	 */
-	public void setDataType(DataType dataType) {
+	public void setDataType(PrimitiveDataType dataType) {
 		this.dataType = dataType;
 	}
 	

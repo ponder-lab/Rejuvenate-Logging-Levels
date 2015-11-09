@@ -1,19 +1,6 @@
-/*
- *  This file is part of Inter-Resource Communication Tool (IRCT).
- *
- *  IRCT is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
- *
- *  IRCT is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with IRCT.  If not, see <http://www.gnu.org/licenses/>.
- */
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 package edu.harvard.hms.dbmi.bd2k.irct.model.resource;
 
 import java.util.List;
@@ -30,13 +17,15 @@ import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
+import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToMany;
 import javax.persistence.MapKeyColumn;
 
 import edu.harvard.hms.dbmi.bd2k.irct.model.ontology.OntologyType;
-import edu.harvard.hms.dbmi.bd2k.irct.model.query.JoinType;
+import edu.harvard.hms.dbmi.bd2k.irct.model.process.ProcessType;
+import edu.harvard.hms.dbmi.bd2k.irct.model.query.LogicalOperator;
 import edu.harvard.hms.dbmi.bd2k.irct.model.query.PredicateType;
 import edu.harvard.hms.dbmi.bd2k.irct.util.converter.ResourceImplementationConverter;
 
@@ -50,6 +39,7 @@ import edu.harvard.hms.dbmi.bd2k.irct.util.converter.ResourceImplementationConve
 @Entity
 public class Resource {
 	@Id
+	@GeneratedValue
 	private long id;
 
 	private String name;
@@ -63,11 +53,17 @@ public class Resource {
 	@Enumerated(EnumType.STRING)
 	private OntologyType ontologyType;
 	
-	@ManyToMany
-	private List<JoinType> supportedJoins;
+	@ElementCollection(targetClass = LogicalOperator.class)
+	@CollectionTable(name = "Resource_Join", joinColumns = @JoinColumn(name = "id"))
+	@Column(name = "supportedJoins", nullable = false)
+	@Enumerated(EnumType.STRING)
+	private List<LogicalOperator> supportedJoins;
 	
 	@ManyToMany
 	private List<PredicateType> supportedPredicates;
+	
+	@ManyToMany
+	private List<ProcessType> availableProcesses;
 
 	@Convert(converter = ResourceImplementationConverter.class)
 	private ResourceImplementationInterface implementingInterface;
@@ -105,33 +101,39 @@ public class Resource {
 		JsonObjectBuilder jsonBuilder = Json.createObjectBuilder();
 		jsonBuilder.add("id", this.id);
 		jsonBuilder.add("name", this.name);
-//		jsonBuilder.add("parameters", JsonUtilities.mapToJson(this.parameters));
 		jsonBuilder.add("ontologyType", this.ontologyType.toString());
 
 		JsonArrayBuilder joinArray = Json.createArrayBuilder();
 		JsonArrayBuilder predicateArray = Json.createArrayBuilder();
-
+		JsonArrayBuilder processArray = Json.createArrayBuilder();
+		
+		for (LogicalOperator join : this.supportedJoins) {
+			joinArray.add(join.toString());
+		}
+		
 		if (depth == 0) {
-
-			for (JoinType join : this.supportedJoins) {
-				joinArray.add(join.getName());
-			}
-
 			for (PredicateType predicate : this.supportedPredicates) {
 				predicateArray.add(predicate.getName());
 			}
+			
+			for(ProcessType process : this.availableProcesses) {
+				processArray.add(process.getName());
+			}
+			
 			if(this.implementingInterface != null) {
 				jsonBuilder.add("implementation",
 					this.implementingInterface.getType());
 			}
 
 		} else {
-			for (JoinType join : this.supportedJoins) {
-				joinArray.add(join.toJson(depth));
-			}
 			for (PredicateType predicate : this.supportedPredicates) {
 				predicateArray.add(predicate.toJson(depth));
 			}
+			
+			for(ProcessType process : this.availableProcesses) {
+				processArray.add(process.toJson(depth));
+			}
+			
 			if(this.implementingInterface != null) {
 				jsonBuilder.add("implementation",
 					this.implementingInterface.toJson(depth));
@@ -140,6 +142,7 @@ public class Resource {
 
 		jsonBuilder.add("supportedJoins", joinArray.build());
 		jsonBuilder.add("supportedPredicates", predicateArray.build());
+		jsonBuilder.add("availableProcesses", processArray.build());
 
 		return jsonBuilder.build();
 	}
@@ -228,7 +231,7 @@ public class Resource {
 	 * 
 	 * @return Supported joins
 	 */
-	public List<JoinType> getSupportedJoins() {
+	public List<LogicalOperator> getSupportedJoins() {
 		return supportedJoins;
 	}
 
@@ -238,7 +241,7 @@ public class Resource {
 	 * @param supportedJoins
 	 *            Supported joins
 	 */
-	public void setSupportedJoins(List<JoinType> supportedJoins) {
+	public void setSupportedJoins(List<LogicalOperator> supportedJoins) {
 		this.supportedJoins = supportedJoins;
 	}
 
@@ -279,6 +282,20 @@ public class Resource {
 	public void setImplementingInterface(
 			ResourceImplementationInterface implementingInterface) {
 		this.implementingInterface = implementingInterface;
+	}
+
+	/**
+	 * @return the availableProcesses
+	 */
+	public List<ProcessType> getAvailableProcesses() {
+		return availableProcesses;
+	}
+
+	/**
+	 * @param availableProcesses the availableProcesses to set
+	 */
+	public void setAvailableProcesses(List<ProcessType> availableProcesses) {
+		this.availableProcesses = availableProcesses;
 	}
 
 }

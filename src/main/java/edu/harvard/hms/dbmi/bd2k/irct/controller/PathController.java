@@ -1,3 +1,6 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 package edu.harvard.hms.dbmi.bd2k.irct.controller;
 
 import java.util.ArrayList;
@@ -10,7 +13,7 @@ import edu.harvard.hms.dbmi.bd2k.irct.model.ontology.OntologyType;
 import edu.harvard.hms.dbmi.bd2k.irct.model.ontology.Path;
 import edu.harvard.hms.dbmi.bd2k.irct.model.resource.PathResourceImplementationInterface;
 import edu.harvard.hms.dbmi.bd2k.irct.model.resource.Resource;
-import edu.harvard.hms.dbmi.bd2k.irct.ri.exception.ResourceInterfaceException;
+import edu.harvard.hms.dbmi.bd2k.irct.exception.ResourceInterfaceException;
 
 /**
  * A stateless controller that manages the relationships, and paths for a

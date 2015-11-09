@@ -1,26 +1,16 @@
-/*
- *  This file is part of Inter-Resource Communication Tool (IRCT).
- *
- *  IRCT is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
- *
- *  IRCT is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with IRCT.  If not, see <http://www.gnu.org/licenses/>.
- */
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 package edu.harvard.hms.dbmi.bd2k.irct.model.resource;
 
 
+import java.util.List;
+
+import edu.harvard.hms.dbmi.bd2k.irct.model.action.ActionState;
 import edu.harvard.hms.dbmi.bd2k.irct.model.ontology.Path;
 import edu.harvard.hms.dbmi.bd2k.irct.model.query.Query;
 import edu.harvard.hms.dbmi.bd2k.irct.model.result.ResultSet;
-import edu.harvard.hms.dbmi.bd2k.irct.ri.exception.ResourceInterfaceException;
+import edu.harvard.hms.dbmi.bd2k.irct.exception.ResourceInterfaceException;
 
 /**
  * Provides an implementation that describes the API for any resource that has
@@ -39,7 +29,7 @@ public interface QueryResourceImplementationInterface extends
 	 * @return The id of the query that is running
 	 * @throws ResourceInterfaceException A resource exception occurred
 	 */
-	Long runQuery(Query qep) throws ResourceInterfaceException;
+	ActionState runQuery(Query qep) throws ResourceInterfaceException;
 
 	/**
 	 * Returns the results of the query if they are available
@@ -49,7 +39,7 @@ public interface QueryResourceImplementationInterface extends
 	 * @return Results
 	 * @throws ResourceInterfaceException A resource exception occurred
 	 */
-	ResultSet getResults(Long queryId) throws ResourceInterfaceException;
+	ResultSet getResults(ActionState actionState) throws ResourceInterfaceException;
 
 	/**
 	 * Returns the state of the resource
@@ -60,6 +50,15 @@ public interface QueryResourceImplementationInterface extends
 
 	/**
 	 * Returns the the default entity that is returned with a query
+	 * 
+	 * @return Return Entity
 	 */
-	Path getReturnEntity();
+	List<Path> getReturnEntity();
+	
+	/**
+	 * Returns if the default entity is editable
+	 * 
+	 * @return Return Entity Editable
+	 */
+	Boolean editableReturnEntity();
 }

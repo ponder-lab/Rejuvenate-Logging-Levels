@@ -1,19 +1,6 @@
-/*
- *  This file is part of Inter-Resource Communication Tool (IRCT).
- *
- *  IRCT is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
- *
- *  IRCT is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with IRCT.  If not, see <http://www.gnu.org/licenses/>.
- */
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 package edu.harvard.hms.dbmi.bd2k.irct.model.result;
 
 import java.text.DateFormat;
@@ -23,7 +10,7 @@ import java.util.Date;
 
 import org.apache.commons.lang3.ArrayUtils;
 
-import edu.harvard.hms.dbmi.bd2k.irct.model.ontology.DataType;
+import edu.harvard.hms.dbmi.bd2k.irct.model.ontology.PrimitiveDataType;
 import edu.harvard.hms.dbmi.bd2k.irct.model.result.exception.ResultSetException;
 
 /**
@@ -149,14 +136,14 @@ public class MemoryResultSet extends ResultSetImpl {
 	public Date getDate(int columnIndex) throws ResultSetException {
 		String dateString = getString(columnIndex);
 
-		DataType dt = getColumn(columnIndex).getDataType();
+		PrimitiveDataType dt = getColumn(columnIndex).getDataType();
 
 		String pattern = null;
-		if (dt == DataType.DATE) {
+		if (dt == PrimitiveDataType.DATE) {
 			pattern = "YYYY-MM-dd";
-		} else if (dt == DataType.DATETIME) {
+		} else if (dt == PrimitiveDataType.DATETIME) {
 			pattern = "YYYY-MM-dd HH:mm:ss";
-		} else if (dt == DataType.TIME) {
+		} else if (dt == PrimitiveDataType.TIME) {
 			pattern = "HH:mm:ss";
 		}
 		DateFormat formatter = new SimpleDateFormat(pattern);
@@ -178,14 +165,14 @@ public class MemoryResultSet extends ResultSetImpl {
 	@Override
 	public void updateDate(int columnIndex, Date value)
 			throws ResultSetException {
-		DataType dt = getColumn(columnIndex).getDataType();
+		PrimitiveDataType dt = getColumn(columnIndex).getDataType();
 
 		String pattern = null;
-		if (dt == DataType.DATE) {
+		if (dt == PrimitiveDataType.DATE) {
 			pattern = "yyyy-MM-dd";
-		} else if (dt == DataType.DATETIME) {
+		} else if (dt == PrimitiveDataType.DATETIME) {
 			pattern = "yyyy-MM-dd HH:mm:ss";
-		} else if (dt == DataType.TIME) {
+		} else if (dt == PrimitiveDataType.TIME) {
 			pattern = "HH:mm:ss";
 		}
 		DateFormat formatter = new SimpleDateFormat(pattern);

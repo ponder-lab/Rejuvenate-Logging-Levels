@@ -1,34 +1,23 @@
-/*
- *  This file is part of Inter-Resource Communication Tool (IRCT).
- *
- *  IRCT is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
- *
- *  IRCT is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with IRCT.  If not, see <http://www.gnu.org/licenses/>.
- */
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 package edu.harvard.hms.dbmi.bd2k.irct.action.query;
 
+import edu.harvard.hms.dbmi.bd2k.irct.model.action.ActionState;
 import edu.harvard.hms.dbmi.bd2k.irct.model.query.Query;
 import edu.harvard.hms.dbmi.bd2k.irct.model.resource.QueryResourceImplementationInterface;
 import edu.harvard.hms.dbmi.bd2k.irct.model.resource.Resource;
 import edu.harvard.hms.dbmi.bd2k.irct.model.result.ResultSet;
-import edu.harvard.hms.dbmi.bd2k.irct.ri.exception.ResourceInterfaceException;
+import edu.harvard.hms.dbmi.bd2k.irct.exception.ResourceInterfaceException;
 
 /**
  * Implements the QueryAction interface to run a query on a specific instance
+ * 
  * @author Jeremy R. Easton-Marks
  *
  */
 public class ExecuteQuery implements QueryAction {
-	private Long runId;
+	private ActionState actionState;
 	private Query query;
 	private Resource resource;
 
@@ -38,11 +27,14 @@ public class ExecuteQuery implements QueryAction {
 	}
 
 	public void run() throws ResourceInterfaceException {
-		runId = ((QueryResourceImplementationInterface)resource.getImplementingInterface()).runQuery(query);
+		actionState = ((QueryResourceImplementationInterface)resource.getImplementingInterface()).runQuery(query);
 	}
 
 	public ResultSet getResults() throws ResourceInterfaceException {
-		return ((QueryResourceImplementationInterface)resource.getImplementingInterface()).getResults(runId);
+		if(actionState.isComplete()) {
+			return actionState.getResults();
+		}
+		return ((QueryResourceImplementationInterface)resource.getImplementingInterface()).getResults(actionState);
 	}
 
 	public Query getQuery() {

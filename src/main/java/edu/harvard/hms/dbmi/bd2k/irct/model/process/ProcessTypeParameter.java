@@ -1,7 +1,13 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 package edu.harvard.hms.dbmi.bd2k.irct.model.process;
 
 import java.io.Serializable;
 
+import javax.json.Json;
+import javax.json.JsonObject;
+import javax.json.JsonObjectBuilder;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
@@ -15,16 +21,50 @@ import javax.persistence.Id;
  *
  */
 @Entity
-public class IRCTProcessParameter implements Serializable {
+public class ProcessTypeParameter implements Serializable {
 
 	private static final long serialVersionUID = 4141141792005064323L;
 
 	@Id
 	private long id;
 	private String name;
+	
 	@Enumerated(EnumType.STRING)
-	private IRCTProcessParameterType type;
+	private ProcessTypeParameterType type;
 	private String value;
+	
+	
+	/**
+	 * Returns a JSONObject representation of the object. This returns only the
+	 * attributes associated with this object and not their representation.
+	 * 
+	 * This is equivalent of toJson(1);
+	 * 
+	 * @return JSON Representation
+	 */
+	public JsonObject toJson() {
+		return toJson(1);
+	}
+
+	/**
+	 * Returns a JSONObject representation of the object. This returns only the
+	 * attributes associated with this object and not their representation.
+	 * 
+	 * 
+	 * @param depth
+	 *            Depth to travel
+	 * @return JSON Representation
+	 */
+	public JsonObject toJson(int depth) {
+		depth--;
+		
+		JsonObjectBuilder processTypeParameterJSON = Json.createObjectBuilder();
+		
+		processTypeParameterJSON.add("name", this.name);
+		processTypeParameterJSON.add("type", this.type.toString());
+		
+		return processTypeParameterJSON.build();
+	}
 	
 	/**
 	 * Returns the id
@@ -67,7 +107,7 @@ public class IRCTProcessParameter implements Serializable {
 	 * 
 	 * @return Parameter Type
 	 */
-	public IRCTProcessParameterType getType() {
+	public ProcessTypeParameterType getType() {
 		return type;
 	}
 
@@ -76,7 +116,7 @@ public class IRCTProcessParameter implements Serializable {
 	 * 
 	 * @param type Parameter Type
 	 */
-	public void setType(IRCTProcessParameterType type) {
+	public void setType(ProcessTypeParameterType type) {
 		this.type = type;
 	}
 

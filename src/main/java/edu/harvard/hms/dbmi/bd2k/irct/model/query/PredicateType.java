@@ -1,24 +1,10 @@
-/*
- *  This file is part of Inter-Resource Communication Tool (IRCT).
- *
- *  IRCT is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
- *
- *  IRCT is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with IRCT.  If not, see <http://www.gnu.org/licenses/>.
- */
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 package edu.harvard.hms.dbmi.bd2k.irct.model.query;
 
 import java.io.Serializable;
 import java.util.List;
-import java.util.Map;
 
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
@@ -31,11 +17,13 @@ import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
-import javax.persistence.MapKeyColumn;
+import javax.persistence.OneToMany;
 
-import edu.harvard.hms.dbmi.bd2k.irct.model.ontology.DataType;
+import edu.harvard.hms.dbmi.bd2k.irct.model.ontology.PrimitiveDataType;
 import edu.harvard.hms.dbmi.bd2k.irct.model.query.predicate.PredicateImplementationInterface;
 import edu.harvard.hms.dbmi.bd2k.irct.util.converter.PredicateImplementationConverter;
 
@@ -51,16 +39,15 @@ public class PredicateType implements Serializable {
 	private static final long serialVersionUID = -8767223525164395205L;
 
 	@Id
+	@GeneratedValue
 	private long id;
 	
 	private String name;
+	private String displayName;
 	private String description;
 	
-	@ElementCollection
-	@MapKeyColumn(name = "name")
-	@Column(name = "value")
-	@CollectionTable(name ="predicateType_values", joinColumns = @JoinColumn(name = "id"))
-	private Map<String, PredicateTypeValue> values;
+	@OneToMany(fetch=FetchType.EAGER)
+	private List<PredicateTypeValue> values;
 
 	@ElementCollection(targetClass = PredicateTypeValueDataType.class)
 	@CollectionTable(name = "PredicateType_SupportedDataType", joinColumns = @JoinColumn(name = "id"))
@@ -80,7 +67,7 @@ public class PredicateType implements Serializable {
 	 *            The Data Type
 	 * @return If the data type is supported
 	 */
-	public boolean supportsDataType(DataType dataType) {
+	public boolean supportsDataType(PrimitiveDataType dataType) {
 		if (getSupportedDataTypes().isEmpty()
 				|| getSupportedDataTypes().contains(dataType)) {
 			return true;
@@ -115,6 +102,7 @@ public class PredicateType implements Serializable {
 		JsonObjectBuilder predicateTypeJSON = Json.createObjectBuilder();
 		
 		predicateTypeJSON.add("name", getName());
+		predicateTypeJSON.add("displayName", getDisplayName());
 		predicateTypeJSON.add("default", isDefaultPredicate());
 		
 		if(this.getImplementingInterface() != null) {
@@ -129,16 +117,14 @@ public class PredicateType implements Serializable {
 		}
 		predicateTypeJSON.add("dataTypes", dataTypes.build());
 		
+		
 		JsonArrayBuilder valuesType = Json.createArrayBuilder();
-		if(this.values != null) {
-			for(String valueName : this.values.keySet()) {
-				JsonObjectBuilder singleValue = Json.createObjectBuilder();
-				singleValue.add("name", valueName);
-				singleValue.add("values", this.values.get(valueName).toJson(depth));
-				valuesType.add(singleValue);
+		if(this.getValues() != null) {
+			for(PredicateTypeValue value : this.getValues()) {
+				valuesType.add(value.toJson());
 			}
 		}
-		predicateTypeJSON.add("values", valuesType.build());
+		predicateTypeJSON.add("fields", valuesType.build());
 		
 		return predicateTypeJSON.build();
 	}
@@ -162,6 +148,22 @@ public class PredicateType implements Serializable {
 		this.name = name;
 	}
 
+	
+
+	/**
+	 * @return the displayName
+	 */
+	public String getDisplayName() {
+		return displayName;
+	}
+
+	/**
+	 * @param displayName the displayName to set
+	 */
+	public void setDisplayName(String displayName) {
+		this.displayName = displayName;
+	}
+
 	/**
 	 * Returns the description of the predicate
 	 * 
@@ -182,6 +184,20 @@ public class PredicateType implements Serializable {
 	}
 
 	
+	/**
+	 * @return the values
+	 */
+	public List<PredicateTypeValue> getValues() {
+		return values;
+	}
+
+	/**
+	 * @param values the values to set
+	 */
+	public void setValues(List<PredicateTypeValue> values) {
+		this.values = values;
+	}
+
 	/**
 	 * Returns a list of supported data types
 	 * 

@@ -1,7 +1,9 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 package edu.harvard.hms.dbmi.bd2k.irct.controller;
 
 import java.util.Arrays;
-import java.util.List;
 import java.util.Map;
 
 import javax.ejb.Stateful;
@@ -32,8 +34,8 @@ import edu.harvard.hms.dbmi.bd2k.irct.model.resource.Resource;
  * predicates, selects, and other attributes added to them are created
  * correctly.
  * 
- * NOTE: NOT ALL CHECKS ARE IMPLEMENTED NOTE: NOT ALL METHODS HAVE BEEN FULLY
- * IMPLEMENTED AND VETTED
+ * NOTE: NOT ALL CHECKS ARE IMPLEMENTED 
+ * NOTE: NOT ALL METHODS HAVE BEEN FULLY IMPLEMENTED AND VETTED
  * 
  * @author Jeremy R. Easton-Marks
  *
@@ -87,15 +89,16 @@ public class QueryController {
 	 * @return The select clause id
 	 * @throws SubQueryNotFoundException
 	 */
-	public Long addSelectClause(Long sqId, String alias, Path parameter)
+	public Long addSelectClause(Long sqId, Path parameter, Resource resource)
 			throws SubQueryNotFoundException {
 		SelectClause sc = new SelectClause(lastId++);
-		sc.setAlias(alias);
 		sc.setParameters(parameter);
 		if (sqId != null) {
 			SubQuery sq = findSubQuery(sqId);
 			sq.addClause(sc.getId(), sc);
 		}
+		query.getResources().add(resource);
+		query.getClauses().put(sc.getId(), sc);
 		return sc.getId();
 	}
 
@@ -132,8 +135,8 @@ public class QueryController {
 		JoinType jt = findJoinType(joinType);
 
 		// Has subqueries
-		checkSubQueryJoinSupport(sq1, jt, fieldId1, relationship);
-		checkSubQueryJoinSupport(sq2, jt, fieldId2, relationship);
+//		checkSubQueryJoinSupport(sq1, jt, fieldId1, relationship);
+//		checkSubQueryJoinSupport(sq2, jt, fieldId2, relationship);
 
 		JoinClause jc = new JoinClause();
 		jc.setId(joinId);
@@ -294,42 +297,42 @@ public class QueryController {
 		return lo;
 	}
 
-	private void checkSubQueryJoinSupport(SubQuery sq, JoinType joinType,
-			Path field, String relationship) throws SubQueryNotFoundException,
-			JoinTypeNotSupported {
-
-		boolean supported = false;
-		List<Resource> resources = sq.getResources();
-		if (resources.isEmpty()) {
-			resources = sq.getParent().getResources();
-		}
-
-		for (Resource resource : resources) {
-			if (resource.getSupportedJoins().contains(joinType)) {
-
-				if (joinType.isRequireFields()) {
-					if (joinType.supportsDataType(field.getDataType())) {
-						supported = true;
-					}
-				} else {
-					supported = true;
-				}
-
-				if (joinType.isRequireRelationships() && relationship == null) {
-					supported = false;
-				}
-
-				if (supported) {
-					break;
-				}
-			}
-		}
-
-		if (!supported) {
-			throw new JoinTypeNotSupported(joinType.getName());
-		}
-
-	}
+//	private void checkSubQueryJoinSupport(SubQuery sq, JoinType joinType,
+//			Path field, String relationship) throws SubQueryNotFoundException,
+//			JoinTypeNotSupported {
+//
+//		boolean supported = false;
+//		List<Resource> resources = sq.getResources();
+//		if (resources.isEmpty()) {
+//			resources = sq.getParent().getResources();
+//		}
+//
+//		for (Resource resource : resources) {
+//			if (resource.getSupportedJoins().contains(joinType)) {
+//
+//				if (joinType.isRequireFields()) {
+//					if (joinType.supportsDataType(field.getDataType())) {
+//						supported = true;
+//					}
+//				} else {
+//					supported = true;
+//				}
+//
+//				if (joinType.isRequireRelationships() && relationship == null) {
+//					supported = false;
+//				}
+//
+//				if (supported) {
+//					break;
+//				}
+//			}
+//		}
+//
+//		if (!supported) {
+//			throw new JoinTypeNotSupported(joinType.getName());
+//		}
+//
+//	}
 
 	// private void checkSubQueryPredicateSupport(SubQuery sq, LogicalOperator
 	// lo,

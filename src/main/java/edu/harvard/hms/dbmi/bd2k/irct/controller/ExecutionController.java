@@ -1,19 +1,6 @@
-/*
- *  This file is part of Inter-Resource Communication Tool (IRCT).
- *
- *  IRCT is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
- *
- *  IRCT is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with IRCT.  If not, see <http://www.gnu.org/licenses/>.
- */
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 package edu.harvard.hms.dbmi.bd2k.irct.controller;
 
 import java.util.Date;
@@ -26,8 +13,11 @@ import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 
 import edu.harvard.hms.dbmi.bd2k.irct.action.ExecutionPlan;
+import edu.harvard.hms.dbmi.bd2k.irct.action.ProcessExecutable;
 import edu.harvard.hms.dbmi.bd2k.irct.action.QueryExecutable;
+import edu.harvard.hms.dbmi.bd2k.irct.action.process.ExecuteProcess;
 import edu.harvard.hms.dbmi.bd2k.irct.action.query.ExecuteQuery;
+import edu.harvard.hms.dbmi.bd2k.irct.model.process.IRCTProcess;
 import edu.harvard.hms.dbmi.bd2k.irct.model.query.Query;
 import edu.harvard.hms.dbmi.bd2k.irct.model.result.Persistable;
 import edu.harvard.hms.dbmi.bd2k.irct.model.result.Result;
@@ -52,6 +42,36 @@ public class ExecutionController {
 
 	@Inject
 	private EntityManagerFactory objectEntityManager;
+	
+	/**
+	 * Runs the process
+	 * 
+	 * @param process Process to run
+	 * @return result id
+	 * @throws PersistableException
+	 */
+	public Long runProcess(IRCTProcess process) throws PersistableException {
+		log.info("Start: " + process.getId());
+		Result newResult = new Result();
+		
+		EntityManager oem = objectEntityManager.createEntityManager();
+		oem.persist(newResult);
+		
+		ExecuteProcess ep = new ExecuteProcess();
+		ep.setup(process.getResource(), process);
+		
+		ProcessExecutable pe = new ProcessExecutable();
+		pe.setup(ep);
+
+		ExecutionPlan exp = new ExecutionPlan();
+		exp.setup(pe);
+		
+		runExecutionPlan(exp, newResult);
+
+		log.info("Stop: " + process.getId());
+
+		return newResult.getId();
+	}
 
 	/**
 	 * Run a query by creating an execution plan
@@ -78,7 +98,6 @@ public class ExecutionController {
 		ExecutionPlan ep = new ExecutionPlan();
 		ep.setup(qe);
 
-		// ep.run();
 		runExecutionPlan(ep, newResult);
 
 		log.info("Stop: " + query.getId());
@@ -100,7 +119,11 @@ public class ExecutionController {
 		executionPlan.run();
 
 		ResultSet rs = executionPlan.getResults();
-		((Persistable) rs).persist("" + result.getId());
+		if(rs != null) {
+			((Persistable) rs).persist("" + result.getId());
+		} else {
+			
+		}
 		result.setResultSetLocation("" + result.getId());
 		result.setImplementingResultSet(rs);
 		result.setResultStatus(ResultStatus.Available);

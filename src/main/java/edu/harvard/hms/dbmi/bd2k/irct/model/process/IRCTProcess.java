@@ -1,102 +1,91 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 package edu.harvard.hms.dbmi.bd2k.irct.model.process;
 
-import java.io.Serializable;
-import java.util.List;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.OneToMany;
+import edu.harvard.hms.dbmi.bd2k.irct.model.resource.Resource;
+import edu.harvard.hms.dbmi.bd2k.irct.model.result.ResultSet;
 
 /**
+ * Creates an executable process
  * 
  * @author Jeremy R. Easton-Marks
  *
  */
-@Entity
-public class IRCTProcess implements Serializable {
-	private static final long serialVersionUID = 30045608286165958L;
-
-	@Id
-	private long id;
+public class IRCTProcess {
+	private Long id;
+	private ProcessType processType;
+	private Resource resource;
+	private Map<String, String> values;
+	private Map<String, ResultSet> resultSets;
 	
-	private String name;
-	private String description;
-	
-	@OneToMany
-	private List<IRCTProcessParameter> parameter;
-	
+	public IRCTProcess() {
+		this.setValues(new LinkedHashMap<String, String>());
+		this.setResultSets(new LinkedHashMap<String, ResultSet>());
+	}
 	/**
-	 * Returns the id
-	 * 
-	 * @return ID
+	 * @return the id
 	 */
-	public long getId() {
+	public Long getId() {
 		return id;
 	}
-
 	/**
-	 * Sets the id
-	 * 
-	 * @param id ID
+	 * @param id the id to set
 	 */
-	public void setId(long id) {
+	public void setId(Long id) {
 		this.id = id;
 	}
-
 	/**
-	 * Returns the name of the process
-	 * 
-	 * @return Name
+	 * @return the processType
 	 */
-	public String getName() {
-		return name;
+	public ProcessType getProcessType() {
+		return processType;
 	}
-
 	/**
-	 * Sets the name of the process
-	 * 
-	 * @param name Name
+	 * @param processType the processType to set
 	 */
-	public void setName(String name) {
-		this.name = name;
+	public void setProcessType(ProcessType processType) {
+		this.processType = processType;
 	}
-
 	/**
-	 * Returns a description of the process
-	 * 
-	 * @return Description
+	 * @return the resources
 	 */
-	public String getDescription() {
-		return description;
+	public Resource getResource() {
+		return resource;
 	}
-
 	/**
-	 * Sets the description of the process
-	 * 
-	 * @param description Description
+	 * @param resource the resource to set
 	 */
-	public void setDescription(String description) {
-		this.description = description;
+	public void setResource(Resource resource) {
+		this.resource = resource;
 	}
-
 	/**
-	 * Returns a list parameters
-	 * 
-	 * @return List of parameters
+	 * @return the values
 	 */
-	public List<IRCTProcessParameter> getParameter() {
-		return parameter;
+	public Map<String, String> getValues() {
+		return values;
 	}
-
 	/**
-	 * Sets a list of the parameters
-	 * 
-	 * @param parameter List of the parameters
+	 * @param values the values to set
 	 */
-	public void setParameter(List<IRCTProcessParameter> parameter) {
-		this.parameter = parameter;
+	public void setValues(Map<String, String> values) {
+		this.values = values;
+	}
+	/**
+	 * @return the resultSets
+	 */
+	public Map<String, ResultSet> getResultSets() {
+		return resultSets;
+	}
+	/**
+	 * @param resultSets the resultSets to set
+	 */
+	public void setResultSets(Map<String, ResultSet> resultSets) {
+		this.resultSets = resultSets;
 	}
 	
 	
-
 }

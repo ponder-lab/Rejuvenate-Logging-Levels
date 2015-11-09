@@ -1,23 +1,10 @@
-/*
- *  This file is part of Inter-Resource Communication Tool (IRCT).
- *
- *  IRCT is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
- *
- *  IRCT is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with IRCT.  If not, see <http://www.gnu.org/licenses/>.
- */
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 package edu.harvard.hms.dbmi.bd2k.irct.model.resource;
 
-import java.util.List;
-
+import edu.harvard.hms.dbmi.bd2k.irct.exception.ResourceInterfaceException;
+import edu.harvard.hms.dbmi.bd2k.irct.model.action.ActionState;
 import edu.harvard.hms.dbmi.bd2k.irct.model.process.IRCTProcess;
 import edu.harvard.hms.dbmi.bd2k.irct.model.result.ResultSet;
 
@@ -35,15 +22,15 @@ public interface ProcessResourceImplementationInterface extends ResourceImplemen
 	 * @param pep Process to be run
 	 * @return The id of the process that is running
 	 */
-	Long run(IRCTProcess pep);
-
+	ActionState runProcess(IRCTProcess pep);
+	
 	/**
 	 * Returns the results of the process if they are available
 	 * 
 	 * @param processId Process ID
 	 * @return Results
 	 */
-	ResultSet getResults(Long processId);
+	ResultSet getResults(ActionState actionState) throws ResourceInterfaceException;
 
 	/**
 	 * Returns the status of the resource
@@ -52,10 +39,4 @@ public interface ProcessResourceImplementationInterface extends ResourceImplemen
 	 */
 	ResourceState getState();
 	
-	/**
-	 * Returns a list of the available process
-	 * 
-	 * @return Available Processes
-	 */
-	List<IRCTProcess> availableProcesses();
 }

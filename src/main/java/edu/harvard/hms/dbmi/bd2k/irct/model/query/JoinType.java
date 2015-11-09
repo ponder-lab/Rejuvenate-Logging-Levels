@@ -1,19 +1,6 @@
-/*
- *  This file is part of Inter-Resource Communication Tool (IRCT).
- *
- *  IRCT is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
- *
- *  IRCT is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with IRCT.  If not, see <http://www.gnu.org/licenses/>.
- */
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 package edu.harvard.hms.dbmi.bd2k.irct.model.query;
 
 import java.util.List;
@@ -35,7 +22,7 @@ import javax.persistence.JoinColumn;
 import javax.persistence.MapKeyColumn;
 
 import edu.harvard.hms.dbmi.bd2k.irct.action.join.JoinAction;
-import edu.harvard.hms.dbmi.bd2k.irct.model.ontology.DataType;
+import edu.harvard.hms.dbmi.bd2k.irct.model.ontology.PrimitiveDataType;
 import edu.harvard.hms.dbmi.bd2k.irct.util.JsonUtilities;
 import edu.harvard.hms.dbmi.bd2k.irct.util.converter.JoinActionConverter;
 
@@ -63,11 +50,11 @@ public class JoinType {
 	private boolean requireFields;
 	private boolean requireRelationships;
 
-	@ElementCollection(targetClass = DataType.class)
+	@ElementCollection(targetClass = PrimitiveDataType.class)
 	@CollectionTable(name = "JoinType_SupportedDataType", joinColumns = @JoinColumn(name = "id"))
 	@Column(name = "supportedDataType", nullable = false)
 	@Enumerated(EnumType.STRING)
-	private List<DataType> supportedDataTypes;
+	private List<PrimitiveDataType> supportedDataTypes;
 
 	@Convert(converter = JoinActionConverter.class)
 	private JoinAction joinImplementation;
@@ -79,7 +66,7 @@ public class JoinType {
 	 *            The data type
 	 * @return If the data type is supported
 	 */
-	public boolean supportsDataType(DataType dataType) {
+	public boolean supportsDataType(PrimitiveDataType dataType) {
 		if (supportedDataTypes.isEmpty()
 				|| supportedDataTypes.contains(dataType)) {
 			return true;
@@ -127,7 +114,7 @@ public class JoinType {
 		jsonBuilder.add("reqireRelationships", this.requireRelationships);
 
 		JsonArrayBuilder supportedDataTypesArray = Json.createArrayBuilder();
-		for(DataType dataType : this.supportedDataTypes) {
+		for(PrimitiveDataType dataType : this.supportedDataTypes) {
 			supportedDataTypesArray.add(dataType.toString());
 		}
 		jsonBuilder.add("supportedDataTypes", supportedDataTypesArray.build());
@@ -265,7 +252,7 @@ public class JoinType {
 	 * 
 	 * @return Supported data types
 	 */
-	public List<DataType> getSupportedDataTypes() {
+	public List<PrimitiveDataType> getSupportedDataTypes() {
 		return supportedDataTypes;
 	}
 
@@ -275,7 +262,7 @@ public class JoinType {
 	 * @param supportedDataTypes
 	 *            Supported data types
 	 */
-	public void setSupportedDataTypes(List<DataType> supportedDataTypes) {
+	public void setSupportedDataTypes(List<PrimitiveDataType> supportedDataTypes) {
 		this.supportedDataTypes = supportedDataTypes;
 	}
 
