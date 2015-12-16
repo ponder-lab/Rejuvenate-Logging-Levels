@@ -48,7 +48,7 @@ public class ExecutionController {
 	 * 
 	 * @param process Process to run
 	 * @return result id
-	 * @throws PersistableException
+	 * @throws PersistableException Persistable exception occurred 
 	 */
 	public Long runProcess(IRCTProcess process) throws PersistableException {
 		log.info("Start: " + process.getId());
@@ -106,10 +106,11 @@ public class ExecutionController {
 	}
 
 	/**
+	 * Runs an execution plan
 	 * 
-	 * @param executionPlan
-	 * @param result
-	 * @throws PersistableException
+	 * @param executionPlan Execution Plan
+	 * @param result Result
+	 * @throws PersistableException A persistable exception occurred
 	 */
 	@Asynchronous
 	public void runExecutionPlan(ExecutionPlan executionPlan, Result result)

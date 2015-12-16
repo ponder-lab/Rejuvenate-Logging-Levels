@@ -52,6 +52,8 @@ public class QueryController {
 	/**
 	 * Initiates the creation of a query
 	 * 
+	 * @param conversationId Conversation id
+	 * 
 	 */
 	public void createQuery(String conversationId) {
 		this.query = new Query();
@@ -65,7 +67,7 @@ public class QueryController {
 	 * @param resources
 	 *            An array of resources
 	 * @return The subquery id
-	 * @throws ResourceNotFoundException
+	 * @throws ResourceNotFoundException Resource not found exception
 	 */
 	public Long createSubQuery(Resource... resources)
 			throws ResourceNotFoundException {
@@ -86,8 +88,9 @@ public class QueryController {
 	 *            The subQuery Id
 	 * @param parameter
 	 *            A parameters
+	 * @param resource Resouce
 	 * @return The select clause id
-	 * @throws SubQueryNotFoundException
+	 * @throws SubQueryNotFoundException SubQuery not found
 	 */
 	public Long addSelectClause(Long sqId, Path parameter, Resource resource)
 			throws SubQueryNotFoundException {
@@ -108,18 +111,18 @@ public class QueryController {
 	 * NOTE: NOT CURRENTLY TESTED OR FULLY IMPEMENTED
 	 *
 	 * 
-	 * @param sqId1
-	 * @param sqId2
-	 * @param joinType
-	 * @param fieldId1
-	 * @param fieldId2
-	 * @param relationship
-	 * @param joinId
-	 * @return
-	 * @throws ClauseNotFoundException
-	 * @throws ClauseIsNotTheCorrectType
-	 * @throws SubQueryNotFoundException
-	 * @throws JoinTypeNotSupported
+	 * @param sqId1 SubQuery 1
+	 * @param sqId2 SubQuery 2
+	 * @param joinType Join Type
+	 * @param fieldId1 Field 1
+	 * @param fieldId2 Field 2
+	 * @param relationship Relationship
+	 * @param joinId Join Id
+	 * @return Id
+	 * @throws ClauseNotFoundException Clause not found
+	 * @throws ClauseIsNotTheCorrectType Clause is not correct
+	 * @throws SubQueryNotFoundException Sub query not found
+	 * @throws JoinTypeNotSupported Join type not supported
 	 */
 	public Long addJoinClause(Long sqId1, Long sqId2, String joinType,
 			Path fieldId1, Path fieldId2, String relationship, Long joinId)

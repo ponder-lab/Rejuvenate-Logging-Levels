@@ -5,6 +5,7 @@ edu.harvard.hms.dbmi.bd2k.irct.action.process
 edu.harvard.hms.dbmi.bd2k.irct.action.query
 edu.harvard.hms.dbmi.bd2k.irct.controller
 edu.harvard.hms.dbmi.bd2k.irct.exception
+edu.harvard.hms.dbmi.bd2k.irct.model.action
 edu.harvard.hms.dbmi.bd2k.irct.model.ontology
 edu.harvard.hms.dbmi.bd2k.irct.model.process
 edu.harvard.hms.dbmi.bd2k.irct.model.query

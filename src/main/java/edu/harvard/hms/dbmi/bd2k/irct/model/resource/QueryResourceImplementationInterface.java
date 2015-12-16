@@ -34,8 +34,7 @@ public interface QueryResourceImplementationInterface extends
 	/**
 	 * Returns the results of the query if they are available
 	 * 
-	 * @param queryId
-	 *            Query ID
+	 * @param actionState actionState
 	 * @return Results
 	 * @throws ResourceInterfaceException A resource exception occurred
 	 */

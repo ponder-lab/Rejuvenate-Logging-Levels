@@ -28,7 +28,7 @@ public interface ResourceImplementationInterface {
 	/**
 	 * A string representation of the type of resource implementation this is
 	 * 
-	 * @return
+	 * @return Type
 	 */
 	String getType();
 

@@ -26,9 +26,10 @@ public interface ProcessResourceImplementationInterface extends ResourceImplemen
 	
 	/**
 	 * Returns the results of the process if they are available
-	 * 
-	 * @param processId Process ID
-	 * @return Results
+	 *
+	 * @param actionState Action State
+	 * @return Results Results
+	 * @throws ResourceInterfaceException A resource exception occurred
 	 */
 	ResultSet getResults(ActionState actionState) throws ResourceInterfaceException;
 

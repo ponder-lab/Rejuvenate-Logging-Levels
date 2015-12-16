@@ -97,7 +97,7 @@ public class WhereClause extends ClauseAbstract {
 	/**
 	 * Sets the subQuery to be associated with the where clause
 	 * 
-	 * @param subQuery
+	 * @param subQuery Sub Query
 	 */
 	public void setSubQuery(SubQuery subQuery) {
 		this.subQuery = subQuery;
@@ -155,7 +155,7 @@ public class WhereClause extends ClauseAbstract {
 	/**
 	 * Sets the predicate type that is associated with this where clause.
 	 * 
-	 * @param predicateType
+	 * @param predicateType Predicate Type
 	 */
 	public void setPredicateType(PredicateType predicateType) {
 		this.predicateType = predicateType;
