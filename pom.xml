@@ -21,6 +21,7 @@
 		</dependency>
 	</dependencies>
 	<build>
+		<sourceDirectory>src/main/java</sourceDirectory>
 		<finalName>IRCT-API</finalName>
 		<plugins>
 			<plugin>
