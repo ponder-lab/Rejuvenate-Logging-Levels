@@ -4,13 +4,19 @@
 package edu.harvard.hms.dbmi.bd2k.irct.controller;
 
 import java.util.Date;
+import java.util.concurrent.Callable;
 import java.util.logging.Logger;
 
+import javax.annotation.Resource;
 import javax.ejb.Asynchronous;
 import javax.ejb.Stateless;
+import javax.enterprise.concurrent.ManagedExecutorService;
 import javax.inject.Inject;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
 import javax.persistence.EntityManager;
-import javax.persistence.EntityManagerFactory;
+import javax.persistence.PersistenceContext;
+import javax.transaction.UserTransaction;
 
 import edu.harvard.hms.dbmi.bd2k.irct.action.ExecutionPlan;
 import edu.harvard.hms.dbmi.bd2k.irct.action.ProcessExecutable;
@@ -40,8 +46,11 @@ public class ExecutionController {
 	@Inject
 	Logger log;
 
-	@Inject
-	private EntityManagerFactory objectEntityManager;
+	@PersistenceContext
+    EntityManager entityManager;
+	
+	@Resource
+    private ManagedExecutorService mes;
 	
 	/**
 	 * Runs the process
@@ -54,8 +63,11 @@ public class ExecutionController {
 		log.info("Start: " + process.getId());
 		Result newResult = new Result();
 		
-		EntityManager oem = objectEntityManager.createEntityManager();
-		oem.persist(newResult);
+//		EntityManager oem = objectEntityManager.createEntityManager();
+//		oem.persist(newResult);
+		
+		newResult.setResultStatus(ResultStatus.Running);
+		entityManager.persist(newResult);
 		
 		ExecuteProcess ep = new ExecuteProcess();
 		ep.setup(process.getResource(), process);
@@ -85,9 +97,12 @@ public class ExecutionController {
 	public Long runQuery(Query query) throws PersistableException {
 		log.info("Start: " + query.getId());
 		Result newResult = new Result();
-
-		EntityManager oem = objectEntityManager.createEntityManager();
-		oem.persist(newResult);
+		
+//		EntityManager oem = objectEntityManager.createEntityManager();
+//		oem.persist(newResult);
+		
+		newResult.setResultStatus(ResultStatus.Running);
+		entityManager.persist(newResult);
 
 		ExecuteQuery eq = new ExecuteQuery();
 		eq.setup(query.getResources().get(0), query);
@@ -113,21 +128,47 @@ public class ExecutionController {
 	 * @throws PersistableException A persistable exception occurred
 	 */
 	@Asynchronous
-	public void runExecutionPlan(ExecutionPlan executionPlan, Result result)
+	public void runExecutionPlan(final ExecutionPlan executionPlan, final Result result)
 			throws PersistableException {
-
-		result.setRunTime(new Date());
-		executionPlan.run();
-
-		ResultSet rs = executionPlan.getResults();
-		if(rs != null) {
-			((Persistable) rs).persist("" + result.getId());
-		} else {
-			
-		}
-		result.setResultSetLocation("" + result.getId());
-		result.setImplementingResultSet(rs);
-		result.setResultStatus(ResultStatus.Available);
-
+		
+		Callable<Result> runPlan = new Callable<Result>() {
+			@Override
+            public Result call() throws Exception {
+				result.setRunTime(new Date());
+				executionPlan.run();
+				
+				ResultSet rs = executionPlan.getResults();
+				if(rs != null) {
+					((Persistable) rs).persist("" + result.getId());
+					result.setResultSetLocation("" + result.getId());
+					result.setImplementingResultSet(rs);
+					result.setResultStatus(ResultStatus.Available);
+				} else {
+					result.setResultStatus(ResultStatus.Error);
+				}
+				
+				
+//				EntityManager oem = objectEntityManager.createEntityManager();
+//				oem.persist(result);
+				UserTransaction userTransaction = lookup();
+	            userTransaction.begin();
+				try {
+					entityManager.merge(result);
+				} catch(Exception e) {
+					e.printStackTrace();
+				}
+				userTransaction.commit();
+				
+				return result;
+			}
+		};
+		
+		mes.submit(runPlan);
+//		 Future<Result> futureResult = mes.submit(runPlan);		
+		
 	}
+	private UserTransaction lookup() throws NamingException {
+        InitialContext ic = new InitialContext();
+        return (UserTransaction)ic.lookup("java:comp/UserTransaction");
+    }
 }

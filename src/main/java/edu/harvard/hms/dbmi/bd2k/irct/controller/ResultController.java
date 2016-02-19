@@ -16,6 +16,7 @@ import javax.persistence.criteria.Root;
 import edu.harvard.hms.dbmi.bd2k.irct.model.result.Persistable;
 import edu.harvard.hms.dbmi.bd2k.irct.model.result.Result;
 import edu.harvard.hms.dbmi.bd2k.irct.model.result.ResultSet;
+import edu.harvard.hms.dbmi.bd2k.irct.model.result.ResultStatus;
 import edu.harvard.hms.dbmi.bd2k.irct.model.result.exception.PersistableException;
 import edu.harvard.hms.dbmi.bd2k.irct.model.result.exception.ResultSetException;
 
@@ -69,10 +70,17 @@ public class ResultController {
 			PersistableException {
 		EntityManager oem = objectEntityManager.createEntityManager();
 		Result result = oem.find(Result.class, id);
+		
+		if(result.getResultStatus() == ResultStatus.Running) {
+			throw new ResultSetException("Result set is still running");
+		} else if(result.getResultStatus() != ResultStatus.Available) {
+			throw new ResultSetException("Result set is not available");
+		} else {
+			ResultSet rs = result.getImplementingResultSet();
+			((Persistable) rs).load(result.getResultSetLocation());
+			return rs;
+		}
 
-		ResultSet rs = result.getImplementingResultSet();
-		((Persistable) rs).load(result.getResultSetLocation());
-
-		return rs;
+		
 	}
 }
