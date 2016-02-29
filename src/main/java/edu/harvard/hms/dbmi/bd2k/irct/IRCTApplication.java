@@ -20,7 +20,6 @@ import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
 
 import edu.harvard.hms.dbmi.bd2k.irct.model.query.JoinType;
-import edu.harvard.hms.dbmi.bd2k.irct.model.query.PredicateType;
 import edu.harvard.hms.dbmi.bd2k.irct.model.resource.Resource;
 
 /**
@@ -37,8 +36,6 @@ public class IRCTApplication {
 
 	private Map<String, Resource> resources;
 	private Map<String, JoinType> supportedJoinTypes;
-
-	private Map<String, PredicateType> supportedPredicateTypes;
 
 	@Inject
 	Logger log;
@@ -67,10 +64,6 @@ public class IRCTApplication {
 		log.info("Loading Resources");
 		loadResources();
 		log.info("Finished Loading Resources");
-
-		log.info("Loading Predicates");
-		loadPredicates();
-		log.info("Finished Loading Predicates");
 
 		log.info("Finished Starting IRCT Application");
 	}
@@ -110,15 +103,6 @@ public class IRCTApplication {
 			this.resources.put(resource.getName(), resource);
 		}
 		log.info("Loaded " + this.resources.size() + " resources");
-	}
-
-	/**
-	 * 
-	 * Loads all the predicates from the persistence manager
-	 * 
-	 */
-	private void loadPredicates() {
-		setSupportedPredicateTypes(new HashMap<String, PredicateType>());
 	}
 
 	/**
@@ -236,74 +220,5 @@ public class IRCTApplication {
 	 */
 	public boolean doesJoinExists(String name) {
 		return this.supportedJoinTypes.containsKey(name);
-	}
-
-	/**
-	 * Returns a map of the supported predicates where the Predicate name is the
-	 * key, and the PredicateType itself is the value
-	 * 
-	 * @return Supported predicate types
-	 */
-	public Map<String, PredicateType> getSupportedPredicateTypes() {
-		return supportedPredicateTypes;
-	}
-
-	/**
-	 * Sets a map of the supported predicate types
-	 * 
-	 * @param supportedPredicateTypes
-	 *            Supported predicate types
-	 */
-	public void setSupportedPredicateTypes(
-			Map<String, PredicateType> supportedPredicateTypes) {
-		this.supportedPredicateTypes = supportedPredicateTypes;
-	}
-
-	/**
-	 * Adds a predicate to the list of supported predicates
-	 * 
-	 * @param name
-	 *            Predicate Name
-	 * @param predicateType
-	 *            Predicate
-	 */
-	public void addPredicate(String name, PredicateType predicateType) {
-		this.supportedPredicateTypes.put(name, predicateType);
-	}
-
-	/**
-	 * Removes a predicate from the list of supported predicates
-	 * 
-	 * @param name
-	 *            Predicate name
-	 */
-	public void removePredicate(String name) {
-		this.supportedPredicateTypes.remove(name);
-	}
-
-	/**
-	 * Returns true if the predicate type is supported
-	 * 
-	 * True if predicate type is supported, otherwise it is false
-	 * 
-	 * @param name
-	 *            Predicate name
-	 * @return If predicate exists
-	 */
-	public boolean doesPredicateExists(String name) {
-		return this.supportedPredicateTypes.containsKey(name);
-	}
-
-	/**
-	 * Returns true if the predicate type is supported
-	 * 
-	 * True if the predicate type is supported, otherwise it is false
-	 * 
-	 * @param predicateType
-	 *            Predicate Type
-	 * @return If predicate is supported
-	 */
-	public boolean doesPredicateExists(PredicateType predicateType) {
-		return this.supportedPredicateTypes.containsValue(predicateType);
 	}
 }
