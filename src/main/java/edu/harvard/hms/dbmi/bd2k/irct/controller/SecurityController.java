@@ -1,17 +1,22 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 package edu.harvard.hms.dbmi.bd2k.irct.controller;
 
 import java.math.BigInteger;
 import java.security.SecureRandom;
+import java.util.Calendar;
 import java.util.Date;
+import java.util.GregorianCalendar;
+import java.util.List;
 import java.util.logging.Logger;
 
-import javax.ejb.Stateless;
+import javax.ejb.Stateful;
 import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 
 import edu.harvard.hms.dbmi.bd2k.irct.model.security.SecureSession;
@@ -19,12 +24,12 @@ import edu.harvard.hms.dbmi.bd2k.irct.model.security.Token;
 import edu.harvard.hms.dbmi.bd2k.irct.model.security.User;
 
 /**
- * A stateless controller for managing security.
+ * A stateful controller for managing security.
  * 
  * @author Jeremy R. Easton-Marks
  *
  */
-@Stateless
+@Stateful
 public class SecurityController {
 
 	@PersistenceContext
@@ -53,7 +58,12 @@ public class SecurityController {
 		ss.setToken(token);
 		ss.setAccessKey(key);
 		ss.setCreated(new Date());
-		entityManager.persist(ss);
+		
+		if(user.getId() == null) {
+			entityManager.persist(ss);
+		} else {
+			entityManager.merge(ss);
+		}
 
 		log.info("Created key for " + user.getName());
 
@@ -72,13 +82,43 @@ public class SecurityController {
 		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
 		CriteriaQuery<SecureSession> cq = cb.createQuery(SecureSession.class);
 		Root<SecureSession> secureSession = cq.from(SecureSession.class);
+		
+		
+		Date startTime = new Date();
+		
+		Calendar endTime = GregorianCalendar.getInstance();
+		endTime.setTime(new Date());
+		endTime.add(Calendar.MINUTE, -15);
+		endTime.getTime();
+
+		cq.where(cb.and(cb.equal(secureSession.get("accessKey"), key), 
+				cb.between(secureSession.<Date>get("created"), endTime.getTime(), startTime)));
+		
 		cq.select(secureSession);
+		List<SecureSession> ssl = entityManager.createQuery(cq).getResultList();
+		if(ssl == null || ssl.isEmpty()) {
+			return null;
+		}
+		
+		SecureSession ss = ssl.get(0);
 
-		// Predicate key = cb.equal(arg0, arg1)
-		// cq.where(arg0)
-
-		// log.info("Found valid key for " + user.getName());
-		return null;
+		log.info("Found valid key for " + ss.getUser().getName());
+		return ss;
+	}
+	
+	public User getUser(String userId) {
+		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+		CriteriaQuery<User> cq = cb.createQuery(User.class);
+		Root<User> userRoot = cq.from(User.class);
+		cq.where(cb.equal(userRoot.get("userId"), userId));
+		cq.select(userRoot);
+		List<User> users = entityManager.createQuery(cq).getResultList();
+		
+		if(users == null || users.isEmpty()) {
+			return new User((String) userId);
+		}
+		
+		return users.get(0);
 	}
 
 	private final String generateString() {
