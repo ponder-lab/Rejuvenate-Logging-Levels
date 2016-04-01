@@ -1,14 +1,15 @@
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-package edu.harvard.hms.dbmi.bd2k.irct.model.resource;
+package edu.harvard.hms.dbmi.bd2k.irct.model.resource.implementation;
 
 
 import java.util.List;
 
 import edu.harvard.hms.dbmi.bd2k.irct.model.action.ActionState;
-import edu.harvard.hms.dbmi.bd2k.irct.model.ontology.Path;
+import edu.harvard.hms.dbmi.bd2k.irct.model.ontology.Entity;
 import edu.harvard.hms.dbmi.bd2k.irct.model.query.Query;
+import edu.harvard.hms.dbmi.bd2k.irct.model.resource.ResourceState;
 import edu.harvard.hms.dbmi.bd2k.irct.model.result.ResultSet;
 import edu.harvard.hms.dbmi.bd2k.irct.exception.ResourceInterfaceException;
 
@@ -52,7 +53,7 @@ public interface QueryResourceImplementationInterface extends
 	 * 
 	 * @return Return Entity
 	 */
-	List<Path> getReturnEntity();
+	List<Entity> getReturnEntity();
 	
 	/**
 	 * Returns if the default entity is editable

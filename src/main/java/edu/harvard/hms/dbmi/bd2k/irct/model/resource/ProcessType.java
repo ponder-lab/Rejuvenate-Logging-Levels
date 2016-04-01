@@ -1,7 +1,7 @@
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-package edu.harvard.hms.dbmi.bd2k.irct.model.query;
+package edu.harvard.hms.dbmi.bd2k.irct.model.resource;
 
 import java.io.Serializable;
 import java.util.List;
@@ -10,44 +10,34 @@ import javax.json.Json;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
-import javax.persistence.Convert;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
-import javax.persistence.OneToOne;
-
-import edu.harvard.hms.dbmi.bd2k.irct.action.join.JoinAction;
-import edu.harvard.hms.dbmi.bd2k.irct.model.resource.Field;
-import edu.harvard.hms.dbmi.bd2k.irct.util.converter.JoinActionConverter;
 
 /**
- * The join type class provides a way for the IRCT application to keep track of
- * which joins can be used.
+ * 
+ * Defines the process type
  * 
  * @author Jeremy R. Easton-Marks
  *
  */
 @Entity
-public class JoinType implements Serializable {
-
-	private static final long serialVersionUID = 5173414123049320818L;
+public class ProcessType implements Serializable {
+	private static final long serialVersionUID = 30045608286165958L;
 
 	@Id
-	@GeneratedValue
 	private long id;
-
+	
 	private String name;
 	private String displayName;
 	private String description;
-
+	
 	@OneToMany(fetch = FetchType.EAGER)
 	private List<Field> fields;
 	
-	@Convert(converter = JoinActionConverter.class)
-	private JoinAction action;
-
+	@OneToMany(fetch = FetchType.EAGER)
+	private List<Field> returns;	
 	/**
 	 * Returns a JSONObject representation of the object. This returns only the
 	 * attributes associated with this object and not their representation.
@@ -71,21 +61,32 @@ public class JoinType implements Serializable {
 	 */
 	public JsonObject toJson(int depth) {
 		depth--;
-
-		JsonObjectBuilder jsonBuilder = Json.createObjectBuilder();
-		jsonBuilder.add("name", this.name);
-		jsonBuilder.add("displayName", this.displayName);
-		jsonBuilder.add("description", this.description);
-
-		JsonArrayBuilder valuesType = Json.createArrayBuilder();
+		
+		JsonObjectBuilder processTypeJSON = Json.createObjectBuilder();
+		
+		processTypeJSON.add("name", name);
+		processTypeJSON.add("displayName", displayName);
+		processTypeJSON.add("description", description);
+		
+		JsonArrayBuilder fieldType = Json.createArrayBuilder();
 		if (this.fields != null) {
 			for (Field value : this.fields) {
-				valuesType.add(value.toJson());
+				fieldType.add(value.toJson());
 			}
 		}
-		jsonBuilder.add("fields", valuesType.build());
-
-		return jsonBuilder.build();
+		
+		processTypeJSON.add("fields", fieldType);
+		
+		JsonArrayBuilder returnsType = Json.createArrayBuilder();
+		if (this.returns != null) {
+			for (Field value : this.returns) {
+				returnsType.add(value.toJson());
+			}
+		}
+		
+		processTypeJSON.add("returns", returnsType);
+		
+		return processTypeJSON.build();
 	}
 
 	/**
@@ -96,8 +97,7 @@ public class JoinType implements Serializable {
 	}
 
 	/**
-	 * @param id
-	 *            the id to set
+	 * @param id the id to set
 	 */
 	public void setId(long id) {
 		this.id = id;
@@ -111,8 +111,7 @@ public class JoinType implements Serializable {
 	}
 
 	/**
-	 * @param name
-	 *            the name to set
+	 * @param name the name to set
 	 */
 	public void setName(String name) {
 		this.name = name;
@@ -126,8 +125,7 @@ public class JoinType implements Serializable {
 	}
 
 	/**
-	 * @param displayName
-	 *            the displayName to set
+	 * @param displayName the displayName to set
 	 */
 	public void setDisplayName(String displayName) {
 		this.displayName = displayName;
@@ -141,8 +139,7 @@ public class JoinType implements Serializable {
 	}
 
 	/**
-	 * @param description
-	 *            the description to set
+	 * @param description the description to set
 	 */
 	public void setDescription(String description) {
 		this.description = description;
@@ -156,29 +153,26 @@ public class JoinType implements Serializable {
 	}
 
 	/**
-	 * @param fields
-	 *            the fields to set
+	 * @param fields the fields to set
 	 */
 	public void setFields(List<Field> fields) {
 		this.fields = fields;
 	}
 
 	/**
-	 * @return the action
+	 * @return the returns
 	 */
-	public JoinAction getAction() {
-		return action;
+	public List<Field> getReturns() {
+		return returns;
 	}
 
 	/**
-	 * @param action the action to set
+	 * @param returns the returns to set
 	 */
-	public void setAction(JoinAction action) {
-		this.action = action;
+	public void setReturns(List<Field> returns) {
+		this.returns = returns;
 	}
-
-	// -------------------------------------------------------------------------
-	// SETTERS AND GETTERS
-	// -------------------------------------------------------------------------
-
+	
+	
+	
 }

@@ -7,7 +7,7 @@ import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 
-import edu.harvard.hms.dbmi.bd2k.irct.model.ontology.Path;
+import edu.harvard.hms.dbmi.bd2k.irct.model.ontology.Entity;
 
 /**
  * The select clause provides a list of parameters that should be returned by
@@ -17,7 +17,7 @@ import edu.harvard.hms.dbmi.bd2k.irct.model.ontology.Path;
  *
  */
 public class SelectClause extends ClauseAbstract {
-	private Path parameter;
+	private Entity parameter;
 
 	public SelectClause(Long id) {
 		super(id);
@@ -60,7 +60,7 @@ public class SelectClause extends ClauseAbstract {
 	 * 
 	 * @return Select parameters
 	 */
-	public Path getParameter() {
+	public Entity getParameter() {
 		return parameter;
 	}
 
@@ -70,7 +70,7 @@ public class SelectClause extends ClauseAbstract {
 	 * @param parameter
 	 *            Select parameters
 	 */
-	public void setParameters(Path parameter) {
+	public void setParameters(Entity parameter) {
 		this.parameter = parameter;
 	}
 }

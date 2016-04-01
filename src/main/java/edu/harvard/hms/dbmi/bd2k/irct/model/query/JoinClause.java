@@ -7,7 +7,7 @@ import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 
-import edu.harvard.hms.dbmi.bd2k.irct.model.ontology.Path;
+import edu.harvard.hms.dbmi.bd2k.irct.model.ontology.Entity;
 
 /**
  * The Join clause allows the user to combine 2 different subqueries on given
@@ -22,8 +22,8 @@ public class JoinClause extends ClauseAbstract {
 	private SubQuery subQuery1;
 	private SubQuery subQuery2;
 	private JoinType joinType;
-	private Path field1;
-	private Path field2;
+	private Entity field1;
+	private Entity field2;
 	private String relationship;
 
 	/**
@@ -116,7 +116,7 @@ public class JoinClause extends ClauseAbstract {
 	 * 
 	 * @return Field 1 
 	 */
-	public Path getField1() {
+	public Entity getField1() {
 		return field1;
 	}
 
@@ -125,7 +125,7 @@ public class JoinClause extends ClauseAbstract {
 	 * 
 	 * @param field1 Field 1
 	 */
-	public void setField1(Path field1) {
+	public void setField1(Entity field1) {
 		this.field1 = field1;
 	}
 
@@ -133,7 +133,7 @@ public class JoinClause extends ClauseAbstract {
 	 * Returns the second field if it exists
 	 * @return Field 2
 	 */
-	public Path getField2() {
+	public Entity getField2() {
 		return field2;
 	}
 
@@ -142,7 +142,7 @@ public class JoinClause extends ClauseAbstract {
 	 * 
 	 * @param field2 Field 2
 	 */
-	public void setField2(Path field2) {
+	public void setField2(Entity field2) {
 		this.field2 = field2;
 	}
 

@@ -19,8 +19,10 @@ import javax.persistence.PersistenceContext;
 import javax.transaction.UserTransaction;
 
 import edu.harvard.hms.dbmi.bd2k.irct.action.ExecutionPlan;
+import edu.harvard.hms.dbmi.bd2k.irct.action.JoinExecutable;
 import edu.harvard.hms.dbmi.bd2k.irct.action.ProcessExecutable;
 import edu.harvard.hms.dbmi.bd2k.irct.action.QueryExecutable;
+import edu.harvard.hms.dbmi.bd2k.irct.action.join.JoinAction;
 import edu.harvard.hms.dbmi.bd2k.irct.action.process.ExecuteProcess;
 import edu.harvard.hms.dbmi.bd2k.irct.action.query.ExecuteQuery;
 import edu.harvard.hms.dbmi.bd2k.irct.model.process.IRCTProcess;
@@ -98,9 +100,6 @@ public class ExecutionController {
 		log.info("Start: " + query.getId());
 		Result newResult = new Result();
 		
-//		EntityManager oem = objectEntityManager.createEntityManager();
-//		oem.persist(newResult);
-		
 		newResult.setResultStatus(ResultStatus.Running);
 		entityManager.persist(newResult);
 
@@ -118,6 +117,31 @@ public class ExecutionController {
 		log.info("Stop: " + query.getId());
 
 		return newResult.getId();
+	}
+	
+	/**
+	 * Run a join by creating an execution plan
+	 * 
+	 * @param joinAction Join to run
+	 * @return Result Id
+	 * @throws PersistableException An error occurred
+	 */
+	public Long runJoin(JoinAction joinAction) throws PersistableException {
+		log.info("Starting: " + joinAction.getType());
+		Result newResult = new Result();
+		newResult.setResultStatus(ResultStatus.Running);
+		
+		JoinExecutable je = new JoinExecutable();
+		je.setup(joinAction);
+		
+		ExecutionPlan ep = new ExecutionPlan();
+		ep.setup(je);
+		
+		runExecutionPlan(ep, newResult);
+		
+		log.info("Stop: " + joinAction.getType());
+		return newResult.getId();
+		
 	}
 
 	/**

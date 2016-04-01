@@ -1,9 +1,19 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 package edu.harvard.hms.dbmi.bd2k.irct.controller;
 
-import javax.ejb.Stateless;
+import java.util.Map;
 
+import javax.ejb.Stateful;
+import javax.inject.Inject;
+
+import edu.harvard.hms.dbmi.bd2k.irct.action.join.JoinAction;
+import edu.harvard.hms.dbmi.bd2k.irct.exception.ActionNotSetException;
+import edu.harvard.hms.dbmi.bd2k.irct.exception.FieldException;
+import edu.harvard.hms.dbmi.bd2k.irct.exception.JoinActionSetupException;
 import edu.harvard.hms.dbmi.bd2k.irct.model.query.JoinType;
-import edu.harvard.hms.dbmi.bd2k.irct.model.result.Result;
+import edu.harvard.hms.dbmi.bd2k.irct.util.Utilities;
 
 /**
  * A stateless controller for creating and running joins.
@@ -13,9 +23,14 @@ import edu.harvard.hms.dbmi.bd2k.irct.model.result.Result;
  * @author Jeremy R. Easton-Marks
  *
  */
-@Stateless
+@Stateful
 public class JoinController {
+	
+	@Inject
+	private ResultController rc;
 
+	private JoinType joinType;
+	private JoinAction joinAction;
 	/**
 	 * Creates a new join of the type passed in.
 	 * 
@@ -23,34 +38,53 @@ public class JoinController {
 	 *            The name of the join to create
 	 * @return The created join
 	 */
-	public JoinType createJoin(String joinName) {
-		// TODO: Fill in
-		return null;
+	public void createJoin(JoinType joinType) {
+		this.setJoinType(joinType);
+		this.setJoinAction(joinType.getAction());
 	}
+	
+	
+	public void setup(Map<String, String> parameters) throws ActionNotSetException, FieldException, JoinActionSetupException {
+		if((this.getJoinAction() == null) || (this.getJoinType() == null)) {
+			throw new ActionNotSetException("Join has not been created");
+		}
+		
+		Map<String, Object> actionParameters = Utilities.createActionParametersFromStringMap(this.joinType.getFields(), parameters, rc);
+		if(actionParameters != null) {
+			joinAction.setup(actionParameters);
+		}
+	}
+
 
 	/**
-	 * Determines if the join that has been passed in is valid or not. A join is
-	 * considered valid if it contains valid values for all the required fields.
-	 * 
-	 * 
-	 * @param join
-	 *            The join to check
-	 * @return True if the join is valid, false if it is not valid
+	 * @return the joinType
 	 */
-	public boolean validJoin(JoinType join) {
-		// TODO: Fill in
-		return false;
+	public JoinType getJoinType() {
+		return joinType;
 	}
+
 
 	/**
-	 * Runs a join that has been passed to it.
-	 * 
-	 * @param join The join to run
-	 * @return Results of the join
+	 * @param joinType the joinType to set
 	 */
-	public Result runJoin(JoinType join) {
-		// TODO: Fill in
-		return null;
+	public void setJoinType(JoinType joinType) {
+		this.joinType = joinType;
 	}
 
+
+	/**
+	 * @return the joinAction
+	 */
+	public JoinAction getJoinAction() {
+		return joinAction;
+	}
+
+
+	/**
+	 * @param joinAction the joinAction to set
+	 */
+	public void setJoinAction(JoinAction joinAction) {
+		this.joinAction = joinAction;
+	}
+	
 }

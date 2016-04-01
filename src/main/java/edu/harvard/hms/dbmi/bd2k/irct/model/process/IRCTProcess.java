@@ -6,6 +6,7 @@ package edu.harvard.hms.dbmi.bd2k.irct.model.process;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import edu.harvard.hms.dbmi.bd2k.irct.model.resource.ProcessType;
 import edu.harvard.hms.dbmi.bd2k.irct.model.resource.Resource;
 import edu.harvard.hms.dbmi.bd2k.irct.model.result.ResultSet;
 

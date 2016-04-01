@@ -9,9 +9,9 @@ import javax.ejb.Stateful;
 import javax.inject.Inject;
 
 import edu.harvard.hms.dbmi.bd2k.irct.model.process.IRCTProcess;
-import edu.harvard.hms.dbmi.bd2k.irct.model.process.ProcessType;
-import edu.harvard.hms.dbmi.bd2k.irct.model.process.ProcessTypeParameter;
-import edu.harvard.hms.dbmi.bd2k.irct.model.process.ProcessTypeParameterType;
+import edu.harvard.hms.dbmi.bd2k.irct.model.resource.Field;
+import edu.harvard.hms.dbmi.bd2k.irct.model.resource.PrimitiveDataType;
+import edu.harvard.hms.dbmi.bd2k.irct.model.resource.ProcessType;
 import edu.harvard.hms.dbmi.bd2k.irct.model.resource.Resource;
 import edu.harvard.hms.dbmi.bd2k.irct.model.result.exception.PersistableException;
 import edu.harvard.hms.dbmi.bd2k.irct.model.result.exception.ResultSetException;
@@ -55,11 +55,11 @@ public class ProcessController {
 		ProcessType pt = findProcess(resource, processName);
 		process.setResource(resource);
 		try {
-			for(ProcessTypeParameter ptp : pt.getParameter()) {
-				if(ptp.getType() == ProcessTypeParameterType.RESULTSET) {
-					process.getResultSets().put(ptp.getName(), rc.getResultSet(Long.parseLong(values.get(ptp.getName()), 10)));
+			for(Field field : pt.getFields()) {
+				if(field.getDataTypes().contains(PrimitiveDataType.RESULTSET)) {
+					process.getResultSets().put(field.getName(), rc.getResultSet(Long.parseLong(values.get(field.getName()), 10)));
 				} else {
-					process.getValues().put(ptp.getName(), values.get(ptp.getName()));
+					process.getValues().put(field.getName(), values.get(field.getName()));
 				}
 			}
 		} catch (NumberFormatException e) {
@@ -85,7 +85,7 @@ public class ProcessController {
 	}
 	
 	private ProcessType findProcess(Resource resource, String processName) {
-		for(ProcessType process : resource.getAvailableProcesses()) {
+		for(ProcessType process : resource.getSupportedProcesses()) {
 			if(process.getName().equals(processName)) {
 				return process;
 			}

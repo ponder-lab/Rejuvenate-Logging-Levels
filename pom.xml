@@ -7,6 +7,11 @@
 	<name>INTER-RESOURCE COMMUNICATION TOOL : API</name>
 	<description></description>
 	<dependencies>
+	<dependency>
+			<groupId>edu.harvard.hms.dbmi.bd2k.irct</groupId>
+			<artifactId>IRCT-RI</artifactId>
+			<version>1.0-Development</version>
+		</dependency>
 		<dependency>
 			<groupId>javax</groupId>
 			<artifactId>javaee-api</artifactId>

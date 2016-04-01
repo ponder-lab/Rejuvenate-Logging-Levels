@@ -13,7 +13,7 @@ public class PredicateException extends Exception {
 	private static final long serialVersionUID = 2350119710872195996L;
 
 	/**
-	 * Create an exception that an unspecified error occurred in the the predicate.
+	 * Create an exception that an unspecified error occurred in the predicate.
 	 * @param message Message
 	 */
 	public PredicateException(String message) {

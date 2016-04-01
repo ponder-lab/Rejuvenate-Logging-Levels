@@ -1,3 +1,6 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 package edu.harvard.hms.dbmi.bd2k.irct.model.security;
 
 import java.io.Serializable;
@@ -22,6 +25,13 @@ public class JWT extends Token implements Serializable {
 	@Lob
 	private String access;
 	private String type;
+	
+	/**
+	 * Creates a new token
+	 */
+	public JWT() {
+		
+	}
 
 	/**
 	 * Creates a new token with the given information
@@ -38,6 +48,10 @@ public class JWT extends Token implements Serializable {
 		this.access = access;
 		this.type = type;
 
+	}
+	
+	public String toString() {
+		return this.idToken;
 	}
 
 	/**

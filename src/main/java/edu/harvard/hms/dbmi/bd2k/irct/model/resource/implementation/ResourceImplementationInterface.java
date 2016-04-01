@@ -1,14 +1,15 @@
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-package edu.harvard.hms.dbmi.bd2k.irct.model.resource;
+package edu.harvard.hms.dbmi.bd2k.irct.model.resource.implementation;
 
 import java.util.List;
 import java.util.Map;
 
 import javax.json.JsonObject;
 
-import edu.harvard.hms.dbmi.bd2k.irct.model.ontology.Path;
+import edu.harvard.hms.dbmi.bd2k.irct.exception.ResourceInterfaceException;
+import edu.harvard.hms.dbmi.bd2k.irct.model.ontology.Entity;
 
 /**
  * Provides a base interface that is used by a resource implementation 
@@ -22,8 +23,9 @@ public interface ResourceImplementationInterface {
 	 * 
 	 * @param parameters
 	 *            Setup parameters
+	 * @throws ResourceInterfaceException 
 	 */
-	void setup(Map<String, String> parameters);
+	void setup(Map<String, String> parameters) throws ResourceInterfaceException;
 
 	/**
 	 * A string representation of the type of resource implementation this is
@@ -37,7 +39,7 @@ public interface ResourceImplementationInterface {
 	 * 
 	 * @return The default returned object
 	 */
-	List<Path> getReturnEntity();
+	List<Entity> getReturnEntity();
 
 	/**
 	 * Returns a JSON representation of the implementing interface

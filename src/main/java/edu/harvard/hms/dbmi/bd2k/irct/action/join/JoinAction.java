@@ -5,10 +5,8 @@ package edu.harvard.hms.dbmi.bd2k.irct.action.join;
 
 import java.util.Map;
 
-import javax.json.JsonObject;
-
 import edu.harvard.hms.dbmi.bd2k.irct.action.Action;
-import edu.harvard.hms.dbmi.bd2k.irct.model.result.Joinable;
+import edu.harvard.hms.dbmi.bd2k.irct.exception.JoinActionSetupException;
 
 /**
  * The JoinAction interface extends the Action interface for Joins. All joins
@@ -24,20 +22,9 @@ public interface JoinAction extends Action {
 	 * 
 	 * @param parameters
 	 *            Join Parameters
+	 * @throws Exception An exception occurred
 	 */
-	void setup(Map<String, String> parameters);
-
-	/**
-	 * Sets the joinable resultSets that are to be combined and joins them. The
-	 * results of these joins can then be retrieved with the getResults()
-	 * method.
-	 * 
-	 * @param joinables
-	 *            All RrsultSets that are to be joined
-	 * @throws Exception
-	 *             An exception occurred joining the resultSets
-	 */
-	void setJoins(Joinable... joinables) throws Exception;
+	void setup(Map<String, Object> parameters) throws JoinActionSetupException;
 
 	/**
 	 * Returns the join type
@@ -46,24 +33,4 @@ public interface JoinAction extends Action {
 	 */
 	String getType();
 	
-	/**
-	 * Returns a JSONObject representation of the object. This returns only the
-	 * attributes associated with this object and not their representation.
-	 * 
-	 * This is equivalent of toJson(1);
-	 * 
-	 * @return JSON Representation
-	 */
-	JsonObject toJson();
-
-	/**
-	 * Returns a JSONObject representation of the object. This returns only the
-	 * attributes associated with this object and not their representation.
-	 * 
-	 * 
-	 * @param depth
-	 *            Depth to travel
-	 * @return JSON Representation
-	 */
-	JsonObject toJson(int depth);
 }

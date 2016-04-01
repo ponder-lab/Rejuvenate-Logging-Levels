@@ -10,7 +10,8 @@ import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 
-import edu.harvard.hms.dbmi.bd2k.irct.model.ontology.Path;
+import edu.harvard.hms.dbmi.bd2k.irct.model.ontology.Entity;
+import edu.harvard.hms.dbmi.bd2k.irct.model.resource.LogicalOperator;
 
 /**
  * The where clause contains information used in a query to filter upon the
@@ -22,7 +23,7 @@ import edu.harvard.hms.dbmi.bd2k.irct.model.ontology.Path;
 public class WhereClause extends ClauseAbstract {
 	private SubQuery subQuery;
 	private LogicalOperator logicalOperator;
-	private Path field;
+	private Entity field;
 	private PredicateType predicateType;
 	private Map<String, String> values;
 
@@ -129,7 +130,7 @@ public class WhereClause extends ClauseAbstract {
 	 * 
 	 * @return Field
 	 */
-	public Path getField() {
+	public Entity getField() {
 		return field;
 	}
 
@@ -139,7 +140,7 @@ public class WhereClause extends ClauseAbstract {
 	 * @param field
 	 *            Field
 	 */
-	public void setField(Path field) {
+	public void setField(Entity field) {
 		this.field = field;
 	}
 

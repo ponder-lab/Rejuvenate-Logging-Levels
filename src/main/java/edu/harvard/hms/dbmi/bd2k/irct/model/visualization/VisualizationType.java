@@ -1,7 +1,7 @@
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-package edu.harvard.hms.dbmi.bd2k.irct.model.process;
+package edu.harvard.hms.dbmi.bd2k.irct.model.visualization;
 
 import java.io.Serializable;
 import java.util.List;
@@ -11,18 +11,23 @@ import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
 
+import edu.harvard.hms.dbmi.bd2k.irct.model.resource.Field;
+
 /**
  * 
- * Defines the process type
+ * Defines the visualization type
  * 
  * @author Jeremy R. Easton-Marks
  *
  */
 @Entity
-public class ProcessType implements Serializable {
+public class VisualizationType implements Serializable {
 	private static final long serialVersionUID = 30045608286165958L;
 
 	@Id
@@ -32,8 +37,11 @@ public class ProcessType implements Serializable {
 	private String displayName;
 	private String description;
 	
-	@OneToMany
-	private List<ProcessTypeParameter> parameter;
+	@OneToMany(fetch = FetchType.EAGER)
+	private List<Field> fields;
+	
+	@Enumerated(EnumType.STRING)
+	private VisualizationReturnType returns;	
 	
 	/**
 	 * Returns a JSONObject representation of the object. This returns only the
@@ -65,94 +73,45 @@ public class ProcessType implements Serializable {
 		processTypeJSON.add("displayName", displayName);
 		processTypeJSON.add("description", description);
 		
-		JsonArrayBuilder processType = Json.createArrayBuilder();
-		if(depth == 0) {
-			for(ProcessTypeParameter param : parameter) {
-				processType.add(param.getName());
-			}
-
-		} else {
-			for(ProcessTypeParameter param : parameter) {
-				processType.add(param.toJson(depth));
+		JsonArrayBuilder fieldType = Json.createArrayBuilder();
+		if (this.fields != null) {
+			for (Field value : this.fields) {
+				fieldType.add(value.toJson());
 			}
 		}
+		processTypeJSON.add("fields", fieldType);
 		
-		processTypeJSON.add("parameters", processType);
+		processTypeJSON.add("returns", returns.toString());
 		
 		return processTypeJSON.build();
 	}
-	
-	
+
 	/**
-	 * Returns the id
-	 * 
-	 * @return ID
+	 * @return the id
 	 */
 	public long getId() {
 		return id;
 	}
 
 	/**
-	 * Sets the id
-	 * 
-	 * @param id ID
+	 * @param id the id to set
 	 */
 	public void setId(long id) {
 		this.id = id;
 	}
 
 	/**
-	 * Returns the name of the process
-	 * 
-	 * @return Name
+	 * @return the name
 	 */
 	public String getName() {
 		return name;
 	}
 
 	/**
-	 * Sets the name of the process
-	 * 
-	 * @param name Name
+	 * @param name the name to set
 	 */
 	public void setName(String name) {
 		this.name = name;
-	}
-
-	/**
-	 * Returns a description of the process
-	 * 
-	 * @return Description
-	 */
-	public String getDescription() {
-		return description;
-	}
-
-	/**
-	 * Sets the description of the process
-	 * 
-	 * @param description Description
-	 */
-	public void setDescription(String description) {
-		this.description = description;
-	}
-
-	/**
-	 * Returns a list parameters
-	 * 
-	 * @return List of parameters
-	 */
-	public List<ProcessTypeParameter> getParameter() {
-		return parameter;
-	}
-
-	/**
-	 * Sets a list of the parameters
-	 * 
-	 * @param parameter List of the parameters
-	 */
-	public void setParameter(List<ProcessTypeParameter> parameter) {
-		this.parameter = parameter;
 	}
 
 	/**
@@ -168,7 +127,49 @@ public class ProcessType implements Serializable {
 	public void setDisplayName(String displayName) {
 		this.displayName = displayName;
 	}
-	
-	
 
+	/**
+	 * @return the description
+	 */
+	public String getDescription() {
+		return description;
+	}
+
+	/**
+	 * @param description the description to set
+	 */
+	public void setDescription(String description) {
+		this.description = description;
+	}
+
+	/**
+	 * @return the fields
+	 */
+	public List<Field> getFields() {
+		return fields;
+	}
+
+	/**
+	 * @param fields the fields to set
+	 */
+	public void setFields(List<Field> fields) {
+		this.fields = fields;
+	}
+
+	/**
+	 * @return the returns
+	 */
+	public VisualizationReturnType getReturns() {
+		return returns;
+	}
+
+	/**
+	 * @param returns the returns to set
+	 */
+	public void setReturns(VisualizationReturnType returns) {
+		this.returns = returns;
+	}
+	
+	
+	
 }

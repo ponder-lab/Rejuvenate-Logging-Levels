@@ -10,7 +10,7 @@ import java.util.Date;
 
 import org.apache.commons.lang3.ArrayUtils;
 
-import edu.harvard.hms.dbmi.bd2k.irct.model.ontology.PrimitiveDataType;
+import edu.harvard.hms.dbmi.bd2k.irct.model.resource.PrimitiveDataType;
 import edu.harvard.hms.dbmi.bd2k.irct.model.result.exception.ResultSetException;
 
 /**

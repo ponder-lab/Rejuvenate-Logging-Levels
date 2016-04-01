@@ -5,101 +5,89 @@ package edu.harvard.hms.dbmi.bd2k.irct.action.join;
 
 import java.util.Map;
 
-import javax.json.Json;
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
-
+import edu.harvard.hms.dbmi.bd2k.irct.exception.JoinActionSetupException;
+import edu.harvard.hms.dbmi.bd2k.irct.model.result.FileResultSet;
 import edu.harvard.hms.dbmi.bd2k.irct.model.result.Joinable;
-import edu.harvard.hms.dbmi.bd2k.irct.model.result.MemoryResultSet;
 import edu.harvard.hms.dbmi.bd2k.irct.model.result.ResultSet;
+import edu.harvard.hms.dbmi.bd2k.irct.model.result.exception.PersistableException;
 import edu.harvard.hms.dbmi.bd2k.irct.model.result.exception.ResultSetException;
 
 /**
  * Performs a inner join between two result sets that implements the
  * Joinable interface
  * 
- * NOTE: Currently returns a MemoryResultSet which may limit the size of joins
- * that can be performed
- * 
  * @author Jeremy R. Easton-Marks
  *
  */
 public class InnerJoin implements JoinAction {
-	ResultSet rs1;
-	int rs1MatchIndex;
-	ResultSet rs2;
-	int rs2MatchIndex;
+	private ResultSet leftResultSet;
+	private int leftColumnIndex;
+	private ResultSet rightResultSet;
+	private int rightColumnIndex;
 
-	ResultSet results;
+	private ResultSet results;
 
-	public void setup(Map<String, String> parameters) {
+	@Override
+	public void setup(Map<String, Object> parameters) throws JoinActionSetupException {
+		try {
+			this.leftResultSet = (ResultSet) parameters.get("LeftResultSet");
+			this.rightResultSet = (ResultSet) parameters.get("RightResultSet");
+			this.leftColumnIndex = this.leftResultSet.findColumn((String) parameters.get("LeftColumn"));
+			this.rightColumnIndex = this.rightResultSet.findColumn((String) parameters.get("RightColumn"));
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new JoinActionSetupException("Unable to setup join columns");
+		}
 		
 	}
-	
-	public void setJoins(Joinable...joinables ) throws Exception{
-		Joinable rs1 = joinables[0];
-		Joinable rs2 = joinables[1];
-		if (rs1 instanceof ResultSet) {
-			this.rs1MatchIndex = rs1.getMatchColumnIndexes()[0];
-			this.rs1 = (ResultSet) rs1;
-		} else {
-			throw new ResultSetException("RS1 Not an instance of ResultSet");
-		}
 
-		if (rs1 instanceof ResultSet) {
-			this.rs2MatchIndex = rs2.getMatchColumnIndexes()[0];
-			this.rs2 = (ResultSet) rs2;
-		} else {
-			throw new ResultSetException("RS2 Not an instance of ResultSet");
-		}
-	}
-
+	@Override
 	public void run() {
 		try {
-			MemoryResultSet computedResults = new MemoryResultSet();
-			computedResults.appendColumn(rs1.getColumn(rs1MatchIndex));
+			FileResultSet computedResults = new FileResultSet();
+			computedResults.appendColumn(leftResultSet.getColumn(leftColumnIndex));
 
-			for (int rsColumnIterator = 0; rsColumnIterator < rs1
+			for (int rsColumnIterator = 0; rsColumnIterator < leftResultSet
 					.getColumnSize(); rsColumnIterator++) {
-				if (rsColumnIterator != rs1MatchIndex) {
-					computedResults.appendColumn(rs1
+				if (rsColumnIterator != leftColumnIndex) {
+					computedResults.appendColumn(leftResultSet
 							.getColumn(rsColumnIterator));
 				}
 			}
-			for (int rsColumnIterator = 0; rsColumnIterator < rs2
+			for (int rsColumnIterator = 0; rsColumnIterator < rightResultSet
 					.getColumnSize(); rsColumnIterator++) {
-				if (rsColumnIterator != rs2MatchIndex) {
-					computedResults.appendColumn(rs2
+				if (rsColumnIterator != rightColumnIndex) {
+					computedResults.appendColumn(rightResultSet
 							.getColumn(rsColumnIterator));
 				}
 			}
-			int baseColumn = rs1.getColumnSize() - 1;
+			int baseColumn = leftResultSet.getColumnSize() - 1;
 					
-			rs1.beforeFirst();
-			while (rs1.next()) {
-				Object rs1RowMatchObj = ((Joinable) rs1).getObject(rs1MatchIndex);
-				rs2.beforeFirst();
-				while (rs2.next()) {
-					if (((Joinable) rs2).getObject(rs1MatchIndex).equals(rs1RowMatchObj)) {
+			leftResultSet.beforeFirst();
+			while (leftResultSet.next()) {
+				Object rs1RowMatchObj = ((Joinable) leftResultSet).getObject(leftColumnIndex);
+				rightResultSet.beforeFirst();
+				while (rightResultSet.next()) {
+					if (((Joinable) rightResultSet).getObject(leftColumnIndex).equals(rs1RowMatchObj)) {
 						//Add a new row
 						computedResults.appendRow();
 						//Set the join column value
-						computedResults.updateObject(rs1MatchIndex, rs1RowMatchObj);
+						computedResults.updateObject(leftColumnIndex, rs1RowMatchObj);
 
 						//Copy RS1 values over
-						for (int rsColumnIterator = 0; rsColumnIterator < rs1
+						for (int rsColumnIterator = 0; rsColumnIterator < leftResultSet
 								.getColumnSize(); rsColumnIterator++) {
 							
-							if (rsColumnIterator != rs1MatchIndex) {
-								computedResults.updateObject(rsColumnIterator, ((Joinable) rs1).getObject(rsColumnIterator)); 
+							if (rsColumnIterator != leftColumnIndex) {
+								computedResults.updateObject(rsColumnIterator, ((Joinable) leftResultSet).getObject(rsColumnIterator)); 
 							}
 						}
 						
 						//Copy RS2 values over
-						for (int rsColumnIterator = 0; rsColumnIterator < rs2
+						for (int rsColumnIterator = 0; rsColumnIterator < rightResultSet
 								.getColumnSize(); rsColumnIterator++) {
-							if (rsColumnIterator != rs2MatchIndex) {
-								computedResults.updateObject(baseColumn + rsColumnIterator, ((Joinable) rs2).getObject(rsColumnIterator));
+							if (rsColumnIterator != rightColumnIndex) {
+								computedResults.updateObject(baseColumn + rsColumnIterator, ((Joinable) rightResultSet).getObject(rsColumnIterator));
 							}
 						}
 
@@ -108,35 +96,20 @@ public class InnerJoin implements JoinAction {
 			}
 			computedResults.beforeFirst();
 			this.results = computedResults;
-		} catch (ResultSetException e) {
+		} catch (ResultSetException | PersistableException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 
 	}
 
+	@Override
 	public ResultSet getResults() {
 		return this.results;
 	}
 	
+	@Override
 	public String getType() {
 		return "Inner Join";
 	}
-
-	
-	public JsonObject toJson() {
-		return toJson(1);
-	}
-
-	public JsonObject toJson(int depth) {
-		depth--;
-		
-		JsonObjectBuilder jsonBuilder = Json.createObjectBuilder();
-		jsonBuilder.add("type", getType());
-		jsonBuilder.add("rs1MatchIndex", this.rs1MatchIndex);
-		jsonBuilder.add("rs2MatchIndex", this.rs2MatchIndex);
-		
-		return jsonBuilder.build();
-	}
-
 }

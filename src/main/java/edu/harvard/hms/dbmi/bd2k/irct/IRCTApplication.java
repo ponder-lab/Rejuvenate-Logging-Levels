@@ -19,6 +19,7 @@ import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
 
+import edu.harvard.hms.dbmi.bd2k.irct.exception.ResourceInterfaceException;
 import edu.harvard.hms.dbmi.bd2k.irct.model.query.JoinType;
 import edu.harvard.hms.dbmi.bd2k.irct.model.resource.Resource;
 
@@ -80,7 +81,6 @@ public class IRCTApplication {
 		Root<JoinType> load = criteria.from(JoinType.class);
 		criteria.select(load);
 		for (JoinType jt : oem.createQuery(criteria).getResultList()) {
-			jt.setup();
 			this.supportedJoinTypes.put(jt.getName(), jt);
 		}
 		log.info("Loaded " + this.supportedJoinTypes.size() + " joins");
@@ -99,8 +99,13 @@ public class IRCTApplication {
 		Root<Resource> load = criteria.from(Resource.class);
 		criteria.select(load);
 		for (Resource resource : oem.createQuery(criteria).getResultList()) {
-			resource.setup();
-			this.resources.put(resource.getName(), resource);
+			try {
+				resource.setup();
+				this.resources.put(resource.getName(), resource);
+			} catch (ResourceInterfaceException e) {
+				e.printStackTrace();
+			}
+			
 		}
 		log.info("Loaded " + this.resources.size() + " resources");
 	}

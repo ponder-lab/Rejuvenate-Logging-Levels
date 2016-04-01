@@ -27,7 +27,7 @@ import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 
-import edu.harvard.hms.dbmi.bd2k.irct.model.ontology.PrimitiveDataType;
+import edu.harvard.hms.dbmi.bd2k.irct.model.resource.PrimitiveDataType;
 import edu.harvard.hms.dbmi.bd2k.irct.model.result.Column;
 import edu.harvard.hms.dbmi.bd2k.irct.model.result.ResultSetImpl;
 import edu.harvard.hms.dbmi.bd2k.irct.model.result.Row;

@@ -5,96 +5,94 @@ package edu.harvard.hms.dbmi.bd2k.irct.action.join;
 
 import java.util.Map;
 
-import javax.json.Json;
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
-
+import edu.harvard.hms.dbmi.bd2k.irct.exception.JoinActionSetupException;
+import edu.harvard.hms.dbmi.bd2k.irct.model.result.FileResultSet;
 import edu.harvard.hms.dbmi.bd2k.irct.model.result.Joinable;
-import edu.harvard.hms.dbmi.bd2k.irct.model.result.MemoryResultSet;
 import edu.harvard.hms.dbmi.bd2k.irct.model.result.ResultSet;
-import edu.harvard.hms.dbmi.bd2k.irct.model.result.exception.ResultSetException;
 
 /**
- * Performs a full outer join between two result sets that implements the
- * Joinable interface
- * 
- * NOTE: Currently returns a MemoryResultSet which may limit the size of joins
- * that can be performed
+ * Performs a full outer join between two result sets
  * 
  * @author Jeremy R. Easton-Marks
  *
  */
 public class FullOuterJoin implements JoinAction {
-	ResultSet rs1;
-	int rs1MatchIndex;
-	ResultSet rs2;
-	int rs2MatchIndex;
+	private ResultSet leftResultSet;
+	private int leftColumnIndex;
+	private ResultSet rightResultSet;
+	private int rightColumnIndex;
+	private LeftOuterJoin leftOuterJoin;
 
-	ResultSet results;
+	private ResultSet results;
 
-	public void setup(Map<String, String> parameters) {
-		
-	}
-	
-	public void setJoins(Joinable...joinables ) throws Exception{
-		Joinable rs1 = joinables[0];
-		Joinable rs2 = joinables[1];
+	@Override
+	public void setup(Map<String, Object> parameters)
+			throws JoinActionSetupException {
+		try {
+			this.leftResultSet = (ResultSet) parameters.get("LeftResultSet");
+			this.rightResultSet = (ResultSet) parameters.get("RightResultSet");
+			this.leftColumnIndex = this.leftResultSet
+					.findColumn((String) parameters.get("LeftColumn"));
+			this.rightColumnIndex = this.rightResultSet
+					.findColumn((String) parameters.get("RightColumn"));
 
-		if (rs1 instanceof ResultSet) {
-			this.rs1MatchIndex = rs1.getMatchColumnIndexes()[0];
-			this.rs1 = (ResultSet) rs1;
-		} else {
-			throw new ResultSetException("RS1 Not an instance of ResultSet");
+			this.leftOuterJoin = new LeftOuterJoin();
+			leftOuterJoin.setup(parameters);
+
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new JoinActionSetupException("Unable to setup join columns");
 		}
 
-		if (rs1 instanceof ResultSet) {
-			this.rs2MatchIndex = rs2.getMatchColumnIndexes()[0];
-			this.rs2 = (ResultSet) rs2;
-		} else {
-			throw new ResultSetException("RS2 Not an instance of ResultSet");
-		}
 	}
 
+	@Override
 	public void run() {
 		try {
-			MemoryResultSet computedResults = new MemoryResultSet();
+			FileResultSet computedResults = new FileResultSet();
 
-			int baseColumn = rs1.getColumnSize() - 1;
-					
-			//Perform a left outer join to get all the left, and matches
-			LeftOuterJoin lj = new LeftOuterJoin();
-			lj.setJoins((Joinable) rs1, (Joinable) rs2);
-			lj.run();
-			computedResults = (MemoryResultSet) lj.getResults();
-			
-			//Loop through Result 2 make sure that right joins occur bringing in all right matches
-			rs2.beforeFirst();
-			
-			while (rs2.next()) {
-				Object rs2RowMatchObj = ((Joinable) rs2).getObject(rs1MatchIndex);
+			int baseColumn = leftResultSet.getColumnSize() - 1;
+
+			// Perform a left outer join to get all the left, and matches
+
+			leftOuterJoin.run();
+			computedResults = (FileResultSet) leftOuterJoin.getResults();
+
+			// Loop through Result 2 make sure that right joins occur bringing
+			// in all right matches
+			rightResultSet.beforeFirst();
+
+			while (rightResultSet.next()) {
+				Object rs2RowMatchObj = ((Joinable) rightResultSet)
+						.getObject(leftColumnIndex);
 				boolean match = false;
-				
-				//Reset resultset before looping through it
-				rs1.beforeFirst();
-				while (rs1.next()) {
-					if (((Joinable) rs1).getObject(rs1MatchIndex).equals(rs2RowMatchObj)) {
+
+				// Reset resultset before looping through it
+				leftResultSet.beforeFirst();
+				while (leftResultSet.next()) {
+					if (((Joinable) leftResultSet).getObject(leftColumnIndex)
+							.equals(rs2RowMatchObj)) {
 						match = true;
 						break;
 					}
 				}
-				
-				//If a match isn't found then add it to the results
-				if(!match) {
-					//Add a new row
+
+				// If a match isn't found then add it to the results
+				if (!match) {
+					// Add a new row
 					computedResults.appendRow();
-					//Set the join column value
-					computedResults.updateObject(rs1MatchIndex, rs2RowMatchObj);
-					
-					//Copy RS2 values over
-					for (int rsColumnIterator = 0; rsColumnIterator < rs2
+					// Set the join column value
+					computedResults.updateObject(leftColumnIndex,
+							rs2RowMatchObj);
+
+					// Copy RS2 values over
+					for (int rsColumnIterator = 0; rsColumnIterator < rightResultSet
 							.getColumnSize(); rsColumnIterator++) {
-						if (rsColumnIterator != rs2MatchIndex) {
-							computedResults.updateObject(baseColumn + rsColumnIterator, ((Joinable) rs2).getObject(rsColumnIterator));
+						if (rsColumnIterator != rightColumnIndex) {
+							computedResults.updateObject(baseColumn
+									+ rsColumnIterator,
+									((Joinable) rightResultSet)
+											.getObject(rsColumnIterator));
 						}
 					}
 				}
@@ -109,30 +107,13 @@ public class FullOuterJoin implements JoinAction {
 
 	}
 
-	
+	@Override
 	public ResultSet getResults() {
 		return this.results;
 	}
 
-	
+	@Override
 	public String getType() {
 		return "Full Outer Join";
 	}
-
-	
-	public JsonObject toJson() {
-		return toJson(1);
-	}
-
-	public JsonObject toJson(int depth) {
-		depth--;
-		
-		JsonObjectBuilder jsonBuilder = Json.createObjectBuilder();
-		jsonBuilder.add("type", getType());
-		jsonBuilder.add("rs1MatchIndex", this.rs1MatchIndex);
-		jsonBuilder.add("rs2MatchIndex", this.rs2MatchIndex);
-		
-		return jsonBuilder.build();
-	}
-
 }
