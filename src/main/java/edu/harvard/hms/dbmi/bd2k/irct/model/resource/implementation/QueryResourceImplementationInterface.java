@@ -6,11 +6,11 @@ package edu.harvard.hms.dbmi.bd2k.irct.model.resource.implementation;
 
 import java.util.List;
 
-import edu.harvard.hms.dbmi.bd2k.irct.model.action.ActionState;
 import edu.harvard.hms.dbmi.bd2k.irct.model.ontology.Entity;
 import edu.harvard.hms.dbmi.bd2k.irct.model.query.Query;
 import edu.harvard.hms.dbmi.bd2k.irct.model.resource.ResourceState;
-import edu.harvard.hms.dbmi.bd2k.irct.model.result.ResultSet;
+import edu.harvard.hms.dbmi.bd2k.irct.model.result.Result;
+import edu.harvard.hms.dbmi.bd2k.irct.model.security.SecureSession;
 import edu.harvard.hms.dbmi.bd2k.irct.exception.ResourceInterfaceException;
 
 /**
@@ -30,7 +30,7 @@ public interface QueryResourceImplementationInterface extends
 	 * @return The id of the query that is running
 	 * @throws ResourceInterfaceException A resource exception occurred
 	 */
-	ActionState runQuery(Query qep) throws ResourceInterfaceException;
+	Result runQuery(SecureSession session, Query qep) throws ResourceInterfaceException;
 
 	/**
 	 * Returns the results of the query if they are available
@@ -39,7 +39,7 @@ public interface QueryResourceImplementationInterface extends
 	 * @return Results
 	 * @throws ResourceInterfaceException A resource exception occurred
 	 */
-	ResultSet getResults(ActionState actionState) throws ResourceInterfaceException;
+	Result getResults(SecureSession session, Result result) throws ResourceInterfaceException;
 
 	/**
 	 * Returns the state of the resource

@@ -19,10 +19,10 @@ import javax.persistence.SequenceGenerator;
  *
  */
 @Entity
-@Inheritance(strategy=InheritanceType.TABLE_PER_CLASS)
+@Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)
 public class Token implements Serializable {
 	private static final long serialVersionUID = -2974837028914026971L;
-	
+
 	@Id
 	@GeneratedValue(generator = "tokenSequencer")
 	@SequenceGenerator(name = "tokenSequencer", sequenceName = "tokenSeq")
@@ -39,9 +39,19 @@ public class Token implements Serializable {
 
 	/**
 	 * Sets the id of this token
-	 * @param id Id
+	 * 
+	 * @param id
+	 *            Id
 	 */
 	public void setId(Long id) {
 		this.id = id;
+	}
+
+	/**
+	 * Returns a string representation of the object
+	 * 
+	 */
+	public String toString() {
+		return "";
 	}
 }

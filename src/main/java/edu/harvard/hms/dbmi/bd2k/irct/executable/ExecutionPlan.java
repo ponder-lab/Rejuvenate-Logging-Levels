@@ -1,9 +1,10 @@
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-package edu.harvard.hms.dbmi.bd2k.irct.action;
+package edu.harvard.hms.dbmi.bd2k.irct.executable;
 
-import edu.harvard.hms.dbmi.bd2k.irct.model.result.ResultSet;
+import edu.harvard.hms.dbmi.bd2k.irct.model.result.Result;
+import edu.harvard.hms.dbmi.bd2k.irct.model.security.SecureSession;
 import edu.harvard.hms.dbmi.bd2k.irct.exception.ResourceInterfaceException;
 
 /**
@@ -15,9 +16,10 @@ import edu.harvard.hms.dbmi.bd2k.irct.exception.ResourceInterfaceException;
  *
  */
 public class ExecutionPlan {
-	private ExecutableState state;
+	private ExecutableStatus status;
 	private Executable executable;
-	private ResultSet results;
+	private Result results;
+	private SecureSession session;
 
 	/**
 	 * Setup the execution plan with the base executable
@@ -25,9 +27,10 @@ public class ExecutionPlan {
 	 * @param executable
 	 *            Base executable
 	 */
-	public void setup(Executable executable) {
+	public void setup(Executable executable, SecureSession session) {
 		this.executable = executable;
-		this.state = ExecutableState.CREATED;
+		this.session = session;
+		this.status = ExecutableStatus.CREATED;
 		this.results = null;
 	}
 
@@ -35,15 +38,16 @@ public class ExecutionPlan {
 	 * Run the base execution plan
 	 */
 	public void run() {
-		this.state = ExecutableState.RUNNING;
+		this.status = ExecutableStatus.RUNNING;
 		try {
+			this.executable.setup(session);
 			this.executable.run();
 			this.results = this.executable.getResults();
 		} catch (ResourceInterfaceException e) {
 			e.printStackTrace();
 		}
 
-		this.state = ExecutableState.COMPLETED;
+		this.status = ExecutableStatus.COMPLETED;
 	}
 
 	/**
@@ -51,7 +55,7 @@ public class ExecutionPlan {
 	 * 
 	 * @return Results
 	 */
-	public ResultSet getResults() {
+	public Result getResults() {
 		return this.results;
 	}
 
@@ -60,8 +64,8 @@ public class ExecutionPlan {
 	 * 
 	 * @return Execution state
 	 */
-	public ExecutableState getState() {
-		return this.state;
+	public ExecutableStatus getState() {
+		return this.status;
 	}
 
 }

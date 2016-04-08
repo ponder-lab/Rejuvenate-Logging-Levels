@@ -3,7 +3,8 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 package edu.harvard.hms.dbmi.bd2k.irct.action;
 
-import edu.harvard.hms.dbmi.bd2k.irct.model.result.ResultSet;
+import edu.harvard.hms.dbmi.bd2k.irct.model.result.Result;
+import edu.harvard.hms.dbmi.bd2k.irct.model.security.SecureSession;
 import edu.harvard.hms.dbmi.bd2k.irct.exception.ResourceInterfaceException;
 
 /**
@@ -15,17 +16,10 @@ import edu.harvard.hms.dbmi.bd2k.irct.exception.ResourceInterfaceException;
  *
  */
 public interface Action {
-	/**
-	 * Runs the given action
-	 * @throws ResourceInterfaceException An error occurred 
-	 */
-	void run() throws ResourceInterfaceException;
+	void run(SecureSession secureSession) throws ResourceInterfaceException;
 
-	/**
-	 * Gets the results
-	 * 
-	 * @return Results ResultSet
-	 * @throws ResourceInterfaceException An error occurred
-	 */
-	ResultSet getResults() throws ResourceInterfaceException;
+	Result getResults(SecureSession secureSession) throws ResourceInterfaceException;
+	
+	ActionStatus getStatus();
+	
 }

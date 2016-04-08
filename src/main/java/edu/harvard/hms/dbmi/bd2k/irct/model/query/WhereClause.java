@@ -3,29 +3,56 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 package edu.harvard.hms.dbmi.bd2k.irct.model.query;
 
+import java.io.Serializable;
+import java.util.HashMap;
 import java.util.Map;
 
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
+import javax.persistence.CollectionTable;
+import javax.persistence.Column;
+import javax.persistence.ElementCollection;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import javax.persistence.JoinColumn;
+import javax.persistence.MapKeyColumn;
+import javax.persistence.OneToOne;
 
 import edu.harvard.hms.dbmi.bd2k.irct.model.ontology.Entity;
 import edu.harvard.hms.dbmi.bd2k.irct.model.resource.LogicalOperator;
 
 /**
  * The where clause contains information used in a query to filter upon the
- * data. A where clause can be done on a single a subquery or path.
+ * data. A where clause can be done on a single query, a subquery or path.
  * 
  * @author Jeremy R. Easton-Marks
  *
  */
-public class WhereClause extends ClauseAbstract {
+@javax.persistence.Entity
+public class WhereClause extends ClauseAbstract implements Serializable {
+	private static final long serialVersionUID = 5846062257054747524L;
+	
+	@OneToOne
 	private SubQuery subQuery;
+	
+	@Enumerated(EnumType.STRING)
 	private LogicalOperator logicalOperator;
+	@OneToOne
 	private Entity field;
+	@OneToOne
 	private PredicateType predicateType;
+	
+	@ElementCollection
+	@CollectionTable(name="where_values", joinColumns=@JoinColumn(name="WHERE_VALUE"))
+	@MapKeyColumn(name="where_id")
+	@Column(name="where_value")
 	private Map<String, String> values;
+	
+	public WhereClause() {
+		this.values = new HashMap<String, String>();
+	}
 
 	/**
 	 * Returns the subquery associated with the where clause

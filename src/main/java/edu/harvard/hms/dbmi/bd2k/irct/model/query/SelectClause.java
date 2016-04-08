@@ -3,9 +3,12 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 package edu.harvard.hms.dbmi.bd2k.irct.model.query;
 
+import java.io.Serializable;
+
 import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
+import javax.persistence.OneToOne;
 
 import edu.harvard.hms.dbmi.bd2k.irct.model.ontology.Entity;
 
@@ -16,11 +19,13 @@ import edu.harvard.hms.dbmi.bd2k.irct.model.ontology.Entity;
  * @author Jeremy R. Easton-Marks
  *
  */
-public class SelectClause extends ClauseAbstract {
+@javax.persistence.Entity
+public class SelectClause extends ClauseAbstract implements Serializable {
+	private static final long serialVersionUID = 3728919497144122930L;
+	@OneToOne
 	private Entity parameter;
 
-	public SelectClause(Long id) {
-		super(id);
+	public SelectClause() {
 	}
 
 	/**

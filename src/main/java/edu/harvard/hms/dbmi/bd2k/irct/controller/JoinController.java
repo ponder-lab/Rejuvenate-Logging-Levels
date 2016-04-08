@@ -8,10 +8,10 @@ import java.util.Map;
 import javax.ejb.Stateful;
 import javax.inject.Inject;
 
-import edu.harvard.hms.dbmi.bd2k.irct.action.join.JoinAction;
 import edu.harvard.hms.dbmi.bd2k.irct.exception.ActionNotSetException;
 import edu.harvard.hms.dbmi.bd2k.irct.exception.FieldException;
 import edu.harvard.hms.dbmi.bd2k.irct.exception.JoinActionSetupException;
+import edu.harvard.hms.dbmi.bd2k.irct.join.JoinImplementation;
 import edu.harvard.hms.dbmi.bd2k.irct.model.query.JoinType;
 import edu.harvard.hms.dbmi.bd2k.irct.util.Utilities;
 
@@ -30,7 +30,7 @@ public class JoinController {
 	private ResultController rc;
 
 	private JoinType joinType;
-	private JoinAction joinAction;
+	private JoinImplementation joinAction;
 	/**
 	 * Creates a new join of the type passed in.
 	 * 
@@ -75,7 +75,7 @@ public class JoinController {
 	/**
 	 * @return the joinAction
 	 */
-	public JoinAction getJoinAction() {
+	public JoinImplementation getJoinAction() {
 		return joinAction;
 	}
 
@@ -83,7 +83,7 @@ public class JoinController {
 	/**
 	 * @param joinAction the joinAction to set
 	 */
-	public void setJoinAction(JoinAction joinAction) {
+	public void setJoinAction(JoinImplementation joinAction) {
 		this.joinAction = joinAction;
 	}
 	

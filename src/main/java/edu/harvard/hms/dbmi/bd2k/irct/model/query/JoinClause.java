@@ -3,9 +3,13 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 package edu.harvard.hms.dbmi.bd2k.irct.model.query;
 
+import java.io.Serializable;
+
 import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
+import javax.persistence.ManyToOne;
+import javax.persistence.OneToOne;
 
 import edu.harvard.hms.dbmi.bd2k.irct.model.ontology.Entity;
 
@@ -18,13 +22,25 @@ import edu.harvard.hms.dbmi.bd2k.irct.model.ontology.Entity;
  * @author Jeremy R. Easton-Marks
  *
  */
-public class JoinClause extends ClauseAbstract {
+@javax.persistence.Entity
+public class JoinClause extends ClauseAbstract implements Serializable {
+	private static final long serialVersionUID = 3204598127009298583L;
+	
+	@OneToOne
 	private SubQuery subQuery1;
+	@OneToOne
 	private SubQuery subQuery2;
+	@ManyToOne
 	private JoinType joinType;
+	@OneToOne
 	private Entity field1;
+	@OneToOne
 	private Entity field2;
 	private String relationship;
+	
+	public JoinClause() {
+		
+	}
 
 	/**
 	 * Returns a JSONObject representation of the object. This returns only the

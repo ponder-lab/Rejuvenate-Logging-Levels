@@ -71,12 +71,12 @@ public class ResultController {
 		EntityManager oem = objectEntityManager.createEntityManager();
 		Result result = oem.find(Result.class, id);
 		
-		if(result.getResultStatus() == ResultStatus.Running) {
+		if(result.getResultStatus() == ResultStatus.RUNNING) {
 			throw new ResultSetException("Result set is still running");
-		} else if(result.getResultStatus() != ResultStatus.Available) {
+		} else if(result.getResultStatus() != ResultStatus.AVAILABLE) {
 			throw new ResultSetException("Result set is not available");
 		} else {
-			ResultSet rs = result.getImplementingResultSet();
+			ResultSet rs = result.getResultSet();
 			((Persistable) rs).load(result.getResultSetLocation());
 			return rs;
 		}

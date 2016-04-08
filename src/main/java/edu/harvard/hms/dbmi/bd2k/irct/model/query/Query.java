@@ -3,14 +3,24 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 package edu.harvard.hms.dbmi.bd2k.irct.model.query;
 
+import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
+import javax.persistence.CollectionTable;
+import javax.persistence.ElementCollection;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.Inheritance;
+import javax.persistence.InheritanceType;
+import javax.persistence.MapKeyColumn;
+import javax.persistence.OneToMany;
 
 import edu.harvard.hms.dbmi.bd2k.irct.model.resource.Resource;
 
@@ -22,12 +32,27 @@ import edu.harvard.hms.dbmi.bd2k.irct.model.resource.Resource;
  * @author Jeremy R. Easton-Marks
  *
  */
-public class Query {
+@Entity
+@Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)
+public class Query implements Serializable {
+	private static final long serialVersionUID = -407606258205399129L;
+
+	@Id
+	@GeneratedValue
 	private Long id;
+	private String name;
+	
+	@ElementCollection
+	@CollectionTable(name="query_subquery")
+	@MapKeyColumn(name="query_id")
+	private Map<Long, SubQuery> subQueries;
+	
+	@ElementCollection
+	@CollectionTable(name="query_clause")
+	@MapKeyColumn(name="query_id")
+	private Map<Long, ClauseAbstract> clauses;
 
-	private HashMap<Long, SubQuery> subQueries;
-	private HashMap<Long, ClauseAbstract> clauses;
-
+	@OneToMany
 	private List<Resource> resources;
 
 	public Query() {
@@ -87,6 +112,14 @@ public class Query {
 		this.id = id;
 	}
 
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
 	/**
 	 * Adds a new subQuery to the query
 	 * 
@@ -115,7 +148,7 @@ public class Query {
 	 * 
 	 * @return SubQuery Map
 	 */
-	public final HashMap<Long, SubQuery> getSubQueries() {
+	public final Map<Long, SubQuery> getSubQueries() {
 		return subQueries;
 	}
 
@@ -126,7 +159,7 @@ public class Query {
 	 * @param subQueries
 	 *            SubQuery Map
 	 */
-	public final void setSubQueries(LinkedHashMap<Long, SubQuery> subQueries) {
+	public final void setSubQueries(Map<Long, SubQuery> subQueries) {
 		this.subQueries = subQueries;
 	}
 
@@ -158,7 +191,7 @@ public class Query {
 	 * 
 	 * @return Clause Map
 	 */
-	public HashMap<Long, ClauseAbstract> getClauses() {
+	public Map<Long, ClauseAbstract> getClauses() {
 		return clauses;
 	}
 
@@ -168,7 +201,7 @@ public class Query {
 	 * 
 	 * @param clauses Map of Clauses
 	 */
-	public void setClauses(LinkedHashMap<Long, ClauseAbstract> clauses) {
+	public void setClauses(Map<Long, ClauseAbstract> clauses) {
 		this.clauses = clauses;
 	}
 

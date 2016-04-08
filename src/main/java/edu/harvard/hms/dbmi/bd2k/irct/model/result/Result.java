@@ -20,7 +20,8 @@ import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import javax.persistence.Transient;
 import javax.persistence.SequenceGenerator;
-import edu.harvard.hms.dbmi.bd2k.irct.action.Executable;
+
+import edu.harvard.hms.dbmi.bd2k.irct.executable.Executable;
 import edu.harvard.hms.dbmi.bd2k.irct.util.converter.ResultSetConverter;
 
 /**
@@ -46,9 +47,11 @@ public class Result {
 	private Date runTime;
 	@Enumerated(EnumType.STRING)
 	private ResultStatus resultStatus;
+	
+	private String resourceActionId;
 
 	@Convert(converter = ResultSetConverter.class)
-	private ResultSet implementingResultSet;
+	private ResultSet resultSet;
 	private String resultSetLocation;
 
 	/**
@@ -163,13 +166,21 @@ public class Result {
 		this.resultStatus = resultStatus;
 	}
 
+	public String getResourceActionId() {
+		return resourceActionId;
+	}
+
+	public void setResourceActionId(String resourceActionId) {
+		this.resourceActionId = resourceActionId;
+	}
+
 	/**
 	 * Returns an instantiation of a class that implements the result status
 	 * 
 	 * @return Result Set Object
 	 */
-	public ResultSet getImplementingResultSet() {
-		return implementingResultSet;
+	public ResultSet getResultSet() {
+		return resultSet;
 	}
 
 	/**
@@ -177,8 +188,8 @@ public class Result {
 	 * 
 	 * @param implementingResultSet Implementing Result Set
 	 */
-	public void setImplementingResultSet(ResultSet implementingResultSet) {
-		this.implementingResultSet = implementingResultSet;
+	public void setResultSet(ResultSet resultSet) {
+		this.resultSet = resultSet;
 	}
 
 	/**

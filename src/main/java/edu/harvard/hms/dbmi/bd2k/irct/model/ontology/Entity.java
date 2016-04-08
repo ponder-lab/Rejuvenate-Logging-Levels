@@ -12,6 +12,11 @@ import javax.json.Json;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
+import javax.persistence.Convert;
+import javax.persistence.Id;
+import javax.persistence.Transient;
+
+import edu.harvard.hms.dbmi.bd2k.irct.util.converter.DataTypeConverter;
 
 /**
  * The Entity class represents a path in a resource. Paths can be linked to other
@@ -19,7 +24,11 @@ import javax.json.JsonObjectBuilder;
  * 
  * @author Jeremy R. Easton-Marks
  */
+@javax.persistence.Entity
 public class Entity {
+	
+	
+	@Id
 	private String pui;
 	private String name;
 	private String displayName;
@@ -27,9 +36,13 @@ public class Entity {
 	private String ontology;
 	private String ontologyId;
 
+	@Convert(converter = DataTypeConverter.class)
 	private DataType dataType;
+	@Transient
 	private List<OntologyRelationship> relationships;
+	@Transient
 	private Map<String, Integer> counts;
+	@Transient
 	private Map<String, String> attributes;
 
 	
@@ -125,8 +138,6 @@ public class Entity {
 	// -------------------------------------------------------------------------
 	// SETTERS AND GETTERS
 	// -------------------------------------------------------------------------
-
-	
 
 	/**
 	 * @return the pui

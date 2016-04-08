@@ -1,14 +1,18 @@
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-package edu.harvard.hms.dbmi.bd2k.irct.action.join;
+package edu.harvard.hms.dbmi.bd2k.irct.join;
 
 import java.util.Map;
 
 import edu.harvard.hms.dbmi.bd2k.irct.exception.JoinActionSetupException;
 import edu.harvard.hms.dbmi.bd2k.irct.model.result.FileResultSet;
 import edu.harvard.hms.dbmi.bd2k.irct.model.result.Joinable;
+import edu.harvard.hms.dbmi.bd2k.irct.model.result.Result;
 import edu.harvard.hms.dbmi.bd2k.irct.model.result.ResultSet;
+import edu.harvard.hms.dbmi.bd2k.irct.model.result.ResultStatus;
+import edu.harvard.hms.dbmi.bd2k.irct.model.result.exception.PersistableException;
+import edu.harvard.hms.dbmi.bd2k.irct.model.result.exception.ResultSetException;
 
 /**
  * Performs a full outer join between two result sets
@@ -16,14 +20,14 @@ import edu.harvard.hms.dbmi.bd2k.irct.model.result.ResultSet;
  * @author Jeremy R. Easton-Marks
  *
  */
-public class FullOuterJoin implements JoinAction {
+public class FullOuterJoin implements JoinImplementation {
 	private ResultSet leftResultSet;
 	private int leftColumnIndex;
 	private ResultSet rightResultSet;
 	private int rightColumnIndex;
 	private LeftOuterJoin leftOuterJoin;
 
-	private ResultSet results;
+	private Result results;
 
 	@Override
 	public void setup(Map<String, Object> parameters)
@@ -47,7 +51,7 @@ public class FullOuterJoin implements JoinAction {
 	}
 
 	@Override
-	public void run() {
+	public Result run() {
 		try {
 			FileResultSet computedResults = new FileResultSet();
 
@@ -56,7 +60,7 @@ public class FullOuterJoin implements JoinAction {
 			// Perform a left outer join to get all the left, and matches
 
 			leftOuterJoin.run();
-			computedResults = (FileResultSet) leftOuterJoin.getResults();
+			computedResults = (FileResultSet) leftOuterJoin.getResults().getResultSet();
 
 			// Loop through Result 2 make sure that right joins occur bringing
 			// in all right matches
@@ -99,16 +103,19 @@ public class FullOuterJoin implements JoinAction {
 			}
 			computedResults.beforeFirst();
 
-			this.results = computedResults;
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
+			computedResults.beforeFirst();
+			this.results.setResultStatus(ResultStatus.COMPLETE);
+			this.results.setResultSet(computedResults);
+		} catch (ResultSetException | PersistableException e) {
+			this.results.setResultStatus(ResultStatus.ERROR);
 			e.printStackTrace();
 		}
+		return this.results;
 
 	}
 
 	@Override
-	public ResultSet getResults() {
+	public Result getResults() {
 		return this.results;
 	}
 

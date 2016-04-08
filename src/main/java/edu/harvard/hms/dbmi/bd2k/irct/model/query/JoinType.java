@@ -16,9 +16,8 @@ import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
-import javax.persistence.OneToOne;
 
-import edu.harvard.hms.dbmi.bd2k.irct.action.join.JoinAction;
+import edu.harvard.hms.dbmi.bd2k.irct.join.JoinImplementation;
 import edu.harvard.hms.dbmi.bd2k.irct.model.resource.Field;
 import edu.harvard.hms.dbmi.bd2k.irct.util.converter.JoinActionConverter;
 
@@ -46,7 +45,7 @@ public class JoinType implements Serializable {
 	private List<Field> fields;
 	
 	@Convert(converter = JoinActionConverter.class)
-	private JoinAction action;
+	private JoinImplementation action;
 
 	/**
 	 * Returns a JSONObject representation of the object. This returns only the
@@ -166,14 +165,14 @@ public class JoinType implements Serializable {
 	/**
 	 * @return the action
 	 */
-	public JoinAction getAction() {
+	public JoinImplementation getAction() {
 		return action;
 	}
 
 	/**
 	 * @param action the action to set
 	 */
-	public void setAction(JoinAction action) {
+	public void setAction(JoinImplementation action) {
 		this.action = action;
 	}
 

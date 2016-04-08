@@ -1,10 +1,10 @@
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-package edu.harvard.hms.dbmi.bd2k.irct.action;
+package edu.harvard.hms.dbmi.bd2k.irct.executable;
 
-import edu.harvard.hms.dbmi.bd2k.irct.model.resource.Resource;
-import edu.harvard.hms.dbmi.bd2k.irct.model.result.ResultSet;
+import edu.harvard.hms.dbmi.bd2k.irct.model.result.Result;
+import edu.harvard.hms.dbmi.bd2k.irct.model.security.SecureSession;
 import edu.harvard.hms.dbmi.bd2k.irct.exception.ResourceInterfaceException;
 
 /**
@@ -16,12 +16,7 @@ import edu.harvard.hms.dbmi.bd2k.irct.exception.ResourceInterfaceException;
  *
  */
 public interface Executable {
-	/**
-	 * Set up the executable with an action
-	 * 
-	 * @param action Action to be executed
-	 */
-	void setup(Action action);
+	void setup(SecureSession secureSession);
 
 	/**
 	 * Run the executable
@@ -35,27 +30,13 @@ public interface Executable {
 	 * 
 	 * @return Executable State
 	 */
-	ExecutableState getState();
+	ExecutableStatus getStatus();
 
 	/**
 	 * Returns the result set
 	 * 
-	 * @return Result Set
+	 * @return Result
 	 * @throws ResourceInterfaceException An error occurred
 	 */
-	ResultSet getResults() throws ResourceInterfaceException;
-
-	/**
-	 * Returns the resource the executable will be run on
-	 * 
-	 * @return Resource to run on
-	 */
-	Resource getResource();
-
-	/**
-	 * Sets the resource this executable will be run on
-	 * 
-	 * @param resource Resource to run on
-	 */
-	void setResource(Resource resource);
+	Result getResults() throws ResourceInterfaceException;
 }

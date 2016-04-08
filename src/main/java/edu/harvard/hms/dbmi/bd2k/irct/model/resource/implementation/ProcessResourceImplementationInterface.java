@@ -4,10 +4,10 @@
 package edu.harvard.hms.dbmi.bd2k.irct.model.resource.implementation;
 
 import edu.harvard.hms.dbmi.bd2k.irct.exception.ResourceInterfaceException;
-import edu.harvard.hms.dbmi.bd2k.irct.model.action.ActionState;
 import edu.harvard.hms.dbmi.bd2k.irct.model.process.IRCTProcess;
 import edu.harvard.hms.dbmi.bd2k.irct.model.resource.ResourceState;
-import edu.harvard.hms.dbmi.bd2k.irct.model.result.ResultSet;
+import edu.harvard.hms.dbmi.bd2k.irct.model.result.Result;
+import edu.harvard.hms.dbmi.bd2k.irct.model.security.SecureSession;
 
 /**
  * Provides an implementation that describes the API for any resource that has
@@ -23,7 +23,7 @@ public interface ProcessResourceImplementationInterface extends ResourceImplemen
 	 * @param pep Process to be run
 	 * @return The id of the process that is running
 	 */
-	ActionState runProcess(IRCTProcess pep);
+	Result runProcess(SecureSession session, IRCTProcess pep) throws ResourceInterfaceException;
 	
 	/**
 	 * Returns the results of the process if they are available
@@ -32,7 +32,7 @@ public interface ProcessResourceImplementationInterface extends ResourceImplemen
 	 * @return Results Results
 	 * @throws ResourceInterfaceException A resource exception occurred
 	 */
-	ResultSet getResults(ActionState actionState) throws ResourceInterfaceException;
+	Result getResults(SecureSession session, Result result) throws ResourceInterfaceException;
 
 	/**
 	 * Returns the status of the resource

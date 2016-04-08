@@ -2,8 +2,12 @@ package edu.harvard.hms.dbmi.bd2k.irct.controller;
 
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Logger;
 
 import javax.ejb.Stateful;
+import javax.inject.Inject;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 
 import edu.harvard.hms.dbmi.bd2k.irct.exception.QueryException;
 import edu.harvard.hms.dbmi.bd2k.irct.model.ontology.DataType;
@@ -17,6 +21,12 @@ import edu.harvard.hms.dbmi.bd2k.irct.model.resource.Resource;
 
 @Stateful
 public class QueryController {
+	
+	@PersistenceContext
+	EntityManager entityManager;
+	
+	@Inject
+	Logger log;
 	
 	private Query query;
 	private Long lastId;
@@ -127,6 +137,31 @@ public class QueryController {
 		}
 	}
 
+	public void saveQuery() throws QueryException {
+		if(this.query == null) {
+			throw new QueryException("No query to save.");
+		}
+		if(this.query.getId() == null) {
+			entityManager.persist(this.query);
+		} else {
+			entityManager.merge(this.query);
+		}
+		log.info("Query " + this.query.getId() + " saved");
+		
+	}
+
+	public void loadQuery(Long queryId) throws QueryException {
+		if(queryId == null) {
+			throw new QueryException("No query id.");
+		}
+		
+		this.query = entityManager.find(Query.class, queryId);
+		if(this.query == null) {
+			throw new QueryException("No query to load.");
+		}
+		log.info("Query " + this.query.getId() + " loaded");
+	}
+	
 	public Query getQuery() {
 		return query;
 	}

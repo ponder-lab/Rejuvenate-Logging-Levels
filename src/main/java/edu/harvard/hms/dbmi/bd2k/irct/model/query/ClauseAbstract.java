@@ -6,6 +6,9 @@ package edu.harvard.hms.dbmi.bd2k.irct.model.query;
 import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
 
 /**
  * An abstract class that represents any clause that can be part of a query.
@@ -14,15 +17,14 @@ import javax.json.JsonObjectBuilder;
  * @author Jeremy R. Easton-Marks
  *
  */
+@Entity
 public abstract class ClauseAbstract {
+	
+	@Id
+	@GeneratedValue
 	private Long id;
 
 	public ClauseAbstract() {
-		setId(0l);
-	}
-
-	public ClauseAbstract(Long id) {
-		this.id = id;
 	}
 
 	/**

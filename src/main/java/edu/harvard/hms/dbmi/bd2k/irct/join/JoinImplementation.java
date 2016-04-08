@@ -1,12 +1,12 @@
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-package edu.harvard.hms.dbmi.bd2k.irct.action.join;
+package edu.harvard.hms.dbmi.bd2k.irct.join;
 
 import java.util.Map;
 
-import edu.harvard.hms.dbmi.bd2k.irct.action.Action;
 import edu.harvard.hms.dbmi.bd2k.irct.exception.JoinActionSetupException;
+import edu.harvard.hms.dbmi.bd2k.irct.model.result.Result;
 
 /**
  * The JoinAction interface extends the Action interface for Joins. All joins
@@ -16,7 +16,7 @@ import edu.harvard.hms.dbmi.bd2k.irct.exception.JoinActionSetupException;
  * @author Jeremy R. Easton-Marks
  *
  */
-public interface JoinAction extends Action {
+public interface JoinImplementation {
 	/**
 	 * Sets up the join with the given parameters.
 	 * 
@@ -32,5 +32,9 @@ public interface JoinAction extends Action {
 	 * @return Join Type
 	 */
 	String getType();
+	
+	Result run();
+	
+	Result getResults();
 	
 }
