@@ -17,6 +17,7 @@ import javax.persistence.ElementCollection;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.MapKeyColumn;
 import javax.persistence.OneToOne;
 
@@ -41,7 +42,8 @@ public class WhereClause extends ClauseAbstract implements Serializable {
 	private LogicalOperator logicalOperator;
 	@OneToOne
 	private Entity field;
-	@OneToOne
+	
+	@ManyToOne
 	private PredicateType predicateType;
 	
 	@ElementCollection

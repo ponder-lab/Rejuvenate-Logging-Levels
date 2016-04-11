@@ -4,6 +4,8 @@
 package edu.harvard.hms.dbmi.bd2k.irct.action;
 
 
+import java.util.Map;
+
 import edu.harvard.hms.dbmi.bd2k.irct.exception.ResourceInterfaceException;
 import edu.harvard.hms.dbmi.bd2k.irct.model.process.IRCTProcess;
 import edu.harvard.hms.dbmi.bd2k.irct.model.resource.Resource;
@@ -29,6 +31,12 @@ public class ProcessAction implements Action {
 		this.resource = resource;
 		this.process = process;
 		
+	}
+	
+	public void updateActionParams(Map<String, Result> updatedParams) {
+		for(String key : updatedParams.keySet()) {
+			process.getValues().put(key, updatedParams.get(key).getId().toString());
+		}
 	}
 	
 	@Override

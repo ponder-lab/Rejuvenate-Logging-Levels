@@ -28,10 +28,10 @@ set @IJ_RIGHTRESULTSET_ID = @IJ_LEFTRESULTSET_ID + 2;
 set @IJ_RIGHTCOLUMN_ID = @IJ_LEFTRESULTSET_ID + 3;
 
 -- Insert into Join Type
-insert into JoinType(id, action, description, displayName, name) values (@LOJID, 'edu.harvard.hms.dbmi.bd2k.irct.action.join.LeftOuterJoin', 'Performs a left outer join on two result sets', 'Left Outer Join', 'leftOuterJoin');
-insert into JoinType(id, action, description, displayName, name) values (@ROJID, 'edu.harvard.hms.dbmi.bd2k.irct.action.join.RightOuterJoin', 'Performs a right outer join on two result sets', 'Right Outer Join', 'rightOuterJoin');
-insert into JoinType(id, action, description, displayName, name) values (@FOJID, 'edu.harvard.hms.dbmi.bd2k.irct.action.join.FullOuterJoin', 'Performs a full outer join on two result sets', 'Full Outer Join', 'fullOuterJoin');
-insert into JoinType(id, action, description, displayName, name) values (@IJID, 'edu.harvard.hms.dbmi.bd2k.irct.action.join.InnerJoin', 'Performs an inner join on two result sets', 'Inner Join', 'innerJoin');
+insert into JoinType(id, action, description, displayName, name) values (@LOJID, 'edu.harvard.hms.dbmi.bd2k.irct.join.LeftOuterJoin', 'Performs a left outer join on two result sets', 'Left Outer Join', 'leftOuterJoin');
+insert into JoinType(id, action, description, displayName, name) values (@ROJID, 'edu.harvard.hms.dbmi.bd2k.irct.join.RightOuterJoin', 'Performs a right outer join on two result sets', 'Right Outer Join', 'rightOuterJoin');
+insert into JoinType(id, action, description, displayName, name) values (@FOJID, 'edu.harvard.hms.dbmi.bd2k.irct.join.FullOuterJoin', 'Performs a full outer join on two result sets', 'Full Outer Join', 'fullOuterJoin');
+insert into JoinType(id, action, description, displayName, name) values (@IJID, 'edu.harvard.hms.dbmi.bd2k.irct.join.InnerJoin', 'Performs an inner join on two result sets', 'Inner Join', 'innerJoin');
 
 -- Insert into fields
 insert into FIELD(id, description, name, path, required) values (@LOJ_LEFTRESULTSET_ID, 'Result set on left side of join', 'Left Result Set', 'LeftResultSet', 1);

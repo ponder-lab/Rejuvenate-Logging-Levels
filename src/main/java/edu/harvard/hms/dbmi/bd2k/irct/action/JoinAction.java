@@ -3,7 +3,9 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 package edu.harvard.hms.dbmi.bd2k.irct.action;
 
-import edu.harvard.hms.dbmi.bd2k.irct.join.JoinImplementation;
+import java.util.Map;
+
+import edu.harvard.hms.dbmi.bd2k.irct.model.join.IRCTJoin;
 import edu.harvard.hms.dbmi.bd2k.irct.model.result.Result;
 import edu.harvard.hms.dbmi.bd2k.irct.model.result.ResultStatus;
 import edu.harvard.hms.dbmi.bd2k.irct.model.security.SecureSession;
@@ -16,28 +18,34 @@ import edu.harvard.hms.dbmi.bd2k.irct.exception.ResourceInterfaceException;
  *
  */
 public class JoinAction implements Action {
-	private JoinImplementation joinImplementation;
+	private IRCTJoin joinType;
 	private ActionStatus status;
 	private Result result;
 
-	public void setup(JoinImplementation joinImplementation) {
+	public void setup(IRCTJoin joinType) {
 		this.status = ActionStatus.CREATED;
-		this.joinImplementation = joinImplementation;
+		this.joinType = joinType;
+	}
+	
+	public void updateActionParams(Map<String, Result> updatedParams) {
+		for(String key : updatedParams.keySet()) {
+			this.joinType.getValues().put(key, updatedParams.get(key).getId().toString());
+		}
 	}
 
 	public void run(SecureSession session) {
 		this.status = ActionStatus.RUNNING;
 //		try {
-			Result result = this.joinImplementation.run();
+		this.result = this.joinType.getJoinImplementation().run();
 //		} catch (ResourceInterfaceException e) {
-			this.status = ActionStatus.ERROR;
+//			this.status = ActionStatus.ERROR;
 //		}
 		this.status = ActionStatus.COMPLETE;
 	}
 
 	public Result getResults(SecureSession session) throws ResourceInterfaceException {
 		if(this.result.getResultStatus() != ResultStatus.ERROR && this.result.getResultStatus() != ResultStatus.COMPLETE) {
-			this.result = this.joinImplementation.getResults();
+			this.result = this.joinType.getJoinImplementation().getResults();
 		}
 		return this.result;
 	}

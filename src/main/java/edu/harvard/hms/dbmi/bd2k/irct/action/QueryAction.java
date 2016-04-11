@@ -3,7 +3,11 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 package edu.harvard.hms.dbmi.bd2k.irct.action;
 
+import java.util.Map;
+
+import edu.harvard.hms.dbmi.bd2k.irct.model.query.ClauseAbstract;
 import edu.harvard.hms.dbmi.bd2k.irct.model.query.Query;
+import edu.harvard.hms.dbmi.bd2k.irct.model.query.WhereClause;
 import edu.harvard.hms.dbmi.bd2k.irct.model.resource.Resource;
 import edu.harvard.hms.dbmi.bd2k.irct.model.resource.implementation.QueryResourceImplementationInterface;
 import edu.harvard.hms.dbmi.bd2k.irct.model.result.Result;
@@ -24,11 +28,24 @@ public class QueryAction implements Action {
 	private Result result;
 
 	public void setup(Resource resource, Query query) {
-		setQuery(query);
+		this.query = query;
 		this.resource = resource;
 		this.status = ActionStatus.CREATED;
 	}
-
+	@Override
+	public void updateActionParams(Map<String, Result> updatedParams) {
+		for(String key : updatedParams.keySet()) {
+			Long clauseId = Long.valueOf(key.split(".")[0]);
+			String parameterId = key.split(".")[1];
+			
+			ClauseAbstract clause = this.query.getClauses().get(clauseId);
+			if (clause instanceof WhereClause) {
+				WhereClause whereClause = (WhereClause) clause;
+				whereClause.getValues().put(parameterId, updatedParams.get(key).getId().toString());
+			}
+		}
+	}
+	@Override
 	public void run(SecureSession session) {
 		this.status = ActionStatus.RUNNING;
 		try {
@@ -38,7 +55,7 @@ public class QueryAction implements Action {
 			this.status = ActionStatus.ERROR;
 		}
 	}
-
+	@Override
 	public Result getResults(SecureSession session) throws ResourceInterfaceException {
 		if(this.result.getResultStatus() != ResultStatus.ERROR && this.result.getResultStatus() != ResultStatus.COMPLETE) {
 			this.result = ((QueryResourceImplementationInterface)resource.getImplementingInterface()).getResults(session, result);

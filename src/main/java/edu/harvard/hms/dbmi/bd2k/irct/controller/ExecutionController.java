@@ -23,7 +23,7 @@ import edu.harvard.hms.dbmi.bd2k.irct.action.ProcessAction;
 import edu.harvard.hms.dbmi.bd2k.irct.action.QueryAction;
 import edu.harvard.hms.dbmi.bd2k.irct.executable.ExecutableChildNode;
 import edu.harvard.hms.dbmi.bd2k.irct.executable.ExecutionPlan;
-import edu.harvard.hms.dbmi.bd2k.irct.join.JoinImplementation;
+import edu.harvard.hms.dbmi.bd2k.irct.model.join.IRCTJoin;
 import edu.harvard.hms.dbmi.bd2k.irct.model.process.IRCTProcess;
 import edu.harvard.hms.dbmi.bd2k.irct.model.query.Query;
 import edu.harvard.hms.dbmi.bd2k.irct.model.result.Persistable;
@@ -128,13 +128,13 @@ public class ExecutionController {
 	 * @throws PersistableException
 	 *             An error occurred
 	 */
-	public Long runJoin(JoinImplementation joinAction, SecureSession secureSession) throws PersistableException {
-		log.info("Starting: " + joinAction.getType());
+	public Long runJoin(IRCTJoin joinType, SecureSession secureSession) throws PersistableException {
+		log.info("Starting: " + joinType.getJoinImplementation().getType());
 		Result newResult = new Result();
 		newResult.setResultStatus(ResultStatus.RUNNING);
 
 		JoinAction ja = new JoinAction();
-		ja.setup(joinAction);
+		ja.setup(joinType);
 
 		ExecutableChildNode eln = new ExecutableChildNode();
 		eln.setAction(ja);
@@ -143,7 +143,7 @@ public class ExecutionController {
 		exp.setup(eln, secureSession);
 		runExecutionPlan(exp, newResult);
 
-		log.info("Stop: " + joinAction.getType());
+		log.info("Stop: " + joinType.getJoinImplementation().getType());
 		return newResult.getId();
 
 	}

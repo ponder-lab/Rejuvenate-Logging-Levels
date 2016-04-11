@@ -25,10 +25,10 @@ import javax.persistence.MapKeyColumn;
 import javax.persistence.OneToMany;
 
 import edu.harvard.hms.dbmi.bd2k.irct.exception.ResourceInterfaceException;
+import edu.harvard.hms.dbmi.bd2k.irct.model.join.IRCTJoin;
 import edu.harvard.hms.dbmi.bd2k.irct.model.ontology.DataType;
 import edu.harvard.hms.dbmi.bd2k.irct.model.ontology.OntologyRelationship;
 import edu.harvard.hms.dbmi.bd2k.irct.model.ontology.OntologyType;
-import edu.harvard.hms.dbmi.bd2k.irct.model.query.JoinType;
 import edu.harvard.hms.dbmi.bd2k.irct.model.query.PredicateType;
 import edu.harvard.hms.dbmi.bd2k.irct.model.resource.implementation.PathResourceImplementationInterface;
 import edu.harvard.hms.dbmi.bd2k.irct.model.resource.implementation.ResourceImplementationInterface;
@@ -77,7 +77,7 @@ public class Resource implements Serializable {
 	private List<PredicateType> supportedPredicates;
 
 	@OneToMany
-	private List<JoinType> supportedJoins;
+	private List<IRCTJoin> supportedJoins;
 
 	@OneToMany
 	private List<ProcessType> supportedProcesses;
@@ -165,7 +165,7 @@ public class Resource implements Serializable {
 				// JOINS (Query Interface)
 				JsonArrayBuilder joinArray = Json.createArrayBuilder();
 				if (this.supportedJoins != null) {
-					for (JoinType jt : this.supportedJoins) {
+					for (IRCTJoin jt : this.supportedJoins) {
 						joinArray.add(jt.toJson());
 					}
 				}
@@ -361,7 +361,7 @@ public class Resource implements Serializable {
 	/**
 	 * @return the supportedJoins
 	 */
-	public List<JoinType> getSupportedJoins() {
+	public List<IRCTJoin> getSupportedJoins() {
 		return supportedJoins;
 	}
 
@@ -369,7 +369,7 @@ public class Resource implements Serializable {
 	 * @param supportedJoins
 	 *            the supportedJoins to set
 	 */
-	public void setSupportedJoins(List<JoinType> supportedJoins) {
+	public void setSupportedJoins(List<IRCTJoin> supportedJoins) {
 		this.supportedJoins = supportedJoins;
 	}
 

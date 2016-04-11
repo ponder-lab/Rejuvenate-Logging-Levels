@@ -1,40 +1,63 @@
-package edu.harvard.hms.dbmi.bd2k.irct.model.query;
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+package edu.harvard.hms.dbmi.bd2k.irct.model.join;
 
 import java.io.Serializable;
 import java.util.List;
+import java.util.Map;
 
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
+import javax.persistence.CollectionTable;
+import javax.persistence.Column;
 import javax.persistence.Convert;
 import javax.persistence.ElementCollection;
+import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.MapKeyColumn;
 import javax.persistence.OneToMany;
 
-import edu.harvard.hms.dbmi.bd2k.irct.model.ontology.DataType;
+import edu.harvard.hms.dbmi.bd2k.irct.join.JoinImplementation;
 import edu.harvard.hms.dbmi.bd2k.irct.model.resource.Field;
-import edu.harvard.hms.dbmi.bd2k.irct.util.converter.DataTypeConverter;
+import edu.harvard.hms.dbmi.bd2k.irct.util.converter.JoinActionConverter;
 
-public class JoinType implements Serializable {
-	private static final long serialVersionUID = 7650772906469344618L;
+/**
+ * The join type class provides a way for the IRCT application to keep track of
+ * which joins can be used.
+ * 
+ * @author Jeremy R. Easton-Marks
+ *
+ */
+@Entity
+public class IRCTJoin implements Serializable {
+
+	private static final long serialVersionUID = 5173414123049320818L;
 
 	@Id
 	@GeneratedValue
 	private long id;
-	
+
 	private String name;
 	private String displayName;
 	private String description;
-	
-	@OneToMany(fetch=FetchType.EAGER)
-	private List<Field> fields;
 
+	@OneToMany(fetch = FetchType.EAGER)
+	private List<Field> fields;
+	
 	@ElementCollection
-	@Convert(converter = DataTypeConverter.class)
-	private List<DataType> dataTypes;
+	@CollectionTable(name="join_values", joinColumns=@JoinColumn(name="JOIN_VALUE"))
+	@MapKeyColumn(name="join_id")
+	@Column(name="join_value")
+	private Map<String, String> values;
+	
+	@Convert(converter = JoinActionConverter.class)
+	private JoinImplementation joinImplementation;
 	
 	/**
 	 * Returns a JSONObject representation of the object. This returns only the
@@ -76,6 +99,10 @@ public class JoinType implements Serializable {
 		return jsonBuilder.build();
 	}
 
+	// -------------------------------------------------------------------------
+	// SETTERS AND GETTERS
+	// -------------------------------------------------------------------------
+	
 	/**
 	 * @return the id
 	 */
@@ -84,7 +111,8 @@ public class JoinType implements Serializable {
 	}
 
 	/**
-	 * @param id the id to set
+	 * @param id
+	 *            the id to set
 	 */
 	public void setId(long id) {
 		this.id = id;
@@ -98,7 +126,8 @@ public class JoinType implements Serializable {
 	}
 
 	/**
-	 * @param name the name to set
+	 * @param name
+	 *            the name to set
 	 */
 	public void setName(String name) {
 		this.name = name;
@@ -112,7 +141,8 @@ public class JoinType implements Serializable {
 	}
 
 	/**
-	 * @param displayName the displayName to set
+	 * @param displayName
+	 *            the displayName to set
 	 */
 	public void setDisplayName(String displayName) {
 		this.displayName = displayName;
@@ -126,7 +156,8 @@ public class JoinType implements Serializable {
 	}
 
 	/**
-	 * @param description the description to set
+	 * @param description
+	 *            the description to set
 	 */
 	public void setDescription(String description) {
 		this.description = description;
@@ -140,25 +171,26 @@ public class JoinType implements Serializable {
 	}
 
 	/**
-	 * @param fields the fields to set
+	 * @param fields
+	 *            the fields to set
 	 */
 	public void setFields(List<Field> fields) {
 		this.fields = fields;
 	}
 
-	/**
-	 * @return the dataTypes
-	 */
-	public List<DataType> getDataTypes() {
-		return dataTypes;
+	public Map<String, String> getValues() {
+		return values;
 	}
 
-	/**
-	 * @param dataTypes the dataTypes to set
-	 */
-	public void setDataTypes(List<DataType> dataTypes) {
-		this.dataTypes = dataTypes;
+	public void setValues(Map<String, String> values) {
+		this.values = values;
 	}
-	
-	
+
+	public JoinImplementation getJoinImplementation() {
+		return joinImplementation;
+	}
+
+	public void setJoinImplementation(JoinImplementation joinImplementation) {
+		this.joinImplementation = joinImplementation;
+	}
 }

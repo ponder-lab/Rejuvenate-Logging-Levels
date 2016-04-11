@@ -12,7 +12,7 @@ import edu.harvard.hms.dbmi.bd2k.irct.exception.ActionNotSetException;
 import edu.harvard.hms.dbmi.bd2k.irct.exception.FieldException;
 import edu.harvard.hms.dbmi.bd2k.irct.exception.JoinActionSetupException;
 import edu.harvard.hms.dbmi.bd2k.irct.join.JoinImplementation;
-import edu.harvard.hms.dbmi.bd2k.irct.model.query.JoinType;
+import edu.harvard.hms.dbmi.bd2k.irct.model.join.IRCTJoin;
 import edu.harvard.hms.dbmi.bd2k.irct.util.Utilities;
 
 /**
@@ -29,8 +29,8 @@ public class JoinController {
 	@Inject
 	private ResultController rc;
 
-	private JoinType joinType;
-	private JoinImplementation joinAction;
+	private IRCTJoin joinType;
+
 	/**
 	 * Creates a new join of the type passed in.
 	 * 
@@ -38,20 +38,19 @@ public class JoinController {
 	 *            The name of the join to create
 	 * @return The created join
 	 */
-	public void createJoin(JoinType joinType) {
+	public void createJoin(IRCTJoin joinType) {
 		this.setJoinType(joinType);
-		this.setJoinAction(joinType.getAction());
 	}
 	
 	
 	public void setup(Map<String, String> parameters) throws ActionNotSetException, FieldException, JoinActionSetupException {
-		if((this.getJoinAction() == null) || (this.getJoinType() == null)) {
+		if(this.joinType == null) {
 			throw new ActionNotSetException("Join has not been created");
 		}
 		
 		Map<String, Object> actionParameters = Utilities.createActionParametersFromStringMap(this.joinType.getFields(), parameters, rc);
 		if(actionParameters != null) {
-			joinAction.setup(actionParameters);
+			this.joinType.getJoinImplementation().setup(actionParameters);
 		}
 	}
 
@@ -59,7 +58,7 @@ public class JoinController {
 	/**
 	 * @return the joinType
 	 */
-	public JoinType getJoinType() {
+	public IRCTJoin getJoinType() {
 		return joinType;
 	}
 
@@ -67,24 +66,7 @@ public class JoinController {
 	/**
 	 * @param joinType the joinType to set
 	 */
-	public void setJoinType(JoinType joinType) {
+	public void setJoinType(IRCTJoin joinType) {
 		this.joinType = joinType;
 	}
-
-
-	/**
-	 * @return the joinAction
-	 */
-	public JoinImplementation getJoinAction() {
-		return joinAction;
-	}
-
-
-	/**
-	 * @param joinAction the joinAction to set
-	 */
-	public void setJoinAction(JoinImplementation joinAction) {
-		this.joinAction = joinAction;
-	}
-	
 }

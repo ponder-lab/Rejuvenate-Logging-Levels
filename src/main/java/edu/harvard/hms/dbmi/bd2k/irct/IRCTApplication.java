@@ -20,7 +20,7 @@ import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
 
 import edu.harvard.hms.dbmi.bd2k.irct.exception.ResourceInterfaceException;
-import edu.harvard.hms.dbmi.bd2k.irct.model.query.JoinType;
+import edu.harvard.hms.dbmi.bd2k.irct.model.join.IRCTJoin;
 import edu.harvard.hms.dbmi.bd2k.irct.model.resource.Resource;
 
 /**
@@ -36,7 +36,7 @@ import edu.harvard.hms.dbmi.bd2k.irct.model.resource.Resource;
 public class IRCTApplication {
 
 	private Map<String, Resource> resources;
-	private Map<String, JoinType> supportedJoinTypes;
+	private Map<String, IRCTJoin> supportedJoinTypes;
 
 	@Inject
 	Logger log;
@@ -74,13 +74,13 @@ public class IRCTApplication {
 	 */
 	private void loadJoins() {
 
-		setSupportedJoinTypes(new HashMap<String, JoinType>());
+		setSupportedJoinTypes(new HashMap<String, IRCTJoin>());
 		// Run JPA Query to load the resources
 		CriteriaBuilder cb = oem.getCriteriaBuilder();
-		CriteriaQuery<JoinType> criteria = cb.createQuery(JoinType.class);
-		Root<JoinType> load = criteria.from(JoinType.class);
+		CriteriaQuery<IRCTJoin> criteria = cb.createQuery(IRCTJoin.class);
+		Root<IRCTJoin> load = criteria.from(IRCTJoin.class);
 		criteria.select(load);
-		for (JoinType jt : oem.createQuery(criteria).getResultList()) {
+		for (IRCTJoin jt : oem.createQuery(criteria).getResultList()) {
 			this.supportedJoinTypes.put(jt.getName(), jt);
 		}
 		log.info("Loaded " + this.supportedJoinTypes.size() + " joins");
@@ -175,7 +175,7 @@ public class IRCTApplication {
 	 * 
 	 * @return Supported join types
 	 */
-	public Map<String, JoinType> getSupportedJoinTypes() {
+	public Map<String, IRCTJoin> getSupportedJoinTypes() {
 		return supportedJoinTypes;
 	}
 
@@ -185,7 +185,7 @@ public class IRCTApplication {
 	 * @param supportedJoinTypes
 	 *            Supported join types
 	 */
-	public void setSupportedJoinTypes(Map<String, JoinType> supportedJoinTypes) {
+	public void setSupportedJoinTypes(Map<String, IRCTJoin> supportedJoinTypes) {
 		this.supportedJoinTypes = supportedJoinTypes;
 	}
 
@@ -197,7 +197,7 @@ public class IRCTApplication {
 	 * @param join
 	 *            Join
 	 */
-	public void addJoin(String name, JoinType join) {
+	public void addJoin(String name, IRCTJoin join) {
 		// Persist the join
 		oem.persist(join);
 		this.supportedJoinTypes.put(name, join);
