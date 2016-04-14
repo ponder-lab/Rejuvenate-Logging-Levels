@@ -7,6 +7,9 @@ import java.util.Map;
 
 import edu.harvard.hms.dbmi.bd2k.irct.exception.JoinActionSetupException;
 import edu.harvard.hms.dbmi.bd2k.irct.model.result.Result;
+import edu.harvard.hms.dbmi.bd2k.irct.model.result.ResultDataType;
+import edu.harvard.hms.dbmi.bd2k.irct.model.result.exception.PersistableException;
+import edu.harvard.hms.dbmi.bd2k.irct.model.result.exception.ResultSetException;
 
 /**
  * The JoinAction interface extends the Action interface for Joins. All joins
@@ -33,8 +36,15 @@ public interface JoinImplementation {
 	 */
 	String getType();
 	
-	Result run();
+	Result run(Result result) throws ResultSetException, PersistableException;
 	
-	Result getResults();
+	Result getResults(Result result);
+	
+	/**
+	 * Returns the result data type
+	 * 
+	 * @return Result data type
+	 */
+	ResultDataType getJoinDataType();
 	
 }

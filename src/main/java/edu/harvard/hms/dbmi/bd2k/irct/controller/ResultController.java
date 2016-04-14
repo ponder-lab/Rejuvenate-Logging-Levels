@@ -3,6 +3,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 package edu.harvard.hms.dbmi.bd2k.irct.controller;
 
+import java.util.Date;
 import java.util.List;
 
 import javax.ejb.Stateless;
@@ -13,12 +14,15 @@ import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
 
+import edu.harvard.hms.dbmi.bd2k.irct.IRCTApplication;
 import edu.harvard.hms.dbmi.bd2k.irct.model.result.Persistable;
 import edu.harvard.hms.dbmi.bd2k.irct.model.result.Result;
-import edu.harvard.hms.dbmi.bd2k.irct.model.result.ResultSet;
+import edu.harvard.hms.dbmi.bd2k.irct.model.result.ResultDataType;
 import edu.harvard.hms.dbmi.bd2k.irct.model.result.ResultStatus;
 import edu.harvard.hms.dbmi.bd2k.irct.model.result.exception.PersistableException;
 import edu.harvard.hms.dbmi.bd2k.irct.model.result.exception.ResultSetException;
+import edu.harvard.hms.dbmi.bd2k.irct.model.result.tabular.FileResultSet;
+import edu.harvard.hms.dbmi.bd2k.irct.model.result.tabular.ResultSet;
 
 /**
  * A stateless controller for retrieving available results as well as individual
@@ -32,6 +36,8 @@ public class ResultController {
 	@Inject
 	private EntityManagerFactory objectEntityManager;
 
+	@Inject
+	private IRCTApplication irctApp;
 	/**
 	 * Returns a list of available results
 	 * 
@@ -76,11 +82,32 @@ public class ResultController {
 		} else if(result.getResultStatus() != ResultStatus.AVAILABLE) {
 			throw new ResultSetException("Result set is not available");
 		} else {
-			ResultSet rs = result.getResultSet();
-			((Persistable) rs).load(result.getResultSetLocation());
-			return rs;
+			Persistable rs = (Persistable) result.getData();
+			rs.load(result.getResultSetLocation());
+			return (ResultSet) rs;
 		}
-
-		
+	}
+	
+	
+	public Result createResult(ResultDataType resultDataType) throws PersistableException {
+		EntityManager oem = objectEntityManager.createEntityManager();
+		Result result = new Result();
+		oem.persist(result);
+		result.setDataType(resultDataType);
+		result.setStartTime(new Date());
+		if(resultDataType == ResultDataType.TABULAR) {
+			FileResultSet frs = new FileResultSet();
+			frs.persist(irctApp.getProperties().getProperty("ResultDataFolder") + "/" + result.getId());
+			result.setResultSetLocation(irctApp.getProperties().getProperty("ResultDataFolder") + "/" +  result.getId());
+			result.setData(frs);
+		}
+		result.setResultStatus(ResultStatus.CREATED);
+		oem.merge(result);
+		return result;
+	}
+	
+	public void mergeResult(Result result) {
+		EntityManager oem = objectEntityManager.createEntityManager();
+		oem.merge(result);
 	}
 }

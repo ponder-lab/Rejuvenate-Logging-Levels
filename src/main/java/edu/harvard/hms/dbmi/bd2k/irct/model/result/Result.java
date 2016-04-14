@@ -22,7 +22,7 @@ import javax.persistence.Transient;
 import javax.persistence.SequenceGenerator;
 
 import edu.harvard.hms.dbmi.bd2k.irct.executable.Executable;
-import edu.harvard.hms.dbmi.bd2k.irct.util.converter.ResultSetConverter;
+import edu.harvard.hms.dbmi.bd2k.irct.util.converter.DataConverter;
 
 /**
  * The result class is created for each execution that is run on the IRCT
@@ -44,15 +44,24 @@ public class Result {
 	private Executable executable;
 
 	@Temporal(TemporalType.TIMESTAMP)
-	private Date runTime;
+	private Date startTime;
+	
+	@Temporal(TemporalType.TIMESTAMP)
+	private Date endTime;
+	
 	@Enumerated(EnumType.STRING)
 	private ResultStatus resultStatus;
 	
+	@Enumerated(EnumType.STRING)
+	private ResultDataType dataType;
+	
 	private String resourceActionId;
 
-	@Convert(converter = ResultSetConverter.class)
-	private ResultSet resultSet;
+	@Convert(converter = DataConverter.class)
+	private Data data;
 	private String resultSetLocation;
+	
+	private String message;
 
 	/**
 	 * Returns a JSONObject representation of the object. This returns only the
@@ -129,22 +138,31 @@ public class Result {
 	}
 
 	/**
-	 * Returns the time the result was created
-	 * 
-	 * @return Run time
+	 * @return the startTime
 	 */
-	public Date getRunTime() {
-		return runTime;
+	public Date getStartTime() {
+		return startTime;
 	}
 
 	/**
-	 * Sets the time the result was created
-	 * 
-	 * @param runTime
-	 *            Run time
+	 * @param startTime the startTime to set
 	 */
-	public void setRunTime(Date runTime) {
-		this.runTime = runTime;
+	public void setStartTime(Date startTime) {
+		this.startTime = startTime;
+	}
+
+	/**
+	 * @return the endTime
+	 */
+	public Date getEndTime() {
+		return endTime;
+	}
+
+	/**
+	 * @param endTime the endTime to set
+	 */
+	public void setEndTime(Date endTime) {
+		this.endTime = endTime;
 	}
 
 	/**
@@ -166,6 +184,14 @@ public class Result {
 		this.resultStatus = resultStatus;
 	}
 
+	public ResultDataType getDataType() {
+		return dataType;
+	}
+
+	public void setDataType(ResultDataType dataType) {
+		this.dataType = dataType;
+	}
+
 	public String getResourceActionId() {
 		return resourceActionId;
 	}
@@ -177,10 +203,10 @@ public class Result {
 	/**
 	 * Returns an instantiation of a class that implements the result status
 	 * 
-	 * @return Result Set Object
+	 * @return Data Object
 	 */
-	public ResultSet getResultSet() {
-		return resultSet;
+	public Data getData() {
+		return data;
 	}
 
 	/**
@@ -188,8 +214,8 @@ public class Result {
 	 * 
 	 * @param implementingResultSet Implementing Result Set
 	 */
-	public void setResultSet(ResultSet resultSet) {
-		this.resultSet = resultSet;
+	public void setData(Data data) {
+		this.data = data;
 	}
 
 	/**
@@ -209,5 +235,13 @@ public class Result {
 	 */
 	public void setResultSetLocation(String resultSetLocation) {
 		this.resultSetLocation = resultSetLocation;
+	}
+
+	public String getMessage() {
+		return message;
+	}
+
+	public void setMessage(String message) {
+		this.message = message;
 	}
 }

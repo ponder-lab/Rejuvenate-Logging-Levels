@@ -6,7 +6,7 @@ package edu.harvard.hms.dbmi.bd2k.irct.util.converter;
 import javax.persistence.AttributeConverter;
 import javax.persistence.Converter;
 
-import edu.harvard.hms.dbmi.bd2k.irct.model.result.ResultSet;
+import edu.harvard.hms.dbmi.bd2k.irct.model.result.Data;
 
 /**
  * Converts a ResultSet to a String representation of the class to allow for
@@ -16,11 +16,11 @@ import edu.harvard.hms.dbmi.bd2k.irct.model.result.ResultSet;
  *
  */
 @Converter
-public class ResultSetConverter implements
-		AttributeConverter<ResultSet, String> {
+public class DataConverter implements
+		AttributeConverter<Data, String> {
 
 	@Override
-	public String convertToDatabaseColumn(ResultSet resultSet) {
+	public String convertToDatabaseColumn(Data resultSet) {
 		if (resultSet != null) {
 			return resultSet.getClass().getName();
 		}
@@ -28,11 +28,11 @@ public class ResultSetConverter implements
 	}
 
 	@Override
-	public ResultSet convertToEntityAttribute(String className) {
+	public Data convertToEntityAttribute(String className) {
 		if (className != null) {
-			ClassLoader cl = ResultSetConverter.class.getClassLoader();
+			ClassLoader cl = DataConverter.class.getClassLoader();
 			try {
-				return (ResultSet) cl.loadClass(className).newInstance();
+				return (Data) cl.loadClass(className).newInstance();
 			} catch (Exception e) {
 				e.printStackTrace();
 			}

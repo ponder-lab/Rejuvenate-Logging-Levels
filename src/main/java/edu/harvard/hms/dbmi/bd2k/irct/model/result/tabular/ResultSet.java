@@ -1,10 +1,11 @@
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-package edu.harvard.hms.dbmi.bd2k.irct.model.result;
+package edu.harvard.hms.dbmi.bd2k.irct.model.result.tabular;
 
 import java.util.Date;
 
+import edu.harvard.hms.dbmi.bd2k.irct.model.result.Data;
 import edu.harvard.hms.dbmi.bd2k.irct.model.result.exception.ResultSetException;
 
 /**
@@ -14,7 +15,7 @@ import edu.harvard.hms.dbmi.bd2k.irct.model.result.exception.ResultSetException;
  * @author Jeremy R. Easton-Marks
  *
  */
-public interface ResultSet {
+public interface ResultSet extends Data {
 	// Administrative
 	/**
 	 * Releases the connection to the datasource

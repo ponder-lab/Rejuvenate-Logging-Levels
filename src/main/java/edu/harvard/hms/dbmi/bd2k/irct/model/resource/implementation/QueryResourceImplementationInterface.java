@@ -4,11 +4,9 @@
 package edu.harvard.hms.dbmi.bd2k.irct.model.resource.implementation;
 
 
-import java.util.List;
-
-import edu.harvard.hms.dbmi.bd2k.irct.model.ontology.Entity;
 import edu.harvard.hms.dbmi.bd2k.irct.model.query.Query;
 import edu.harvard.hms.dbmi.bd2k.irct.model.resource.ResourceState;
+import edu.harvard.hms.dbmi.bd2k.irct.model.result.ResultDataType;
 import edu.harvard.hms.dbmi.bd2k.irct.model.result.Result;
 import edu.harvard.hms.dbmi.bd2k.irct.model.security.SecureSession;
 import edu.harvard.hms.dbmi.bd2k.irct.exception.ResourceInterfaceException;
@@ -30,7 +28,7 @@ public interface QueryResourceImplementationInterface extends
 	 * @return The id of the query that is running
 	 * @throws ResourceInterfaceException A resource exception occurred
 	 */
-	Result runQuery(SecureSession session, Query qep) throws ResourceInterfaceException;
+	Result runQuery(SecureSession session, Query qep, Result result) throws ResourceInterfaceException;
 
 	/**
 	 * Returns the results of the query if they are available
@@ -47,18 +45,11 @@ public interface QueryResourceImplementationInterface extends
 	 * @return Resource State
 	 */
 	ResourceState getState();
-
-	/**
-	 * Returns the the default entity that is returned with a query
-	 * 
-	 * @return Return Entity
-	 */
-	List<Entity> getReturnEntity();
 	
 	/**
-	 * Returns if the default entity is editable
+	 * Returns the result data type
 	 * 
-	 * @return Return Entity Editable
+	 * @return Result data type
 	 */
-	Boolean editableReturnEntity();
+	ResultDataType getQueryDataType();
 }

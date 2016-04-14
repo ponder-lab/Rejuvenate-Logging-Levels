@@ -129,8 +129,7 @@ public class Resource implements Serializable {
 		jsonBuilder.add("ontologyType", this.ontologyType.toString());
 
 		if (this.implementingInterface != null) {
-			jsonBuilder.add("implementation",
-					this.implementingInterface.toJson(depth));
+			jsonBuilder.add("implementation", implementingInterface.getType());
 
 			if (this.implementingInterface instanceof PathResourceImplementationInterface) {
 				// RELATIONSHIPS (PATH Interface)

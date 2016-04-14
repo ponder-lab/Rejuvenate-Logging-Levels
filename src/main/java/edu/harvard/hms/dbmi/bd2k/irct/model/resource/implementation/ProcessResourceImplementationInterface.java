@@ -7,6 +7,7 @@ import edu.harvard.hms.dbmi.bd2k.irct.exception.ResourceInterfaceException;
 import edu.harvard.hms.dbmi.bd2k.irct.model.process.IRCTProcess;
 import edu.harvard.hms.dbmi.bd2k.irct.model.resource.ResourceState;
 import edu.harvard.hms.dbmi.bd2k.irct.model.result.Result;
+import edu.harvard.hms.dbmi.bd2k.irct.model.result.ResultDataType;
 import edu.harvard.hms.dbmi.bd2k.irct.model.security.SecureSession;
 
 /**
@@ -23,7 +24,7 @@ public interface ProcessResourceImplementationInterface extends ResourceImplemen
 	 * @param pep Process to be run
 	 * @return The id of the process that is running
 	 */
-	Result runProcess(SecureSession session, IRCTProcess pep) throws ResourceInterfaceException;
+	Result runProcess(SecureSession session, IRCTProcess pep, Result result) throws ResourceInterfaceException;
 	
 	/**
 	 * Returns the results of the process if they are available
@@ -31,14 +32,21 @@ public interface ProcessResourceImplementationInterface extends ResourceImplemen
 	 * @param actionState Action State
 	 * @return Results Results
 	 * @throws ResourceInterfaceException A resource exception occurred
-	 */
+	 */ 
 	Result getResults(SecureSession session, Result result) throws ResourceInterfaceException;
 
 	/**
-	 * Returns the status of the resource
+	 * Returns the state of the resource
 	 * 
 	 * @return Resource State
 	 */
 	ResourceState getState();
+	
+	/**
+	 * Returns the result data type
+	 * 
+	 * @return Result data type
+	 */
+	ResultDataType getProcessDataType();
 	
 }

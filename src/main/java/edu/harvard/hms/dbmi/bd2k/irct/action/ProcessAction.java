@@ -4,24 +4,30 @@
 package edu.harvard.hms.dbmi.bd2k.irct.action;
 
 
+import java.util.Date;
 import java.util.Map;
 
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
+
+import edu.harvard.hms.dbmi.bd2k.irct.controller.ResultController;
 import edu.harvard.hms.dbmi.bd2k.irct.exception.ResourceInterfaceException;
 import edu.harvard.hms.dbmi.bd2k.irct.model.process.IRCTProcess;
 import edu.harvard.hms.dbmi.bd2k.irct.model.resource.Resource;
 import edu.harvard.hms.dbmi.bd2k.irct.model.resource.implementation.ProcessResourceImplementationInterface;
-import edu.harvard.hms.dbmi.bd2k.irct.model.resource.implementation.QueryResourceImplementationInterface;
 import edu.harvard.hms.dbmi.bd2k.irct.model.result.Result;
 import edu.harvard.hms.dbmi.bd2k.irct.model.result.ResultStatus;
+import edu.harvard.hms.dbmi.bd2k.irct.model.result.exception.PersistableException;
 import edu.harvard.hms.dbmi.bd2k.irct.model.security.SecureSession;
 
 /**
- * Implements the ProcessAction interface to run a process
+ * Implements the Action interface to run a process on a specific instance
  * 
  * @author Jeremy R. Easton-Marks
  *
  */
 public class ProcessAction implements Action {
+	
 	private IRCTProcess process ;
 	private Resource resource;
 	private ActionStatus status;
@@ -33,6 +39,7 @@ public class ProcessAction implements Action {
 		
 	}
 	
+	@Override
 	public void updateActionParams(Map<String, Result> updatedParams) {
 		for(String key : updatedParams.keySet()) {
 			process.getValues().put(key, updatedParams.get(key).getId().toString());
@@ -43,9 +50,15 @@ public class ProcessAction implements Action {
 	public void run(SecureSession session) {
 		this.status = ActionStatus.RUNNING;
 		try {
-			result = ((ProcessResourceImplementationInterface)resource.getImplementingInterface()).runProcess(session, process);
-			this.status = ActionStatus.COMPLETE;
-		} catch (ResourceInterfaceException e) {
+			InitialContext ic = new InitialContext();
+			ResultController resultController = (ResultController) ic.lookup("java:module/ResultController");
+			ProcessResourceImplementationInterface processInterface = (ProcessResourceImplementationInterface) resource.getImplementingInterface();
+			result = resultController.createResult(processInterface.getProcessDataType());
+			result = processInterface.runProcess(session, process, result);
+			
+			resultController.mergeResult(result);
+		} catch (ResourceInterfaceException | PersistableException | NamingException e) {
+			result.setMessage(e.getMessage());
 			this.status = ActionStatus.ERROR;
 		}
 	}
@@ -53,8 +66,23 @@ public class ProcessAction implements Action {
 	@Override
 	public Result getResults(SecureSession session) throws ResourceInterfaceException {
 		if(this.result.getResultStatus() != ResultStatus.ERROR && this.result.getResultStatus() != ResultStatus.COMPLETE) {
-			this.result = ((QueryResourceImplementationInterface)resource.getImplementingInterface()).getResults(session, result);
+			//TODO: Make this blocking
+			
+			this.result = ((ProcessResourceImplementationInterface)resource.getImplementingInterface()).getResults(session, result);
 		}
+		
+		result.setEndTime(new Date());
+		//Save the query Action
+		try {
+			InitialContext ic = new InitialContext();
+			ResultController resultController = (ResultController) ic.lookup("java:module/ResultController");
+			resultController.mergeResult(result);
+			this.status = ActionStatus.COMPLETE;
+		} catch (NamingException e) {
+			result.setMessage(e.getMessage());
+			this.status = ActionStatus.ERROR;
+		}
+		
 		return this.result;
 	}
 

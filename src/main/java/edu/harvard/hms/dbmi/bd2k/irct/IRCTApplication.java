@@ -3,8 +3,11 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 package edu.harvard.hms.dbmi.bd2k.irct;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Properties;
 import java.util.logging.Logger;
 
 import javax.annotation.PostConstruct;
@@ -37,6 +40,8 @@ public class IRCTApplication {
 
 	private Map<String, Resource> resources;
 	private Map<String, IRCTJoin> supportedJoinTypes;
+	
+	private Properties properties;
 
 	@Inject
 	Logger log;
@@ -54,6 +59,10 @@ public class IRCTApplication {
 	@PostConstruct
 	public void init() {
 		log.info("Starting IRCT Application");
+		
+		log.info("Loading Properties");
+		loadProperties();
+		log.info("Finished Loading Properties");
 
 		this.oem = objectEntityManager.createEntityManager();
 		this.oem.setFlushMode(FlushModeType.COMMIT);
@@ -67,6 +76,19 @@ public class IRCTApplication {
 		log.info("Finished Loading Resources");
 
 		log.info("Finished Starting IRCT Application");
+	}
+
+	private void loadProperties() {
+		InputStream inputStream  = IRCTApplication.class.getClassLoader().getResourceAsStream("IRCT.properties");
+		this.properties = new Properties();
+		try {
+			this.properties.load(inputStream);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+		
 	}
 
 	/**
@@ -225,5 +247,13 @@ public class IRCTApplication {
 	 */
 	public boolean doesJoinExists(String name) {
 		return this.supportedJoinTypes.containsKey(name);
+	}
+
+	public Properties getProperties() {
+		return properties;
+	}
+
+	public void setProperties(Properties properties) {
+		this.properties = properties;
 	}
 }

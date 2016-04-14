@@ -13,7 +13,6 @@ import edu.harvard.hms.dbmi.bd2k.irct.exception.FieldException;
 import edu.harvard.hms.dbmi.bd2k.irct.exception.JoinActionSetupException;
 import edu.harvard.hms.dbmi.bd2k.irct.join.JoinImplementation;
 import edu.harvard.hms.dbmi.bd2k.irct.model.join.IRCTJoin;
-import edu.harvard.hms.dbmi.bd2k.irct.util.Utilities;
 
 /**
  * A stateless controller for creating and running joins.
@@ -48,10 +47,10 @@ public class JoinController {
 			throw new ActionNotSetException("Join has not been created");
 		}
 		
-		Map<String, Object> actionParameters = Utilities.createActionParametersFromStringMap(this.joinType.getFields(), parameters, rc);
-		if(actionParameters != null) {
-			this.joinType.getJoinImplementation().setup(actionParameters);
-		}
+//		Map<String, Object> actionParameters = Utilities.createActionParametersFromStringMap(this.joinType.getFields(), parameters, rc);
+//		if(actionParameters != null) {
+//			this.joinType.getJoinImplementation().setup(actionParameters);
+//		}
 	}
 
 

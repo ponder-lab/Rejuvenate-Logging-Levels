@@ -8,7 +8,7 @@ import java.util.Map;
 
 import edu.harvard.hms.dbmi.bd2k.irct.model.resource.ProcessType;
 import edu.harvard.hms.dbmi.bd2k.irct.model.resource.Resource;
-import edu.harvard.hms.dbmi.bd2k.irct.model.result.ResultSet;
+import edu.harvard.hms.dbmi.bd2k.irct.model.result.tabular.ResultSet;
 
 /**
  * Creates an executable process

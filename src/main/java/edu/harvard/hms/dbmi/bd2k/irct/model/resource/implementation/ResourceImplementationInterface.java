@@ -3,13 +3,9 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 package edu.harvard.hms.dbmi.bd2k.irct.model.resource.implementation;
 
-import java.util.List;
 import java.util.Map;
 
-import javax.json.JsonObject;
-
 import edu.harvard.hms.dbmi.bd2k.irct.exception.ResourceInterfaceException;
-import edu.harvard.hms.dbmi.bd2k.irct.model.ontology.Entity;
 
 /**
  * Provides a base interface that is used by a resource implementation 
@@ -33,30 +29,4 @@ public interface ResourceImplementationInterface {
 	 * @return Type
 	 */
 	String getType();
-
-	/**
-	 * Returns a path representation of the default object that is returned
-	 * 
-	 * @return The default returned object
-	 */
-	List<Entity> getReturnEntity();
-
-	/**
-	 * Returns a JSON representation of the implementing interface
-	 * 
-	 * Equivalent to toJson(1);
-	 * 
-	 * @return JSON Representation
-	 */
-	JsonObject toJson();
-
-	/**
-	 * Returns a JSON representation of the implementing interface while
-	 * converting children to JSON of a given depth
-	 * 
-	 * 
-	 * @param depth Depth to travel
-	 * @return JSON Representation
-	 */
-	JsonObject toJson(int depth);
 }

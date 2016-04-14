@@ -26,15 +26,16 @@ public class ExecutableChildNode implements Executable {
 	@Override
 	public void setup(SecureSession secureSession) {
 		this.session = secureSession;
+		this.children = new HashMap<String, Executable>();
 		this.childrenResults = new HashMap<String, Result>();
 		this.state = ExecutableStatus.CREATED;
 	}
 
 	@Override
 	public void run() throws ResourceInterfaceException {
-		if (isBlocking()) {
+		if (isBlocking() && !children.isEmpty()) {
 			runSequentially();
-		} else {
+		} else if (!children.isEmpty()){
 			runConcurrently();
 		}
 		if(!childrenResults.isEmpty()) {

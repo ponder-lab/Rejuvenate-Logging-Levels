@@ -1,7 +1,7 @@
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-package edu.harvard.hms.dbmi.bd2k.irct.model.result;
+package edu.harvard.hms.dbmi.bd2k.irct.model.result.tabular;
 
 import java.io.IOException;
 import java.io.StringReader;
@@ -28,12 +28,11 @@ import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 
 import edu.harvard.hms.dbmi.bd2k.irct.model.resource.PrimitiveDataType;
-import edu.harvard.hms.dbmi.bd2k.irct.model.result.Column;
-import edu.harvard.hms.dbmi.bd2k.irct.model.result.ResultSetImpl;
-import edu.harvard.hms.dbmi.bd2k.irct.model.result.Row;
+import edu.harvard.hms.dbmi.bd2k.irct.model.result.Persistable;
 import edu.harvard.hms.dbmi.bd2k.irct.model.result.exception.PersistableException;
 import edu.harvard.hms.dbmi.bd2k.irct.model.result.exception.ResultSetException;
 import edu.harvard.hms.dbmi.bd2k.irct.model.result.exception.RowSetExeception;
+import edu.harvard.hms.dbmi.bd2k.irct.model.result.tabular.Row;
 
 /**
  * An implementation of a Result Set that is persistable to the file system

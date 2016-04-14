@@ -1,7 +1,7 @@
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-package edu.harvard.hms.dbmi.bd2k.irct.model.result;
+package edu.harvard.hms.dbmi.bd2k.irct.model.result.tabular;
 
 import java.util.Date;
 
@@ -17,7 +17,7 @@ import edu.harvard.hms.dbmi.bd2k.irct.model.result.exception.RowSetExeception;
  * @author Jeremy R. Easton-Marks
  *
  */
-public class ResultSetImpl implements ResultSet, Joinable {
+public class ResultSetImpl implements ResultSet {
 	private int[] matchColumnIndex;
 	private Column[] columns;
 	private String[] columnNames;
