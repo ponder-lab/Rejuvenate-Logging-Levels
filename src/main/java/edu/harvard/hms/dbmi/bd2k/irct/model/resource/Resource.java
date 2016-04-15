@@ -231,6 +231,15 @@ public class Resource implements Serializable {
 		}
 		return null;
 	}
+	
+	public DataType getDataTypeByName(String dataTypeName) {
+		for(DataType dataType : this.dataTypes) {
+			if(dataType.toString().equals(dataTypeName)) {
+				return dataType;
+			}
+		}
+		return null;
+	}
 
 	// -------------------------------------------------------------------------
 	// SETTERS AND GETTERS

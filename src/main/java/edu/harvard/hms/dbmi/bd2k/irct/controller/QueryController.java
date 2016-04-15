@@ -46,7 +46,7 @@ public class QueryController {
 		wc.setField(field);
 		wc.setLogicalOperator(logicalOperator);
 		wc.setPredicateType(predicate);
-		wc.setValues(fields);
+		wc.setStringValues(fields);
 		
 		// Assign the where clause an id if it doesn't have one
 		if(clauseId == null) {
@@ -130,7 +130,7 @@ public class QueryController {
 					}
 				}
 				//Is the predicate field of allowedTypes
-				if(!predicateField.getPath().isEmpty() && (!predicateField.getPath().contains(queryFieldValue))) {
+				if(!predicateField.getPermittedValues().isEmpty() && (!predicateField.getPermittedValues().contains(queryFieldValue))) {
 					throw new QueryException("The field value set is not a required field");
 				}
 			}

@@ -49,7 +49,7 @@ public class QueryAction implements Action {
 			ClauseAbstract clause = this.query.getClauses().get(clauseId);
 			if (clause instanceof WhereClause) {
 				WhereClause whereClause = (WhereClause) clause;
-				whereClause.getValues().put(parameterId,
+				whereClause.getStringValues().put(parameterId,
 						updatedParams.get(key).getId().toString());
 			}
 		}

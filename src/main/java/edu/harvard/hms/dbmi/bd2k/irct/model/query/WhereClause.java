@@ -50,10 +50,10 @@ public class WhereClause extends ClauseAbstract implements Serializable {
 	@CollectionTable(name="where_values", joinColumns=@JoinColumn(name="WHERE_VALUE"))
 	@MapKeyColumn(name="where_id")
 	@Column(name="where_value")
-	private Map<String, String> values;
+	private Map<String, String> stringValues;
 	
 	public WhereClause() {
-		this.values = new HashMap<String, String>();
+		this.stringValues = new HashMap<String, String>();
 	}
 
 	/**
@@ -108,11 +108,11 @@ public class WhereClause extends ClauseAbstract implements Serializable {
 
 		jsonBuilder.add("predicateType", predicateType.toJson(depth));
 
-		if (values != null) {
+		if (stringValues != null) {
 			JsonArrayBuilder jsonValues = Json.createArrayBuilder();
-			for(String valueKey : this.values.keySet()) {
+			for(String valueKey : this.stringValues.keySet()) {
 				JsonObjectBuilder valueInstance = Json.createObjectBuilder();
-				valueInstance.add(valueKey, this.values.get(valueKey));
+				valueInstance.add(valueKey, this.stringValues.get(valueKey));
 			}
 			jsonBuilder.add("value", jsonValues);
 		}
@@ -197,8 +197,8 @@ public class WhereClause extends ClauseAbstract implements Serializable {
 	 * 
 	 * @return Value
 	 */
-	public Map<String, String> getValues() {
-		return values;
+	public Map<String, String> getStringValues() {
+		return stringValues;
 	}
 
 	/**
@@ -207,8 +207,8 @@ public class WhereClause extends ClauseAbstract implements Serializable {
 	 * @param values
 	 *            Value
 	 */
-	public void setValues(Map<String, String> values) {
-		this.values = values;
+	public void setStringValues(Map<String, String> stringValues) {
+		this.stringValues = stringValues;
 	}
 
 }
