@@ -65,11 +65,17 @@ public class ProcessAction implements Action {
 
 	@Override
 	public Result getResults(SecureSession session) throws ResourceInterfaceException {
-		if(this.result.getResultStatus() != ResultStatus.ERROR && this.result.getResultStatus() != ResultStatus.COMPLETE) {
-			//TODO: Make this blocking
-			
-			this.result = ((ProcessResourceImplementationInterface)resource.getImplementingInterface()).getResults(session, result);
+		this.result = ((ProcessResourceImplementationInterface)resource.getImplementingInterface()).getResults(session, result);
+		try {
+			while((this.result.getResultStatus() != ResultStatus.ERROR) && (this.result.getResultStatus() != ResultStatus.COMPLETE)) {
+				Thread.sleep(5000);
+				this.result = ((ProcessResourceImplementationInterface)resource.getImplementingInterface()).getResults(session, result);
+			}
+		} catch(Exception e) {
+			this.result.setResultStatus(ResultStatus.ERROR);
+			this.result.setMessage(e.getMessage());
 		}
+		
 		
 		result.setEndTime(new Date());
 		//Save the query Action

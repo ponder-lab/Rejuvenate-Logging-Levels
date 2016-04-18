@@ -16,7 +16,6 @@ import edu.harvard.hms.dbmi.bd2k.irct.model.resource.Resource;
 import edu.harvard.hms.dbmi.bd2k.irct.model.resource.implementation.QueryResourceImplementationInterface;
 import edu.harvard.hms.dbmi.bd2k.irct.model.result.Result;
 import edu.harvard.hms.dbmi.bd2k.irct.model.result.ResultStatus;
-import edu.harvard.hms.dbmi.bd2k.irct.model.result.exception.PersistableException;
 import edu.harvard.hms.dbmi.bd2k.irct.model.security.SecureSession;
 import edu.harvard.hms.dbmi.bd2k.irct.controller.ResultController;
 import edu.harvard.hms.dbmi.bd2k.irct.exception.ResourceInterfaceException;
@@ -71,8 +70,8 @@ public class QueryAction implements Action {
 			
 			//Update the result in the database
 			resultController.mergeResult(result);
-		} catch (ResourceInterfaceException | PersistableException
-				| NamingException e) {
+		} catch (Exception e) {
+			result.setResultStatus(ResultStatus.ERROR);
 			result.setMessage(e.getMessage());
 			this.status = ActionStatus.ERROR;
 		}
@@ -81,13 +80,17 @@ public class QueryAction implements Action {
 	@Override
 	public Result getResults(SecureSession session)
 			throws ResourceInterfaceException {
-		if (this.result.getResultStatus() != ResultStatus.ERROR
-				&& this.result.getResultStatus() != ResultStatus.COMPLETE) {
-			// TODO: Make this blocking
-
-			this.result = ((QueryResourceImplementationInterface) resource
-					.getImplementingInterface()).getResults(session, result);
+		try {
+			this.result = ((QueryResourceImplementationInterface) resource.getImplementingInterface()).getResults(session, result);
+			while((this.result.getResultStatus() != ResultStatus.ERROR) && (this.result.getResultStatus() != ResultStatus.COMPLETE)) {
+					Thread.sleep(5000);
+					this.result = ((QueryResourceImplementationInterface) resource.getImplementingInterface()).getResults(session, result);
+			}
+		} catch(Exception e) {
+			this.result.setResultStatus(ResultStatus.ERROR);
+			this.result.setMessage(e.getMessage());
 		}
+		
 		result.setEndTime(new Date());
 		//Save the query Action
 		try {
