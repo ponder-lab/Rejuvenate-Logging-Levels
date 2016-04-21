@@ -54,21 +54,21 @@ public class ProcessController {
 	public void updateProcess(Resource resource, String processName, Map<String, String> values) {
 		ProcessType pt = findProcess(resource, processName);
 		process.setResource(resource);
-		try {
-			for(Field field : pt.getFields()) {
-				if(field.getDataTypes().contains(PrimitiveDataType.RESULTSET)) {
-					process.getResultSets().put(field.getName(), rc.getResultSet(Long.parseLong(values.get(field.getName()), 10)));
-				} else {
-					process.getValues().put(field.getName(), values.get(field.getName()));
-				}
-			}
-		} catch (NumberFormatException e) {
-			e.printStackTrace();
-		} catch (ResultSetException e) {
-			e.printStackTrace();
-		} catch (PersistableException e) {
-			e.printStackTrace();
-		}
+//		try {
+//			for(Field field : pt.getFields()) {
+//				if(field.getDataTypes().contains(PrimitiveDataType.RESULTSET)) {
+//					process.getResultSets().put(field.getName(), rc.getResultSet(Long.parseLong(values.get(field.getName()), 10)));
+//				} else {
+//					process.getValues().put(field.getName(), values.get(field.getName()));
+//				}
+//			}
+//		} catch (NumberFormatException e) {
+//			e.printStackTrace();
+//		} catch (ResultSetException e) {
+//			e.printStackTrace();
+//		} catch (PersistableException e) {
+//			e.printStackTrace();
+//		}
 		
 		
 		

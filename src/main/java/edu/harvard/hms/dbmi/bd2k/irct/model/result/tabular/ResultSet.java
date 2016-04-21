@@ -6,6 +6,7 @@ package edu.harvard.hms.dbmi.bd2k.irct.model.result.tabular;
 import java.util.Date;
 
 import edu.harvard.hms.dbmi.bd2k.irct.model.result.Data;
+import edu.harvard.hms.dbmi.bd2k.irct.model.result.exception.PersistableException;
 import edu.harvard.hms.dbmi.bd2k.irct.model.result.exception.ResultSetException;
 
 /**
@@ -570,5 +571,7 @@ public interface ResultSet extends Data {
 	 *             If a ResultSetException occurs
 	 */
 	int getColumnSize() throws ResultSetException;
+
+	void load(String resultSetLocation) throws ResultSetException, PersistableException;
 
 }

@@ -16,12 +16,14 @@ import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.ManyToOne;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import javax.persistence.Transient;
 import javax.persistence.SequenceGenerator;
 
 import edu.harvard.hms.dbmi.bd2k.irct.executable.Executable;
+import edu.harvard.hms.dbmi.bd2k.irct.model.security.User;
 import edu.harvard.hms.dbmi.bd2k.irct.util.converter.DataConverter;
 
 /**
@@ -35,32 +37,35 @@ import edu.harvard.hms.dbmi.bd2k.irct.util.converter.DataConverter;
 @Entity
 public class Result {
 	@Id
-	@GeneratedValue(generator="resultSequencer")
-	@SequenceGenerator(name = "resultSequencer", sequenceName="resSeq")
+	@GeneratedValue(generator = "resultSequencer")
+	@SequenceGenerator(name = "resultSequencer", sequenceName = "resSeq")
 	private Long id;
 
 	// TODO: REMOVE TRANSIENT
 	@Transient
 	private Executable executable;
 
+	@ManyToOne
+	private User user;
+
 	@Temporal(TemporalType.TIMESTAMP)
 	private Date startTime;
-	
+
 	@Temporal(TemporalType.TIMESTAMP)
 	private Date endTime;
-	
+
 	@Enumerated(EnumType.STRING)
 	private ResultStatus resultStatus;
-	
+
 	@Enumerated(EnumType.STRING)
 	private ResultDataType dataType;
-	
+
 	private String resourceActionId;
 
 	@Convert(converter = DataConverter.class)
 	private Data data;
 	private String resultSetLocation;
-	
+
 	private String message;
 
 	/**
@@ -138,6 +143,21 @@ public class Result {
 	}
 
 	/**
+	 * @return the user
+	 */
+	public User getUser() {
+		return user;
+	}
+
+	/**
+	 * @param user
+	 *            the user to set
+	 */
+	public void setUser(User user) {
+		this.user = user;
+	}
+
+	/**
 	 * @return the startTime
 	 */
 	public Date getStartTime() {
@@ -145,7 +165,8 @@ public class Result {
 	}
 
 	/**
-	 * @param startTime the startTime to set
+	 * @param startTime
+	 *            the startTime to set
 	 */
 	public void setStartTime(Date startTime) {
 		this.startTime = startTime;
@@ -159,7 +180,8 @@ public class Result {
 	}
 
 	/**
-	 * @param endTime the endTime to set
+	 * @param endTime
+	 *            the endTime to set
 	 */
 	public void setEndTime(Date endTime) {
 		this.endTime = endTime;
@@ -212,7 +234,8 @@ public class Result {
 	/**
 	 * Sets the class that is used to implement the result status
 	 * 
-	 * @param implementingResultSet Implementing Result Set
+	 * @param implementingResultSet
+	 *            Implementing Result Set
 	 */
 	public void setData(Data data) {
 		this.data = data;

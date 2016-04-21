@@ -66,6 +66,10 @@ public class ExecutionController {
 			throws PersistableException {
 		log.info("Start Process");
 		Result newResult = new Result();
+		
+		if(secureSession != null) {
+			newResult.setUser(secureSession.getUser());
+		}
 
 		newResult.setResultStatus(ResultStatus.RUNNING);
 		entityManager.persist(newResult);
@@ -97,6 +101,10 @@ public class ExecutionController {
 			throws PersistableException {
 		log.info("Starting Query");
 		Result newResult = new Result();
+		
+		if(secureSession != null) {
+			newResult.setUser(secureSession.getUser());
+		}
 
 		newResult.setResultStatus(ResultStatus.RUNNING);
 		entityManager.persist(newResult);
@@ -128,6 +136,11 @@ public class ExecutionController {
 			throws PersistableException {
 		log.info("Starting: " + joinType.getJoinImplementation().getType());
 		Result newResult = new Result();
+		
+		if(secureSession != null) {
+			newResult.setUser(secureSession.getUser());
+		}
+		
 		newResult.setResultStatus(ResultStatus.RUNNING);
 
 		JoinAction ja = new JoinAction();

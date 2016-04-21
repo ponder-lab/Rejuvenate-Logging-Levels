@@ -11,7 +11,6 @@ import javax.inject.Inject;
 import edu.harvard.hms.dbmi.bd2k.irct.exception.ActionNotSetException;
 import edu.harvard.hms.dbmi.bd2k.irct.exception.FieldException;
 import edu.harvard.hms.dbmi.bd2k.irct.exception.JoinActionSetupException;
-import edu.harvard.hms.dbmi.bd2k.irct.join.JoinImplementation;
 import edu.harvard.hms.dbmi.bd2k.irct.model.join.IRCTJoin;
 
 /**

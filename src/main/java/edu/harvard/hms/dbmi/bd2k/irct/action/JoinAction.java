@@ -16,6 +16,7 @@ import edu.harvard.hms.dbmi.bd2k.irct.model.result.exception.PersistableExceptio
 import edu.harvard.hms.dbmi.bd2k.irct.model.result.exception.ResultSetException;
 import edu.harvard.hms.dbmi.bd2k.irct.model.security.SecureSession;
 import edu.harvard.hms.dbmi.bd2k.irct.controller.ResultController;
+import edu.harvard.hms.dbmi.bd2k.irct.controller.ResultController;
 import edu.harvard.hms.dbmi.bd2k.irct.exception.ResourceInterfaceException;
 
 /**
@@ -50,6 +51,9 @@ public class JoinAction implements Action {
 			ResultController resultController = (ResultController) ic.lookup("java:module/ResultController");
 			JoinImplementation joinImplementation = (JoinImplementation) joinType.getJoinImplementation();
 			result = resultController.createResult(joinImplementation.getJoinDataType());
+			if(session != null) {
+				result.setUser(session.getUser());
+			}
 			result = joinImplementation.run(result);
 			this.status = ActionStatus.COMPLETE;
 		} catch (PersistableException | NamingException | ResultSetException e) {

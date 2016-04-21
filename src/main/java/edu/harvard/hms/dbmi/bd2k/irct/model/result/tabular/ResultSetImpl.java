@@ -7,6 +7,7 @@ import java.util.Date;
 
 import org.apache.commons.lang3.ArrayUtils;
 
+import edu.harvard.hms.dbmi.bd2k.irct.model.result.exception.PersistableException;
 import edu.harvard.hms.dbmi.bd2k.irct.model.result.exception.ResultSetException;
 import edu.harvard.hms.dbmi.bd2k.irct.model.result.exception.RowSetExeception;
 
@@ -107,6 +108,13 @@ public class ResultSetImpl implements ResultSet {
 
 		unsetMatchColumn(removeColumnIndex);
 
+	}
+	
+	@Override
+	public void load(String resultSetLocation) throws ResultSetException,
+			PersistableException {
+		throw new ResultSetException("Not Implemented in this class");
+		
 	}
 
 	public void close() throws ResultSetException {

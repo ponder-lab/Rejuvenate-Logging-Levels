@@ -5,7 +5,9 @@ package edu.harvard.hms.dbmi.bd2k.irct;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.logging.Logger;
@@ -22,9 +24,12 @@ import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
 
+import edu.harvard.hms.dbmi.bd2k.irct.dataconverter.ResultDataConverter;
 import edu.harvard.hms.dbmi.bd2k.irct.exception.ResourceInterfaceException;
 import edu.harvard.hms.dbmi.bd2k.irct.model.join.IRCTJoin;
 import edu.harvard.hms.dbmi.bd2k.irct.model.resource.Resource;
+import edu.harvard.hms.dbmi.bd2k.irct.model.result.DataConverterImplementation;
+import edu.harvard.hms.dbmi.bd2k.irct.model.result.ResultDataType;
 
 /**
  * Manages supported resources and join types for this instance of the IRCT
@@ -40,6 +45,7 @@ public class IRCTApplication {
 
 	private Map<String, Resource> resources;
 	private Map<String, IRCTJoin> supportedJoinTypes;
+	private Map<ResultDataType, List<DataConverterImplementation>> resultDataConverters;
 	
 	private Properties properties;
 
@@ -59,10 +65,16 @@ public class IRCTApplication {
 	@PostConstruct
 	public void init() {
 		log.info("Starting IRCT Application");
+		this.oem = objectEntityManager.createEntityManager();
+		this.oem.setFlushMode(FlushModeType.COMMIT);
 		
 		log.info("Loading Properties");
 		loadProperties();
 		log.info("Finished Loading Properties");
+		
+		log.info("Loading Data Converters");
+		loadDataConverters();
+		log.info("Finished Data Converters");
 
 		this.oem = objectEntityManager.createEntityManager();
 		this.oem.setFlushMode(FlushModeType.COMMIT);
@@ -87,9 +99,29 @@ public class IRCTApplication {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-
-		
 	}
+	
+	private void loadDataConverters() {
+		this.resultDataConverters = new HashMap<ResultDataType, List<DataConverterImplementation>>();
+		CriteriaBuilder cb = oem.getCriteriaBuilder();
+		CriteriaQuery<DataConverterImplementation> criteria = cb.createQuery(DataConverterImplementation.class);
+		Root<DataConverterImplementation> load = criteria.from(DataConverterImplementation.class);
+		criteria.select(load);
+		List<DataConverterImplementation> allDCI = oem.createQuery(criteria).getResultList();
+		for (DataConverterImplementation dci : allDCI) {
+			if(this.resultDataConverters.containsKey(dci.getResultDataType())) {
+				this.resultDataConverters.get(dci.getResultDataType()).add(dci);
+			} else {
+				List<DataConverterImplementation> dciList = new ArrayList<DataConverterImplementation>();
+				dciList.add(dci);
+				this.resultDataConverters.put(dci.getResultDataType(), dciList);	
+			}
+			
+		}
+		
+		log.info("Loaded " + allDCI.size() + " result data converters");
+	}
+	
 
 	/**
 	 * Loads all the joins from the persistence manager
@@ -223,6 +255,33 @@ public class IRCTApplication {
 		// Persist the join
 		oem.persist(join);
 		this.supportedJoinTypes.put(name, join);
+	}
+
+	/**
+	 * @return the resultDataConverters
+	 */
+	public Map<ResultDataType, List<DataConverterImplementation>> getResultDataConverters() {
+		return resultDataConverters;
+	}
+
+	/**
+	 * @param resultDataConverters the resultDataConverters to set
+	 */
+	public void setResultDataConverters(Map<ResultDataType, List<DataConverterImplementation>> resultDataConverters) {
+		this.resultDataConverters = resultDataConverters;
+	}
+	
+	public ResultDataConverter getResultDataConverter(ResultDataType dataType, String format) {
+		// TODO Auto-generated method stub
+		List<DataConverterImplementation> dciList = this.resultDataConverters.get(dataType);
+		
+		for(DataConverterImplementation dci : dciList) {
+			if(dci.getFormat().equals(format)) {
+				
+				return dci.getDataConverter();
+			}
+		}
+		return null;
 	}
 
 	/**

@@ -53,7 +53,12 @@ public class ProcessAction implements Action {
 			InitialContext ic = new InitialContext();
 			ResultController resultController = (ResultController) ic.lookup("java:module/ResultController");
 			ProcessResourceImplementationInterface processInterface = (ProcessResourceImplementationInterface) resource.getImplementingInterface();
+			
 			result = resultController.createResult(processInterface.getProcessDataType());
+			if(session != null) {
+				result.setUser(session.getUser());
+			}
+			
 			result = processInterface.runProcess(session, process, result);
 			
 			resultController.mergeResult(result);

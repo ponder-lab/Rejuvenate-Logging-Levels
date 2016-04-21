@@ -18,6 +18,7 @@ import edu.harvard.hms.dbmi.bd2k.irct.model.result.Result;
 import edu.harvard.hms.dbmi.bd2k.irct.model.result.ResultStatus;
 import edu.harvard.hms.dbmi.bd2k.irct.model.security.SecureSession;
 import edu.harvard.hms.dbmi.bd2k.irct.controller.ResultController;
+import edu.harvard.hms.dbmi.bd2k.irct.controller.ResultController;
 import edu.harvard.hms.dbmi.bd2k.irct.exception.ResourceInterfaceException;
 
 /**
@@ -64,8 +65,13 @@ public class QueryAction implements Action {
 
 			QueryResourceImplementationInterface queryInterface = (QueryResourceImplementationInterface) resource
 					.getImplementingInterface();
+			
 			result = resultController.createResult(queryInterface
 					.getQueryDataType());
+			if(session != null) {
+				result.setUser(session.getUser());
+			}
+			
 			result = queryInterface.runQuery(session, query, result);
 			
 			//Update the result in the database

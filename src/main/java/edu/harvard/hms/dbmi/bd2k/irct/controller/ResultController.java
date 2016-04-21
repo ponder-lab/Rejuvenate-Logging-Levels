@@ -3,6 +3,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 package edu.harvard.hms.dbmi.bd2k.irct.controller;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -12,82 +13,120 @@ import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 
 import edu.harvard.hms.dbmi.bd2k.irct.IRCTApplication;
-import edu.harvard.hms.dbmi.bd2k.irct.model.result.Persistable;
+import edu.harvard.hms.dbmi.bd2k.irct.dataconverter.ResultDataConverter;
+import edu.harvard.hms.dbmi.bd2k.irct.dataconverter.ResultDataStream;
+import edu.harvard.hms.dbmi.bd2k.irct.model.result.DataConverterImplementation;
 import edu.harvard.hms.dbmi.bd2k.irct.model.result.Result;
 import edu.harvard.hms.dbmi.bd2k.irct.model.result.ResultDataType;
 import edu.harvard.hms.dbmi.bd2k.irct.model.result.ResultStatus;
 import edu.harvard.hms.dbmi.bd2k.irct.model.result.exception.PersistableException;
-import edu.harvard.hms.dbmi.bd2k.irct.model.result.exception.ResultSetException;
 import edu.harvard.hms.dbmi.bd2k.irct.model.result.tabular.FileResultSet;
-import edu.harvard.hms.dbmi.bd2k.irct.model.result.tabular.ResultSet;
+import edu.harvard.hms.dbmi.bd2k.irct.model.security.User;
 
 /**
- * A stateless controller for retrieving available results as well as individual
- * results.
+ * A stateless controller for retrieving the status of a result as well as the
+ * result themselves.
  * 
  * @author Jeremy R. Easton-Marks
  *
  */
+
 @Stateless
 public class ResultController {
 	@Inject
 	private EntityManagerFactory objectEntityManager;
-
+	
 	@Inject
 	private IRCTApplication irctApp;
-	/**
-	 * Returns a list of available results
-	 * 
-	 * @return Available results
-	 */
-	public List<Result> availableResults() {
+	
+
+	public List<Result> getAvailableResults(User user) {
 		EntityManager oem = objectEntityManager.createEntityManager();
 		CriteriaBuilder cb = oem.getCriteriaBuilder();
+		
 		CriteriaQuery<Result> criteria = cb.createQuery(Result.class);
-		Root<Result> load = criteria.from(Result.class);
-		criteria.select(load);
+		Root<Result> result = criteria.from(Result.class);
+		criteria.select(result);
+		
+		Predicate restrictions = cb.conjunction();
+		restrictions = cb.and(restrictions, cb.isNull(result.get("user")));
+		restrictions = cb.or(restrictions, cb.equal(result.get("user"), user));
+		restrictions = cb.and(restrictions, cb.equal(result.get("resultStatus"), ResultStatus.AVAILABLE));
+		criteria.where(restrictions);
+		
 		return oem.createQuery(criteria).getResultList();
 	}
 
-	/**
-	 * Returns a result from the entity manager
-	 * 
-	 * @param id The result id
-	 * @return Result
-	 */
-	public Result getResult(Long id) {
-		EntityManager oem = objectEntityManager.createEntityManager();
-		return oem.find(Result.class, id);
-
+	public ResultStatus getResultStatus(User user, Long resultId) {
+		List<Result> results = getResults(user, resultId);
+		if((results == null) || (results.isEmpty())) {
+			return null;
+		} 
+		return results.get(0).getResultStatus();
 	}
 
-	/**
-	 * Gets a result set from the entity manager
-	 * 
-	 * @param id Result Id
-	 * @return Result Set
-	 * @throws ResultSetException An error occurred in the result set
-	 * @throws PersistableException An error occurred loading the resultset
-	 */
-	public ResultSet getResultSet(Long id) throws ResultSetException,
-			PersistableException {
-		EntityManager oem = objectEntityManager.createEntityManager();
-		Result result = oem.find(Result.class, id);
+	public List<String> getAvailableFormats(User user, Long resultId) {
+		List<Result> results = getResults(user, resultId);
 		
-		if(result.getResultStatus() == ResultStatus.RUNNING) {
-			throw new ResultSetException("Result set is still running");
-		} else if(result.getResultStatus() != ResultStatus.AVAILABLE) {
-			throw new ResultSetException("Result set is not available");
-		} else {
-			Persistable rs = (Persistable) result.getData();
-			rs.load(result.getResultSetLocation());
-			return (ResultSet) rs;
+		if(results == null) {
+			return null;
 		}
+		List<DataConverterImplementation> rdc = irctApp.getResultDataConverters().get(results.get(0).getDataType());
+		
+		List<String> converterNames = new ArrayList<String>();
+		for(DataConverterImplementation rd : rdc) {
+			converterNames.add(rd.getFormat());
+		}
+		return converterNames;
 	}
 	
+	public ResultDataStream getResultDataStream(User user, Long resultId, String format) {
+		ResultDataStream rds = new ResultDataStream();
+		List<Result> results = getResults(user, resultId);
+		
+		if(results == null) {
+			rds.setMessage("Unable to find result");
+			return rds;
+		}
+		Result result = results.get(0);
+		ResultDataConverter rdc = irctApp.getResultDataConverter(result.getDataType(), format);
+		if(rdc == null) {
+			rds.setMessage("Unable to find format");
+			return rds;
+		}
+		
+		rds.setMediaType(rdc.getMediaType());
+		rds.setResult(rdc.createStream(result));
+		rds.setFileExtension(rdc.getFileExtension());
+		
+		return rds;
+	}
+	
+	private List<Result> getResults(User user, Long resultId) {
+		EntityManager oem = objectEntityManager.createEntityManager();
+		CriteriaBuilder cb = oem.getCriteriaBuilder();
+		
+		CriteriaQuery<Result> criteria = cb.createQuery(Result.class);
+		Root<Result> resultRoot = criteria.from(Result.class);
+		criteria.select(resultRoot);
+		
+		Predicate restrictions = cb.conjunction();
+		restrictions = cb.and(restrictions, cb.isNull(resultRoot.get("user")));
+		restrictions = cb.or(restrictions, cb.equal(resultRoot.get("user"), user));
+		restrictions = cb.and(restrictions, cb.equal(resultRoot.get("id"), resultId));
+		criteria.where(restrictions);
+		
+		List<Result> results = oem.createQuery(criteria).getResultList();
+		
+		if((results == null) || (results.isEmpty())) {
+			return null;
+		}
+		return results;
+	}
 	
 	public Result createResult(ResultDataType resultDataType) throws PersistableException {
 		EntityManager oem = objectEntityManager.createEntityManager();
@@ -110,4 +149,5 @@ public class ResultController {
 		EntityManager oem = objectEntityManager.createEntityManager();
 		oem.merge(result);
 	}
+
 }

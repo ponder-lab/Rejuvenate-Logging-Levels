@@ -6,35 +6,35 @@ package edu.harvard.hms.dbmi.bd2k.irct.util.converter;
 import javax.persistence.AttributeConverter;
 import javax.persistence.Converter;
 
-import edu.harvard.hms.dbmi.bd2k.irct.model.resource.implementation.ResourceImplementationInterface;
+import edu.harvard.hms.dbmi.bd2k.irct.dataconverter.ResultDataConverter;
 
 /**
- * Converts a Resource Implementation to a String representation of the class to
+ * Converts a Resource Data Converter to a String representation of the class to
  * allow for storage inside a Relational Database
  * 
  * @author Jeremy R. Easton-Marks
  *
  */
 @Converter
-public class ResourceImplementationConverter implements
-		AttributeConverter<ResourceImplementationInterface, String> {
+public class ResultDataImplementationConverter implements
+		AttributeConverter<ResultDataConverter, String> {
 
 	@Override
 	public String convertToDatabaseColumn(
-			ResourceImplementationInterface resourceImplementation) {
-		if (resourceImplementation != null) {
-			return resourceImplementation.getClass().getName().split("\\$")[0];
+			ResultDataConverter resultDataConverter) {
+		if (resultDataConverter != null) {
+			return resultDataConverter.getClass().getName().split("\\$")[0];
 		}
 		return null;
 	}
 
 	@Override
-	public ResourceImplementationInterface convertToEntityAttribute(
+	public ResultDataConverter convertToEntityAttribute(
 			String className) {
 		if (className != null) {
 			try {
-				Class<?> resourceInterfaceClass = Class.forName(className);
-				return (ResourceImplementationInterface) resourceInterfaceClass.newInstance();
+				Class<?> resultDataConverter = Class.forName(className);
+				return (ResultDataConverter) resultDataConverter.newInstance();
 			} catch (ClassNotFoundException | InstantiationException | IllegalAccessException e) {
 				e.printStackTrace();
 			}
