@@ -139,6 +139,12 @@ public class ResultController {
 			frs.persist(irctApp.getProperties().getProperty("ResultDataFolder") + "/" + result.getId());
 			result.setResultSetLocation(irctApp.getProperties().getProperty("ResultDataFolder") + "/" +  result.getId());
 			result.setData(frs);
+		} else if(resultDataType == ResultDataType.JSON) {
+			
+		} else {
+			result.setResultStatus(ResultStatus.ERROR);
+			result.setMessage("Unknown Result Data Type");
+			return result;
 		}
 		result.setResultStatus(ResultStatus.CREATED);
 		oem.merge(result);

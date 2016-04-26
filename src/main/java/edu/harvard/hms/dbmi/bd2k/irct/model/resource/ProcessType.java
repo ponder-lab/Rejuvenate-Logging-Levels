@@ -13,6 +13,7 @@ import javax.json.JsonObjectBuilder;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.Id;
+import javax.persistence.JoinTable;
 import javax.persistence.OneToMany;
 
 /**
@@ -33,9 +34,11 @@ public class ProcessType implements Serializable {
 	private String displayName;
 	private String description;
 	
+	@JoinTable(name = "ProcessType_Fields")
 	@OneToMany(fetch = FetchType.EAGER)
 	private List<Field> fields;
 	
+	@JoinTable(name = "ProcessType_Returns")
 	@OneToMany(fetch = FetchType.EAGER)
 	private List<Field> returns;	
 	/**

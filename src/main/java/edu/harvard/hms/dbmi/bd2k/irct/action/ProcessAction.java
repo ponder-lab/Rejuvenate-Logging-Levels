@@ -42,7 +42,7 @@ public class ProcessAction implements Action {
 	@Override
 	public void updateActionParams(Map<String, Result> updatedParams) {
 		for(String key : updatedParams.keySet()) {
-			process.getValues().put(key, updatedParams.get(key).getId().toString());
+			process.getStringValues().put(key, updatedParams.get(key).getId().toString());
 		}
 	}
 	
@@ -54,7 +54,7 @@ public class ProcessAction implements Action {
 			ResultController resultController = (ResultController) ic.lookup("java:module/ResultController");
 			ProcessResourceImplementationInterface processInterface = (ProcessResourceImplementationInterface) resource.getImplementingInterface();
 			
-			result = resultController.createResult(processInterface.getProcessDataType());
+			result = resultController.createResult(processInterface.getProcessDataType(process));
 			if(session != null) {
 				result.setUser(session.getUser());
 			}

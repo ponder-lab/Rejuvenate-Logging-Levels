@@ -3,12 +3,25 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 package edu.harvard.hms.dbmi.bd2k.irct.model.process;
 
-import java.util.LinkedHashMap;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+
+import javax.persistence.CollectionTable;
+import javax.persistence.Column;
+import javax.persistence.ElementCollection;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.MapKeyColumn;
+import javax.persistence.OneToMany;
 
 import edu.harvard.hms.dbmi.bd2k.irct.model.resource.ProcessType;
 import edu.harvard.hms.dbmi.bd2k.irct.model.resource.Resource;
-import edu.harvard.hms.dbmi.bd2k.irct.model.result.tabular.ResultSet;
 
 /**
  * Creates an executable process
@@ -16,77 +29,89 @@ import edu.harvard.hms.dbmi.bd2k.irct.model.result.tabular.ResultSet;
  * @author Jeremy R. Easton-Marks
  *
  */
-public class IRCTProcess {
+@Entity
+public class IRCTProcess implements Serializable {
+	private static final long serialVersionUID = -1805899138692864630L;
+
+	@Id
+	@GeneratedValue
 	private Long id;
+
+	@ManyToOne
 	private ProcessType processType;
-	private Resource resource;
-	private Map<String, String> values;
-	private Map<String, ResultSet> resultSets;
-	
+
+	@OneToMany
+	private List<Resource> resources;
+
+	@ElementCollection
+	@CollectionTable(name = "process_values", joinColumns = @JoinColumn(name = "PROCESS_VALUE"))
+	@MapKeyColumn(name = "process_id")
+	@Column(name = "process_value")
+	private Map<String, String> stringValues;
+
 	public IRCTProcess() {
-		this.setValues(new LinkedHashMap<String, String>());
-		this.setResultSets(new LinkedHashMap<String, ResultSet>());
+		this.setResources(new ArrayList<Resource>());
+		this.stringValues = new HashMap<String, String>();
 	}
+
 	/**
 	 * @return the id
 	 */
 	public Long getId() {
 		return id;
 	}
+
 	/**
-	 * @param id the id to set
+	 * @param id
+	 *            the id to set
 	 */
 	public void setId(Long id) {
 		this.id = id;
 	}
+
 	/**
 	 * @return the processType
 	 */
 	public ProcessType getProcessType() {
 		return processType;
 	}
+
 	/**
-	 * @param processType the processType to set
+	 * @param processType
+	 *            the processType to set
 	 */
 	public void setProcessType(ProcessType processType) {
 		this.processType = processType;
 	}
+
 	/**
 	 * @return the resources
 	 */
-	public Resource getResource() {
-		return resource;
+	public List<Resource> getResources() {
+		return resources;
 	}
+
 	/**
-	 * @param resource the resource to set
+	 * @param resources
+	 *            the resources to set
 	 */
-	public void setResource(Resource resource) {
-		this.resource = resource;
+	public void setResources(List<Resource> resources) {
+		this.resources = resources;
 	}
+
 	/**
-	 * @return the values
+	 * @return the stringValues
 	 */
-	public Map<String, String> getValues() {
-		return values;
+	public Map<String, String> getStringValues() {
+		return stringValues;
 	}
+
 	/**
-	 * @param values the values to set
+	 * @param stringValues
+	 *            the stringValues to set
 	 */
-	public void setValues(Map<String, String> values) {
-		this.values = values;
+	public void setStringValues(Map<String, String> stringValues) {
+		this.stringValues = stringValues;
 	}
-	/**
-	 * @return the resultSets
-	 */
-	public Map<String, ResultSet> getResultSets() {
-		return resultSets;
-	}
-	/**
-	 * @param resultSets the resultSets to set
-	 */
-	public void setResultSets(Map<String, ResultSet> resultSets) {
-		this.resultSets = resultSets;
-	}
-	
-	
+
 }

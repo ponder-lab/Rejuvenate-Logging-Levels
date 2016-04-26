@@ -223,6 +223,15 @@ public class Resource implements Serializable {
 		return null;
 	}
 	
+	public ProcessType getSupportedProcessesByName(String processName) {
+		for(ProcessType processType : this.supportedProcesses) {
+			if(processType.getName().equalsIgnoreCase(processName)) {
+				return processType;
+			}
+		}
+		return null;
+	}
+	
 	public LogicalOperator getLogicalOperatorByName(String logicalOperatorName) {
 		for(LogicalOperator logicalOperator : this.logicalOperators) {
 			if(logicalOperator.toString().equals(logicalOperatorName)) {

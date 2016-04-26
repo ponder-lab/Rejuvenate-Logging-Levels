@@ -18,7 +18,6 @@ import edu.harvard.hms.dbmi.bd2k.irct.model.result.Result;
 import edu.harvard.hms.dbmi.bd2k.irct.model.result.ResultStatus;
 import edu.harvard.hms.dbmi.bd2k.irct.model.security.SecureSession;
 import edu.harvard.hms.dbmi.bd2k.irct.controller.ResultController;
-import edu.harvard.hms.dbmi.bd2k.irct.controller.ResultController;
 import edu.harvard.hms.dbmi.bd2k.irct.exception.ResourceInterfaceException;
 
 /**
@@ -67,7 +66,7 @@ public class QueryAction implements Action {
 					.getImplementingInterface();
 			
 			result = resultController.createResult(queryInterface
-					.getQueryDataType());
+					.getQueryDataType(query));
 			if(session != null) {
 				result.setUser(session.getUser());
 			}

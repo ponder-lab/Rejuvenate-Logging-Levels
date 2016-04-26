@@ -47,6 +47,6 @@ public interface ProcessResourceImplementationInterface extends ResourceImplemen
 	 * 
 	 * @return Result data type
 	 */
-	ResultDataType getProcessDataType();
+	ResultDataType getProcessDataType(IRCTProcess process);
 	
 }

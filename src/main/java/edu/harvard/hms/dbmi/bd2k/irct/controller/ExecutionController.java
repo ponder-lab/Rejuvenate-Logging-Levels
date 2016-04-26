@@ -75,7 +75,7 @@ public class ExecutionController {
 		entityManager.persist(newResult);
 
 		ProcessAction pa = new ProcessAction();
-		pa.setup(process.getResource(), process);
+		pa.setup(process.getResources().get(0), process);
 
 		ExecutableLeafNode eln = new ExecutableLeafNode();
 		eln.setAction(pa);

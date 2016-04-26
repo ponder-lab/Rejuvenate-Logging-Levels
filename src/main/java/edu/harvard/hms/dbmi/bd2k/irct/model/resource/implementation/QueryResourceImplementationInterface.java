@@ -51,5 +51,5 @@ public interface QueryResourceImplementationInterface extends
 	 * 
 	 * @return Result data type
 	 */
-	ResultDataType getQueryDataType();
+	ResultDataType getQueryDataType(Query query);
 }

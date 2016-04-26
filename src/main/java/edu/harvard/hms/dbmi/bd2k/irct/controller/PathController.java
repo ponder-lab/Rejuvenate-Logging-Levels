@@ -29,7 +29,6 @@ public class PathController {
 	@Inject
 	private ResourceController rc;
 
-	// NEW
 	/**
 	 * Traverses the path in the resource with the given relationship
 	 * 
@@ -46,10 +45,10 @@ public class PathController {
 	public List<Entity> traversePath(Resource resource, Entity resourcePath,
 			OntologyRelationship relationship, SecureSession session)
 			throws ResourceInterfaceException {
-
 		if (resource.getImplementingInterface() instanceof PathResourceImplementationInterface) {
-			return ((PathResourceImplementationInterface) resource.getImplementingInterface())
-					.getPathRelationship(resourcePath, relationship, session);
+			return ((PathResourceImplementationInterface) resource
+					.getImplementingInterface()).getPathRelationship(
+					resourcePath, relationship, session);
 		}
 		return null;
 	}
@@ -69,19 +68,22 @@ public class PathController {
 	 *             A resource interface exception occurred
 	 */
 	public List<Entity> searchForTerm(Resource resource, Entity resourcePath,
-			String searchTerm, SecureSession session) throws ResourceInterfaceException {
+			String searchTerm, SecureSession session)
+			throws ResourceInterfaceException {
 		List<Entity> returns = new ArrayList<Entity>();
 		if (resource == null) {
 			for (Resource searchResource : rc.getPathResources()) {
 				returns.addAll(searchResourceForTerm(
-						(PathResourceImplementationInterface) searchResource.getImplementingInterface(),
-						null, searchTerm, session));
+						(PathResourceImplementationInterface) searchResource
+								.getImplementingInterface(), null, searchTerm,
+						session));
 			}
 			return returns;
 		} else {
 			if (resource.getImplementingInterface() instanceof PathResourceImplementationInterface) {
 				return searchResourceForTerm(
-						(PathResourceImplementationInterface) resource.getImplementingInterface(),
+						(PathResourceImplementationInterface) resource
+								.getImplementingInterface(),
 						resourcePath, searchTerm, session);
 			}
 		}
@@ -105,22 +107,24 @@ public class PathController {
 	 * @throws ResourceInterfaceException
 	 *             A resource interface exception occurred
 	 */
-	public List<Entity> searchForOntology(Resource resource, Entity resourcePath,
-			String ontologyType, String ontologyTerm, SecureSession session)
-			throws ResourceInterfaceException {
+	public List<Entity> searchForOntology(Resource resource,
+			Entity resourcePath, String ontologyType, String ontologyTerm,
+			SecureSession session) throws ResourceInterfaceException {
 
 		List<Entity> returns = new ArrayList<Entity>();
 		if (resource == null) {
 			for (Resource searchResource : rc.getPathResources()) {
 				returns.addAll(searchResourceForOntologyTerm(
-						(PathResourceImplementationInterface) searchResource.getImplementingInterface(),
-						null, ontologyType, ontologyTerm, session));
+						(PathResourceImplementationInterface) searchResource
+								.getImplementingInterface(), null,
+						ontologyType, ontologyTerm, session));
 			}
 			return returns;
 		} else {
 			if (resource.getImplementingInterface() instanceof PathResourceImplementationInterface) {
 				return searchResourceForOntologyTerm(
-						(PathResourceImplementationInterface) resource.getImplementingInterface(),
+						(PathResourceImplementationInterface) resource
+								.getImplementingInterface(),
 						resourcePath, ontologyType, ontologyTerm, session);
 			}
 		}
@@ -129,7 +133,8 @@ public class PathController {
 
 	private List<Entity> searchResourceForTerm(
 			PathResourceImplementationInterface resource, Entity resourcePath,
-			String searchTerm, SecureSession session) throws ResourceInterfaceException {
+			String searchTerm, SecureSession session)
+			throws ResourceInterfaceException {
 		return resource.searchPaths(resourcePath, searchTerm, session);
 	}
 
@@ -137,20 +142,20 @@ public class PathController {
 			PathResourceImplementationInterface resource, Entity resourcePath,
 			String ontologyType, String ontologyTerm, SecureSession session)
 			throws ResourceInterfaceException {
-		return resource
-				.searchOntology(resourcePath, ontologyType, ontologyTerm, session);
+		return resource.searchOntology(resourcePath, ontologyType,
+				ontologyTerm, session);
 	}
 
 	public List<Entity> getAllResourcePaths() {
 		List<Entity> returns = new ArrayList<Entity>();
-		
-		for(Resource resource : rc.getPathResources()) {
+
+		for (Resource resource : rc.getPathResources()) {
 			Entity entity = new Entity("/" + resource.getName());
 			entity.setName(resource.getName());
 			entity.setDisplayName(resource.getName());
 			returns.add(entity);
 		}
-		
+
 		return returns;
 	}
 }
