@@ -19,7 +19,7 @@ import javax.persistence.Transient;
 import edu.harvard.hms.dbmi.bd2k.irct.util.converter.DataTypeConverter;
 
 /**
- * The Entity class represents a path in a resource. Paths can be linked to other
+ * The Entity class represents a path, and object in a resource. Entities can be linked to other
  * paths through ontology relationships.
  * 
  * @author Jeremy R. Easton-Marks
@@ -46,11 +46,18 @@ public class Entity {
 	private Map<String, String> attributes;
 
 	
-
+	/**
+	 * Creates an empty Entity with no PUI
+	 */
 	public Entity() {
 		this("");
 	}
 
+	/**
+	 * Creates an empty Entity with a pui
+	 * 
+	 * @param pui Path Unique Identifier
+	 */
 	public Entity(String pui) {
 		this.pui = pui;
 		this.name = "";
@@ -117,7 +124,7 @@ public class Entity {
 		for(String countname : this.counts.keySet()) {
 			countObject.add(countname, this.counts.get(countname));
 		}
-		jsonBuilder.add("count", countObject.build());
+		jsonBuilder.add("counts", countObject.build());
 		
 		//attributes
 		JsonObjectBuilder attributesObject = Json.createObjectBuilder();
@@ -140,6 +147,8 @@ public class Entity {
 	// -------------------------------------------------------------------------
 
 	/**
+	 * Returns the Path Unique Identifier
+	 * 
 	 * @return the pui
 	 */
 	public String getPui() {
@@ -147,6 +156,8 @@ public class Entity {
 	}
 
 	/**
+	 * Sets the Path Unique Identifier
+	 * 
 	 * @param pui the pui to set
 	 */
 	public void setPui(String pui) {
@@ -154,6 +165,8 @@ public class Entity {
 	}
 
 	/**
+	 * Returns the entity name
+	 * 
 	 * @return the name
 	 */
 	public String getName() {
@@ -161,6 +174,7 @@ public class Entity {
 	}
 
 	/**
+	 * Sets the entity name
 	 * @param name the name to set
 	 */
 	public void setName(String name) {
@@ -168,6 +182,8 @@ public class Entity {
 	}
 
 	/**
+	 * Returns the display name
+	 * 
 	 * @return the displayName
 	 */
 	public String getDisplayName() {
@@ -175,6 +191,8 @@ public class Entity {
 	}
 
 	/**
+	 * Sets the display name
+	 * 
 	 * @param displayName the displayName to set
 	 */
 	public void setDisplayName(String displayName) {
@@ -182,6 +200,8 @@ public class Entity {
 	}
 
 	/**
+	 * Returns the entity description
+	 * 
 	 * @return the description
 	 */
 	public String getDescription() {
@@ -189,6 +209,8 @@ public class Entity {
 	}
 
 	/**
+	 * Sets the entity description
+	 * 
 	 * @param description the description to set
 	 */
 	public void setDescription(String description) {
@@ -196,6 +218,8 @@ public class Entity {
 	}
 
 	/**
+	 * Returns the entity ontology
+	 * 
 	 * @return the ontology
 	 */
 	public String getOntology() {
@@ -203,6 +227,8 @@ public class Entity {
 	}
 
 	/**
+	 * Sets the entity ontology
+	 * 
 	 * @param ontology the ontology to set
 	 */
 	public void setOntology(String ontology) {
@@ -210,6 +236,8 @@ public class Entity {
 	}
 
 	/**
+	 * Returns the entity ontology term id
+	 * 
 	 * @return the ontologyId
 	 */
 	public String getOntologyId() {
@@ -217,6 +245,7 @@ public class Entity {
 	}
 
 	/**
+	 * Sets the entity ontology term id
 	 * @param ontologyId the ontologyId to set
 	 */
 	public void setOntologyId(String ontologyId) {
@@ -224,6 +253,8 @@ public class Entity {
 	}
 
 	/**
+	 * Return the data type of the entity
+	 * 
 	 * @return the dataType
 	 */
 	public DataType getDataType() {
@@ -231,6 +262,8 @@ public class Entity {
 	}
 
 	/**
+	 * Sets the data type of the entity
+	 * 
 	 * @param dataType the dataType to set
 	 */
 	public void setDataType(DataType dataType) {
@@ -238,13 +271,17 @@ public class Entity {
 	}
 
 	/**
-	 * @return the relationships
+	 * Returns a list of relationships this entity has
+	 * 
+	 * @return the relationships 
 	 */
 	public List<OntologyRelationship> getRelationships() {
 		return relationships;
 	}
 
 	/**
+	 * Sets the list of relationships this entity has
+	 * 
 	 * @param relationships the relationships to set
 	 */
 	public void setRelationships(List<OntologyRelationship> relationships) {
@@ -252,6 +289,8 @@ public class Entity {
 	}
 
 	/**
+	 * Returns a map of the counts associated with this entity
+	 * 
 	 * @return the counts
 	 */
 	public Map<String, Integer> getCounts() {
@@ -259,6 +298,8 @@ public class Entity {
 	}
 
 	/**
+	 * Sets a map of the counts associated with this entity
+	 * 
 	 * @param counts the counts to set
 	 */
 	public void setCounts(Map<String, Integer> counts) {
@@ -266,6 +307,8 @@ public class Entity {
 	}
 
 	/**
+	 * Returns a map of additional attributes of the entity
+	 * 
 	 * @return the attributes
 	 */
 	public Map<String, String> getAttributes() {
@@ -273,6 +316,8 @@ public class Entity {
 	}
 
 	/**
+	 * Sets a map of additional attributes of the entity
+	 * 
 	 * @param attributes the attributes to set
 	 */
 	public void setAttributes(Map<String, String> attributes) {

@@ -18,19 +18,24 @@ import edu.harvard.hms.dbmi.bd2k.irct.model.security.SecureSession;
  *
  */
 public interface ProcessResourceImplementationInterface extends ResourceImplementationInterface {
+	
 	/**
 	 * Run the given process
 	 * 
-	 * @param pep Process to be run
-	 * @return The id of the process that is running
+	 * @param session Session to run in
+	 * @param process Process to be run
+	 * @param result Result
+	 * @return Results
+	 * @throws ResourceInterfaceException A resource exception occurred
 	 */
-	Result runProcess(SecureSession session, IRCTProcess pep, Result result) throws ResourceInterfaceException;
+	Result runProcess(SecureSession session, IRCTProcess process, Result result) throws ResourceInterfaceException;
 	
 	/**
 	 * Returns the results of the process if they are available
 	 *
-	 * @param actionState Action State
-	 * @return Results Results
+	 * @param session Session to run in
+	 * @param result Results
+	 * @return Results
 	 * @throws ResourceInterfaceException A resource exception occurred
 	 */ 
 	Result getResults(SecureSession session, Result result) throws ResourceInterfaceException;
@@ -43,9 +48,11 @@ public interface ProcessResourceImplementationInterface extends ResourceImplemen
 	ResourceState getState();
 	
 	/**
-	 * Returns the result data type
+	 * Returns the result type of the process
 	 * 
-	 * @return Result data type
+	 * @param process rocess to run
+	 * @return Result
+	 * 
 	 */
 	ResultDataType getProcessDataType(IRCTProcess process);
 	

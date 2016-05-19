@@ -7,7 +7,9 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Logger;
 
+import javax.inject.Inject;
 import javax.json.Json;
 import javax.json.stream.JsonGenerator;
 import javax.json.stream.JsonGeneratorFactory;
@@ -22,7 +24,16 @@ import edu.harvard.hms.dbmi.bd2k.irct.model.result.exception.ResultSetException;
 import edu.harvard.hms.dbmi.bd2k.irct.model.result.tabular.Column;
 import edu.harvard.hms.dbmi.bd2k.irct.model.result.tabular.ResultSet;
 
+/**
+ * A data converter that returns a JSON stream
+ * 
+ * @author Jeremy R. Easton-Marks
+ *
+ */
 public class JSONTabularDataConverter implements ResultDataConverter {
+	
+	@Inject
+	Logger log;
 
 	@Override
 	public ResultDataType getResultDataType() {
@@ -72,9 +83,13 @@ public class JSONTabularDataConverter implements ResultDataConverter {
 					while (rs.next()) {
 						jg.writeStartArray(); //Begin Row Array
 						for (int columnIndex = 0; columnIndex < rs.getColumnSize(); columnIndex++) {
-							jg.writeStartObject();
-							jg.write(rs.getColumn(columnIndex).getName(), rs.getString(columnIndex));
-							jg.writeEnd();
+							String value = rs.getString(columnIndex);
+							if(value != null) {
+								jg.writeStartObject();
+								jg.write(rs.getColumn(columnIndex).getName(), rs.getString(columnIndex));
+								jg.writeEnd();
+							}
+							
 						}
 						jg.writeEnd(); //End Row Array
 					}
@@ -84,8 +99,7 @@ public class JSONTabularDataConverter implements ResultDataConverter {
 					jg.writeEnd(); //End Full Object
 					jg.close();
 				} catch (ResultSetException | PersistableException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+					log.info("Error creating JSON Stream: " + e.getMessage());
 				}
 				outputStream.close();
 			}

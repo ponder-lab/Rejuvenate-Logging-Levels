@@ -58,8 +58,8 @@ public class SecurityController {
 		ss.setToken(token);
 		ss.setAccessKey(key);
 		ss.setCreated(new Date());
-		
-		if(user.getId() == null) {
+
+		if (user.getId() == null) {
 			entityManager.persist(ss);
 		} else {
 			entityManager.merge(ss);
@@ -82,30 +82,38 @@ public class SecurityController {
 		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
 		CriteriaQuery<SecureSession> cq = cb.createQuery(SecureSession.class);
 		Root<SecureSession> secureSession = cq.from(SecureSession.class);
-		
-		
+
 		Date startTime = new Date();
-		
+
 		Calendar endTime = GregorianCalendar.getInstance();
 		endTime.setTime(new Date());
 		endTime.add(Calendar.MINUTE, -15);
 		endTime.getTime();
 
-		cq.where(cb.and(cb.equal(secureSession.get("accessKey"), key), 
-				cb.between(secureSession.<Date>get("created"), endTime.getTime(), startTime)));
-		
+		cq.where(cb.and(
+				cb.equal(secureSession.get("accessKey"), key),
+				cb.between(secureSession.<Date> get("created"),
+						endTime.getTime(), startTime)));
+
 		cq.select(secureSession);
 		List<SecureSession> ssl = entityManager.createQuery(cq).getResultList();
-		if(ssl == null || ssl.isEmpty()) {
+		if (ssl == null || ssl.isEmpty()) {
 			return null;
 		}
-		
+
 		SecureSession ss = ssl.get(0);
 
 		log.info("Found valid key for " + ss.getUser().getName());
 		return ss;
 	}
-	
+
+	/**
+	 * Get a given user from a database from a user id
+	 * 
+	 * @param userId
+	 *            User Id
+	 * @return User
+	 */
 	public User getUser(String userId) {
 		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
 		CriteriaQuery<User> cq = cb.createQuery(User.class);
@@ -113,11 +121,11 @@ public class SecurityController {
 		cq.where(cb.equal(userRoot.get("userId"), userId));
 		cq.select(userRoot);
 		List<User> users = entityManager.createQuery(cq).getResultList();
-		
-		if(users == null || users.isEmpty()) {
+
+		if (users == null || users.isEmpty()) {
 			return new User((String) userId);
 		}
-		
+
 		return users.get(0);
 	}
 

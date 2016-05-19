@@ -42,7 +42,7 @@ public class User implements Principal, Serializable {
 	/**
 	 * Creates a new user with the given User Id
 	 * 
-	 * @param userId
+	 * @param userId User Id
 	 */
 	public User(String userId) {
 		this.userId = userId;

@@ -52,6 +52,10 @@ public class WhereClause extends ClauseAbstract implements Serializable {
 	@Column(name="where_value")
 	private Map<String, String> stringValues;
 	
+	/**
+	 * Creates an empty where clause
+	 * 
+	 */
 	public WhereClause() {
 		this.stringValues = new HashMap<String, String>();
 	}
@@ -204,8 +208,8 @@ public class WhereClause extends ClauseAbstract implements Serializable {
 	/**
 	 * Sets the value that the predicate type operates against if it is needed.
 	 * 
-	 * @param values
-	 *            Value
+	 * @param stringValues
+	 *            A map of values
 	 */
 	public void setStringValues(Map<String, String> stringValues) {
 		this.stringValues = stringValues;

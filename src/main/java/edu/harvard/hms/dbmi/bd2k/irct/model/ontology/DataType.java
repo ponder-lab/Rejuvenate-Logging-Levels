@@ -7,6 +7,12 @@ import java.util.regex.Pattern;
 
 import javax.json.JsonObject;
 
+/**
+ * An interface that is implemented to create a set of data types that will be supported by a resource
+ * 
+ * @author Jeremy R. Easton-Marks
+ *
+ */
 public interface DataType {
 	/**
 	 * Returns the byte array representation of the give object

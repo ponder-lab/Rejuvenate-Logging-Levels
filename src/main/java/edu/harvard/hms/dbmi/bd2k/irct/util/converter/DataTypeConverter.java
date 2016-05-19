@@ -5,6 +5,13 @@ import javax.persistence.Converter;
 
 import edu.harvard.hms.dbmi.bd2k.irct.model.ontology.DataType;
 
+/**
+ * Converts a Data Type to a String representation of the class to allow for
+ * storage inside a Relational Database
+ * 
+ * @author Jeremy R. Easton-Marks
+ *
+ */
 @Converter(autoApply = true)
 public class DataTypeConverter implements AttributeConverter<DataType, String> {
 
@@ -16,6 +23,7 @@ public class DataTypeConverter implements AttributeConverter<DataType, String> {
 		return null;
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public DataType convertToEntityAttribute(String dataTypeString) {
 		if(dataTypeString != null) {
@@ -24,7 +32,7 @@ public class DataTypeConverter implements AttributeConverter<DataType, String> {
 				Class enumClass = Class.forName(split[0]);
 				
 				if(enumClass.isEnum()) {
-					return Enum.valueOf(enumClass, split[1]);
+					return (DataType) Enum.valueOf(enumClass, split[1]);
 				}
 			} catch (ClassNotFoundException e) {
 				e.printStackTrace();

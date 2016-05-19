@@ -24,6 +24,9 @@ public abstract class ClauseAbstract {
 	@GeneratedValue
 	private Long id;
 
+	/**
+	 * Creates an empty clause abstract
+	 */
 	public ClauseAbstract() {
 	}
 

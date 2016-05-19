@@ -114,6 +114,8 @@ public class PredicateType implements Serializable {
 	}
 
 	/**
+	 * Returns the predicates id
+	 * 
 	 * @return the id
 	 */
 	public long getId() {
@@ -121,6 +123,8 @@ public class PredicateType implements Serializable {
 	}
 
 	/**
+	 * Sets the predicate id
+	 *  
 	 * @param id the id to set
 	 */
 	public void setId(long id) {
@@ -128,6 +132,8 @@ public class PredicateType implements Serializable {
 	}
 
 	/**
+	 * Returns the name of the predicate
+	 * 
 	 * @return the name
 	 */
 	public String getName() {
@@ -135,6 +141,8 @@ public class PredicateType implements Serializable {
 	}
 
 	/**
+	 * Sets the name of the predicate
+	 * 
 	 * @param name the name to set
 	 */
 	public void setName(String name) {
@@ -142,6 +150,8 @@ public class PredicateType implements Serializable {
 	}
 
 	/**
+	 * Returns the display name of the predicate
+	 * 
 	 * @return the displayName
 	 */
 	public String getDisplayName() {
@@ -149,6 +159,8 @@ public class PredicateType implements Serializable {
 	}
 
 	/**
+	 * Sets the display name of the predicate
+	 * 
 	 * @param displayName the displayName to set
 	 */
 	public void setDisplayName(String displayName) {
@@ -156,6 +168,8 @@ public class PredicateType implements Serializable {
 	}
 
 	/**
+	 * Returns a description of the predicate
+	 * 
 	 * @return the description
 	 */
 	public String getDescription() {
@@ -163,6 +177,8 @@ public class PredicateType implements Serializable {
 	}
 
 	/**
+	 * Sets the description of the predicate
+	 * 
 	 * @param description the description to set
 	 */
 	public void setDescription(String description) {
@@ -170,6 +186,8 @@ public class PredicateType implements Serializable {
 	}
 
 	/**
+	 * Returns if this should be the default predicate
+	 * 
 	 * @return the defaultPredicate
 	 */
 	public boolean isDefaultPredicate() {
@@ -177,6 +195,8 @@ public class PredicateType implements Serializable {
 	}
 
 	/**
+	 * Sets if this should be the default predicate
+	 * 
 	 * @param defaultPredicate the defaultPredicate to set
 	 */
 	public void setDefaultPredicate(boolean defaultPredicate) {
@@ -184,6 +204,8 @@ public class PredicateType implements Serializable {
 	}
 
 	/**
+	 * Returns a list of fields associated with the predicate
+	 * 
 	 * @return the fields
 	 */
 	public List<Field> getFields() {
@@ -191,6 +213,8 @@ public class PredicateType implements Serializable {
 	}
 
 	/**
+	 * Sets the list of fields associated with the predicate
+	 * 
 	 * @param fields the fields to set
 	 */
 	public void setFields(List<Field> fields) {
@@ -198,6 +222,8 @@ public class PredicateType implements Serializable {
 	}
 
 	/**
+	 * Returns a list of data types that this predicate can be run on. An empty list means all data types.
+	 * 
 	 * @return the dataTypes
 	 */
 	public List<DataType> getDataTypes() {
@@ -205,6 +231,8 @@ public class PredicateType implements Serializable {
 	}
 
 	/**
+	 * Sets the list of data type that this predicate can be run on. An empty list means all data types.
+	 * 
 	 * @param dataTypes the dataTypes to set
 	 */
 	public void setDataTypes(List<DataType> dataTypes) {
@@ -212,6 +240,7 @@ public class PredicateType implements Serializable {
 	}
 
 	/**
+	 * Returns a list of paths that restrict what fields this predicate can be run on. An empty list means all paths.
 	 * @return the paths
 	 */
 	public List<String> getPaths() {
@@ -219,6 +248,8 @@ public class PredicateType implements Serializable {
 	}
 
 	/**
+	 * Sets a list of paths that restrict what fields this predicate can be run on. An empty list means all paths.
+	 * 
 	 * @param paths the paths to set
 	 */
 	public void setPaths(List<String> paths) {

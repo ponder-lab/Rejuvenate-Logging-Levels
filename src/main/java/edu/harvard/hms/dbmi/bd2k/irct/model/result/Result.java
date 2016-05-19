@@ -143,6 +143,8 @@ public class Result {
 	}
 
 	/**
+	 * Returns the user
+	 * 
 	 * @return the user
 	 */
 	public User getUser() {
@@ -150,6 +152,8 @@ public class Result {
 	}
 
 	/**
+	 * Sets the user
+	 * 
 	 * @param user
 	 *            the user to set
 	 */
@@ -158,6 +162,8 @@ public class Result {
 	}
 
 	/**
+	 * Returns the start time
+	 * 
 	 * @return the startTime
 	 */
 	public Date getStartTime() {
@@ -165,6 +171,8 @@ public class Result {
 	}
 
 	/**
+	 * Sets the start time
+	 * 
 	 * @param startTime
 	 *            the startTime to set
 	 */
@@ -173,6 +181,8 @@ public class Result {
 	}
 
 	/**
+	 * Returns the end time
+	 * 
 	 * @return the endTime
 	 */
 	public Date getEndTime() {
@@ -180,6 +190,8 @@ public class Result {
 	}
 
 	/**
+	 * Sets the end time
+	 * 
 	 * @param endTime
 	 *            the endTime to set
 	 */
@@ -206,18 +218,38 @@ public class Result {
 		this.resultStatus = resultStatus;
 	}
 
+	/**
+	 * Returns the type of result the data is
+	 * 
+	 * @return Data Type
+	 */
 	public ResultDataType getDataType() {
 		return dataType;
 	}
 
+	/**
+	 * Sets the type of data the result is
+	 * 
+	 * @param dataType Data Type
+	 */
 	public void setDataType(ResultDataType dataType) {
 		this.dataType = dataType;
 	}
 
+	/**
+	 * Returns the resource action id
+	 * 
+	 * @return Resource action id
+	 */
 	public String getResourceActionId() {
 		return resourceActionId;
 	}
 
+	/**
+	 * Sets the resource action id
+	 * 
+	 * @param resourceActionId Resource action id
+	 */
 	public void setResourceActionId(String resourceActionId) {
 		this.resourceActionId = resourceActionId;
 	}
@@ -234,8 +266,7 @@ public class Result {
 	/**
 	 * Sets the class that is used to implement the result status
 	 * 
-	 * @param implementingResultSet
-	 *            Implementing Result Set
+	 * @param data Data object
 	 */
 	public void setData(Data data) {
 		this.data = data;
@@ -260,10 +291,19 @@ public class Result {
 		this.resultSetLocation = resultSetLocation;
 	}
 
+	/**
+	 * Returns the message associated with the result
+	 * 
+	 * @return Message
+	 */
 	public String getMessage() {
 		return message;
 	}
 
+	/**
+	 * Sets the mesage associated with the result
+	 * @param message Message
+	 */
 	public void setMessage(String message) {
 		this.message = message;
 	}

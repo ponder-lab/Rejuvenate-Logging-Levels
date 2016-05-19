@@ -6,7 +6,6 @@ package edu.harvard.hms.dbmi.bd2k.irct.action;
 import java.util.Date;
 import java.util.Map;
 
-import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
 import edu.harvard.hms.dbmi.bd2k.irct.model.query.ClauseAbstract;
@@ -17,7 +16,6 @@ import edu.harvard.hms.dbmi.bd2k.irct.model.resource.implementation.QueryResourc
 import edu.harvard.hms.dbmi.bd2k.irct.model.result.Result;
 import edu.harvard.hms.dbmi.bd2k.irct.model.result.ResultStatus;
 import edu.harvard.hms.dbmi.bd2k.irct.model.security.SecureSession;
-import edu.harvard.hms.dbmi.bd2k.irct.controller.ResultController;
 import edu.harvard.hms.dbmi.bd2k.irct.exception.ResourceInterfaceException;
 
 /**
@@ -33,6 +31,14 @@ public class QueryAction implements Action {
 	private ActionStatus status;
 	private Result result;
 
+	/**
+	 * Sets up the action to run a given query on a resource
+	 * 
+	 * @param resource
+	 *            Resource to run the query
+	 * @param query
+	 *            Run the query
+	 */
 	public void setup(Resource resource, Query query) {
 		this.query = query;
 		this.resource = resource;
@@ -58,23 +64,20 @@ public class QueryAction implements Action {
 	public void run(SecureSession session) {
 		this.status = ActionStatus.RUNNING;
 		try {
-			InitialContext ic = new InitialContext();
-			ResultController resultController = (ResultController) ic
-					.lookup("java:module/ResultController");
-
 			QueryResourceImplementationInterface queryInterface = (QueryResourceImplementationInterface) resource
 					.getImplementingInterface();
-			
-			result = resultController.createResult(queryInterface
+
+			result = ActionUtilities.createResult(queryInterface
 					.getQueryDataType(query));
-			if(session != null) {
+
+			if (session != null) {
 				result.setUser(session.getUser());
 			}
-			
+
 			result = queryInterface.runQuery(session, query, result);
-			
-			//Update the result in the database
-			resultController.mergeResult(result);
+
+			// Update the result in the database
+			ActionUtilities.mergeResult(result);
 		} catch (Exception e) {
 			result.setResultStatus(ResultStatus.ERROR);
 			result.setMessage(e.getMessage());
@@ -86,37 +89,49 @@ public class QueryAction implements Action {
 	public Result getResults(SecureSession session)
 			throws ResourceInterfaceException {
 		try {
-			this.result = ((QueryResourceImplementationInterface) resource.getImplementingInterface()).getResults(session, result);
-			while((this.result.getResultStatus() != ResultStatus.ERROR) && (this.result.getResultStatus() != ResultStatus.COMPLETE)) {
-					Thread.sleep(5000);
-					this.result = ((QueryResourceImplementationInterface) resource.getImplementingInterface()).getResults(session, result);
+			this.result = ((QueryResourceImplementationInterface) resource
+					.getImplementingInterface()).getResults(session, result);
+			while ((this.result.getResultStatus() != ResultStatus.ERROR)
+					&& (this.result.getResultStatus() != ResultStatus.COMPLETE)) {
+				Thread.sleep(3000);
+				this.result = ((QueryResourceImplementationInterface) resource
+						.getImplementingInterface())
+						.getResults(session, result);
 			}
-		} catch(Exception e) {
+		} catch (Exception e) {
 			this.result.setResultStatus(ResultStatus.ERROR);
 			this.result.setMessage(e.getMessage());
 		}
-		
+
 		result.setEndTime(new Date());
-		//Save the query Action
+		// Save the query Action
 		try {
-			InitialContext ic = new InitialContext();
-			ResultController resultController = (ResultController) ic.lookup("java:module/ResultController");
-			resultController.mergeResult(result);
+			ActionUtilities.mergeResult(result);
 			this.status = ActionStatus.COMPLETE;
 		} catch (NamingException e) {
 			result.setMessage(e.getMessage());
 			this.status = ActionStatus.ERROR;
 		}
-		
-		
+
 		return this.result;
 	}
 
+	/**
+	 * Returns the query
+	 * 
+	 * @return Query
+	 */
 	public Query getQuery() {
 		return this.query;
 
 	}
 
+	/**
+	 * Sets the query
+	 * 
+	 * @param query
+	 *            Query
+	 */
 	public void setQuery(Query query) {
 		this.query = query;
 	}

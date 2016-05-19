@@ -25,7 +25,7 @@ public interface JoinImplementation {
 	 * 
 	 * @param parameters
 	 *            Join Parameters
-	 * @throws Exception An exception occurred
+	 * @throws JoinActionSetupException An exception occurred
 	 */
 	void setup(Map<String, Object> parameters) throws JoinActionSetupException;
 

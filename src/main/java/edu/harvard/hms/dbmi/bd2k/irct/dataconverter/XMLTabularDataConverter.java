@@ -6,7 +6,9 @@ package edu.harvard.hms.dbmi.bd2k.irct.dataconverter;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.util.logging.Logger;
 
+import javax.inject.Inject;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.StreamingOutput;
@@ -20,8 +22,17 @@ import edu.harvard.hms.dbmi.bd2k.irct.model.result.exception.PersistableExceptio
 import edu.harvard.hms.dbmi.bd2k.irct.model.result.exception.ResultSetException;
 import edu.harvard.hms.dbmi.bd2k.irct.model.result.tabular.ResultSet;
 
+/**
+ * A data converter that returns an XML Stream
+ * 
+ * @author Jeremy R. Easton-Marks
+ *
+ */
 public class XMLTabularDataConverter implements ResultDataConverter {
 
+	@Inject
+	Logger log;
+	
 	@Override
 	public ResultDataType getResultDataType() {
 		return ResultDataType.TABULAR;
@@ -71,8 +82,7 @@ public class XMLTabularDataConverter implements ResultDataConverter {
 					xtw.flush();
 					xtw.close();
 				} catch (ResultSetException | PersistableException | XMLStreamException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+					log.info("Error creating XML Stream: " + e.getMessage());
 				}
 				outputStream.close();
 			}

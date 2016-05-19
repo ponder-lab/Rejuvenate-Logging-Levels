@@ -19,6 +19,7 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.MapKeyColumn;
 import javax.persistence.OneToMany;
+import javax.persistence.Transient;
 
 import edu.harvard.hms.dbmi.bd2k.irct.model.resource.ProcessType;
 import edu.harvard.hms.dbmi.bd2k.irct.model.resource.Resource;
@@ -48,13 +49,22 @@ public class IRCTProcess implements Serializable {
 	@MapKeyColumn(name = "process_id")
 	@Column(name = "process_value")
 	private Map<String, String> stringValues;
+	
+	@Transient
+	private Map<String, Object> objectValues; 
 
+	/**
+	 * Creates an IRCT process
+	 * 
+	 */
 	public IRCTProcess() {
 		this.setResources(new ArrayList<Resource>());
 		this.stringValues = new HashMap<String, String>();
 	}
 
 	/**
+	 * Returns the process id
+	 * 
 	 * @return the id
 	 */
 	public Long getId() {
@@ -62,6 +72,8 @@ public class IRCTProcess implements Serializable {
 	}
 
 	/**
+	 * Sets the process id
+	 * 
 	 * @param id
 	 *            the id to set
 	 */
@@ -70,6 +82,8 @@ public class IRCTProcess implements Serializable {
 	}
 
 	/**
+	 * Returns the type of process this is
+	 * 
 	 * @return the processType
 	 */
 	public ProcessType getProcessType() {
@@ -77,6 +91,8 @@ public class IRCTProcess implements Serializable {
 	}
 
 	/**
+	 * Sets the type of process this is
+	 * 
 	 * @param processType
 	 *            the processType to set
 	 */
@@ -85,6 +101,8 @@ public class IRCTProcess implements Serializable {
 	}
 
 	/**
+	 * Returns a list of resources the process is to run on
+	 * 
 	 * @return the resources
 	 */
 	public List<Resource> getResources() {
@@ -92,6 +110,8 @@ public class IRCTProcess implements Serializable {
 	}
 
 	/**
+	 * Sets the list of resources the process is to run on
+	 * 
 	 * @param resources
 	 *            the resources to set
 	 */
@@ -100,6 +120,7 @@ public class IRCTProcess implements Serializable {
 	}
 
 	/**
+	 * Returns a map of string representation of the values of the fields for the process
 	 * @return the stringValues
 	 */
 	public Map<String, String> getStringValues() {
@@ -107,11 +128,31 @@ public class IRCTProcess implements Serializable {
 	}
 
 	/**
+	 * Sets a map of string representation of the values of the fields for the process
+	 * 
 	 * @param stringValues
 	 *            the stringValues to set
 	 */
 	public void setStringValues(Map<String, String> stringValues) {
 		this.stringValues = stringValues;
+	}
+
+	/**
+	 * Returns a map of the values of the fields for the process
+	 * 
+	 * @return the objectValues
+	 */
+	public Map<String, Object> getObjectValues() {
+		return objectValues;
+	}
+
+	/**
+	 * Sets a map of the values of the fields for the process
+	 * 
+	 * @param objectValues the objectValues to set
+	 */
+	public void setObjectValues(Map<String, Object> objectValues) {
+		this.objectValues = objectValues;
 	}
 
 }

@@ -23,8 +23,9 @@ public interface QueryResourceImplementationInterface extends
 	/**
 	 * Runs the given query
 	 * 
-	 * @param qep
-	 *            Query to be run
+     * @param session Session to run in
+	 * @param qep Query to be run
+	 * @param result Results       
 	 * @return The id of the query that is running
 	 * @throws ResourceInterfaceException A resource exception occurred
 	 */
@@ -33,7 +34,8 @@ public interface QueryResourceImplementationInterface extends
 	/**
 	 * Returns the results of the query if they are available
 	 * 
-	 * @param actionState actionState
+	 * @param session Session to run in
+	 * @param result Results     
 	 * @return Results
 	 * @throws ResourceInterfaceException A resource exception occurred
 	 */
@@ -48,7 +50,7 @@ public interface QueryResourceImplementationInterface extends
 	
 	/**
 	 * Returns the result data type
-	 * 
+	 * @param query Query to run
 	 * @return Result data type
 	 */
 	ResultDataType getQueryDataType(Query query);

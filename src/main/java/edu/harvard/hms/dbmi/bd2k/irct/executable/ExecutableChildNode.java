@@ -17,6 +17,12 @@ import edu.harvard.hms.dbmi.bd2k.irct.model.result.Result;
 import edu.harvard.hms.dbmi.bd2k.irct.model.result.ResultStatus;
 import edu.harvard.hms.dbmi.bd2k.irct.model.security.SecureSession;
 
+/**
+ * A child node in an execution tree that can be executed. It can have children of its own.
+ * 
+ * @author Jeremy R. Easton-Marks
+ *
+ */
 public class ExecutableChildNode implements Executable {
 
 	private SecureSession session;
@@ -92,23 +98,54 @@ public class ExecutableChildNode implements Executable {
 		return this.action.getResults(this.session);
 	}
 
+	/**
+	 * Returns the action that is to be executed
+	 * 
+	 * @return Action
+	 */
 	public Action getAction() {
 		return action;
 	}
 
+	/**
+	 * Sets the action that is to be executed
+	 * 
+	 * @param action Action
+	 */
 	public void setAction(Action action) {
 		this.action = action;
 	}
 
+	/**
+	 * Returns if the actions should be run synchronously
+	 * 
+	 * TRUE - Synchronously
+	 * FALSE - Asynchronously
+	 * @return Blocking
+	 */
 	public boolean isBlocking() {
 		return blocking;
 	}
 
+	/**
+	 * Sets if the actions should be run synchronously
+	 * 
+	 * TRUE - Synchronously
+	 * FALSE - Asynchronously
+	 * 
+	 * @param blocking Blocking
+	 */
 	public void setBlocking(boolean blocking) {
 		this.blocking = blocking;
 	}
 }
 
+/**
+ * A subclass that implements a runnable execution thread for actions
+ * 
+ * @author Jeremy R. Easton-Marks
+ *
+ */
 class ExecutorThread implements Runnable {
 
 	private String id;
@@ -116,6 +153,13 @@ class ExecutorThread implements Runnable {
 	private Executable executable;
 	private Result result;
 
+	/**
+	 * Create the executor thread with the executable component
+	 * 
+	 * @param id Id of the executable
+	 * @param executable Executable
+	 * @param session Session to run it in
+	 */
 	public ExecutorThread(String id, Executable executable,
 			SecureSession session) {
 		this.session = session;
@@ -133,10 +177,20 @@ class ExecutorThread implements Runnable {
 		}
 	}
 
+	/**
+	 * Returns the results
+	 * 
+	 * @return Results
+	 */
 	public Result getResult() {
 		return this.result;
 	}
 
+	/**
+	 * Sets the results
+	 * 
+	 * @return Results
+	 */
 	public String getId() {
 		return this.id;
 	}

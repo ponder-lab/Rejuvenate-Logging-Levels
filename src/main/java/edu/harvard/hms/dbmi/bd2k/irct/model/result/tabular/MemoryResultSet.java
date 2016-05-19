@@ -30,6 +30,7 @@ public class MemoryResultSet extends ResultSetImpl {
 	 * @throws ResultSetException
 	 *             If a ResultSetException occurs
 	 */
+	@Override
 	public void appendRow() throws ResultSetException {
 		this.data = ArrayUtils.add(data, new Row(this.getColumnSize()));
 		setSize(this.getSize() + 1);
@@ -76,7 +77,7 @@ public class MemoryResultSet extends ResultSetImpl {
 		data[(int) getRow()].setColumn(columnIndex, value);
 	}
 
-	
+	@Override
 	public long getSize() throws ResultSetException {
 		if (isClosed()) {
 			throw new ResultSetException("ResultSet is closed");

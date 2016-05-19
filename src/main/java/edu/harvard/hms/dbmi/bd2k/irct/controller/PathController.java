@@ -5,6 +5,7 @@ package edu.harvard.hms.dbmi.bd2k.irct.controller;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Logger;
 
 import javax.ejb.Stateless;
 import javax.inject.Inject;
@@ -29,6 +30,9 @@ public class PathController {
 	@Inject
 	private ResourceController rc;
 
+	@Inject
+	Logger log;
+
 	/**
 	 * Traverses the path in the resource with the given relationship
 	 * 
@@ -38,6 +42,8 @@ public class PathController {
 	 *            Path in the resource
 	 * @param relationship
 	 *            Relationship type
+	 * @param session
+	 *            Session to run it in
 	 * @return Paths
 	 * @throws ResourceInterfaceException
 	 *             A resource interface exception occurred
@@ -63,6 +69,8 @@ public class PathController {
 	 *            Resource Path
 	 * @param searchTerm
 	 *            Search Term
+	 * @param session
+	 *            Session to run it in
 	 * @return Paths
 	 * @throws ResourceInterfaceException
 	 *             A resource interface exception occurred
@@ -103,6 +111,8 @@ public class PathController {
 	 *            Ontology Type
 	 * @param ontologyTerm
 	 *            Ontology Term
+	 * @param session
+	 *            Session to run it in
 	 * @return Paths
 	 * @throws ResourceInterfaceException
 	 *             A resource interface exception occurred
@@ -135,17 +145,37 @@ public class PathController {
 			PathResourceImplementationInterface resource, Entity resourcePath,
 			String searchTerm, SecureSession session)
 			throws ResourceInterfaceException {
-		return resource.searchPaths(resourcePath, searchTerm, session);
+		List<Entity> entities = new ArrayList<Entity>();
+		try {
+			entities = resource.searchPaths(resourcePath, searchTerm, session);
+		} catch (Exception e) {
+			log.info("Unable to search for term on resource " + resource
+					+ " message: " + e.getMessage());
+		}
+		return entities;
 	}
 
 	private List<Entity> searchResourceForOntologyTerm(
 			PathResourceImplementationInterface resource, Entity resourcePath,
 			String ontologyType, String ontologyTerm, SecureSession session)
 			throws ResourceInterfaceException {
-		return resource.searchOntology(resourcePath, ontologyType,
-				ontologyTerm, session);
+		List<Entity> entities = new ArrayList<Entity>();
+		try {
+			entities = resource.searchOntology(resourcePath, ontologyType,
+					ontologyTerm, session);
+		} catch (Exception e) {
+			log.info("Unable to search for ontology term on resource "
+					+ resource + " message: " + e.getMessage());
+		}
+		return entities;
 	}
 
+	/**
+	 * Returns a list of entities that represent all the resources that
+	 * implement the Path Resource Interface
+	 * 
+	 * @return Available Path Resources
+	 */
 	public List<Entity> getAllResourcePaths() {
 		List<Entity> returns = new ArrayList<Entity>();
 

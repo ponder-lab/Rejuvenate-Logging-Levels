@@ -6,15 +6,15 @@ package edu.harvard.hms.dbmi.bd2k.irct;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.annotation.PostConstruct;
-import javax.ejb.Singleton;
-import javax.ejb.Startup;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.persistence.EntityManager;
@@ -23,6 +23,7 @@ import javax.persistence.FlushModeType;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
+import javax.servlet.ServletContext;
 
 import edu.harvard.hms.dbmi.bd2k.irct.dataconverter.ResultDataConverter;
 import edu.harvard.hms.dbmi.bd2k.irct.exception.ResourceInterfaceException;
@@ -38,15 +39,13 @@ import edu.harvard.hms.dbmi.bd2k.irct.model.result.ResultDataType;
  * @author Jeremy R. Easton-Marks
  *
  */
-@Singleton
 @ApplicationScoped
-@Startup
 public class IRCTApplication {
 
 	private Map<String, Resource> resources;
 	private Map<String, IRCTJoin> supportedJoinTypes;
 	private Map<ResultDataType, List<DataConverterImplementation>> resultDataConverters;
-	
+
 	private Properties properties;
 
 	@Inject
@@ -54,6 +53,9 @@ public class IRCTApplication {
 
 	@Inject
 	private EntityManagerFactory objectEntityManager;
+
+	@Inject
+	private ServletContext context;
 
 	private EntityManager oem;
 
@@ -67,11 +69,11 @@ public class IRCTApplication {
 		log.info("Starting IRCT Application");
 		this.oem = objectEntityManager.createEntityManager();
 		this.oem.setFlushMode(FlushModeType.COMMIT);
-		
+
 		log.info("Loading Properties");
 		loadProperties();
 		log.info("Finished Loading Properties");
-		
+
 		log.info("Loading Data Converters");
 		loadDataConverters();
 		log.info("Finished Data Converters");
@@ -90,38 +92,64 @@ public class IRCTApplication {
 		log.info("Finished Starting IRCT Application");
 	}
 
+	/**
+	 * 
+	 * Load all the properties from the servlet context or from the
+	 * IRCT.properties file
+	 * 
+	 */
 	private void loadProperties() {
-		InputStream inputStream  = IRCTApplication.class.getClassLoader().getResourceAsStream("IRCT.properties");
 		this.properties = new Properties();
-		try {
-			this.properties.load(inputStream);
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		if (context != null) {
+			Enumeration<String> propertyNameEnumeration = context
+					.getInitParameterNames();
+			while (propertyNameEnumeration.hasMoreElements()) {
+				String propertyName = propertyNameEnumeration.nextElement();
+				this.properties.put(propertyName,
+						context.getInitParameter(propertyName));
+			}
+
+		} else {
+			InputStream inputStream = IRCTApplication.class.getClassLoader()
+					.getResourceAsStream("IRCT.properties");
+
+			try {
+				this.properties.load(inputStream);
+			} catch (IOException e) {
+				log.info("Error loading properties: " + e.getMessage());
+				log.log(Level.FINE, "Error loading properties", e);
+			}
 		}
+
 	}
-	
+
+	/**
+	 * Load all the Output Data Converters
+	 * 
+	 */
 	private void loadDataConverters() {
 		this.resultDataConverters = new HashMap<ResultDataType, List<DataConverterImplementation>>();
 		CriteriaBuilder cb = oem.getCriteriaBuilder();
-		CriteriaQuery<DataConverterImplementation> criteria = cb.createQuery(DataConverterImplementation.class);
-		Root<DataConverterImplementation> load = criteria.from(DataConverterImplementation.class);
+		CriteriaQuery<DataConverterImplementation> criteria = cb
+				.createQuery(DataConverterImplementation.class);
+		Root<DataConverterImplementation> load = criteria
+				.from(DataConverterImplementation.class);
 		criteria.select(load);
-		List<DataConverterImplementation> allDCI = oem.createQuery(criteria).getResultList();
+		List<DataConverterImplementation> allDCI = oem.createQuery(criteria)
+				.getResultList();
 		for (DataConverterImplementation dci : allDCI) {
-			if(this.resultDataConverters.containsKey(dci.getResultDataType())) {
+			if (this.resultDataConverters.containsKey(dci.getResultDataType())) {
 				this.resultDataConverters.get(dci.getResultDataType()).add(dci);
 			} else {
 				List<DataConverterImplementation> dciList = new ArrayList<DataConverterImplementation>();
 				dciList.add(dci);
-				this.resultDataConverters.put(dci.getResultDataType(), dciList);	
+				this.resultDataConverters.put(dci.getResultDataType(), dciList);
 			}
-			
+
 		}
-		
+
 		log.info("Loaded " + allDCI.size() + " result data converters");
 	}
-	
 
 	/**
 	 * Loads all the joins from the persistence manager
@@ -159,7 +187,7 @@ public class IRCTApplication {
 			} catch (ResourceInterfaceException e) {
 				e.printStackTrace();
 			}
-			
+
 		}
 		log.info("Loaded " + this.resources.size() + " resources");
 	}
@@ -265,19 +293,31 @@ public class IRCTApplication {
 	}
 
 	/**
-	 * @param resultDataConverters the resultDataConverters to set
+	 * @param resultDataConverters
+	 *            the resultDataConverters to set
 	 */
-	public void setResultDataConverters(Map<ResultDataType, List<DataConverterImplementation>> resultDataConverters) {
+	public void setResultDataConverters(
+			Map<ResultDataType, List<DataConverterImplementation>> resultDataConverters) {
 		this.resultDataConverters = resultDataConverters;
 	}
-	
-	public ResultDataConverter getResultDataConverter(ResultDataType dataType, String format) {
-		// TODO Auto-generated method stub
-		List<DataConverterImplementation> dciList = this.resultDataConverters.get(dataType);
-		
-		for(DataConverterImplementation dci : dciList) {
-			if(dci.getFormat().equals(format)) {
-				
+
+	/**
+	 * Returns a dataconveter for a given datatype and format
+	 * 
+	 * @param dataType
+	 *            DataType
+	 * @param format
+	 *            Format
+	 * @return DataConverter
+	 */
+	public ResultDataConverter getResultDataConverter(ResultDataType dataType,
+			String format) {
+		List<DataConverterImplementation> dciList = this.resultDataConverters
+				.get(dataType);
+
+		for (DataConverterImplementation dci : dciList) {
+			if (dci.getFormat().equals(format)) {
+
 				return dci.getDataConverter();
 			}
 		}
@@ -308,10 +348,21 @@ public class IRCTApplication {
 		return this.supportedJoinTypes.containsKey(name);
 	}
 
+	/**
+	 * Get the properties
+	 * 
+	 * @return Properties
+	 */
 	public Properties getProperties() {
 		return properties;
 	}
 
+	/**
+	 * Set the properties
+	 * 
+	 * @param properties
+	 *            Properties
+	 */
 	public void setProperties(Properties properties) {
 		this.properties = properties;
 	}

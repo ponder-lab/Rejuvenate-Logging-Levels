@@ -58,6 +58,7 @@ public class ExecutionController {
 	 * 
 	 * @param process
 	 *            Process to run
+	 * @param secureSession Session to run it in
 	 * @return result id
 	 * @throws PersistableException
 	 *             Persistable exception occurred
@@ -93,6 +94,7 @@ public class ExecutionController {
 	 * 
 	 * @param query
 	 *            Query
+	 * @param secureSession Session to run it in
 	 * @return Result Id
 	 * @throws PersistableException
 	 *             An error occurred
@@ -126,8 +128,9 @@ public class ExecutionController {
 	/**
 	 * Run a join by creating an execution plan
 	 * 
-	 * @param joinAction
+	 * @param joinType
 	 *            Join to run
+	 * @param secureSession Session to run it in
 	 * @return Result Id
 	 * @throws PersistableException
 	 *             An error occurred
@@ -185,7 +188,11 @@ public class ExecutionController {
 						result.setResultSetLocation(finalResult.getResultSetLocation());
 						result.setMessage(finalResult.getMessage());
 						
-						((Persistable) result.getData()).merge();
+						if(((Persistable) result.getData()).isPersisted()) {
+							((Persistable) result.getData()).merge();
+						} else {
+							((Persistable) result.getData()).persist();
+						}
 						result.setResultStatus(ResultStatus.AVAILABLE);
 					} else {
 						result.setResultStatus(ResultStatus.ERROR);

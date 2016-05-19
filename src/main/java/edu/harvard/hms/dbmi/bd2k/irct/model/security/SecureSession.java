@@ -5,6 +5,8 @@ package edu.harvard.hms.dbmi.bd2k.irct.model.security;
 
 import java.io.Serializable;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
@@ -14,6 +16,7 @@ import javax.persistence.ManyToOne;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
+import javax.persistence.Transient;
 
 /**
  * A secure session contains information about a user, the token associated with
@@ -41,6 +44,14 @@ public class SecureSession implements Serializable {
 
 	@Temporal(TemporalType.TIMESTAMP)
 	private Date created;
+	
+	@Transient
+	private Map<String, Token> delegated;
+	
+	
+	public SecureSession() {
+		this.delegated = new HashMap<String, Token>();
+	}
 
 	/**
 	 * Returns the id of this secure session object
@@ -134,6 +145,20 @@ public class SecureSession implements Serializable {
 	 */
 	public void setCreated(Date created) {
 		this.created = created;
+	}
+
+	/**
+	 * @return the delegated
+	 */
+	public Map<String, Token> getDelegated() {
+		return delegated;
+	}
+
+	/**
+	 * @param delegated the delegated to set
+	 */
+	public void setDelegated(Map<String, Token> delegated) {
+		this.delegated = delegated;
 	}
 
 }

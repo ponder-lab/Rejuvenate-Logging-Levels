@@ -6,6 +6,11 @@ package edu.harvard.hms.dbmi.bd2k.irct.dataconverter;
 
 import javax.ws.rs.core.StreamingOutput;
 
+/**
+ * An object that contains a data stream and information about a result
+ * @author Jeremy R. Easton-Marks
+ *
+ */
 public class ResultDataStream {
 	private String mediaType;
 	private StreamingOutput result;
@@ -56,7 +61,11 @@ public class ResultDataStream {
 		this.fileExtension = fileExtension;
 	}
 	
-	
+	/**
+	 * Returns the file extension
+	 * 
+	 * @return File Extension
+	 */
 	public String getFileExtension() {
 		return this.fileExtension;
 	}

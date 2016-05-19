@@ -26,6 +26,7 @@ public class ExecutionPlan {
 	 * 
 	 * @param executable
 	 *            Base executable
+	 * @param session Secure session to run in            
 	 */
 	public void setup(Executable executable, SecureSession session) {
 		this.executable = executable;

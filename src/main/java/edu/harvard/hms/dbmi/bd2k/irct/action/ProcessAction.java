@@ -7,17 +7,14 @@ package edu.harvard.hms.dbmi.bd2k.irct.action;
 import java.util.Date;
 import java.util.Map;
 
-import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
-import edu.harvard.hms.dbmi.bd2k.irct.controller.ResultController;
 import edu.harvard.hms.dbmi.bd2k.irct.exception.ResourceInterfaceException;
 import edu.harvard.hms.dbmi.bd2k.irct.model.process.IRCTProcess;
 import edu.harvard.hms.dbmi.bd2k.irct.model.resource.Resource;
 import edu.harvard.hms.dbmi.bd2k.irct.model.resource.implementation.ProcessResourceImplementationInterface;
 import edu.harvard.hms.dbmi.bd2k.irct.model.result.Result;
 import edu.harvard.hms.dbmi.bd2k.irct.model.result.ResultStatus;
-import edu.harvard.hms.dbmi.bd2k.irct.model.result.exception.PersistableException;
 import edu.harvard.hms.dbmi.bd2k.irct.model.security.SecureSession;
 
 /**
@@ -33,10 +30,16 @@ public class ProcessAction implements Action {
 	private ActionStatus status;
 	private Result result;
 	
+	
+	/**
+	 * Run a given process on a resource 
+	 * 
+	 * @param resource The resource to run the process on
+	 * @param process The process to run
+	 */
 	public void setup(Resource resource, IRCTProcess process) {
 		this.resource = resource;
 		this.process = process;
-		
 	}
 	
 	@Override
@@ -50,19 +53,18 @@ public class ProcessAction implements Action {
 	public void run(SecureSession session) {
 		this.status = ActionStatus.RUNNING;
 		try {
-			InitialContext ic = new InitialContext();
-			ResultController resultController = (ResultController) ic.lookup("java:module/ResultController");
 			ProcessResourceImplementationInterface processInterface = (ProcessResourceImplementationInterface) resource.getImplementingInterface();
 			
-			result = resultController.createResult(processInterface.getProcessDataType(process));
+			result = ActionUtilities.createResult(processInterface.getProcessDataType(process));
 			if(session != null) {
 				result.setUser(session.getUser());
 			}
 			
+			process.setObjectValues(ActionUtilities.convertResultSetFieldToObject(session.getUser(), process.getProcessType().getFields(), process.getStringValues()));
 			result = processInterface.runProcess(session, process, result);
 			
-			resultController.mergeResult(result);
-		} catch (ResourceInterfaceException | PersistableException | NamingException e) {
+			ActionUtilities.mergeResult(result);
+		} catch (Exception e) {
 			result.setMessage(e.getMessage());
 			this.status = ActionStatus.ERROR;
 		}
@@ -85,9 +87,7 @@ public class ProcessAction implements Action {
 		result.setEndTime(new Date());
 		//Save the query Action
 		try {
-			InitialContext ic = new InitialContext();
-			ResultController resultController = (ResultController) ic.lookup("java:module/ResultController");
-			resultController.mergeResult(result);
+			ActionUtilities.mergeResult(result);
 			this.status = ActionStatus.COMPLETE;
 		} catch (NamingException e) {
 			result.setMessage(e.getMessage());
@@ -97,10 +97,20 @@ public class ProcessAction implements Action {
 		return this.result;
 	}
 
+	/**
+	 * Get the process
+	 * 
+	 * @return Process
+	 */
 	public IRCTProcess getProcess() {
 		return this.process;
 	}
 
+	/**
+	 * Sets the process
+	 * 
+	 * @param process Process
+	 */
 	public void setProcess(IRCTProcess process) {
 		this.process = process;
 	}

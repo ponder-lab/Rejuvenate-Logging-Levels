@@ -1,3 +1,6 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 package edu.harvard.hms.dbmi.bd2k.irct.controller;
 
 import java.util.List;
@@ -16,6 +19,12 @@ import edu.harvard.hms.dbmi.bd2k.irct.model.resource.Field;
 import edu.harvard.hms.dbmi.bd2k.irct.model.resource.ProcessType;
 import edu.harvard.hms.dbmi.bd2k.irct.model.resource.Resource;
 
+/**
+ * A stateless controller for creating a process
+ * 
+ * @author Jeremy R. Easton-Marks
+ *
+ */
 @Stateful
 public class ProcessController {
 	@PersistenceContext
@@ -26,10 +35,19 @@ public class ProcessController {
 
 	private IRCTProcess process;
 
+	/**
+	 * Create a new process
+	 * 
+	 */
 	public void createProcess() {
 		this.process = new IRCTProcess();
 	}
 
+	/**
+	 * Saves a process
+	 * 
+	 * @throws ProcessException An exception occurred with the process
+	 */
 	public void saveProcess() throws ProcessException {
 		if (this.process == null) {
 			throw new ProcessException("No process to save.");
@@ -39,10 +57,16 @@ public class ProcessController {
 		} else {
 			entityManager.merge(this.process);
 		}
-		log.info("Query " + this.process.getId() + " saved");
+		log.info("Process " + this.process.getId() + " saved");
 
 	}
 
+	/**
+	 * Load a process
+	 * 
+	 * @param processId Id of the process
+	 * @throws ProcessException An exception occurred with the process
+	 */
 	public void loadProcess(Long processId) throws ProcessException {
 		if (processId == null) {
 			throw new ProcessException("No process id.");
@@ -55,6 +79,14 @@ public class ProcessController {
 		log.info("Query " + this.process.getId() + " loaded");
 	}
 
+	/**
+	 * Update a process with the new information 
+	 * 
+	 * @param resource Resource
+	 * @param processType Type of Process
+	 * @param processFields Fields of the process
+	 * @throws ProcessException An exception occurred updating the process
+	 */
 	public void updateProcess(Resource resource, ProcessType processType,
 			Map<String, String> processFields) throws ProcessException {
 		//Is the resource part of the process
@@ -108,6 +140,11 @@ public class ProcessController {
 		}
 	}
 
+	/**
+	 * Returns the process
+	 * 
+	 * @return Process
+	 */
 	public IRCTProcess getProcess() {
 		return this.process;
 	}

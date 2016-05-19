@@ -5,7 +5,6 @@ package edu.harvard.hms.dbmi.bd2k.irct.action;
 
 import java.util.Map;
 
-import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
 import edu.harvard.hms.dbmi.bd2k.irct.join.JoinImplementation;
@@ -15,8 +14,6 @@ import edu.harvard.hms.dbmi.bd2k.irct.model.result.ResultStatus;
 import edu.harvard.hms.dbmi.bd2k.irct.model.result.exception.PersistableException;
 import edu.harvard.hms.dbmi.bd2k.irct.model.result.exception.ResultSetException;
 import edu.harvard.hms.dbmi.bd2k.irct.model.security.SecureSession;
-import edu.harvard.hms.dbmi.bd2k.irct.controller.ResultController;
-import edu.harvard.hms.dbmi.bd2k.irct.controller.ResultController;
 import edu.harvard.hms.dbmi.bd2k.irct.exception.ResourceInterfaceException;
 
 /**
@@ -30,6 +27,11 @@ public class JoinAction implements Action {
 	private ActionStatus status;
 	private Result result;
 
+	/**
+	 * Sets up the IRCT Join Action
+	 * 
+	 * @param joinType The join to run
+	 */
 	public void setup(IRCTJoin joinType) {
 		this.status = ActionStatus.CREATED;
 		this.joinType = joinType;
@@ -47,15 +49,14 @@ public class JoinAction implements Action {
 		this.status = ActionStatus.RUNNING;
 
 		try {
-			InitialContext ic = new InitialContext();
-			ResultController resultController = (ResultController) ic.lookup("java:module/ResultController");
 			JoinImplementation joinImplementation = (JoinImplementation) joinType.getJoinImplementation();
-			result = resultController.createResult(joinImplementation.getJoinDataType());
+			result = ActionUtilities.createResult(joinImplementation.getJoinDataType());
 			if(session != null) {
 				result.setUser(session.getUser());
 			}
 			result = joinImplementation.run(result);
 			this.status = ActionStatus.COMPLETE;
+			ActionUtilities.mergeResult(result);
 		} catch (PersistableException | NamingException | ResultSetException e) {
 			result.setMessage(e.getMessage());
 			this.status = ActionStatus.ERROR;
@@ -68,6 +69,13 @@ public class JoinAction implements Action {
 	public Result getResults(SecureSession session) throws ResourceInterfaceException {
 		if(this.result.getResultStatus() != ResultStatus.ERROR && this.result.getResultStatus() != ResultStatus.COMPLETE) {
 			this.result = this.joinType.getJoinImplementation().getResults(this.result);
+		}
+		try {
+			ActionUtilities.mergeResult(result);
+			this.status = ActionStatus.COMPLETE;
+		} catch (NamingException e) {
+			result.setMessage(e.getMessage());
+			this.status = ActionStatus.ERROR;
 		}
 		return this.result;
 	}

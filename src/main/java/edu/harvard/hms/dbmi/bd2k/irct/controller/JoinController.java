@@ -6,7 +6,7 @@ package edu.harvard.hms.dbmi.bd2k.irct.controller;
 import java.util.Map;
 
 import javax.ejb.Stateful;
-import javax.inject.Inject;
+//import javax.inject.Inject;
 
 import edu.harvard.hms.dbmi.bd2k.irct.exception.ActionNotSetException;
 import edu.harvard.hms.dbmi.bd2k.irct.exception.FieldException;
@@ -24,17 +24,16 @@ import edu.harvard.hms.dbmi.bd2k.irct.model.join.IRCTJoin;
 @Stateful
 public class JoinController {
 	
-	@Inject
-	private ResultController rc;
+//	@Inject
+//	private ResultController rc;
 
 	private IRCTJoin joinType;
 
 	/**
 	 * Creates a new join of the type passed in.
 	 * 
-	 * @param joinName
+	 * @param joinType
 	 *            The name of the join to create
-	 * @return The created join
 	 */
 	public void createJoin(IRCTJoin joinType) {
 		this.setJoinType(joinType);
@@ -42,9 +41,11 @@ public class JoinController {
 	
 	
 	public void setup(Map<String, String> parameters) throws ActionNotSetException, FieldException, JoinActionSetupException {
+
 		if(this.joinType == null) {
 			throw new ActionNotSetException("Join has not been created");
 		}
+		//TODO: FILL IN
 		
 //		Map<String, Object> actionParameters = Utilities.createActionParametersFromStringMap(this.joinType.getFields(), parameters, rc);
 //		if(actionParameters != null) {

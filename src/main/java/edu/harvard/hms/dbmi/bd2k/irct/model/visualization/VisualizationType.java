@@ -87,6 +87,8 @@ public class VisualizationType implements Serializable {
 	}
 
 	/**
+	 * Returns the id of the visualization type
+	 * 
 	 * @return the id
 	 */
 	public long getId() {
@@ -94,6 +96,8 @@ public class VisualizationType implements Serializable {
 	}
 
 	/**
+	 * Sets the id of the visualization type
+	 * 
 	 * @param id the id to set
 	 */
 	public void setId(long id) {
@@ -101,6 +105,8 @@ public class VisualizationType implements Serializable {
 	}
 
 	/**
+	 * Returns the name of the visualizations
+	 * 
 	 * @return the name
 	 */
 	public String getName() {
@@ -108,6 +114,8 @@ public class VisualizationType implements Serializable {
 	}
 
 	/**
+	 * Sets the name of the visualization
+	 * 
 	 * @param name the name to set
 	 */
 	public void setName(String name) {
@@ -115,6 +123,8 @@ public class VisualizationType implements Serializable {
 	}
 
 	/**
+	 * Returns the display name of the visualization
+	 * 
 	 * @return the displayName
 	 */
 	public String getDisplayName() {
@@ -122,6 +132,8 @@ public class VisualizationType implements Serializable {
 	}
 
 	/**
+	 * Sets the display name of the visualization
+	 * 
 	 * @param displayName the displayName to set
 	 */
 	public void setDisplayName(String displayName) {
@@ -129,6 +141,8 @@ public class VisualizationType implements Serializable {
 	}
 
 	/**
+	 * Returns the description of the visualization
+	 * 
 	 * @return the description
 	 */
 	public String getDescription() {
@@ -136,6 +150,7 @@ public class VisualizationType implements Serializable {
 	}
 
 	/**
+	 * Sets the description of the visualization
 	 * @param description the description to set
 	 */
 	public void setDescription(String description) {
@@ -143,6 +158,8 @@ public class VisualizationType implements Serializable {
 	}
 
 	/**
+	 * Returns a list of fields to create the visualization
+	 * 
 	 * @return the fields
 	 */
 	public List<Field> getFields() {
@@ -150,6 +167,8 @@ public class VisualizationType implements Serializable {
 	}
 
 	/**
+	 * Sets the list of fields to create the visualization
+	 * 
 	 * @param fields the fields to set
 	 */
 	public void setFields(List<Field> fields) {
@@ -157,6 +176,8 @@ public class VisualizationType implements Serializable {
 	}
 
 	/**
+	 * Returns the visualization type that will be returned
+	 * 
 	 * @return the returns
 	 */
 	public VisualizationReturnType getReturns() {
@@ -164,12 +185,11 @@ public class VisualizationType implements Serializable {
 	}
 
 	/**
+	 * Sets the visualization type that will be returned
+	 * 
 	 * @param returns the returns to set
 	 */
 	public void setReturns(VisualizationReturnType returns) {
 		this.returns = returns;
 	}
-	
-	
-	
 }

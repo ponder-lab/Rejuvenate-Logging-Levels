@@ -24,7 +24,12 @@ public class SelectClause extends ClauseAbstract implements Serializable {
 	private static final long serialVersionUID = 3728919497144122930L;
 	@OneToOne
 	private Entity parameter;
+	
+	private String alias;
 
+	/**
+	 * Creates an empty select clause
+	 */
 	public SelectClause() {
 	}
 
@@ -77,5 +82,19 @@ public class SelectClause extends ClauseAbstract implements Serializable {
 	 */
 	public void setParameters(Entity parameter) {
 		this.parameter = parameter;
+	}
+
+	/**
+	 * @return the alias
+	 */
+	public String getAlias() {
+		return alias;
+	}
+
+	/**
+	 * @param alias the alias to set
+	 */
+	public void setAlias(String alias) {
+		this.alias = alias;
 	}
 }

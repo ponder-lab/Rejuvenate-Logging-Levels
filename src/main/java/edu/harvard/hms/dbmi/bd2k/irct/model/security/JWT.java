@@ -25,12 +25,14 @@ public class JWT extends Token implements Serializable {
 	@Lob
 	private String access;
 	private String type;
-	
+
+	private String clientId;
+
 	/**
 	 * Creates a new token
 	 */
 	public JWT() {
-		
+
 	}
 
 	/**
@@ -42,14 +44,16 @@ public class JWT extends Token implements Serializable {
 	 *            Access Token
 	 * @param type
 	 *            Token Type
+	 * @param clientId
+	 *            Client Id
 	 */
-	public JWT(String idToken, String access, String type) {
+	public JWT(String idToken, String access, String type, String clientId) {
 		this.idToken = idToken;
 		this.access = access;
 		this.type = type;
-
+		this.clientId = clientId;
 	}
-	
+
 	public String toString() {
 		return this.idToken;
 	}
@@ -95,7 +99,8 @@ public class JWT extends Token implements Serializable {
 	/**
 	 * Sets the id token
 	 * 
-	 * @param idToken Id Token
+	 * @param idToken
+	 *            Id Token
 	 */
 	public void setIdToken(String idToken) {
 		this.idToken = idToken;
@@ -108,6 +113,21 @@ public class JWT extends Token implements Serializable {
 	 */
 	public String getIdToken() {
 		return this.idToken;
+	}
+
+	/**
+	 * @return the clientId
+	 */
+	public String getClientId() {
+		return clientId;
+	}
+
+	/**
+	 * @param clientId
+	 *            the clientId to set
+	 */
+	public void setClientId(String clientId) {
+		this.clientId = clientId;
 	}
 
 }

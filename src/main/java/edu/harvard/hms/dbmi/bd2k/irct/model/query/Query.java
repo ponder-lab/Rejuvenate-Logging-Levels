@@ -55,6 +55,10 @@ public class Query implements Serializable {
 	@OneToMany
 	private List<Resource> resources;
 
+	/**
+	 * Creates an empty query
+	 * 
+	 */
 	public Query() {
 		this.setSubQueries(new LinkedHashMap<Long, SubQuery>());
 		this.setClauses(new LinkedHashMap<Long, ClauseAbstract>());
@@ -112,10 +116,20 @@ public class Query implements Serializable {
 		this.id = id;
 	}
 
+	/**
+	 * Returns the name of the query
+	 * 
+	 * @return Name of the Query
+	 */
 	public String getName() {
 		return name;
 	}
 
+	/**
+	 * Sets the name of the query
+	 * 
+	 * @param name Name of the query
+	 */
 	public void setName(String name) {
 		this.name = name;
 	}

@@ -19,14 +19,14 @@ public interface ResourceImplementationInterface {
 	 * 
 	 * @param parameters
 	 *            Setup parameters
-	 * @throws ResourceInterfaceException 
+	 * @throws ResourceInterfaceException Throws a resource interface exception 
 	 */
 	void setup(Map<String, String> parameters) throws ResourceInterfaceException;
 
 	/**
 	 * A string representation of the type of resource implementation this is
 	 * 
-	 * @return Type
+	 * @return Type Type of Resource
 	 */
 	String getType();
 }

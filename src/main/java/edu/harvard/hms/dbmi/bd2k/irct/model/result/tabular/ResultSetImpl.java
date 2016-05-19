@@ -19,22 +19,13 @@ import edu.harvard.hms.dbmi.bd2k.irct.model.result.exception.RowSetExeception;
  *
  */
 public class ResultSetImpl implements ResultSet {
-	private int[] matchColumnIndex;
 	private Column[] columns;
 	private String[] columnNames;
 	private long size;
 	private long rowPosition = -1;
 	private boolean closed = false;
 
-	/**
-	 * Adds a new column to a Result Set. The Result set must be empty for this
-	 * to be performed.
-	 * 
-	 * @param column
-	 *            New Column
-	 * @throws ResultSetException
-	 *             If a ResultSetException occurs
-	 */
+	@Override
 	public void appendColumn(Column column) throws ResultSetException {
 		if (getSize() == 0) {
 			this.columns = ArrayUtils.add(columns, column);
@@ -42,74 +33,6 @@ public class ResultSetImpl implements ResultSet {
 		}
 	}
 
-	public int[] getMatchColumnIndexes() throws ResultSetException {
-		return matchColumnIndex;
-	}
-
-	public String[] getMatchColumnNames() throws ResultSetException {
-		String[] columnNames = new String[matchColumnIndex.length];
-
-		int i = 0;
-		for (int columnIndex : matchColumnIndex) {
-			columnNames[i] = columns[columnIndex].getName();
-			i++;
-		}
-
-		return columnNames;
-	}
-
-	public void setMatchColumn(int columnIndex) throws ResultSetException {
-		this.matchColumnIndex = new int[] { columnIndex };
-	}
-
-	public void setMatchColumn(int[] columnIndexes) throws ResultSetException {
-		this.matchColumnIndex = columnIndexes;
-	}
-
-	public void setMatchColumn(String columnLabel) throws ResultSetException {
-		setMatchColumn(findColumn(columnLabel));
-	}
-
-	public void setMatchColumns(String[] columnLabels)
-			throws ResultSetException {
-		this.matchColumnIndex = new int[columnLabels.length];
-
-		int i = 0;
-		for (String columnLabel : columnLabels) {
-			this.matchColumnIndex[i] = findColumn(columnLabel);
-			i++;
-		}
-	}
-
-	public void unsetMatchColumn(int columnIndex) throws ResultSetException {
-		this.matchColumnIndex = ArrayUtils.removeElement(matchColumnIndex,
-				columnIndex);
-	}
-
-	public void unsetMatchColumn(int[] columnIndexes) throws ResultSetException {
-		this.matchColumnIndex = ArrayUtils.removeElements(matchColumnIndex,
-				columnIndexes);
-
-	}
-
-	public void unsetMatchColumn(String columnLabel) throws ResultSetException {
-		unsetMatchColumn(findColumn(columnLabel));
-	}
-
-	public void unsetMatchColumn(String[] columnLabels)
-			throws ResultSetException {
-		int[] removeColumnIndex = new int[columnLabels.length];
-
-		int i = 0;
-		for (String columnLabel : columnLabels) {
-			removeColumnIndex[i] = findColumn(columnLabel);
-			i++;
-		}
-
-		unsetMatchColumn(removeColumnIndex);
-
-	}
-	
 	@Override
 	public void load(String resultSetLocation) throws ResultSetException,
 			PersistableException {
@@ -117,14 +40,17 @@ public class ResultSetImpl implements ResultSet {
 		
 	}
 
+	@Override
 	public void close() throws ResultSetException {
 		this.closed = true;
 	}
 
+	@Override
 	public boolean isClosed() {
 		return closed;
 	}
 
+	@Override
 	public boolean absolute(long row) throws ResultSetException {
 		if (isClosed()) {
 			throw new ResultSetException("ResultSet is closed");
@@ -137,6 +63,7 @@ public class ResultSetImpl implements ResultSet {
 		return true;
 	}
 
+	@Override
 	public void afterLast() throws ResultSetException {
 		if (isClosed()) {
 			throw new ResultSetException("ResultSet is closed");
@@ -145,6 +72,7 @@ public class ResultSetImpl implements ResultSet {
 
 	}
 
+	@Override
 	public void beforeFirst() throws ResultSetException {
 		if (isClosed()) {
 			throw new ResultSetException("ResultSet is closed");
@@ -153,6 +81,7 @@ public class ResultSetImpl implements ResultSet {
 
 	}
 
+	@Override
 	public boolean first() throws ResultSetException {
 		if (isClosed()) {
 			throw new ResultSetException("ResultSet is closed");
@@ -161,6 +90,7 @@ public class ResultSetImpl implements ResultSet {
 		return true;
 	}
 
+	@Override
 	public boolean next() throws ResultSetException {
 		if (isClosed()) {
 			throw new ResultSetException("ResultSet is closed");
@@ -173,6 +103,7 @@ public class ResultSetImpl implements ResultSet {
 		}
 	}
 
+	@Override
 	public boolean relative(long rows) throws ResultSetException {
 		if (isClosed()) {
 			throw new ResultSetException("ResultSet is closed");
@@ -184,6 +115,7 @@ public class ResultSetImpl implements ResultSet {
 		}
 	}
 
+	@Override
 	public boolean previous() throws ResultSetException {
 		if (isClosed()) {
 			throw new ResultSetException("ResultSet is closed");
@@ -192,11 +124,13 @@ public class ResultSetImpl implements ResultSet {
 		return false;
 	}
 
+	@Override
 	public boolean last() throws ResultSetException {
 		this.setRowPosition(this.size - 1);
 		return false;
 	}
 
+	@Override
 	public boolean isFirst() throws ResultSetException {
 		if (isClosed()) {
 			throw new ResultSetException("ResultSet is closed");
@@ -204,13 +138,15 @@ public class ResultSetImpl implements ResultSet {
 		return getRowPosition() == 0;
 	}
 
+	@Override
 	public boolean isLast() throws ResultSetException {
 		if (isClosed()) {
 			throw new ResultSetException("ResultSet is closed");
 		}
 		return (getRowPosition() == size - 1);
 	}
-
+	
+	@Override
 	public long getRow() throws ResultSetException {
 		if (isClosed()) {
 			throw new ResultSetException("ResultSet is closed");
@@ -218,6 +154,7 @@ public class ResultSetImpl implements ResultSet {
 		return getRowPosition();
 	}
 
+	@Override
 	public long getSize() throws ResultSetException {
 		if (isClosed()) {
 			throw new ResultSetException("ResultSet is closed");
@@ -225,6 +162,7 @@ public class ResultSetImpl implements ResultSet {
 		return size;
 	}
 
+	@Override
 	public int getColumnSize() throws ResultSetException {
 		if (isClosed()) {
 			throw new ResultSetException("ResultSet is closed");
@@ -233,6 +171,7 @@ public class ResultSetImpl implements ResultSet {
 	}
 
 	// COLUMN INFORMATION
+	@Override
 	public int findColumn(String columnLabel) throws ResultSetException {
 		if (isClosed()) {
 			throw new ResultSetException("ResultSet is closed");
@@ -245,6 +184,7 @@ public class ResultSetImpl implements ResultSet {
 		return position;
 	}
 
+	@Override
 	public Column getColumn(int columnIndex) throws ResultSetException {
 		if (isClosed()) {
 			throw new ResultSetException("ResultSet is closed");
@@ -256,187 +196,242 @@ public class ResultSetImpl implements ResultSet {
 		return columns[columnIndex];
 	}
 	
+	@Override
 	public Column[] getColumns() throws ResultSetException {
 		if (isClosed()) {
 			throw new ResultSetException("ResultSet is closed");
 		}
 		return columns;
 	}
-	
-	public void setColumns(Column[] columns) throws ResultSetException {
-		if (isClosed()) {
-			throw new ResultSetException("ResultSet is closed");
-		}
-		this.columns = columns;
-	}
 
 	// Data Retrieval and editing
 	// BOOLEAN
+	@Override
 	public boolean getBoolean(int columnIndex) throws ResultSetException {
 		throw new ResultSetException("Not Implemented in this class");
 	}
 
+	@Override
 	public boolean getBoolean(String columnLabel) throws ResultSetException {
 		throw new ResultSetException("Not Implemented in this class");
 	}
-
+	
+	@Override
 	public void updateBoolean(int columnIndex, boolean value)
 			throws ResultSetException {
 		throw new ResultSetException("Not Implemented in this class");
 	}
 
+	@Override
 	public void updateBoolean(String columnLabel, boolean value)
 			throws ResultSetException {
 		throw new ResultSetException("Not Implemented in this class");
 	}
 
 	// BYTE
+	@Override
 	public byte getByte(int columnIndex) throws ResultSetException {
 		throw new ResultSetException("Not Implemented in this class");
 	}
 
+	@Override
 	public byte getByte(String columnLabel) throws ResultSetException {
 		throw new ResultSetException("Not Implemented in this class");
 	}
 
+	@Override
 	public void updateByte(int columnIndex, byte value)
 			throws ResultSetException {
 		throw new ResultSetException("Not Implemented in this class");
 	}
 
+	@Override
 	public void updateByte(String columnLabel, byte value)
 			throws ResultSetException {
 		throw new ResultSetException("Not Implemented in this class");
 	}
 
 	// DATE
+	@Override
 	public Date getDate(int columnIndex) throws ResultSetException {
 		throw new ResultSetException("Not Implemented in this class");
 	}
 
+	@Override
 	public Date getDate(String columnLabel) throws ResultSetException {
 		throw new ResultSetException("Not Implemented in this class");
 	}
 
+	@Override
 	public void updateDate(int columnIndex, Date value)
 			throws ResultSetException {
 		throw new ResultSetException("Not Implemented in this class");
 	}
 
+	@Override
 	public void updateDate(String columnLabel, Date value)
 			throws ResultSetException {
 		throw new ResultSetException("Not Implemented in this class");
 	}
 
 	// DOUBLE
+	@Override
 	public double getDouble(int columnIndex) throws ResultSetException {
 		throw new ResultSetException("Not Implemented in this class");
 	}
 
+	@Override
 	public double getDouble(String columnLabel) throws ResultSetException {
 		throw new ResultSetException("Not Implemented in this class");
 	}
 
+	@Override
 	public void updateDouble(int columnIndex, double value)
 			throws ResultSetException {
 		throw new ResultSetException("Not Implemented in this class");
 	}
 
+	@Override
 	public void updateDouble(String columnLabel, double value)
 			throws ResultSetException {
 		throw new ResultSetException("Not Implemented in this class");
 	}
 
 	// FLOAT
+	@Override
 	public float getFloat(int columnIndex) throws ResultSetException {
 		throw new ResultSetException("Not Implemented in this class");
 	}
 
+	@Override
 	public float getFloat(String columnLabel) throws ResultSetException {
 		throw new ResultSetException("Not Implemented in this class");
 	}
 
+	@Override
 	public void updateFloat(int columnIndex, float value)
 			throws ResultSetException {
 		throw new ResultSetException("Not Implemented in this class");
 	}
 
+	@Override
 	public void updateFloat(String columnLabel, float value)
 			throws ResultSetException {
 		throw new ResultSetException("Not Implemented in this class");
 	}
 
 	// INT
+	@Override
 	public int getInt(int columnIndex) throws ResultSetException {
 		throw new ResultSetException("Not Implemented in this class");
 	}
 
+	@Override
 	public int getInt(String columnLabel) throws ResultSetException {
 		throw new ResultSetException("Not Implemented in this class");
 	}
 
+	@Override
 	public void updateInt(int columnIndex, int value) throws ResultSetException {
 		throw new ResultSetException("Not Implemented in this class");
 	}
 
+	@Override
 	public void updateInt(String columnLabel, int value)
 			throws ResultSetException {
 		throw new ResultSetException("Not Implemented in this class");
 	}
 
 	// LONG
+	@Override
 	public long getLong(int columnIndex) throws ResultSetException {
 		throw new ResultSetException("Not Implemented in this class");
 	}
 
+	@Override
 	public long getLong(String columnLabel) throws ResultSetException {
 		throw new ResultSetException("Not Implemented in this class");
 	}
 
+	@Override
 	public void updateLong(int columnIndex, long value)
 			throws ResultSetException {
 		throw new ResultSetException("Not Implemented in this class");
 	}
 
+	@Override
 	public void updateLong(String columnLabel, long value)
 			throws ResultSetException {
 		throw new ResultSetException("Not Implemented in this class");
 	}
 
 	// STRING
+	@Override
 	public String getString(int columnIndex) throws ResultSetException {
 		throw new ResultSetException("Not Implemented in this class");
 	}
-
+	
+	@Override
 	public String getString(String columnLabel) throws ResultSetException {
 		throw new ResultSetException("Not Implemented in this class");
 	}
 
+	@Override
 	public void updateString(int columnIndex, String value)
 			throws ResultSetException {
 		throw new ResultSetException("Not Implemented in this class");
 	}
 
+	@Override
 	public void updateString(String columnLabel, String value)
 			throws ResultSetException {
 		throw new ResultSetException("Not Implemented in this class");
 	}
 
 	// OBJECT
+	/**
+	 * Get an object from a column from the current row
+	 * 
+	 * @param columnIndex Column Index
+	 * @return Object from the column
+	 * @throws ResultSetException A result set exception occurred
+	 */
 	public Object getObject(int columnIndex) throws ResultSetException {
 		throw new ResultSetException("Not Implemented in this class");
 	}
 
+	/**
+	 * Updates an object from a column from the current row
+	 * 
+	 * @param columnIndex Column Index
+	 * @param obj Object to set
+	 * @throws ResultSetException A result set exception occurred
+	 */
 	public void updateObject(int columnIndex, Object obj)
 			throws ResultSetException {
 		throw new ResultSetException("Not Implemented in this class");
 	}
 
+	/**
+	 * Gets the current row position
+	 * @return current row
+	 */
 	public long getRowPosition() {
 		return rowPosition;
 	}
 
+	/**
+	 * Sets the current row position
+	 * 
+	 * @param rowPosition Row
+	 */
 	public void setRowPosition(long rowPosition) {
 		this.rowPosition = rowPosition;
+	}
+
+	@Override
+	public void appendRow() throws ResultSetException, PersistableException {
+		throw new ResultSetException("Not Implemented in this class");
+		
 	}
 }

@@ -574,4 +574,25 @@ public interface ResultSet extends Data {
 
 	void load(String resultSetLocation) throws ResultSetException, PersistableException;
 
+	/**
+	 * Adds a new row to the file result set
+	 * 
+	 * @throws ResultSetException
+	 *             If a ResultSetException occurs
+	 * @throws PersistableException
+	 *             If a PersistableException occurs
+	 */
+	void appendRow() throws ResultSetException, PersistableException;
+
+	/**
+	 * Adds a new column to a Result Set. The Result set must be empty for this
+	 * to be performed.
+	 * 
+	 * @param column
+	 *            New Column
+	 * @throws ResultSetException
+	 *             If a ResultSetException occurs
+	 */
+	void appendColumn(Column column) throws ResultSetException;
+
 }

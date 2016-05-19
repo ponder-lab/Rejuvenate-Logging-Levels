@@ -91,7 +91,6 @@ public class FileResultSet extends ResultSetImpl implements Persistable {
 				// If it exists then refresh the data and set the states
 				dataReadFC = FileChannel
 						.open(dataFile, StandardOpenOption.READ);
-
 				refresh();
 			} else {
 				// If both files do not exist then create the file
@@ -100,6 +99,7 @@ public class FileResultSet extends ResultSetImpl implements Persistable {
 				Files.createFile(dataFile);
 				dataReadFC = FileChannel
 						.open(dataFile, StandardOpenOption.READ);
+				
 			}
 		} catch (IOException e) {
 			if (dataReadFC != null) {
@@ -124,6 +124,7 @@ public class FileResultSet extends ResultSetImpl implements Persistable {
 	 * @throws PersistableException
 	 *             If a PersistableException occurs
 	 */
+	@Override
 	public void appendRow() throws ResultSetException, PersistableException {
 		if (isClosed()) {
 			throw new ResultSetException("ResultSet is closed");
@@ -152,6 +153,7 @@ public class FileResultSet extends ResultSetImpl implements Persistable {
 		this.size = size;
 	}
 
+	@Override
 	public long getSize() throws ResultSetException {
 		if (isClosed()) {
 			throw new ResultSetException("ResultSet is closed");
@@ -159,11 +161,12 @@ public class FileResultSet extends ResultSetImpl implements Persistable {
 		return size;
 	}
 
+	@Override
 	public boolean absolute(long newRow) throws ResultSetException {
 		if (isClosed()) {
 			throw new ResultSetException("ResultSet is closed");
 		}
-		if ((newRow > getSize() - 1) || (newRow < 0)) {
+		if ((newRow != 0) && ((newRow > getSize() - 1) || (newRow < 0))) {
 			throw new RowSetExeception("Row is not in ResultSet");
 		}
 		// Is the row already loaded into pending?
@@ -198,7 +201,7 @@ public class FileResultSet extends ResultSetImpl implements Persistable {
 			throw new ResultSetException("Unable to read the result set", e);
 		}
 	}
-
+	@Override
 	public void afterLast() throws ResultSetException {
 		if (isClosed()) {
 			throw new ResultSetException("ResultSet is closed");
@@ -206,7 +209,7 @@ public class FileResultSet extends ResultSetImpl implements Persistable {
 		this.setRowPosition(size);
 
 	}
-
+	@Override
 	public void beforeFirst() throws ResultSetException {
 		if (isClosed()) {
 			throw new ResultSetException("ResultSet is closed");
@@ -215,21 +218,21 @@ public class FileResultSet extends ResultSetImpl implements Persistable {
 		this.currentRow = null;
 
 	}
-
+	@Override
 	public boolean first() throws ResultSetException {
 		if (isClosed()) {
 			throw new ResultSetException("ResultSet is closed");
 		}
 		return absolute(0);
 	}
-
+	@Override
 	public boolean last() throws ResultSetException {
 		if (isClosed()) {
 			throw new ResultSetException("ResultSet is closed");
 		}
 		return absolute(this.size - 1);
 	}
-
+	@Override
 	public boolean next() throws ResultSetException {
 		if (isClosed()) {
 			throw new ResultSetException("ResultSet is closed");
@@ -241,7 +244,7 @@ public class FileResultSet extends ResultSetImpl implements Persistable {
 			return false;
 		}
 	}
-
+	@Override
 	public boolean relative(long rows) throws ResultSetException {
 		if (isClosed()) {
 			throw new ResultSetException("ResultSet is closed");
@@ -252,7 +255,7 @@ public class FileResultSet extends ResultSetImpl implements Persistable {
 			return false;
 		}
 	}
-
+	@Override
 	public boolean previous() throws ResultSetException {
 		if (isClosed()) {
 			throw new ResultSetException("ResultSet is closed");
@@ -260,7 +263,7 @@ public class FileResultSet extends ResultSetImpl implements Persistable {
 		relative(-1);
 		return false;
 	}
-
+	@Override
 	public long getRow() throws ResultSetException {
 		if (isClosed()) {
 			throw new ResultSetException("ResultSet is closed");
@@ -619,6 +622,7 @@ public class FileResultSet extends ResultSetImpl implements Persistable {
 		// Loop through columns and write the serialized data to file with
 		// delimiter between.
 		for (int columnIndex = 0; columnIndex < this.getColumnSize(); columnIndex++) {
+			
 			byte[] outBytes = this.getColumn(columnIndex).getDataType()
 					.toBytes(row.getColumn(columnIndex));
 
@@ -900,7 +904,6 @@ public class FileResultSet extends ResultSetImpl implements Persistable {
 				}
 			}
 		} catch (ResultSetException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 

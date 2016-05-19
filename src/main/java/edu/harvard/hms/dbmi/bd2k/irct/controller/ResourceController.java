@@ -155,7 +155,7 @@ public class ResourceController {
 	 * @return Matching Resources
 	 */
 	public List<Resource> search(Map<String, List<String>> searchParams) {
-		// TODO Auto-generated method stub
+		// TODO Implement or remove search for parameters
 		return null;
 	}
 

@@ -93,6 +93,8 @@ public class ProcessType implements Serializable {
 	}
 
 	/**
+	 * Returns the id of the process type
+	 * 
 	 * @return the id
 	 */
 	public long getId() {
@@ -100,6 +102,8 @@ public class ProcessType implements Serializable {
 	}
 
 	/**
+	 * Sets the id of the process type
+	 * 
 	 * @param id the id to set
 	 */
 	public void setId(long id) {
@@ -107,6 +111,8 @@ public class ProcessType implements Serializable {
 	}
 
 	/**
+	 * Returns the name of the process type
+	 * 
 	 * @return the name
 	 */
 	public String getName() {
@@ -114,6 +120,8 @@ public class ProcessType implements Serializable {
 	}
 
 	/**
+	 * Sets the name of the process type
+	 * 
 	 * @param name the name to set
 	 */
 	public void setName(String name) {
@@ -121,6 +129,8 @@ public class ProcessType implements Serializable {
 	}
 
 	/**
+	 * Returns the display name of the process type
+	 * 
 	 * @return the displayName
 	 */
 	public String getDisplayName() {
@@ -128,6 +138,8 @@ public class ProcessType implements Serializable {
 	}
 
 	/**
+	 * Sets the display name of the process type
+	 * 
 	 * @param displayName the displayName to set
 	 */
 	public void setDisplayName(String displayName) {
@@ -135,6 +147,8 @@ public class ProcessType implements Serializable {
 	}
 
 	/**
+	 * Returns a description of the process type
+	 * 
 	 * @return the description
 	 */
 	public String getDescription() {
@@ -142,6 +156,8 @@ public class ProcessType implements Serializable {
 	}
 
 	/**
+	 * Sets a description of the process type
+	 * 
 	 * @param description the description to set
 	 */
 	public void setDescription(String description) {
@@ -149,6 +165,8 @@ public class ProcessType implements Serializable {
 	}
 
 	/**
+	 * Returns a list of fields for the process type
+	 * 
 	 * @return the fields
 	 */
 	public List<Field> getFields() {
@@ -156,6 +174,8 @@ public class ProcessType implements Serializable {
 	}
 
 	/**
+	 * Sets a list of fields for the process type
+	 * 
 	 * @param fields the fields to set
 	 */
 	public void setFields(List<Field> fields) {
@@ -163,6 +183,8 @@ public class ProcessType implements Serializable {
 	}
 
 	/**
+	 * Returns a list of fields that can be returned by the process type
+	 * 
 	 * @return the returns
 	 */
 	public List<Field> getReturns() {
@@ -170,6 +192,7 @@ public class ProcessType implements Serializable {
 	}
 
 	/**
+	 * Sets a list of fields that can be returned by the process type
 	 * @param returns the returns to set
 	 */
 	public void setReturns(List<Field> returns) {

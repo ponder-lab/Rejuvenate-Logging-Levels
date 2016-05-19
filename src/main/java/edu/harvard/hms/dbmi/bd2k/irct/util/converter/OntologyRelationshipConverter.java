@@ -1,9 +1,18 @@
 package edu.harvard.hms.dbmi.bd2k.irct.util.converter;
 
 import javax.persistence.AttributeConverter;
+import javax.persistence.Converter;
 
 import edu.harvard.hms.dbmi.bd2k.irct.model.ontology.OntologyRelationship;
 
+/**
+ * Converts a OntologyRelationship to a String representation of the class to allow for
+ * storage inside a Relational Database
+ * 
+ * @author Jeremy R. Easton-Marks
+ *
+ */
+@Converter
 public class OntologyRelationshipConverter implements AttributeConverter<OntologyRelationship, String> {
 
 	@Override
@@ -21,7 +30,7 @@ public class OntologyRelationshipConverter implements AttributeConverter<Ontolog
 			try {
 				Class enumClass = Class.forName(split[0]);
 				if(enumClass.isEnum()) {
-					return Enum.valueOf(enumClass, split[1]);
+					return (OntologyRelationship) Enum.valueOf(enumClass, split[1]);
 				}
 			} catch (ClassNotFoundException e) {
 				e.printStackTrace();

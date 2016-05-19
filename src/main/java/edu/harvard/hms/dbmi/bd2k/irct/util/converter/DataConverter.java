@@ -9,7 +9,7 @@ import javax.persistence.Converter;
 import edu.harvard.hms.dbmi.bd2k.irct.model.result.Data;
 
 /**
- * Converts a ResultSet to a String representation of the class to allow for
+ * Converts a Data to a String representation of the class to allow for
  * storage inside a Relational Database
  * 
  * @author Jeremy R. Easton-Marks

@@ -5,7 +5,9 @@ package edu.harvard.hms.dbmi.bd2k.irct.dataconverter;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.logging.Logger;
 
+import javax.inject.Inject;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.StreamingOutput;
 
@@ -22,8 +24,17 @@ import edu.harvard.hms.dbmi.bd2k.irct.model.result.exception.PersistableExceptio
 import edu.harvard.hms.dbmi.bd2k.irct.model.result.exception.ResultSetException;
 import edu.harvard.hms.dbmi.bd2k.irct.model.result.tabular.ResultSet;
 
+/**
+ * A data converter that returns a XSLX Stream
+ * 
+ * @author Jeremy R. Easton-Marks
+ *
+ */
 public class XSLXTabularDataConverter implements ResultDataConverter {
 
+	@Inject
+	Logger log;
+	
 	@Override
 	public ResultDataType getResultDataType() {
 		return ResultDataType.TABULAR;
@@ -77,8 +88,11 @@ public class XSLXTabularDataConverter implements ResultDataConverter {
 					while (rs.next()) {
 						Row row = sh.createRow(rowNum);
 						for (int i = 0; i < rs.getColumnSize(); i++) {
+							String value = rs.getString(i);
 							Cell cell = row.createCell(i);
-							cell.setCellValue(rs.getString(i));
+							if(value != null) {
+								cell.setCellValue(rs.getString(i));
+							}
 						}
 						rowNum++;
 					}
@@ -86,8 +100,7 @@ public class XSLXTabularDataConverter implements ResultDataConverter {
 					wb.close();
 					
 				} catch (ResultSetException | PersistableException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+					log.info("Error creating XSLX Stream: " + e.getMessage());
 				}
 				outputStream.close();
 			}

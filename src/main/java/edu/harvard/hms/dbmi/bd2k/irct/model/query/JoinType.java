@@ -1,3 +1,6 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 package edu.harvard.hms.dbmi.bd2k.irct.model.query;
 
 import java.io.Serializable;
@@ -77,6 +80,8 @@ public class JoinType implements Serializable {
 	}
 
 	/**
+	 * Returns the id of the join type
+	 * 
 	 * @return the id
 	 */
 	public long getId() {
@@ -84,6 +89,8 @@ public class JoinType implements Serializable {
 	}
 
 	/**
+	 * Sets the id of the join type
+	 * 
 	 * @param id the id to set
 	 */
 	public void setId(long id) {
@@ -91,6 +98,8 @@ public class JoinType implements Serializable {
 	}
 
 	/**
+	 * Returns the name of the join type
+	 * 
 	 * @return the name
 	 */
 	public String getName() {
@@ -98,6 +107,8 @@ public class JoinType implements Serializable {
 	}
 
 	/**
+	 * Sets the name of the join type
+	 * 
 	 * @param name the name to set
 	 */
 	public void setName(String name) {
@@ -105,6 +116,7 @@ public class JoinType implements Serializable {
 	}
 
 	/**
+	 * Returns the display name of the join type
 	 * @return the displayName
 	 */
 	public String getDisplayName() {
@@ -112,6 +124,8 @@ public class JoinType implements Serializable {
 	}
 
 	/**
+	 * Sets the display name of the join type
+	 * 
 	 * @param displayName the displayName to set
 	 */
 	public void setDisplayName(String displayName) {
@@ -119,6 +133,8 @@ public class JoinType implements Serializable {
 	}
 
 	/**
+	 * Returns the description of the join type
+	 * 
 	 * @return the description
 	 */
 	public String getDescription() {
@@ -126,6 +142,8 @@ public class JoinType implements Serializable {
 	}
 
 	/**
+	 * Sets a description of the join type
+	 * 
 	 * @param description the description to set
 	 */
 	public void setDescription(String description) {
@@ -133,6 +151,8 @@ public class JoinType implements Serializable {
 	}
 
 	/**
+	 * Returns a list of fields for the join type
+	 * 
 	 * @return the fields
 	 */
 	public List<Field> getFields() {
@@ -140,6 +160,8 @@ public class JoinType implements Serializable {
 	}
 
 	/**
+	 * Sets a list of fields for the join type
+	 * 
 	 * @param fields the fields to set
 	 */
 	public void setFields(List<Field> fields) {
@@ -147,6 +169,8 @@ public class JoinType implements Serializable {
 	}
 
 	/**
+	 * Returns a list of join types that this join can be performed on. An empty list means all data types.
+	 * 
 	 * @return the dataTypes
 	 */
 	public List<DataType> getDataTypes() {
@@ -154,6 +178,7 @@ public class JoinType implements Serializable {
 	}
 
 	/**
+	 * Sets a list of join types that this join can be performed on. An empty list means all data types.
 	 * @param dataTypes the dataTypes to set
 	 */
 	public void setDataTypes(List<DataType> dataTypes) {

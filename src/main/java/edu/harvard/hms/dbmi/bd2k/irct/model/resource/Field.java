@@ -22,7 +22,7 @@ import edu.harvard.hms.dbmi.bd2k.irct.util.converter.DataTypeConverter;
 import edu.harvard.hms.dbmi.bd2k.irct.util.converter.OntologyRelationshipConverter;
 
 /**
- * A field
+ * A representation of a field that restricts what can be put in to it.
  * 
  * @author Jeremy R. Easton-Marks
  *
@@ -107,6 +107,8 @@ public class Field implements Serializable {
 	}
 
 	/**
+	 * Returns the field id
+	 * 
 	 * @return the id
 	 */
 	public long getId() {
@@ -114,6 +116,8 @@ public class Field implements Serializable {
 	}
 
 	/**
+	 * Sets the field id
+	 * 
 	 * @param id
 	 *            the id to set
 	 */
@@ -122,6 +126,8 @@ public class Field implements Serializable {
 	}
 
 	/**
+	 * Returns the name of the field
+	 * 
 	 * @return the name
 	 */
 	public String getName() {
@@ -129,6 +135,8 @@ public class Field implements Serializable {
 	}
 
 	/**
+	 * Sets the name of the field
+	 * 
 	 * @param name
 	 *            the name to set
 	 */
@@ -137,6 +145,8 @@ public class Field implements Serializable {
 	}
 
 	/**
+	 * Returns the path of the field
+	 * 
 	 * @return the path
 	 */
 	public String getPath() {
@@ -144,6 +154,8 @@ public class Field implements Serializable {
 	}
 
 	/**
+	 * Sets the path of the field
+	 * 
 	 * @param path
 	 *            the path to set
 	 */
@@ -152,6 +164,8 @@ public class Field implements Serializable {
 	}
 
 	/**
+	 * Returns a description of the field
+	 * 
 	 * @return the description
 	 */
 	public String getDescription() {
@@ -159,6 +173,8 @@ public class Field implements Serializable {
 	}
 
 	/**
+	 * Sets a description of the field
+	 * 
 	 * @param description
 	 *            the description to set
 	 */
@@ -167,6 +183,8 @@ public class Field implements Serializable {
 	}
 
 	/**
+	 * Returns a list of data types that are supported by the field. An empty list means all data types.
+	 * 
 	 * @return the dataTypes
 	 */
 	public List<DataType> getDataTypes() {
@@ -174,6 +192,8 @@ public class Field implements Serializable {
 	}
 
 	/**
+	 * Sets a list of data types that are supported by the field. An empty list means all data types.
+	 * 
 	 * @param dataTypes
 	 *            the dataTypes to set
 	 */
@@ -182,6 +202,8 @@ public class Field implements Serializable {
 	}
 
 	/**
+	 * Returns a list of permitted values for the field. An empty list mean any value can be set.
+	 * 
 	 * @return the permittedValues
 	 */
 	public List<String> getPermittedValues() {
@@ -189,6 +211,8 @@ public class Field implements Serializable {
 	}
 
 	/**
+	 * Sets a list of permitted values for the field. An empty list mean any value can be set.
+	 * 
 	 * @param permittedValues
 	 *            the permittedValues to set
 	 */
@@ -197,6 +221,8 @@ public class Field implements Serializable {
 	}
 
 	/**
+	 * Returns a relationship that this field must have with the predicates entity. This is optional.
+	 * 
 	 * @return the relationship
 	 */
 	public OntologyRelationship getRelationships() {
@@ -204,6 +230,8 @@ public class Field implements Serializable {
 	}
 
 	/**
+	 * Sets a relationship that this field must have with the predicates entity. This is optional.
+	 * 
 	 * @param relationship
 	 *            the relationship to set
 	 */
@@ -212,6 +240,8 @@ public class Field implements Serializable {
 	}
 
 	/**
+	 * Returns if the field required by the operation
+	 * 
 	 * @return the required
 	 */
 	public boolean isRequired() {
@@ -219,6 +249,7 @@ public class Field implements Serializable {
 	}
 
 	/**
+	 * Sets if the field is required by the operation
 	 * @param required
 	 *            the required to set
 	 */

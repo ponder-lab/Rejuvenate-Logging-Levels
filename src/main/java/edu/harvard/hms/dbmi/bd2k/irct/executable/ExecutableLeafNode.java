@@ -8,12 +8,19 @@ import edu.harvard.hms.dbmi.bd2k.irct.exception.ResourceInterfaceException;
 import edu.harvard.hms.dbmi.bd2k.irct.model.result.Result;
 import edu.harvard.hms.dbmi.bd2k.irct.model.security.SecureSession;
 
+/**
+ * A leaf node in an execution tree that can be executed. It does not have any
+ * children
+ * 
+ * @author Jeremy R. Easton-Marks
+ *
+ */
 public class ExecutableLeafNode implements Executable {
 
 	private SecureSession session;
 	private Action action;
 	private ExecutableStatus state;
-	
+
 	@Override
 	public void setup(SecureSession secureSession) {
 		this.session = secureSession;
@@ -37,13 +44,23 @@ public class ExecutableLeafNode implements Executable {
 		return this.action.getResults(this.session);
 	}
 
+	/**
+	 * Returns the action that is to be executed
+	 * 
+	 * @return Action
+	 */
 	public Action getAction() {
 		return action;
 	}
 
+	/**
+	 * Sets the action that is to be executed
+	 * 
+	 * @param action
+	 *            Action
+	 */
 	public void setAction(Action action) {
 		this.action = action;
 	}
-	
-	
+
 }
