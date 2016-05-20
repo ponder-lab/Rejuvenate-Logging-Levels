@@ -6,10 +6,11 @@
 	<name>INTER-RESOURCE COMMUNICATION TOOL : API</name>
 	<description></description>
 	<dependencies>
+		<!-- APACHE HTTP CLIENT -->
 		<dependency>
-			<groupId>edu.harvard.hms.dbmi.bd2k.irct</groupId>
-			<artifactId>IRCT-RI</artifactId>
-			<version>1.0</version>
+			<groupId>org.apache.httpcomponents</groupId>
+			<artifactId>httpclient</artifactId>
+			<version>4.5</version>
 		</dependency>
 		<dependency>
 			<groupId>javax</groupId>
