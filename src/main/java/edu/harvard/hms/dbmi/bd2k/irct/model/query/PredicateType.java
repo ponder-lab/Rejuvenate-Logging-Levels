@@ -10,22 +10,17 @@ import javax.json.Json;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
-import javax.persistence.CollectionTable;
-import javax.persistence.Column;
 import javax.persistence.Convert;
 import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
-import javax.persistence.JoinColumn;
 import javax.persistence.OneToMany;
 
-import edu.harvard.hms.dbmi.bd2k.irct.model.ontology.PrimitiveDataType;
-import edu.harvard.hms.dbmi.bd2k.irct.model.query.predicate.PredicateImplementationInterface;
-import edu.harvard.hms.dbmi.bd2k.irct.util.converter.PredicateImplementationConverter;
+import edu.harvard.hms.dbmi.bd2k.irct.model.ontology.DataType;
+import edu.harvard.hms.dbmi.bd2k.irct.model.resource.Field;
+import edu.harvard.hms.dbmi.bd2k.irct.util.converter.DataTypeConverter;
 
 /**
  * The predicate type class provides a way for the IRCT application to keep
@@ -45,36 +40,19 @@ public class PredicateType implements Serializable {
 	private String name;
 	private String displayName;
 	private String description;
-	
-	@OneToMany(fetch=FetchType.EAGER)
-	private List<PredicateTypeValue> values;
-
-	@ElementCollection(targetClass = PredicateTypeValueDataType.class)
-	@CollectionTable(name = "PredicateType_SupportedDataType", joinColumns = @JoinColumn(name = "id"))
-	@Column(name = "supportedDataType", nullable = false)
-	@Enumerated(EnumType.STRING)
-	private List<PredicateTypeValueDataType> supportedDataTypes;
-	
 	private boolean defaultPredicate;
 	
-	@Convert(converter = PredicateImplementationConverter.class)
-	private PredicateImplementationInterface implementingInterface;
+	@OneToMany(fetch=FetchType.EAGER)
+	private List<Field> fields;
+
+	@ElementCollection
+	@Convert(converter = DataTypeConverter.class)
+	private List<DataType> dataTypes;
 	
-	/**
-	 * Returns if the predicate supports a given Data Type
-	 * 
-	 * @param dataType
-	 *            The Data Type
-	 * @return If the data type is supported
-	 */
-	public boolean supportsDataType(PrimitiveDataType dataType) {
-		if (getSupportedDataTypes().isEmpty()
-				|| getSupportedDataTypes().contains(dataType)) {
-			return true;
-		}
-		return false;
-	}
+	@ElementCollection
+	private List<String> paths;
 	
+
 	/**
 	 * Returns a JSONObject representation of the object. This returns only the
 	 * attributes associated with this object and not their representation.
@@ -101,38 +79,62 @@ public class PredicateType implements Serializable {
 		
 		JsonObjectBuilder predicateTypeJSON = Json.createObjectBuilder();
 		
-		predicateTypeJSON.add("name", getName());
+		predicateTypeJSON.add("predicateName", getName());
 		predicateTypeJSON.add("displayName", getDisplayName());
+		predicateTypeJSON.add("description", getDescription());
 		predicateTypeJSON.add("default", isDefaultPredicate());
 		
-		if(this.getImplementingInterface() != null) {
-			predicateTypeJSON.add("implementation", this.getImplementingInterface().toJson(depth));
+		JsonArrayBuilder valuesType = Json.createArrayBuilder();
+		if(this.fields != null) {
+			for(Field value : this.getFields()) {
+				valuesType.add(value.toJson());
+			}
 		}
+		predicateTypeJSON.add("fields", valuesType.build());
 		
 		JsonArrayBuilder dataTypes = Json.createArrayBuilder();
-		if(this.supportedDataTypes != null) {
-			for(PredicateTypeValueDataType dt : supportedDataTypes) {
+		if(this.dataTypes != null) {
+			for(DataType dt : this.dataTypes) {
 				dataTypes.add(dt.toString());
 			}
 		}
 		predicateTypeJSON.add("dataTypes", dataTypes.build());
 		
 		
-		JsonArrayBuilder valuesType = Json.createArrayBuilder();
-		if(this.getValues() != null) {
-			for(PredicateTypeValue value : this.getValues()) {
-				valuesType.add(value.toJson());
+		JsonArrayBuilder pathArray = Json.createArrayBuilder();
+		if(this.paths != null) {
+			for(String path : paths) {
+				pathArray.add(path);
 			}
 		}
-		predicateTypeJSON.add("fields", valuesType.build());
+		predicateTypeJSON.add("paths", pathArray.build());
+		
 		
 		return predicateTypeJSON.build();
 	}
 
 	/**
+	 * Returns the predicates id
+	 * 
+	 * @return the id
+	 */
+	public long getId() {
+		return id;
+	}
+
+	/**
+	 * Sets the predicate id
+	 *  
+	 * @param id the id to set
+	 */
+	public void setId(long id) {
+		this.id = id;
+	}
+
+	/**
 	 * Returns the name of the predicate
 	 * 
-	 * @return The predicate name
+	 * @return the name
 	 */
 	public String getName() {
 		return name;
@@ -141,16 +143,15 @@ public class PredicateType implements Serializable {
 	/**
 	 * Sets the name of the predicate
 	 * 
-	 * @param name
-	 *            The predicate name
+	 * @param name the name to set
 	 */
 	public void setName(String name) {
 		this.name = name;
 	}
 
-	
-
 	/**
+	 * Returns the display name of the predicate
+	 * 
 	 * @return the displayName
 	 */
 	public String getDisplayName() {
@@ -158,6 +159,8 @@ public class PredicateType implements Serializable {
 	}
 
 	/**
+	 * Sets the display name of the predicate
+	 * 
 	 * @param displayName the displayName to set
 	 */
 	public void setDisplayName(String displayName) {
@@ -165,9 +168,9 @@ public class PredicateType implements Serializable {
 	}
 
 	/**
-	 * Returns the description of the predicate
+	 * Returns a description of the predicate
 	 * 
-	 * @return The predicate description
+	 * @return the description
 	 */
 	public String getDescription() {
 		return description;
@@ -176,78 +179,80 @@ public class PredicateType implements Serializable {
 	/**
 	 * Sets the description of the predicate
 	 * 
-	 * @param description
-	 *            The predicate description
+	 * @param description the description to set
 	 */
 	public void setDescription(String description) {
 		this.description = description;
 	}
 
-	
 	/**
-	 * @return the values
-	 */
-	public List<PredicateTypeValue> getValues() {
-		return values;
-	}
-
-	/**
-	 * @param values the values to set
-	 */
-	public void setValues(List<PredicateTypeValue> values) {
-		this.values = values;
-	}
-
-	/**
-	 * Returns a list of supported data types
+	 * Returns if this should be the default predicate
 	 * 
-	 * @return Supported data types
-	 */
-	public List<PredicateTypeValueDataType> getSupportedDataTypes() {
-		return supportedDataTypes;
-	}
-
-	/**
-	 * Sets the list of supported data types
-	 * 
-	 * @param supportedDataTypes Supported data types
-	 */
-	public void setSupportedDataTypes(List<PredicateTypeValueDataType> supportedDataTypes) {
-		this.supportedDataTypes = supportedDataTypes;
-	}
-
-	/**
-	 * Returns a list of supported predicate types
-	 * 
-	 * @return Supported predicate types
-	 */
-	public PredicateImplementationInterface getImplementingInterface() {
-		return implementingInterface;
-	}
-
-	/**
-	 * Sets the list of supported predicates types 
-	 * @param implementingInterface Supported predicate types
-	 */
-	public void setImplementingInterface(PredicateImplementationInterface implementingInterface) {
-		this.implementingInterface = implementingInterface;
-	}
-
-	/**
-	 * Returns if the predicate that is default for that resource
-	 * 
-	 * @return Default predicate
+	 * @return the defaultPredicate
 	 */
 	public boolean isDefaultPredicate() {
 		return defaultPredicate;
 	}
 
 	/**
-	 * Sets the predicate that is the default for that resource
+	 * Sets if this should be the default predicate
 	 * 
-	 * @param defaultPredicate Default predicate
+	 * @param defaultPredicate the defaultPredicate to set
 	 */
 	public void setDefaultPredicate(boolean defaultPredicate) {
 		this.defaultPredicate = defaultPredicate;
+	}
+
+	/**
+	 * Returns a list of fields associated with the predicate
+	 * 
+	 * @return the fields
+	 */
+	public List<Field> getFields() {
+		return fields;
+	}
+
+	/**
+	 * Sets the list of fields associated with the predicate
+	 * 
+	 * @param fields the fields to set
+	 */
+	public void setFields(List<Field> fields) {
+		this.fields = fields;
+	}
+
+	/**
+	 * Returns a list of data types that this predicate can be run on. An empty list means all data types.
+	 * 
+	 * @return the dataTypes
+	 */
+	public List<DataType> getDataTypes() {
+		return dataTypes;
+	}
+
+	/**
+	 * Sets the list of data type that this predicate can be run on. An empty list means all data types.
+	 * 
+	 * @param dataTypes the dataTypes to set
+	 */
+	public void setDataTypes(List<DataType> dataTypes) {
+		this.dataTypes = dataTypes;
+	}
+
+	/**
+	 * Returns a list of paths that restrict what fields this predicate can be run on. An empty list means all paths.
+	 * @return the paths
+	 */
+	public List<String> getPaths() {
+		return paths;
+	}
+
+	/**
+	 * Sets a list of paths that restrict what fields this predicate can be run on. An empty list means all paths.
+	 * 
+	 * @param paths the paths to set
+	 */
+	public void setPaths(List<String> paths) {
+		this.paths = paths;
 	}
 }

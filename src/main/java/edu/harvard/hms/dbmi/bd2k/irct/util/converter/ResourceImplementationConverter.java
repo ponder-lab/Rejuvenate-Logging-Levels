@@ -6,7 +6,7 @@ package edu.harvard.hms.dbmi.bd2k.irct.util.converter;
 import javax.persistence.AttributeConverter;
 import javax.persistence.Converter;
 
-import edu.harvard.hms.dbmi.bd2k.irct.model.resource.ResourceImplementationInterface;
+import edu.harvard.hms.dbmi.bd2k.irct.model.resource.implementation.ResourceImplementationInterface;
 
 /**
  * Converts a Resource Implementation to a String representation of the class to
@@ -21,9 +21,9 @@ public class ResourceImplementationConverter implements
 
 	@Override
 	public String convertToDatabaseColumn(
-			ResourceImplementationInterface joinAction) {
-		if (joinAction != null) {
-			return joinAction.getClass().getName();
+			ResourceImplementationInterface resourceImplementation) {
+		if (resourceImplementation != null) {
+			return resourceImplementation.getClass().getName().split("\\$")[0];
 		}
 		return null;
 	}
@@ -32,14 +32,13 @@ public class ResourceImplementationConverter implements
 	public ResourceImplementationInterface convertToEntityAttribute(
 			String className) {
 		if (className != null) {
-			ClassLoader cl = ResourceImplementationConverter.class.getClassLoader();
 			try {
-				return (ResourceImplementationInterface) cl
-						.loadClass(className).newInstance();
-			} catch (Exception e) {
+				Class<?> resourceInterfaceClass = Class.forName(className);
+				return (ResourceImplementationInterface) resourceInterfaceClass.newInstance();
+			} catch (ClassNotFoundException | InstantiationException | IllegalAccessException e) {
 				e.printStackTrace();
 			}
-
+			
 		}
 		return null;
 	}

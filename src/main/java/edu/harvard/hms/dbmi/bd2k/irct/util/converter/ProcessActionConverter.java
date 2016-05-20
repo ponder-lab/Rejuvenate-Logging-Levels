@@ -6,7 +6,7 @@ package edu.harvard.hms.dbmi.bd2k.irct.util.converter;
 import javax.persistence.AttributeConverter;
 import javax.persistence.Converter;
 
-import edu.harvard.hms.dbmi.bd2k.irct.action.process.ProcessAction;
+import edu.harvard.hms.dbmi.bd2k.irct.action.ProcessAction;
 
 /**
  * Converts a ProcessAction to a String representation of the class to allow for

@@ -4,11 +4,17 @@
 package edu.harvard.hms.dbmi.bd2k.irct.model.result;
 
 /**
- * An enumeration of possible statuses that a result set can be
+ * An enum representing all the different states a result can be in.
+ * 
+ * CREATED - The result has been created but not run
+ * RUNNING - The result is currently running but has not completed
+ * COMPLETE - The result is ready
+ * AVAILABLE - The result is available to the user
+ * ERROR - An error occurred
  * 
  * @author Jeremy R. Easton-Marks
  *
  */
 public enum ResultStatus {
-	Running, Available, Expired, Error;
+	CREATED, RUNNING, AVAILABLE, COMPLETE, ERROR;
 }

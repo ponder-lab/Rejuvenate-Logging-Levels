@@ -18,18 +18,19 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.transaction.UserTransaction;
 
-import edu.harvard.hms.dbmi.bd2k.irct.action.ExecutionPlan;
-import edu.harvard.hms.dbmi.bd2k.irct.action.ProcessExecutable;
-import edu.harvard.hms.dbmi.bd2k.irct.action.QueryExecutable;
-import edu.harvard.hms.dbmi.bd2k.irct.action.process.ExecuteProcess;
-import edu.harvard.hms.dbmi.bd2k.irct.action.query.ExecuteQuery;
+import edu.harvard.hms.dbmi.bd2k.irct.action.JoinAction;
+import edu.harvard.hms.dbmi.bd2k.irct.action.ProcessAction;
+import edu.harvard.hms.dbmi.bd2k.irct.action.QueryAction;
+import edu.harvard.hms.dbmi.bd2k.irct.executable.ExecutableLeafNode;
+import edu.harvard.hms.dbmi.bd2k.irct.executable.ExecutionPlan;
+import edu.harvard.hms.dbmi.bd2k.irct.model.join.IRCTJoin;
 import edu.harvard.hms.dbmi.bd2k.irct.model.process.IRCTProcess;
 import edu.harvard.hms.dbmi.bd2k.irct.model.query.Query;
 import edu.harvard.hms.dbmi.bd2k.irct.model.result.Persistable;
 import edu.harvard.hms.dbmi.bd2k.irct.model.result.Result;
-import edu.harvard.hms.dbmi.bd2k.irct.model.result.ResultSet;
 import edu.harvard.hms.dbmi.bd2k.irct.model.result.ResultStatus;
 import edu.harvard.hms.dbmi.bd2k.irct.model.result.exception.PersistableException;
+import edu.harvard.hms.dbmi.bd2k.irct.model.security.SecureSession;
 
 /**
  * The execution controller is a stateless controller that manages the
@@ -47,40 +48,43 @@ public class ExecutionController {
 	Logger log;
 
 	@PersistenceContext
-    EntityManager entityManager;
-	
+	EntityManager entityManager;
+
 	@Resource
-    private ManagedExecutorService mes;
-	
+	private ManagedExecutorService mes;
+
 	/**
 	 * Runs the process
 	 * 
-	 * @param process Process to run
+	 * @param process
+	 *            Process to run
+	 * @param secureSession Session to run it in
 	 * @return result id
-	 * @throws PersistableException Persistable exception occurred 
+	 * @throws PersistableException
+	 *             Persistable exception occurred
 	 */
-	public Long runProcess(IRCTProcess process) throws PersistableException {
-		log.info("Start: " + process.getId());
+	public Long runProcess(IRCTProcess process, SecureSession secureSession)
+			throws PersistableException {
+		log.info("Start Process");
 		Result newResult = new Result();
 		
-//		EntityManager oem = objectEntityManager.createEntityManager();
-//		oem.persist(newResult);
-		
-		newResult.setResultStatus(ResultStatus.Running);
+		if(secureSession != null) {
+			newResult.setUser(secureSession.getUser());
+		}
+
+		newResult.setResultStatus(ResultStatus.RUNNING);
 		entityManager.persist(newResult);
-		
-		ExecuteProcess ep = new ExecuteProcess();
-		ep.setup(process.getResource(), process);
-		
-		ProcessExecutable pe = new ProcessExecutable();
-		pe.setup(ep);
+
+		ProcessAction pa = new ProcessAction();
+		pa.setup(process.getResources().get(0), process);
+
+		ExecutableLeafNode eln = new ExecutableLeafNode();
+		eln.setAction(pa);
 
 		ExecutionPlan exp = new ExecutionPlan();
-		exp.setup(pe);
-		
-		runExecutionPlan(exp, newResult);
+		exp.setup(eln, secureSession);
 
-		log.info("Stop: " + process.getId());
+		runExecutionPlan(exp, newResult);
 
 		return newResult.getId();
 	}
@@ -90,32 +94,67 @@ public class ExecutionController {
 	 * 
 	 * @param query
 	 *            Query
+	 * @param secureSession Session to run it in
 	 * @return Result Id
 	 * @throws PersistableException
 	 *             An error occurred
 	 */
-	public Long runQuery(Query query) throws PersistableException {
-		log.info("Start: " + query.getId());
+	public Long runQuery(Query query, SecureSession secureSession)
+			throws PersistableException {
+		log.info("Starting Query");
 		Result newResult = new Result();
 		
-//		EntityManager oem = objectEntityManager.createEntityManager();
-//		oem.persist(newResult);
-		
-		newResult.setResultStatus(ResultStatus.Running);
+		if(secureSession != null) {
+			newResult.setUser(secureSession.getUser());
+		}
+
+		newResult.setResultStatus(ResultStatus.RUNNING);
 		entityManager.persist(newResult);
 
-		ExecuteQuery eq = new ExecuteQuery();
-		eq.setup(query.getResources().get(0), query);
+		QueryAction qa = new QueryAction();
+		qa.setup(query.getResources().get(0), query);
 
-		QueryExecutable qe = new QueryExecutable();
-		qe.setup(eq);
+		ExecutableLeafNode eln = new ExecutableLeafNode();
+		eln.setAction(qa);
 
-		ExecutionPlan ep = new ExecutionPlan();
-		ep.setup(qe);
+		ExecutionPlan exp = new ExecutionPlan();
+		exp.setup(eln, secureSession);
 
-		runExecutionPlan(ep, newResult);
+		runExecutionPlan(exp, newResult);
 
-		log.info("Stop: " + query.getId());
+		return newResult.getId();
+	}
+
+	/**
+	 * Run a join by creating an execution plan
+	 * 
+	 * @param joinType
+	 *            Join to run
+	 * @param secureSession Session to run it in
+	 * @return Result Id
+	 * @throws PersistableException
+	 *             An error occurred
+	 */
+	public Long runJoin(IRCTJoin joinType, SecureSession secureSession)
+			throws PersistableException {
+		log.info("Starting: " + joinType.getJoinImplementation().getType());
+		Result newResult = new Result();
+		
+		if(secureSession != null) {
+			newResult.setUser(secureSession.getUser());
+		}
+		
+		newResult.setResultStatus(ResultStatus.RUNNING);
+
+		JoinAction ja = new JoinAction();
+		ja.setup(joinType);
+
+		ExecutableLeafNode eln = new ExecutableLeafNode();
+		eln.setAction(ja);
+
+		ExecutionPlan exp = new ExecutionPlan();
+		exp.setup(eln, secureSession);
+		runExecutionPlan(exp, newResult);
 
 		return newResult.getId();
 	}
@@ -123,52 +162,63 @@ public class ExecutionController {
 	/**
 	 * Runs an execution plan
 	 * 
-	 * @param executionPlan Execution Plan
-	 * @param result Result
-	 * @throws PersistableException A persistable exception occurred
+	 * @param executionPlan
+	 *            Execution Plan
+	 * @param result
+	 *            Result
+	 * @throws PersistableException
+	 *             A persistable exception occurred
 	 */
 	@Asynchronous
-	public void runExecutionPlan(final ExecutionPlan executionPlan, final Result result)
-			throws PersistableException {
-		
+	public void runExecutionPlan(final ExecutionPlan executionPlan,
+			final Result result) throws PersistableException {
+
 		Callable<Result> runPlan = new Callable<Result>() {
 			@Override
-            public Result call() throws Exception {
-				result.setRunTime(new Date());
-				executionPlan.run();
-				
-				ResultSet rs = executionPlan.getResults();
-				if(rs != null) {
-					((Persistable) rs).persist("" + result.getId());
-					result.setResultSetLocation("" + result.getId());
-					result.setImplementingResultSet(rs);
-					result.setResultStatus(ResultStatus.Available);
-				} else {
-					result.setResultStatus(ResultStatus.Error);
-				}
-				
-				
-//				EntityManager oem = objectEntityManager.createEntityManager();
-//				oem.persist(result);
-				UserTransaction userTransaction = lookup();
-	            userTransaction.begin();
+			public Result call() {
 				try {
+					result.setStartTime(new Date());
+					executionPlan.run();
+					
+					Result finalResult = executionPlan.getResults();
+					
+					if ((finalResult.getResultStatus() == ResultStatus.COMPLETE) && (finalResult.getData() instanceof Persistable)) {
+						result.setDataType(finalResult.getDataType());
+						result.setData(finalResult.getData());
+						result.setResultSetLocation(finalResult.getResultSetLocation());
+						result.setMessage(finalResult.getMessage());
+						
+						if(((Persistable) result.getData()).isPersisted()) {
+							((Persistable) result.getData()).merge();
+						} else {
+							((Persistable) result.getData()).persist();
+						}
+						result.setResultStatus(ResultStatus.AVAILABLE);
+					} else {
+						result.setResultStatus(ResultStatus.ERROR);
+						result.setMessage(finalResult.getMessage());
+					}
+					result.setEndTime(new Date());
+					UserTransaction userTransaction = lookup();
+					userTransaction.begin();
 					entityManager.merge(result);
-				} catch(Exception e) {
-					e.printStackTrace();
+					userTransaction.commit();
+				} catch (PersistableException e) {
+					result.setResultStatus(ResultStatus.ERROR);
+					result.setMessage(e.getMessage());
+				} catch (Exception e) {
+					log.info(e.getMessage());
+					result.setResultStatus(ResultStatus.ERROR);
 				}
-				userTransaction.commit();
-				
 				return result;
 			}
 		};
-		
+
 		mes.submit(runPlan);
-//		 Future<Result> futureResult = mes.submit(runPlan);		
-		
 	}
+
 	private UserTransaction lookup() throws NamingException {
-        InitialContext ic = new InitialContext();
-        return (UserTransaction)ic.lookup("java:comp/UserTransaction");
-    }
+		InitialContext ic = new InitialContext();
+		return (UserTransaction) ic.lookup("java:comp/UserTransaction");
+	}
 }

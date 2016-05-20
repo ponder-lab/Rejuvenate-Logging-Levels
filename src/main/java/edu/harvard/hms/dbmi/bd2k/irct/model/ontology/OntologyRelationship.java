@@ -17,4 +17,11 @@ public interface OntologyRelationship {
 	 * @return Inverse if it exists
 	 */
 	public OntologyRelationship getInverse();
+	
+	
+	/**
+	 * Returns the name of the given relationship type
+	 * @return Name
+	 */
+	public String getName();
 }

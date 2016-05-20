@@ -16,12 +16,15 @@ import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.ManyToOne;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import javax.persistence.Transient;
 import javax.persistence.SequenceGenerator;
-import edu.harvard.hms.dbmi.bd2k.irct.action.Executable;
-import edu.harvard.hms.dbmi.bd2k.irct.util.converter.ResultSetConverter;
+
+import edu.harvard.hms.dbmi.bd2k.irct.executable.Executable;
+import edu.harvard.hms.dbmi.bd2k.irct.model.security.User;
+import edu.harvard.hms.dbmi.bd2k.irct.util.converter.DataConverter;
 
 /**
  * The result class is created for each execution that is run on the IRCT
@@ -34,22 +37,36 @@ import edu.harvard.hms.dbmi.bd2k.irct.util.converter.ResultSetConverter;
 @Entity
 public class Result {
 	@Id
-	@GeneratedValue(generator="resultSequencer")
-	@SequenceGenerator(name = "resultSequencer", sequenceName="resSeq")
+	@GeneratedValue(generator = "resultSequencer")
+	@SequenceGenerator(name = "resultSequencer", sequenceName = "resSeq")
 	private Long id;
 
 	// TODO: REMOVE TRANSIENT
 	@Transient
 	private Executable executable;
 
+	@ManyToOne
+	private User user;
+
 	@Temporal(TemporalType.TIMESTAMP)
-	private Date runTime;
+	private Date startTime;
+
+	@Temporal(TemporalType.TIMESTAMP)
+	private Date endTime;
+
 	@Enumerated(EnumType.STRING)
 	private ResultStatus resultStatus;
 
-	@Convert(converter = ResultSetConverter.class)
-	private ResultSet implementingResultSet;
+	@Enumerated(EnumType.STRING)
+	private ResultDataType dataType;
+
+	private String resourceActionId;
+
+	@Convert(converter = DataConverter.class)
+	private Data data;
 	private String resultSetLocation;
+
+	private String message;
 
 	/**
 	 * Returns a JSONObject representation of the object. This returns only the
@@ -126,22 +143,60 @@ public class Result {
 	}
 
 	/**
-	 * Returns the time the result was created
+	 * Returns the user
 	 * 
-	 * @return Run time
+	 * @return the user
 	 */
-	public Date getRunTime() {
-		return runTime;
+	public User getUser() {
+		return user;
 	}
 
 	/**
-	 * Sets the time the result was created
+	 * Sets the user
 	 * 
-	 * @param runTime
-	 *            Run time
+	 * @param user
+	 *            the user to set
 	 */
-	public void setRunTime(Date runTime) {
-		this.runTime = runTime;
+	public void setUser(User user) {
+		this.user = user;
+	}
+
+	/**
+	 * Returns the start time
+	 * 
+	 * @return the startTime
+	 */
+	public Date getStartTime() {
+		return startTime;
+	}
+
+	/**
+	 * Sets the start time
+	 * 
+	 * @param startTime
+	 *            the startTime to set
+	 */
+	public void setStartTime(Date startTime) {
+		this.startTime = startTime;
+	}
+
+	/**
+	 * Returns the end time
+	 * 
+	 * @return the endTime
+	 */
+	public Date getEndTime() {
+		return endTime;
+	}
+
+	/**
+	 * Sets the end time
+	 * 
+	 * @param endTime
+	 *            the endTime to set
+	 */
+	public void setEndTime(Date endTime) {
+		this.endTime = endTime;
 	}
 
 	/**
@@ -164,21 +219,57 @@ public class Result {
 	}
 
 	/**
+	 * Returns the type of result the data is
+	 * 
+	 * @return Data Type
+	 */
+	public ResultDataType getDataType() {
+		return dataType;
+	}
+
+	/**
+	 * Sets the type of data the result is
+	 * 
+	 * @param dataType Data Type
+	 */
+	public void setDataType(ResultDataType dataType) {
+		this.dataType = dataType;
+	}
+
+	/**
+	 * Returns the resource action id
+	 * 
+	 * @return Resource action id
+	 */
+	public String getResourceActionId() {
+		return resourceActionId;
+	}
+
+	/**
+	 * Sets the resource action id
+	 * 
+	 * @param resourceActionId Resource action id
+	 */
+	public void setResourceActionId(String resourceActionId) {
+		this.resourceActionId = resourceActionId;
+	}
+
+	/**
 	 * Returns an instantiation of a class that implements the result status
 	 * 
-	 * @return Result Set Object
+	 * @return Data Object
 	 */
-	public ResultSet getImplementingResultSet() {
-		return implementingResultSet;
+	public Data getData() {
+		return data;
 	}
 
 	/**
 	 * Sets the class that is used to implement the result status
 	 * 
-	 * @param implementingResultSet Implementing Result Set
+	 * @param data Data object
 	 */
-	public void setImplementingResultSet(ResultSet implementingResultSet) {
-		this.implementingResultSet = implementingResultSet;
+	public void setData(Data data) {
+		this.data = data;
 	}
 
 	/**
@@ -198,5 +289,22 @@ public class Result {
 	 */
 	public void setResultSetLocation(String resultSetLocation) {
 		this.resultSetLocation = resultSetLocation;
+	}
+
+	/**
+	 * Returns the message associated with the result
+	 * 
+	 * @return Message
+	 */
+	public String getMessage() {
+		return message;
+	}
+
+	/**
+	 * Sets the mesage associated with the result
+	 * @param message Message
+	 */
+	public void setMessage(String message) {
+		this.message = message;
 	}
 }

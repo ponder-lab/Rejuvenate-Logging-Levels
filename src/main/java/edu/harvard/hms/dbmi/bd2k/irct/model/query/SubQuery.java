@@ -4,6 +4,8 @@
 package edu.harvard.hms.dbmi.bd2k.irct.model.query;
 
 import javax.json.JsonObject;
+import javax.persistence.Entity;
+import javax.persistence.ManyToOne;
 
 /**
  * A sub query may be part of a query or another sub query. If it is part of a
@@ -13,7 +15,10 @@ import javax.json.JsonObject;
  * @author Jeremy R. Easton-Marks
  *
  */
+@Entity
 public class SubQuery extends Query {
+	private static final long serialVersionUID = -4698577393371222525L;
+	@ManyToOne
 	private Query parent;
 
 	/**

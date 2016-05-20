@@ -6,7 +6,7 @@ package edu.harvard.hms.dbmi.bd2k.irct.util.converter;
 import javax.persistence.AttributeConverter;
 import javax.persistence.Converter;
 
-import edu.harvard.hms.dbmi.bd2k.irct.action.join.JoinAction;
+import edu.harvard.hms.dbmi.bd2k.irct.join.JoinImplementation;
 
 /**
  * Converts a JoinAction to a String representation of the class to allow for
@@ -17,10 +17,10 @@ import edu.harvard.hms.dbmi.bd2k.irct.action.join.JoinAction;
  */
 @Converter
 public class JoinActionConverter implements
-		AttributeConverter<JoinAction, String> {
+		AttributeConverter<JoinImplementation, String> {
 
 	@Override
-	public String convertToDatabaseColumn(JoinAction joinAction) {
+	public String convertToDatabaseColumn(JoinImplementation joinAction) {
 		if (joinAction != null) {
 			return joinAction.getClass().getName();
 		}
@@ -28,11 +28,11 @@ public class JoinActionConverter implements
 	}
 
 	@Override
-	public JoinAction convertToEntityAttribute(String className) {
+	public JoinImplementation convertToEntityAttribute(String className) {
 		if (className != null) {
 			ClassLoader cl = JoinActionConverter.class.getClassLoader();
 			try {
-				return (JoinAction) cl.loadClass(className).newInstance();
+				return (JoinImplementation) cl.loadClass(className).newInstance();
 			} catch (Exception e) {
 				e.printStackTrace();
 			}

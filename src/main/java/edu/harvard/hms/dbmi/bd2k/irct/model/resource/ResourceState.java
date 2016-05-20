@@ -10,5 +10,5 @@ package edu.harvard.hms.dbmi.bd2k.irct.model.resource;
  *
  */
 public enum ResourceState {
-	CREATED, READY, RUNNING, COMPLETE
+	READY, CREATED, RUNNING, COMPLETE
 }

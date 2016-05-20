@@ -3,83 +3,41 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 package edu.harvard.hms.dbmi.bd2k.irct.model.query;
 
+import java.io.Serializable;
 import java.util.List;
-import java.util.Map;
 
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
-import javax.persistence.CollectionTable;
-import javax.persistence.Column;
 import javax.persistence.Convert;
 import javax.persistence.ElementCollection;
-import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.MapKeyColumn;
+import javax.persistence.OneToMany;
 
-import edu.harvard.hms.dbmi.bd2k.irct.action.join.JoinAction;
-import edu.harvard.hms.dbmi.bd2k.irct.model.ontology.PrimitiveDataType;
-import edu.harvard.hms.dbmi.bd2k.irct.util.JsonUtilities;
-import edu.harvard.hms.dbmi.bd2k.irct.util.converter.JoinActionConverter;
+import edu.harvard.hms.dbmi.bd2k.irct.model.ontology.DataType;
+import edu.harvard.hms.dbmi.bd2k.irct.model.resource.Field;
+import edu.harvard.hms.dbmi.bd2k.irct.util.converter.DataTypeConverter;
 
-/**
- * The join type class provides a way for the IRCT application to keep track of
- * which joins can be used.
- * 
- * @author Jeremy R. Easton-Marks
- *
- */
-@Entity
-public class JoinType {
+public class JoinType implements Serializable {
+	private static final long serialVersionUID = 7650772906469344618L;
 
 	@Id
+	@GeneratedValue
 	private long id;
-
+	
 	private String name;
-	
-	@ElementCollection
-    @MapKeyColumn(name="name")
-    @Column(name="value")
-    @CollectionTable(name="jointype_parameters", joinColumns=@JoinColumn(name="id"))
-	private Map<String, String> parameters;
+	private String displayName;
 	private String description;
-	private boolean requireFields;
-	private boolean requireRelationships;
-
-	@ElementCollection(targetClass = PrimitiveDataType.class)
-	@CollectionTable(name = "JoinType_SupportedDataType", joinColumns = @JoinColumn(name = "id"))
-	@Column(name = "supportedDataType", nullable = false)
-	@Enumerated(EnumType.STRING)
-	private List<PrimitiveDataType> supportedDataTypes;
-
-	@Convert(converter = JoinActionConverter.class)
-	private JoinAction joinImplementation;
 	
-	/**
-	 * Returns if the join type supports a given data type
-	 * 
-	 * @param dataType
-	 *            The data type
-	 * @return If the data type is supported
-	 */
-	public boolean supportsDataType(PrimitiveDataType dataType) {
-		if (supportedDataTypes.isEmpty()
-				|| supportedDataTypes.contains(dataType)) {
-			return true;
-		}
-		return false;
-	}
-	
-	/**
-	 * Sets up the JoinType with the parameters that have been passed to it
-	 */
-	public void setup() {
-		joinImplementation.setup(parameters);
-	}
+	@OneToMany(fetch=FetchType.EAGER)
+	private List<Field> fields;
+
+	@ElementCollection
+	@Convert(converter = DataTypeConverter.class)
+	private List<DataType> dataTypes;
 	
 	/**
 	 * Returns a JSONObject representation of the object. This returns only the
@@ -104,39 +62,27 @@ public class JoinType {
 	 */
 	public JsonObject toJson(int depth) {
 		depth--;
-		
-		JsonObjectBuilder jsonBuilder = Json.createObjectBuilder();
-		jsonBuilder.add("id", this.id);
-		jsonBuilder.add("name", this.name);
-		jsonBuilder.add("description", this.description);
-		jsonBuilder.add("parameters", JsonUtilities.mapToJson(this.parameters));
-		jsonBuilder.add("requireFields", this.requireFields);
-		jsonBuilder.add("reqireRelationships", this.requireRelationships);
 
-		JsonArrayBuilder supportedDataTypesArray = Json.createArrayBuilder();
-		for(PrimitiveDataType dataType : this.supportedDataTypes) {
-			supportedDataTypesArray.add(dataType.toString());
+		JsonObjectBuilder jsonBuilder = Json.createObjectBuilder();
+		jsonBuilder.add("name", this.name);
+		jsonBuilder.add("displayName", this.displayName);
+		jsonBuilder.add("description", this.description);
+
+		JsonArrayBuilder valuesType = Json.createArrayBuilder();
+		if (this.fields != null) {
+			for (Field value : this.fields) {
+				valuesType.add(value.toJson());
+			}
 		}
-		jsonBuilder.add("supportedDataTypes", supportedDataTypesArray.build());
-		
-		//joinImplementation
-		if(depth == 0) {
-			jsonBuilder.add("implementation", this.joinImplementation.getType());
-		} else {
-			jsonBuilder.add("implementation", this.joinImplementation.toJson(depth));
-		}
-		
+		jsonBuilder.add("fields", valuesType.build());
+
 		return jsonBuilder.build();
 	}
-
-	// -------------------------------------------------------------------------
-	// SETTERS AND GETTERS
-	// -------------------------------------------------------------------------
 
 	/**
 	 * Returns the id of the join type
 	 * 
-	 * @return Join type id
+	 * @return the id
 	 */
 	public long getId() {
 		return id;
@@ -145,8 +91,7 @@ public class JoinType {
 	/**
 	 * Sets the id of the join type
 	 * 
-	 * @param id
-	 *            Join type id
+	 * @param id the id to set
 	 */
 	public void setId(long id) {
 		this.id = id;
@@ -155,7 +100,7 @@ public class JoinType {
 	/**
 	 * Returns the name of the join type
 	 * 
-	 * @return The join type
+	 * @return the name
 	 */
 	public String getName() {
 		return name;
@@ -164,125 +109,81 @@ public class JoinType {
 	/**
 	 * Sets the name of the join type
 	 * 
-	 * @param name
-	 *            The join type name
+	 * @param name the name to set
 	 */
 	public void setName(String name) {
 		this.name = name;
 	}
 
 	/**
-	 * Returns the parameters for the join type
-	 * 
-	 * @return Join type parameters
+	 * Returns the display name of the join type
+	 * @return the displayName
 	 */
-	public Map<String, String> getParameters() {
-		return parameters;
+	public String getDisplayName() {
+		return displayName;
 	}
 
 	/**
-	 * Sets the parameters for the join type
+	 * Sets the display name of the join type
 	 * 
-	 * @param parameters
-	 *            Join type parameters
+	 * @param displayName the displayName to set
 	 */
-	public void setParameters(Map<String, String> parameters) {
-		this.parameters = parameters;
+	public void setDisplayName(String displayName) {
+		this.displayName = displayName;
 	}
 
 	/**
 	 * Returns the description of the join type
 	 * 
-	 * @return The join type description
+	 * @return the description
 	 */
 	public String getDescription() {
 		return description;
 	}
 
 	/**
-	 * Sets the description of the join type
+	 * Sets a description of the join type
 	 * 
-	 * @param description
-	 *            The join type description
+	 * @param description the description to set
 	 */
 	public void setDescription(String description) {
 		this.description = description;
 	}
 
 	/**
-	 * Returns if the join type requires a value
+	 * Returns a list of fields for the join type
 	 * 
-	 * @return If the join type requires a value
+	 * @return the fields
 	 */
-	public boolean isRequireFields() {
-		return requireFields;
+	public List<Field> getFields() {
+		return fields;
 	}
 
 	/**
-	 * Sets if the join type requires a value
+	 * Sets a list of fields for the join type
 	 * 
-	 * @param requireFields
-	 *            If the join type requires a value
+	 * @param fields the fields to set
 	 */
-	public void setRequireFields(boolean requireFields) {
-		this.requireFields = requireFields;
+	public void setFields(List<Field> fields) {
+		this.fields = fields;
 	}
 
 	/**
-	 * Returns if the join type requires a relationship
+	 * Returns a list of join types that this join can be performed on. An empty list means all data types.
 	 * 
-	 * @return If the join type requires a relationship
+	 * @return the dataTypes
 	 */
-	public boolean isRequireRelationships() {
-		return requireRelationships;
+	public List<DataType> getDataTypes() {
+		return dataTypes;
 	}
 
 	/**
-	 * Sets if the join type requires a relationship
-	 * 
-	 * @param requireRelationships
-	 *            If the join type requires a relationship
+	 * Sets a list of join types that this join can be performed on. An empty list means all data types.
+	 * @param dataTypes the dataTypes to set
 	 */
-	public void setRequireRelationships(boolean requireRelationships) {
-		this.requireRelationships = requireRelationships;
+	public void setDataTypes(List<DataType> dataTypes) {
+		this.dataTypes = dataTypes;
 	}
-
-	/**
-	 * Returns a list of supported data types
-	 * 
-	 * @return Supported data types
-	 */
-	public List<PrimitiveDataType> getSupportedDataTypes() {
-		return supportedDataTypes;
-	}
-
-	/**
-	 * Sets the list of supported data types
-	 * 
-	 * @param supportedDataTypes
-	 *            Supported data types
-	 */
-	public void setSupportedDataTypes(List<PrimitiveDataType> supportedDataTypes) {
-		this.supportedDataTypes = supportedDataTypes;
-	}
-
-	/**
-	 * Returns the implementing class of the join type
-	 * 
-	 * @return The implementing class
-	 */
-	public JoinAction getJoinImplementation() {
-		return joinImplementation;
-	}
-
-	/**
-	 * Sets the implementing class of the join type
-	 * 
-	 * @param joinImplementation
-	 *            The implementing class
-	 */
-	public void setJoinImplementation(JoinAction joinImplementation) {
-		this.joinImplementation = joinImplementation;
-	}
-
+	
+	
 }

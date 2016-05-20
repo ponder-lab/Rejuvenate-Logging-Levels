@@ -3,6 +3,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 package edu.harvard.hms.dbmi.bd2k.irct.model.resource;
 
+import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 
@@ -20,13 +21,20 @@ import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
-import javax.persistence.ManyToMany;
 import javax.persistence.MapKeyColumn;
+import javax.persistence.OneToMany;
 
+import edu.harvard.hms.dbmi.bd2k.irct.exception.ResourceInterfaceException;
+import edu.harvard.hms.dbmi.bd2k.irct.model.join.IRCTJoin;
+import edu.harvard.hms.dbmi.bd2k.irct.model.ontology.DataType;
+import edu.harvard.hms.dbmi.bd2k.irct.model.ontology.OntologyRelationship;
 import edu.harvard.hms.dbmi.bd2k.irct.model.ontology.OntologyType;
-import edu.harvard.hms.dbmi.bd2k.irct.model.process.ProcessType;
-import edu.harvard.hms.dbmi.bd2k.irct.model.query.LogicalOperator;
 import edu.harvard.hms.dbmi.bd2k.irct.model.query.PredicateType;
+import edu.harvard.hms.dbmi.bd2k.irct.model.resource.implementation.PathResourceImplementationInterface;
+import edu.harvard.hms.dbmi.bd2k.irct.model.resource.implementation.ResourceImplementationInterface;
+import edu.harvard.hms.dbmi.bd2k.irct.model.visualization.VisualizationType;
+import edu.harvard.hms.dbmi.bd2k.irct.util.converter.DataTypeConverter;
+import edu.harvard.hms.dbmi.bd2k.irct.util.converter.OntologyRelationshipConverter;
 import edu.harvard.hms.dbmi.bd2k.irct.util.converter.ResourceImplementationConverter;
 
 /**
@@ -37,12 +45,45 @@ import edu.harvard.hms.dbmi.bd2k.irct.util.converter.ResourceImplementationConve
  *
  */
 @Entity
-public class Resource {
+public class Resource implements Serializable {
+	private static final long serialVersionUID = 8099637983212553759L;
+	
 	@Id
 	@GeneratedValue
 	private long id;
-
 	private String name;
+
+	@Enumerated(EnumType.STRING)
+	private OntologyType ontologyType;
+
+	@Convert(converter = ResourceImplementationConverter.class)
+	private ResourceImplementationInterface implementingInterface;
+
+	@ElementCollection
+	@Convert(converter = DataTypeConverter.class)
+	private List<DataType> dataTypes;
+
+	@ElementCollection
+	@Convert(converter = OntologyRelationshipConverter.class)
+	private List<OntologyRelationship> relationships;
+
+	@ElementCollection(targetClass = LogicalOperator.class)
+	@CollectionTable(name = "Resource_LogicalOperator", joinColumns = @JoinColumn(name = "id"))
+	@Column(name = "logicalOperator", nullable = false)
+	@Enumerated(EnumType.STRING)
+	private List<LogicalOperator> logicalOperators;
+
+	@OneToMany
+	private List<PredicateType> supportedPredicates;
+
+	@OneToMany
+	private List<IRCTJoin> supportedJoins;
+
+	@OneToMany
+	private List<ProcessType> supportedProcesses;
+
+	@OneToMany
+	private List<VisualizationType> supportedVisualizations;
 
 	@ElementCollection
 	@MapKeyColumn(name = "name")
@@ -50,28 +91,11 @@ public class Resource {
 	@CollectionTable(name = "resource_parameters", joinColumns = @JoinColumn(name = "id"))
 	private Map<String, String> parameters;
 
-	@Enumerated(EnumType.STRING)
-	private OntologyType ontologyType;
-	
-	@ElementCollection(targetClass = LogicalOperator.class)
-	@CollectionTable(name = "Resource_Join", joinColumns = @JoinColumn(name = "id"))
-	@Column(name = "supportedJoins", nullable = false)
-	@Enumerated(EnumType.STRING)
-	private List<LogicalOperator> supportedJoins;
-	
-	@ManyToMany
-	private List<PredicateType> supportedPredicates;
-	
-	@ManyToMany
-	private List<ProcessType> availableProcesses;
-
-	@Convert(converter = ResourceImplementationConverter.class)
-	private ResourceImplementationInterface implementingInterface;
-	
 	/**
 	 * Sets up the Resource and the implementing interface
+	 * @throws ResourceInterfaceException Throws a resource interface
 	 */
-	public void setup() {
+	public void setup() throws ResourceInterfaceException {
 		implementingInterface.setup(this.parameters);
 	}
 
@@ -103,57 +127,166 @@ public class Resource {
 		jsonBuilder.add("name", this.name);
 		jsonBuilder.add("ontologyType", this.ontologyType.toString());
 
-		JsonArrayBuilder joinArray = Json.createArrayBuilder();
-		JsonArrayBuilder predicateArray = Json.createArrayBuilder();
-		JsonArrayBuilder processArray = Json.createArrayBuilder();
-		
-		for (LogicalOperator join : this.supportedJoins) {
-			joinArray.add(join.toString());
-		}
-		
-		if (depth == 0) {
-			for (PredicateType predicate : this.supportedPredicates) {
-				predicateArray.add(predicate.getName());
-			}
-			
-			for(ProcessType process : this.availableProcesses) {
-				processArray.add(process.getName());
-			}
-			
-			if(this.implementingInterface != null) {
-				jsonBuilder.add("implementation",
-					this.implementingInterface.getType());
-			}
+		if (this.implementingInterface != null) {
+			jsonBuilder.add("implementation", implementingInterface.getType());
 
-		} else {
-			for (PredicateType predicate : this.supportedPredicates) {
-				predicateArray.add(predicate.toJson(depth));
+			if (this.implementingInterface instanceof PathResourceImplementationInterface) {
+				// RELATIONSHIPS (PATH Interface)
+				JsonArrayBuilder relationshipArray = Json.createArrayBuilder();
+				if (this.getRelationships() != null) {
+					for (OntologyRelationship rel : this.relationships) {
+						relationshipArray.add(rel.toString());
+					}
+				}
+				jsonBuilder.add("relationships", relationshipArray.build());
+
 			}
-			
-			for(ProcessType process : this.availableProcesses) {
-				processArray.add(process.toJson(depth));
+			if (this.implementingInterface instanceof PathResourceImplementationInterface) {
+				// LOGICALOPERATORS (Query Interface)
+				JsonArrayBuilder logicalArray = Json.createArrayBuilder();
+				if (this.logicalOperators != null) {
+					for (LogicalOperator lo : this.logicalOperators) {
+						logicalArray.add(lo.toString());
+					}
+				}
+				jsonBuilder.add("logicaloperators", logicalArray.build());
+
+				// PREDICATES (Query Interface)
+				JsonArrayBuilder predicateArray = Json.createArrayBuilder();
+				if (this.supportedPredicates != null) {
+					for (PredicateType pt : this.supportedPredicates) {
+						predicateArray.add(pt.toJson());
+					}
+				}
+				jsonBuilder.add("predicates", predicateArray.build());
+
+				// JOINS (Query Interface)
+				JsonArrayBuilder joinArray = Json.createArrayBuilder();
+				if (this.supportedJoins != null) {
+					for (IRCTJoin jt : this.supportedJoins) {
+						joinArray.add(jt.toJson());
+					}
+				}
+				jsonBuilder.add("joins", joinArray.build());
 			}
-			
-			if(this.implementingInterface != null) {
-				jsonBuilder.add("implementation",
-					this.implementingInterface.toJson(depth));
+			if (this.implementingInterface instanceof PathResourceImplementationInterface) {
+				// PROCESSES (Process Interface)
+				JsonArrayBuilder processArray = Json.createArrayBuilder();
+				if (this.supportedProcesses != null) {
+					for (ProcessType pt : this.supportedProcesses) {
+						processArray.add(pt.toJson());
+					}
+				}
+				jsonBuilder.add("processes", processArray.build());
+			}
+			if (this.implementingInterface instanceof PathResourceImplementationInterface) {
+				// VISUALIZATIONS (Visualization Interface)
+				JsonArrayBuilder visualizationArray = Json.createArrayBuilder();
+				if (this.supportedVisualizations != null) {
+					for (VisualizationType vt : this.supportedVisualizations) {
+						visualizationArray.add(vt.toJson());
+					}
+				}
+				jsonBuilder.add("visualization", visualizationArray.build());
+
 			}
 		}
 
-		jsonBuilder.add("supportedJoins", joinArray.build());
-		jsonBuilder.add("supportedPredicates", predicateArray.build());
-		jsonBuilder.add("availableProcesses", processArray.build());
+		// DATATYPES
+		JsonArrayBuilder dataTypeArray = Json.createArrayBuilder();
+		if (this.getDataTypes() != null) {
+			for (DataType dataType : this.dataTypes) {
+				dataTypeArray.add(dataType.toJson());
+			}
+		}
+		jsonBuilder.add("dataTypes", dataTypeArray.build());
 
 		return jsonBuilder.build();
+	}
+	
+	/**
+	 * Returns a relationship from its name. It will return null if it does not exist.
+	 * 
+	 * @param relationshipString Relationship name
+	 * @return Ontology Relationship
+	 */
+	public OntologyRelationship getRelationshipByName(String relationshipString) {
+		for(OntologyRelationship relationship : this.relationships) {
+			if(relationship.toString().equalsIgnoreCase(relationshipString)) {
+				return relationship;
+			}
+		}
+		return null;
+	}
+	
+	/**
+	 * Returns a predicate type from its name. It will return null if it does not exist.
+	 * 
+	 * @param predicateName Predicate name
+	 * @return Predicate Type
+	 */
+	public PredicateType getSupportedPredicateByName(String predicateName) {
+		for(PredicateType predicateType : this.supportedPredicates) {
+			if(predicateType.getName().equals(predicateName)) {
+				return predicateType;
+			}
+		}
+		return null;
+	}
+	
+	/**
+	 * Returns a process type from its name. It will return null if it does not exist.
+	 * 
+	 * @param processName Process Name
+	 * @return Process Type
+	 */
+	public ProcessType getSupportedProcessesByName(String processName) {
+		for(ProcessType processType : this.supportedProcesses) {
+			if(processType.getName().equalsIgnoreCase(processName)) {
+				return processType;
+			}
+		}
+		return null;
+	}
+	
+	/**
+	 * Returns a Logical Operator from its name. It will return null if it does not exist.
+	 * 
+	 * @param logicalOperatorName Logical Operator Name
+	 * @return Logical Operator
+	 */
+	public LogicalOperator getLogicalOperatorByName(String logicalOperatorName) {
+		for(LogicalOperator logicalOperator : this.logicalOperators) {
+			if(logicalOperator.toString().equals(logicalOperatorName)) {
+				return logicalOperator;
+			}
+		}
+		return null;
+	}
+	
+	/**
+	 * Returns a data type from its name. It will return null if it does not exist.
+	 * 
+	 * @param dataTypeName Data Type Name
+	 * @return Data Type
+	 */
+	public DataType getDataTypeByName(String dataTypeName) {
+		for(DataType dataType : this.dataTypes) {
+			if(dataType.toString().equals(dataTypeName)) {
+				return dataType;
+			}
+		}
+		return null;
 	}
 
 	// -------------------------------------------------------------------------
 	// SETTERS AND GETTERS
 	// -------------------------------------------------------------------------
+
 	/**
 	 * Returns the id of the resource
 	 * 
-	 * @return Id of the resource
+	 * @return the id
 	 */
 	public long getId() {
 		return id;
@@ -163,7 +296,7 @@ public class Resource {
 	 * Sets the id of the resource
 	 * 
 	 * @param id
-	 *            Resource id
+	 *            the id to set
 	 */
 	public void setId(long id) {
 		this.id = id;
@@ -172,7 +305,7 @@ public class Resource {
 	/**
 	 * Returns the name of the resource
 	 * 
-	 * @return Resource name
+	 * @return the name
 	 */
 	public String getName() {
 		return name;
@@ -182,102 +315,45 @@ public class Resource {
 	 * Sets the name of the resource
 	 * 
 	 * @param name
-	 *            The resource name
+	 *            the name to set
 	 */
 	public void setName(String name) {
 		this.name = name;
 	}
 
 	/**
-	 * Returns the parameters of the resource
+	 * Returns the ontology type of the resource
 	 * 
-	 * @return Resource parameters
-	 */
-	public Map<String, String> getParameters() {
-		return parameters;
-	}
-
-	/**
-	 * Sets the parameters of the resource
-	 * 
-	 * @param parameters
-	 *            Resource parameters
-	 */
-	public void setParameters(Map<String, String> parameters) {
-		this.parameters = parameters;
-	}
-
-	/**
-	 * Returns the ontology type
-	 * 
-	 * @return Ontology type
+	 * @return the ontologyType
 	 */
 	public OntologyType getOntologyType() {
 		return ontologyType;
 	}
 
 	/**
-	 * Sets the ontology type
+	 * Sets the ontology type of the resource
 	 * 
 	 * @param ontologyType
-	 *            Ontology type
+	 *            the ontologyType to set
 	 */
 	public void setOntologyType(OntologyType ontologyType) {
 		this.ontologyType = ontologyType;
 	}
 
 	/**
-	 * Returns a list of supported joins by the resource
+	 * Returns the implementing interface of the resource
 	 * 
-	 * @return Supported joins
-	 */
-	public List<LogicalOperator> getSupportedJoins() {
-		return supportedJoins;
-	}
-
-	/**
-	 * Sets the list of supported joins for the resource
-	 * 
-	 * @param supportedJoins
-	 *            Supported joins
-	 */
-	public void setSupportedJoins(List<LogicalOperator> supportedJoins) {
-		this.supportedJoins = supportedJoins;
-	}
-
-	/**
-	 * Returns a list of predicates supported by the resource
-	 * 
-	 * @return Supported predicates
-	 */
-	public List<PredicateType> getSupportedPredicates() {
-		return supportedPredicates;
-	}
-
-	/**
-	 * Sets the list of supported predicates for the resource
-	 * 
-	 * @param supportedPredicates
-	 *            Supported predicates
-	 */
-	public void setSupportedPredicates(List<PredicateType> supportedPredicates) {
-		this.supportedPredicates = supportedPredicates;
-	}
-
-	/**
-	 * Returns the implementing interface for this resource
-	 * 
-	 * @return The implementing interface
+	 * @return the implementingInterface
 	 */
 	public ResourceImplementationInterface getImplementingInterface() {
 		return implementingInterface;
 	}
 
 	/**
-	 * Sets the implementing interface for this resource
+	 * Sets the implementing interface of the resource
 	 * 
 	 * @param implementingInterface
-	 *            The implementing resource
+	 *            the implementingInterface to set
 	 */
 	public void setImplementingInterface(
 			ResourceImplementationInterface implementingInterface) {
@@ -285,17 +361,154 @@ public class Resource {
 	}
 
 	/**
-	 * @return the availableProcesses
+	 * Returns a list of data types that are supported by the resource
+	 *  
+	 * @return the dataTypes
 	 */
-	public List<ProcessType> getAvailableProcesses() {
-		return availableProcesses;
+	public List<DataType> getDataTypes() {
+		return dataTypes;
 	}
 
 	/**
-	 * @param availableProcesses the availableProcesses to set
+	 * Sets the list of data type that are supported by the resource
+	 * 
+	 * @param dataTypes
+	 *            the dataTypes to set
 	 */
-	public void setAvailableProcesses(List<ProcessType> availableProcesses) {
-		this.availableProcesses = availableProcesses;
+	public void setDataTypes(List<DataType> dataTypes) {
+		this.dataTypes = dataTypes;
 	}
 
+	/**
+	 * Returns a list of relationships that are supported by the resource
+	 * 
+	 * @return the relationships
+	 */
+	public List<OntologyRelationship> getRelationships() {
+		return relationships;
+	}
+
+	/**
+	 * Sets the list of relationships that are supported by the resource
+	 * 
+	 * @param relationships
+	 *            the relationships to set
+	 */
+	public void setRelationships(List<OntologyRelationship> relationships) {
+		this.relationships = relationships;
+	}
+
+	/**
+	 * Returns a list of logical operators that are supported by the resource
+	 * 
+	 * @return the logicalOperators
+	 */
+	public List<LogicalOperator> getLogicalOperators() {
+		return logicalOperators;
+	}
+
+	/**
+	 * Sets a list of logical operators that are supported by the resource
+	 * 
+	 * @param logicalOperators
+	 *            the logicalOperators to set
+	 */
+	public void setLogicalOperators(List<LogicalOperator> logicalOperators) {
+		this.logicalOperators = logicalOperators;
+	}
+
+	/**
+	 * Returns a list of supported predicates that are supported by the resource
+	 * 
+	 * @return the supportedPredicates
+	 */
+	public List<PredicateType> getSupportedPredicates() {
+		return supportedPredicates;
+	}
+
+	/**
+	 * Sets the list of supported predicates that are supported by the resource
+	 * 
+	 * @param supportedPredicates
+	 *            the supportedPredicates to set
+	 */
+	public void setSupportedPredicates(List<PredicateType> supportedPredicates) {
+		this.supportedPredicates = supportedPredicates;
+	}
+
+	/**
+	 * Returns a list joins that are supported by the resource
+	 * 
+	 * @return the supportedJoins
+	 */
+	public List<IRCTJoin> getSupportedJoins() {
+		return supportedJoins;
+	}
+
+	/**
+	 * Sets the list joins that are supported by the resource
+	 * 
+	 * @param supportedJoins
+	 *            the supportedJoins to set
+	 */
+	public void setSupportedJoins(List<IRCTJoin> supportedJoins) {
+		this.supportedJoins = supportedJoins;
+	}
+
+	/**
+	 * Returns a list of process that are supported by the resource
+	 * 
+	 * @return the supportedProcesses
+	 */
+	public List<ProcessType> getSupportedProcesses() {
+		return supportedProcesses;
+	}
+
+	/**
+	 * Sets the list of processes that are supported by the resource
+	 * @param supportedProcesses
+	 *            the supportedProcesses to set
+	 */
+	public void setSupportedProcesses(List<ProcessType> supportedProcesses) {
+		this.supportedProcesses = supportedProcesses;
+	}
+
+	/**
+	 * Returns a list of visualizations that are supported by the resource
+	 * 
+	 * @return the supportedVisualizations
+	 */
+	public List<VisualizationType> getSupportedVisualizations() {
+		return supportedVisualizations;
+	}
+
+	/**
+	 * Sets a list of visualizations that are supported by the resource
+	 * 
+	 * @param supportedVisualizations
+	 *            the supportedVisualizations to set
+	 */
+	public void setSupportedVisualizations(
+			List<VisualizationType> supportedVisualizations) {
+		this.supportedVisualizations = supportedVisualizations;
+	}
+
+	/**
+	 * Returns a map of parameters for the resource
+	 * 
+	 * @return the parameters
+	 */
+	public Map<String, String> getParameters() {
+		return parameters;
+	}
+
+	/**
+	 * Sets a map of resources for the resource
+	 * 
+	 * @param parameters
+	 *            the parameters to set
+	 */
+	public void setParameters(Map<String, String> parameters) {
+		this.parameters = parameters;
+	}
 }

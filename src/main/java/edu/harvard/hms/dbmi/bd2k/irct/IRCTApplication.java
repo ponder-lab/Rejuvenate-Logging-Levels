@@ -3,13 +3,18 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 package edu.harvard.hms.dbmi.bd2k.irct;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Properties;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.annotation.PostConstruct;
-import javax.ejb.Singleton;
-import javax.ejb.Startup;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.persistence.EntityManager;
@@ -18,10 +23,14 @@ import javax.persistence.FlushModeType;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
+import javax.servlet.ServletContext;
 
-import edu.harvard.hms.dbmi.bd2k.irct.model.query.JoinType;
-import edu.harvard.hms.dbmi.bd2k.irct.model.query.PredicateType;
+import edu.harvard.hms.dbmi.bd2k.irct.dataconverter.ResultDataConverter;
+import edu.harvard.hms.dbmi.bd2k.irct.exception.ResourceInterfaceException;
+import edu.harvard.hms.dbmi.bd2k.irct.model.join.IRCTJoin;
 import edu.harvard.hms.dbmi.bd2k.irct.model.resource.Resource;
+import edu.harvard.hms.dbmi.bd2k.irct.model.result.DataConverterImplementation;
+import edu.harvard.hms.dbmi.bd2k.irct.model.result.ResultDataType;
 
 /**
  * Manages supported resources and join types for this instance of the IRCT
@@ -30,21 +39,23 @@ import edu.harvard.hms.dbmi.bd2k.irct.model.resource.Resource;
  * @author Jeremy R. Easton-Marks
  *
  */
-@Singleton
 @ApplicationScoped
-@Startup
 public class IRCTApplication {
 
 	private Map<String, Resource> resources;
-	private Map<String, JoinType> supportedJoinTypes;
+	private Map<String, IRCTJoin> supportedJoinTypes;
+	private Map<ResultDataType, List<DataConverterImplementation>> resultDataConverters;
 
-	private Map<String, PredicateType> supportedPredicateTypes;
+	private Properties properties;
 
 	@Inject
 	Logger log;
 
 	@Inject
 	private EntityManagerFactory objectEntityManager;
+
+	@Inject
+	private ServletContext context;
 
 	private EntityManager oem;
 
@@ -56,6 +67,16 @@ public class IRCTApplication {
 	@PostConstruct
 	public void init() {
 		log.info("Starting IRCT Application");
+		this.oem = objectEntityManager.createEntityManager();
+		this.oem.setFlushMode(FlushModeType.COMMIT);
+
+		log.info("Loading Properties");
+		loadProperties();
+		log.info("Finished Loading Properties");
+
+		log.info("Loading Data Converters");
+		loadDataConverters();
+		log.info("Finished Data Converters");
 
 		this.oem = objectEntityManager.createEntityManager();
 		this.oem.setFlushMode(FlushModeType.COMMIT);
@@ -68,11 +89,66 @@ public class IRCTApplication {
 		loadResources();
 		log.info("Finished Loading Resources");
 
-		log.info("Loading Predicates");
-		loadPredicates();
-		log.info("Finished Loading Predicates");
-
 		log.info("Finished Starting IRCT Application");
+	}
+
+	/**
+	 * 
+	 * Load all the properties from the servlet context or from the
+	 * IRCT.properties file
+	 * 
+	 */
+	private void loadProperties() {
+		this.properties = new Properties();
+		if (context != null) {
+			Enumeration<String> propertyNameEnumeration = context
+					.getInitParameterNames();
+			while (propertyNameEnumeration.hasMoreElements()) {
+				String propertyName = propertyNameEnumeration.nextElement();
+				this.properties.put(propertyName,
+						context.getInitParameter(propertyName));
+			}
+
+		} else {
+			InputStream inputStream = IRCTApplication.class.getClassLoader()
+					.getResourceAsStream("IRCT.properties");
+
+			try {
+				this.properties.load(inputStream);
+			} catch (IOException e) {
+				log.info("Error loading properties: " + e.getMessage());
+				log.log(Level.FINE, "Error loading properties", e);
+			}
+		}
+
+	}
+
+	/**
+	 * Load all the Output Data Converters
+	 * 
+	 */
+	private void loadDataConverters() {
+		this.resultDataConverters = new HashMap<ResultDataType, List<DataConverterImplementation>>();
+		CriteriaBuilder cb = oem.getCriteriaBuilder();
+		CriteriaQuery<DataConverterImplementation> criteria = cb
+				.createQuery(DataConverterImplementation.class);
+		Root<DataConverterImplementation> load = criteria
+				.from(DataConverterImplementation.class);
+		criteria.select(load);
+		List<DataConverterImplementation> allDCI = oem.createQuery(criteria)
+				.getResultList();
+		for (DataConverterImplementation dci : allDCI) {
+			if (this.resultDataConverters.containsKey(dci.getResultDataType())) {
+				this.resultDataConverters.get(dci.getResultDataType()).add(dci);
+			} else {
+				List<DataConverterImplementation> dciList = new ArrayList<DataConverterImplementation>();
+				dciList.add(dci);
+				this.resultDataConverters.put(dci.getResultDataType(), dciList);
+			}
+
+		}
+
+		log.info("Loaded " + allDCI.size() + " result data converters");
 	}
 
 	/**
@@ -80,14 +156,13 @@ public class IRCTApplication {
 	 */
 	private void loadJoins() {
 
-		setSupportedJoinTypes(new HashMap<String, JoinType>());
+		setSupportedJoinTypes(new HashMap<String, IRCTJoin>());
 		// Run JPA Query to load the resources
 		CriteriaBuilder cb = oem.getCriteriaBuilder();
-		CriteriaQuery<JoinType> criteria = cb.createQuery(JoinType.class);
-		Root<JoinType> load = criteria.from(JoinType.class);
+		CriteriaQuery<IRCTJoin> criteria = cb.createQuery(IRCTJoin.class);
+		Root<IRCTJoin> load = criteria.from(IRCTJoin.class);
 		criteria.select(load);
-		for (JoinType jt : oem.createQuery(criteria).getResultList()) {
-			jt.setup();
+		for (IRCTJoin jt : oem.createQuery(criteria).getResultList()) {
 			this.supportedJoinTypes.put(jt.getName(), jt);
 		}
 		log.info("Loaded " + this.supportedJoinTypes.size() + " joins");
@@ -106,19 +181,15 @@ public class IRCTApplication {
 		Root<Resource> load = criteria.from(Resource.class);
 		criteria.select(load);
 		for (Resource resource : oem.createQuery(criteria).getResultList()) {
-			resource.setup();
-			this.resources.put(resource.getName(), resource);
+			try {
+				resource.setup();
+				this.resources.put(resource.getName(), resource);
+			} catch (ResourceInterfaceException e) {
+				e.printStackTrace();
+			}
+
 		}
 		log.info("Loaded " + this.resources.size() + " resources");
-	}
-
-	/**
-	 * 
-	 * Loads all the predicates from the persistence manager
-	 * 
-	 */
-	private void loadPredicates() {
-		setSupportedPredicateTypes(new HashMap<String, PredicateType>());
 	}
 
 	/**
@@ -186,7 +257,7 @@ public class IRCTApplication {
 	 * 
 	 * @return Supported join types
 	 */
-	public Map<String, JoinType> getSupportedJoinTypes() {
+	public Map<String, IRCTJoin> getSupportedJoinTypes() {
 		return supportedJoinTypes;
 	}
 
@@ -196,7 +267,7 @@ public class IRCTApplication {
 	 * @param supportedJoinTypes
 	 *            Supported join types
 	 */
-	public void setSupportedJoinTypes(Map<String, JoinType> supportedJoinTypes) {
+	public void setSupportedJoinTypes(Map<String, IRCTJoin> supportedJoinTypes) {
 		this.supportedJoinTypes = supportedJoinTypes;
 	}
 
@@ -208,10 +279,49 @@ public class IRCTApplication {
 	 * @param join
 	 *            Join
 	 */
-	public void addJoin(String name, JoinType join) {
+	public void addJoin(String name, IRCTJoin join) {
 		// Persist the join
 		oem.persist(join);
 		this.supportedJoinTypes.put(name, join);
+	}
+
+	/**
+	 * @return the resultDataConverters
+	 */
+	public Map<ResultDataType, List<DataConverterImplementation>> getResultDataConverters() {
+		return resultDataConverters;
+	}
+
+	/**
+	 * @param resultDataConverters
+	 *            the resultDataConverters to set
+	 */
+	public void setResultDataConverters(
+			Map<ResultDataType, List<DataConverterImplementation>> resultDataConverters) {
+		this.resultDataConverters = resultDataConverters;
+	}
+
+	/**
+	 * Returns a dataconveter for a given datatype and format
+	 * 
+	 * @param dataType
+	 *            DataType
+	 * @param format
+	 *            Format
+	 * @return DataConverter
+	 */
+	public ResultDataConverter getResultDataConverter(ResultDataType dataType,
+			String format) {
+		List<DataConverterImplementation> dciList = this.resultDataConverters
+				.get(dataType);
+
+		for (DataConverterImplementation dci : dciList) {
+			if (dci.getFormat().equals(format)) {
+
+				return dci.getDataConverter();
+			}
+		}
+		return null;
 	}
 
 	/**
@@ -239,71 +349,21 @@ public class IRCTApplication {
 	}
 
 	/**
-	 * Returns a map of the supported predicates where the Predicate name is the
-	 * key, and the PredicateType itself is the value
+	 * Get the properties
 	 * 
-	 * @return Supported predicate types
+	 * @return Properties
 	 */
-	public Map<String, PredicateType> getSupportedPredicateTypes() {
-		return supportedPredicateTypes;
+	public Properties getProperties() {
+		return properties;
 	}
 
 	/**
-	 * Sets a map of the supported predicate types
+	 * Set the properties
 	 * 
-	 * @param supportedPredicateTypes
-	 *            Supported predicate types
+	 * @param properties
+	 *            Properties
 	 */
-	public void setSupportedPredicateTypes(
-			Map<String, PredicateType> supportedPredicateTypes) {
-		this.supportedPredicateTypes = supportedPredicateTypes;
-	}
-
-	/**
-	 * Adds a predicate to the list of supported predicates
-	 * 
-	 * @param name
-	 *            Predicate Name
-	 * @param predicateType
-	 *            Predicate
-	 */
-	public void addPredicate(String name, PredicateType predicateType) {
-		this.supportedPredicateTypes.put(name, predicateType);
-	}
-
-	/**
-	 * Removes a predicate from the list of supported predicates
-	 * 
-	 * @param name
-	 *            Predicate name
-	 */
-	public void removePredicate(String name) {
-		this.supportedPredicateTypes.remove(name);
-	}
-
-	/**
-	 * Returns true if the predicate type is supported
-	 * 
-	 * True if predicate type is supported, otherwise it is false
-	 * 
-	 * @param name
-	 *            Predicate name
-	 * @return If predicate exists
-	 */
-	public boolean doesPredicateExists(String name) {
-		return this.supportedPredicateTypes.containsKey(name);
-	}
-
-	/**
-	 * Returns true if the predicate type is supported
-	 * 
-	 * True if the predicate type is supported, otherwise it is false
-	 * 
-	 * @param predicateType
-	 *            Predicate Type
-	 * @return If predicate is supported
-	 */
-	public boolean doesPredicateExists(PredicateType predicateType) {
-		return this.supportedPredicateTypes.containsValue(predicateType);
+	public void setProperties(Properties properties) {
+		this.properties = properties;
 	}
 }

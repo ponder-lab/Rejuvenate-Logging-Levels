@@ -12,3 +12,7 @@
 
 .settings/org.eclipse.wst.common.project.facet.core.xml
 /model/
+
+.settings/org.eclipse.m2e.wtp.prefs
+
+.settings/org.eclipse.wst.validation.prefs

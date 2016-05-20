@@ -3,28 +3,62 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 package edu.harvard.hms.dbmi.bd2k.irct.model.query;
 
+import java.io.Serializable;
+import java.util.HashMap;
 import java.util.Map;
 
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
+import javax.persistence.CollectionTable;
+import javax.persistence.Column;
+import javax.persistence.ElementCollection;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.MapKeyColumn;
+import javax.persistence.OneToOne;
 
-import edu.harvard.hms.dbmi.bd2k.irct.model.ontology.Path;
+import edu.harvard.hms.dbmi.bd2k.irct.model.ontology.Entity;
+import edu.harvard.hms.dbmi.bd2k.irct.model.resource.LogicalOperator;
 
 /**
  * The where clause contains information used in a query to filter upon the
- * data. A where clause can be done on a single a subquery or path.
+ * data. A where clause can be done on a single query, a subquery or path.
  * 
  * @author Jeremy R. Easton-Marks
  *
  */
-public class WhereClause extends ClauseAbstract {
+@javax.persistence.Entity
+public class WhereClause extends ClauseAbstract implements Serializable {
+	private static final long serialVersionUID = 5846062257054747524L;
+	
+	@OneToOne
 	private SubQuery subQuery;
+	
+	@Enumerated(EnumType.STRING)
 	private LogicalOperator logicalOperator;
-	private Path field;
+	@OneToOne
+	private Entity field;
+	
+	@ManyToOne
 	private PredicateType predicateType;
-	private Map<String, String> values;
+	
+	@ElementCollection
+	@CollectionTable(name="where_values", joinColumns=@JoinColumn(name="WHERE_VALUE"))
+	@MapKeyColumn(name="where_id")
+	@Column(name="where_value")
+	private Map<String, String> stringValues;
+	
+	/**
+	 * Creates an empty where clause
+	 * 
+	 */
+	public WhereClause() {
+		this.stringValues = new HashMap<String, String>();
+	}
 
 	/**
 	 * Returns the subquery associated with the where clause
@@ -78,11 +112,11 @@ public class WhereClause extends ClauseAbstract {
 
 		jsonBuilder.add("predicateType", predicateType.toJson(depth));
 
-		if (values != null) {
+		if (stringValues != null) {
 			JsonArrayBuilder jsonValues = Json.createArrayBuilder();
-			for(String valueKey : this.values.keySet()) {
+			for(String valueKey : this.stringValues.keySet()) {
 				JsonObjectBuilder valueInstance = Json.createObjectBuilder();
-				valueInstance.add(valueKey, this.values.get(valueKey));
+				valueInstance.add(valueKey, this.stringValues.get(valueKey));
 			}
 			jsonBuilder.add("value", jsonValues);
 		}
@@ -129,7 +163,7 @@ public class WhereClause extends ClauseAbstract {
 	 * 
 	 * @return Field
 	 */
-	public Path getField() {
+	public Entity getField() {
 		return field;
 	}
 
@@ -139,7 +173,7 @@ public class WhereClause extends ClauseAbstract {
 	 * @param field
 	 *            Field
 	 */
-	public void setField(Path field) {
+	public void setField(Entity field) {
 		this.field = field;
 	}
 
@@ -167,18 +201,18 @@ public class WhereClause extends ClauseAbstract {
 	 * 
 	 * @return Value
 	 */
-	public Map<String, String> getValues() {
-		return values;
+	public Map<String, String> getStringValues() {
+		return stringValues;
 	}
 
 	/**
 	 * Sets the value that the predicate type operates against if it is needed.
 	 * 
-	 * @param values
-	 *            Value
+	 * @param stringValues
+	 *            A map of values
 	 */
-	public void setValues(Map<String, String> values) {
-		this.values = values;
+	public void setStringValues(Map<String, String> stringValues) {
+		this.stringValues = stringValues;
 	}
 
 }
