@@ -208,10 +208,9 @@ public class ResultController {
 		result.setStartTime(new Date());
 		if (resultDataType == ResultDataType.TABULAR) {
 			FileResultSet frs = new FileResultSet();
-			frs.persist(irctApp.getProperties().getProperty("ResultDataFolder")
+			frs.persist(irctApp.getResultDataFolder()
 					+ "/" + result.getId());
-			result.setResultSetLocation(irctApp.getProperties().getProperty(
-					"ResultDataFolder")
+			result.setResultSetLocation(irctApp.getResultDataFolder()
 					+ "/" + result.getId());
 			result.setData(frs);
 		} else if (resultDataType == ResultDataType.JSON) {
