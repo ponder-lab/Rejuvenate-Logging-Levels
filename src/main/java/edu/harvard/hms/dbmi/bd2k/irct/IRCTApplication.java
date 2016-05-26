@@ -3,15 +3,10 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 package edu.harvard.hms.dbmi.bd2k.irct;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.annotation.PostConstruct;
@@ -23,7 +18,6 @@ import javax.persistence.FlushModeType;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
-import javax.servlet.ServletContext;
 
 import edu.harvard.hms.dbmi.bd2k.irct.dataconverter.ResultDataConverter;
 import edu.harvard.hms.dbmi.bd2k.irct.exception.ResourceInterfaceException;
@@ -42,20 +36,18 @@ import edu.harvard.hms.dbmi.bd2k.irct.model.result.ResultDataType;
 @ApplicationScoped
 public class IRCTApplication {
 
+	@javax.annotation.Resource(mappedName ="java:global/resultDataFolder")
+	private String resultDataFolder = null;
+	
 	private Map<String, Resource> resources;
 	private Map<String, IRCTJoin> supportedJoinTypes;
 	private Map<ResultDataType, List<DataConverterImplementation>> resultDataConverters;
-
-	private Properties properties;
 
 	@Inject
 	Logger log;
 
 	@Inject
 	private EntityManagerFactory objectEntityManager;
-
-	@Inject
-	private ServletContext context;
 
 	private EntityManager oem;
 
@@ -69,10 +61,6 @@ public class IRCTApplication {
 		log.info("Starting IRCT Application");
 		this.oem = objectEntityManager.createEntityManager();
 		this.oem.setFlushMode(FlushModeType.COMMIT);
-
-		log.info("Loading Properties");
-		loadProperties();
-		log.info("Finished Loading Properties");
 
 		log.info("Loading Data Converters");
 		loadDataConverters();
@@ -90,37 +78,6 @@ public class IRCTApplication {
 		log.info("Finished Loading Resources");
 
 		log.info("Finished Starting IRCT Application");
-	}
-
-	/**
-	 * 
-	 * Load all the properties from the servlet context or from the
-	 * IRCT.properties file
-	 * 
-	 */
-	private void loadProperties() {
-		this.properties = new Properties();
-		if (context != null) {
-			Enumeration<String> propertyNameEnumeration = context
-					.getInitParameterNames();
-			while (propertyNameEnumeration.hasMoreElements()) {
-				String propertyName = propertyNameEnumeration.nextElement();
-				this.properties.put(propertyName,
-						context.getInitParameter(propertyName));
-			}
-
-		} else {
-			InputStream inputStream = IRCTApplication.class.getClassLoader()
-					.getResourceAsStream("IRCT.properties");
-
-			try {
-				this.properties.load(inputStream);
-			} catch (IOException e) {
-				log.info("Error loading properties: " + e.getMessage());
-				log.log(Level.FINE, "Error loading properties", e);
-			}
-		}
-
 	}
 
 	/**
@@ -349,21 +306,18 @@ public class IRCTApplication {
 	}
 
 	/**
-	 * Get the properties
-	 * 
-	 * @return Properties
+	 * Get the name of the result data folder
+	 * @return Result Data Folder
 	 */
-	public Properties getProperties() {
-		return properties;
+	public String getResultDataFolder() {
+		return resultDataFolder;
 	}
 
 	/**
-	 * Set the properties
-	 * 
-	 * @param properties
-	 *            Properties
+	 * Sets the name of the result data folder
+	 * @param resultDataFolder Result Data Folder
 	 */
-	public void setProperties(Properties properties) {
-		this.properties = properties;
+	public void setResultDataFolder(String resultDataFolder) {
+		this.resultDataFolder = resultDataFolder;
 	}
 }
