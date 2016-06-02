@@ -43,7 +43,7 @@ public class SecurityUtility {
 	public static String delegateToken(String namespace,
 			String resourceClientId, SecureSession session) {
 		if (((JWT) session.getToken()).getClientId().equals(resourceClientId)) {
-			return "Bearer " + session.getToken().toString();
+			return session.getToken().toString();
 		}
 
 		if (session.getDelegated().containsKey(resourceClientId)) {
