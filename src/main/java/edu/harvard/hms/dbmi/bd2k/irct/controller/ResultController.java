@@ -98,9 +98,13 @@ public class ResultController {
 	public List<String> getAvailableFormats(User user, Long resultId) {
 		List<Result> results = getResults(user, resultId);
 
-		if (results == null) {
+		if (results == null || results.size() == 0) {
 			return null;
 		}
+		if(results.get(0).getResultStatus() != ResultStatus.AVAILABLE) {
+			return null;
+		}
+		
 		List<DataConverterImplementation> rdc = irctApp
 				.getResultDataConverters().get(results.get(0).getDataType());
 
@@ -128,11 +132,17 @@ public class ResultController {
 		ResultDataStream rds = new ResultDataStream();
 		List<Result> results = getResults(user, resultId);
 
-		if (results == null) {
+		if (results == null || results.size() == 0) {
 			rds.setMessage("Unable to find result");
 			return rds;
 		}
 		Result result = results.get(0);
+		
+		if(result.getResultStatus() != ResultStatus.AVAILABLE) {
+			rds.setMessage("Result is not available");
+			return rds;
+		}
+		
 		ResultDataConverter rdc = irctApp.getResultDataConverter(
 				result.getDataType(), format);
 		if (rdc == null) {

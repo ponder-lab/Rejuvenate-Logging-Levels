@@ -25,10 +25,10 @@ import javax.persistence.MapKeyColumn;
 import javax.persistence.OneToMany;
 
 import edu.harvard.hms.dbmi.bd2k.irct.exception.ResourceInterfaceException;
-import edu.harvard.hms.dbmi.bd2k.irct.model.join.IRCTJoin;
 import edu.harvard.hms.dbmi.bd2k.irct.model.ontology.DataType;
 import edu.harvard.hms.dbmi.bd2k.irct.model.ontology.OntologyRelationship;
 import edu.harvard.hms.dbmi.bd2k.irct.model.ontology.OntologyType;
+import edu.harvard.hms.dbmi.bd2k.irct.model.query.JoinType;
 import edu.harvard.hms.dbmi.bd2k.irct.model.query.PredicateType;
 import edu.harvard.hms.dbmi.bd2k.irct.model.resource.implementation.PathResourceImplementationInterface;
 import edu.harvard.hms.dbmi.bd2k.irct.model.resource.implementation.ResourceImplementationInterface;
@@ -77,7 +77,7 @@ public class Resource implements Serializable {
 	private List<PredicateType> supportedPredicates;
 
 	@OneToMany
-	private List<IRCTJoin> supportedJoins;
+	private List<JoinType> supportedJoins;
 
 	@OneToMany
 	private List<ProcessType> supportedProcesses;
@@ -163,7 +163,7 @@ public class Resource implements Serializable {
 				// JOINS (Query Interface)
 				JsonArrayBuilder joinArray = Json.createArrayBuilder();
 				if (this.supportedJoins != null) {
-					for (IRCTJoin jt : this.supportedJoins) {
+					for (JoinType jt : this.supportedJoins) {
 						joinArray.add(jt.toJson());
 					}
 				}
@@ -274,6 +274,16 @@ public class Resource implements Serializable {
 		for(DataType dataType : this.dataTypes) {
 			if(dataType.toString().equals(dataTypeName)) {
 				return dataType;
+			}
+		}
+		return null;
+	}
+	
+	
+	public JoinType getSupportedJoinByName(String joinTypeName) {
+		for(JoinType joinType : this.supportedJoins) {
+			if(joinType.toString().equals(joinTypeName)) {
+				return joinType;
 			}
 		}
 		return null;
@@ -441,7 +451,7 @@ public class Resource implements Serializable {
 	 * 
 	 * @return the supportedJoins
 	 */
-	public List<IRCTJoin> getSupportedJoins() {
+	public List<JoinType> getSupportedJoins() {
 		return supportedJoins;
 	}
 
@@ -451,7 +461,7 @@ public class Resource implements Serializable {
 	 * @param supportedJoins
 	 *            the supportedJoins to set
 	 */
-	public void setSupportedJoins(List<IRCTJoin> supportedJoins) {
+	public void setSupportedJoins(List<JoinType> supportedJoins) {
 		this.supportedJoins = supportedJoins;
 	}
 

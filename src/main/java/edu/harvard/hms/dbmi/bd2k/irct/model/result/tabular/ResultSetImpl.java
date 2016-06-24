@@ -24,12 +24,14 @@ public class ResultSetImpl implements ResultSet {
 	private long size;
 	private long rowPosition = -1;
 	private boolean closed = false;
+	protected boolean current = false;
 
 	@Override
 	public void appendColumn(Column column) throws ResultSetException {
-		if (getSize() == 0) {
+		if ((getSize() == 0) && (!ArrayUtils.contains(columnNames, column.getName()))) {
 			this.columns = ArrayUtils.add(columns, column);
 			this.columnNames = ArrayUtils.add(columnNames, column.getName());
+			this.current = false;
 		}
 	}
 

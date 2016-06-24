@@ -15,6 +15,8 @@ import javax.persistence.PersistenceContext;
 import edu.harvard.hms.dbmi.bd2k.irct.exception.QueryException;
 import edu.harvard.hms.dbmi.bd2k.irct.model.ontology.DataType;
 import edu.harvard.hms.dbmi.bd2k.irct.model.ontology.Entity;
+import edu.harvard.hms.dbmi.bd2k.irct.model.query.JoinClause;
+import edu.harvard.hms.dbmi.bd2k.irct.model.query.JoinType;
 import edu.harvard.hms.dbmi.bd2k.irct.model.query.PredicateType;
 import edu.harvard.hms.dbmi.bd2k.irct.model.query.Query;
 import edu.harvard.hms.dbmi.bd2k.irct.model.query.SelectClause;
@@ -53,14 +55,21 @@ public class QueryController {
 	/**
 	 * Adds or updates a where clause to the query
 	 * 
-	 * @param clauseId Clause Id
-	 * @param resource Resource
-	 * @param field Field
-	 * @param predicate Predicate 
-	 * @param logicalOperator Logical Operator
-	 * @param fields Map of Field values
+	 * @param clauseId
+	 *            Clause Id
+	 * @param resource
+	 *            Resource
+	 * @param field
+	 *            Field
+	 * @param predicate
+	 *            Predicate
+	 * @param logicalOperator
+	 *            Logical Operator
+	 * @param fields
+	 *            Map of Field values
 	 * @return Id of the clause
-	 * @throws QueryException An exception occurred adding the where clause
+	 * @throws QueryException
+	 *             An exception occurred adding the where clause
 	 */
 	public Long addWhereClause(Long clauseId, Resource resource, Entity field,
 			PredicateType predicate, LogicalOperator logicalOperator,
@@ -91,7 +100,8 @@ public class QueryController {
 	/**
 	 * Deletes a where clause
 	 * 
-	 * @param clauseId Clause Id to delete
+	 * @param clauseId
+	 *            Clause Id to delete
 	 */
 	public void deleteWhereClause(Long clauseId) {
 		this.query.getClauses().remove(clauseId);
@@ -99,12 +109,18 @@ public class QueryController {
 
 	/**
 	 * Adds or updates a select clause
-	 * @param clauseId Clause Id
-	 * @param resource Resource
-	 * @param field Field
-	 * @param alias Alias for the column
+	 * 
+	 * @param clauseId
+	 *            Clause Id
+	 * @param resource
+	 *            Resource
+	 * @param field
+	 *            Field
+	 * @param alias
+	 *            Alias for the column
 	 * @return Clause Id
-	 * @throws QueryException An exception occurred adding the select clause
+	 * @throws QueryException
+	 *             An exception occurred adding the select clause
 	 */
 	public Long addSelectClause(Long clauseId, Resource resource, Entity field,
 			String alias) throws QueryException {
@@ -130,10 +146,30 @@ public class QueryController {
 
 	/**
 	 * Adds a join clause
-	 * @throws QueryException An occurred adding the join clause
+	 * 
+	 * @return
+	 * @throws QueryException
+	 *             An occurred adding the join clause
 	 */
-	public void addJoinClause() throws QueryException {
-		validateJoinClause();
+	public Long addJoinClause(Long clauseId, Resource resource, JoinType joinType, Map<String, String> joinFields) throws QueryException {
+		validateJoinClause(resource, joinType, joinFields);
+		
+		
+		
+		JoinClause jc = new JoinClause();
+		jc.setJoinType(joinType);
+		jc.setStringValues(joinFields);
+		
+		// Assign the where clause an id if it doesn't have one
+		if (clauseId == null) {
+			clauseId = this.lastId;
+			this.lastId++;
+		}
+
+		// Add the where clause to the query
+		query.addClause(clauseId, jc);
+
+		return clauseId;
 	}
 
 	/**
@@ -182,8 +218,24 @@ public class QueryController {
 			throw new QueryException("Queries only support one resource");
 		}
 	}
-
-	private void validateJoinClause() throws QueryException {
+	
+	private void validateJoinClause(Resource resource, JoinType joinType,
+			Map<String, String> joinFields) throws QueryException {
+		// Is the resource part of query?
+		if (this.query.getResources().isEmpty()) {
+			this.query.getResources().add(resource);
+		} else if (!this.query.getResources().contains(resource)) {
+			throw new QueryException("Queries only support one resource");
+		}
+		
+		// Does the resource support the join type
+		if(!resource.getSupportedJoins().contains(joinType)) {
+			throw new QueryException(
+					"Join Type is not supported by the resource");
+		}
+		
+		// Are all the fields valid?
+		validateFields(joinType.getFields(), joinFields);
 	}
 
 	private void validateFields(List<Field> fields,
@@ -218,7 +270,7 @@ public class QueryController {
 						&& (!predicateField.getPermittedValues().contains(
 								queryFieldValue))) {
 					throw new QueryException(
-							"The field value set is not a required field");
+							"The field value is not of an allowed type");
 				}
 			}
 		}
@@ -227,7 +279,8 @@ public class QueryController {
 	/**
 	 * Save the query
 	 * 
-	 * @throws QueryException An exception occurred saving the query
+	 * @throws QueryException
+	 *             An exception occurred saving the query
 	 */
 	public void saveQuery() throws QueryException {
 		if (this.query == null) {
@@ -245,8 +298,10 @@ public class QueryController {
 	/**
 	 * Load the query
 	 * 
-	 * @param queryId Query to load
-	 * @throws QueryException An exception occurred loading the query
+	 * @param queryId
+	 *            Query to load
+	 * @throws QueryException
+	 *             An exception occurred loading the query
 	 */
 	public void loadQuery(Long queryId) throws QueryException {
 		if (queryId == null) {
@@ -272,7 +327,8 @@ public class QueryController {
 	/**
 	 * Sets the given query
 	 * 
-	 * @param query Query
+	 * @param query
+	 *            Query
 	 */
 	public void setQuery(Query query) {
 		this.query = query;

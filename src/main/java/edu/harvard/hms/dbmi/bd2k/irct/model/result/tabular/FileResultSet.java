@@ -55,7 +55,6 @@ public class FileResultSet extends ResultSetImpl implements Persistable {
 	// private long rowPosition = -1;
 	private Row currentRow;
 
-	private boolean current = false;
 	private boolean persisted = false;
 
 	private Map<Long, Row> pendingData;

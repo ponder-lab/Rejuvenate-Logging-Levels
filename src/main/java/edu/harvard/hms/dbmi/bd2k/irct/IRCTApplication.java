@@ -50,7 +50,7 @@ public class IRCTApplication {
 	private EntityManagerFactory objectEntityManager;
 
 	private EntityManager oem;
-
+ 
 	/**
 	 * Initiates the IRCT Application and loading of the joins, resources, and
 	 * predicates.
