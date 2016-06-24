@@ -18,11 +18,13 @@ import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.MapKeyColumn;
 import javax.persistence.OneToMany;
+import javax.persistence.Transient;
 
 import edu.harvard.hms.dbmi.bd2k.irct.exception.ResourceInterfaceException;
 import edu.harvard.hms.dbmi.bd2k.irct.model.ontology.DataType;
@@ -59,44 +61,48 @@ public class Resource implements Serializable {
 	@Convert(converter = ResourceImplementationConverter.class)
 	private ResourceImplementationInterface implementingInterface;
 
-	@ElementCollection
+	@ElementCollection(fetch=FetchType.EAGER)
 	@Convert(converter = DataTypeConverter.class)
 	private List<DataType> dataTypes;
 
-	@ElementCollection
+	@ElementCollection(fetch=FetchType.EAGER)
 	@Convert(converter = OntologyRelationshipConverter.class)
 	private List<OntologyRelationship> relationships;
 
-	@ElementCollection(targetClass = LogicalOperator.class)
+	@ElementCollection(targetClass = LogicalOperator.class, fetch=FetchType.EAGER)
 	@CollectionTable(name = "Resource_LogicalOperator", joinColumns = @JoinColumn(name = "id"))
 	@Column(name = "logicalOperator", nullable = false)
 	@Enumerated(EnumType.STRING)
 	private List<LogicalOperator> logicalOperators;
 
-	@OneToMany
+	@OneToMany(fetch=FetchType.EAGER)
 	private List<PredicateType> supportedPredicates;
 
-	@OneToMany
+	@OneToMany(fetch=FetchType.EAGER)
 	private List<JoinType> supportedJoins;
 
-	@OneToMany
+	@OneToMany(fetch=FetchType.EAGER)
 	private List<ProcessType> supportedProcesses;
 
-	@OneToMany
+	@OneToMany(fetch=FetchType.EAGER)
 	private List<VisualizationType> supportedVisualizations;
 
-	@ElementCollection
+	@ElementCollection(fetch=FetchType.EAGER)
 	@MapKeyColumn(name = "name")
 	@Column(name = "value")
 	@CollectionTable(name = "resource_parameters", joinColumns = @JoinColumn(name = "id"))
 	private Map<String, String> parameters;
 
+	@Transient
+	private boolean setup = false;
+	
 	/**
 	 * Sets up the Resource and the implementing interface
 	 * @throws ResourceInterfaceException Throws a resource interface
 	 */
 	public void setup() throws ResourceInterfaceException {
 		implementingInterface.setup(this.parameters);
+		this.setSetup(true);
 	}
 
 	/**
@@ -520,5 +526,19 @@ public class Resource implements Serializable {
 	 */
 	public void setParameters(Map<String, String> parameters) {
 		this.parameters = parameters;
+	}
+
+	/**
+	 * @return the setup
+	 */
+	public boolean isSetup() {
+		return setup;
+	}
+
+	/**
+	 * @param setup the setup to set
+	 */
+	public void setSetup(boolean setup) {
+		this.setup = setup;
 	}
 }

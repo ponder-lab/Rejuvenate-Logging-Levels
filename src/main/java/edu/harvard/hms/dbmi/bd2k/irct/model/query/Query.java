@@ -12,13 +12,16 @@ import java.util.Map;
 import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
+import javax.persistence.CascadeType;
 import javax.persistence.CollectionTable;
 import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Inheritance;
 import javax.persistence.InheritanceType;
+import javax.persistence.ManyToMany;
 import javax.persistence.MapKeyColumn;
 import javax.persistence.OneToMany;
 
@@ -42,17 +45,19 @@ public class Query implements Serializable {
 	private Long id;
 	private String name;
 	
-	@ElementCollection
-	@CollectionTable(name="query_subquery")
-	@MapKeyColumn(name="query_id")
+//	@ElementCollection
+//	@CollectionTable(name="query_subquery")
+//	@MapKeyColumn(name="query_id")
+	@ManyToMany(cascade=CascadeType.ALL, fetch=FetchType.EAGER)
 	private Map<Long, SubQuery> subQueries;
 	
-	@ElementCollection
-	@CollectionTable(name="query_clause")
-	@MapKeyColumn(name="query_id")
+//	@ElementCollection
+//	@CollectionTable(name="query_clause")
+//	@MapKeyColumn(name="query_id")
+	@ManyToMany(cascade=CascadeType.ALL, fetch=FetchType.EAGER)
 	private Map<Long, ClauseAbstract> clauses;
 
-	@OneToMany
+	@OneToMany(fetch=FetchType.EAGER)
 	private List<Resource> resources;
 
 	/**

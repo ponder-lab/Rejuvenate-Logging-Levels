@@ -52,6 +52,9 @@ public class ExecutionController {
 
 	@Resource
 	private ManagedExecutorService mes;
+	
+	@Inject
+	private ResourceController rc;
 
 	/**
 	 * Runs the process
@@ -110,9 +113,13 @@ public class ExecutionController {
 
 		newResult.setResultStatus(ResultStatus.RUNNING);
 		entityManager.persist(newResult);
-
+		
 		QueryAction qa = new QueryAction();
-		qa.setup(query.getResources().get(0), query);
+		edu.harvard.hms.dbmi.bd2k.irct.model.resource.Resource resource = query.getResources().get(0);
+		if(!resource.isSetup()) {
+			resource = rc.getResource(resource.getName());
+		}
+		qa.setup(resource, query);
 
 		ExecutableLeafNode eln = new ExecutableLeafNode();
 		eln.setAction(qa);

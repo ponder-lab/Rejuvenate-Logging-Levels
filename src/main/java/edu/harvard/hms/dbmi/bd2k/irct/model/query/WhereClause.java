@@ -11,11 +11,13 @@ import javax.json.Json;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
+import javax.persistence.CascadeType;
 import javax.persistence.CollectionTable;
 import javax.persistence.Column;
 import javax.persistence.ElementCollection;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.MapKeyColumn;
@@ -35,21 +37,24 @@ import edu.harvard.hms.dbmi.bd2k.irct.model.resource.LogicalOperator;
 public class WhereClause extends ClauseAbstract implements Serializable {
 	private static final long serialVersionUID = 5846062257054747524L;
 	
-	@OneToOne
+	@OneToOne(cascade=CascadeType.ALL)
 	private SubQuery subQuery;
 	
 	@Enumerated(EnumType.STRING)
 	private LogicalOperator logicalOperator;
-	@OneToOne
+	@OneToOne(cascade=CascadeType.ALL)
 	private Entity field;
 	
 	@ManyToOne
 	private PredicateType predicateType;
 	
-	@ElementCollection
-	@CollectionTable(name="where_values", joinColumns=@JoinColumn(name="WHERE_VALUE"))
-	@MapKeyColumn(name="where_id")
-	@Column(name="where_value")
+//	@ElementCollection
+//	@CollectionTable(name="where_values")
+//	@MapKeyColumn(name="where_id")
+	@ElementCollection(fetch = FetchType.EAGER)
+	@MapKeyColumn(name="name")
+	@Column(name="value")
+	@CollectionTable(name="where_values", joinColumns=@JoinColumn(name="where_id"))
 	private Map<String, String> stringValues;
 	
 	/**
