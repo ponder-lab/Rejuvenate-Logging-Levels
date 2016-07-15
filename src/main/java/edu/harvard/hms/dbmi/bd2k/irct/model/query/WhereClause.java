@@ -48,9 +48,6 @@ public class WhereClause extends ClauseAbstract implements Serializable {
 	@ManyToOne
 	private PredicateType predicateType;
 	
-//	@ElementCollection
-//	@CollectionTable(name="where_values")
-//	@MapKeyColumn(name="where_id")
 	@ElementCollection(fetch = FetchType.EAGER)
 	@MapKeyColumn(name="name")
 	@Column(name="value")

@@ -45,15 +45,9 @@ public class Query implements Serializable {
 	private Long id;
 	private String name;
 	
-//	@ElementCollection
-//	@CollectionTable(name="query_subquery")
-//	@MapKeyColumn(name="query_id")
 	@ManyToMany(cascade=CascadeType.ALL, fetch=FetchType.EAGER)
 	private Map<Long, SubQuery> subQueries;
 	
-//	@ElementCollection
-//	@CollectionTable(name="query_clause")
-//	@MapKeyColumn(name="query_id")
 	@ManyToMany(cascade=CascadeType.ALL, fetch=FetchType.EAGER)
 	private Map<Long, ClauseAbstract> clauses;
 
