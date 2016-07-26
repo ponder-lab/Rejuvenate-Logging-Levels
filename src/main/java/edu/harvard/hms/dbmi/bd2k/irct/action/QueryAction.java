@@ -17,6 +17,8 @@ import edu.harvard.hms.dbmi.bd2k.irct.model.result.Persistable;
 import edu.harvard.hms.dbmi.bd2k.irct.model.result.Result;
 import edu.harvard.hms.dbmi.bd2k.irct.model.result.ResultStatus;
 import edu.harvard.hms.dbmi.bd2k.irct.model.security.SecureSession;
+import edu.harvard.hms.dbmi.bd2k.irct.util.Utilities;
+import edu.harvard.hms.dbmi.bd2k.irct.event.IRCTEventListener;
 import edu.harvard.hms.dbmi.bd2k.irct.exception.ResourceInterfaceException;
 
 /**
@@ -31,6 +33,8 @@ public class QueryAction implements Action {
 	private Resource resource;
 	private ActionStatus status;
 	private Result result;
+	
+	private IRCTEventListener irctEventListener;
 
 	/**
 	 * Sets up the action to run a given query on a resource
@@ -44,6 +48,7 @@ public class QueryAction implements Action {
 		this.query = query;
 		this.resource = resource;
 		this.status = ActionStatus.CREATED;
+		this.irctEventListener = Utilities.getIRCTEventListener();
 	}
 
 	@Override
@@ -63,6 +68,7 @@ public class QueryAction implements Action {
 
 	@Override
 	public void run(SecureSession session) {
+		irctEventListener.beforeQuery(session, resource, query);
 		this.status = ActionStatus.RUNNING;
 		try {
 			QueryResourceImplementationInterface queryInterface = (QueryResourceImplementationInterface) resource
@@ -84,6 +90,7 @@ public class QueryAction implements Action {
 			this.result.setMessage(e.getMessage());
 			this.status = ActionStatus.ERROR;
 		}
+		irctEventListener.afterQuery(session, resource, query);
 	}
 
 	@Override

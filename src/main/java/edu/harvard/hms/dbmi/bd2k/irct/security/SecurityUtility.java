@@ -63,7 +63,7 @@ public class SecurityUtility {
 
 			//
 			urlParameters.add(new BasicNameValuePair("client_id",
-					resourceClientId));
+					((JWT) session.getToken()).getClientId()));
 			urlParameters.add(new BasicNameValuePair("scope",
 					"openid name email"));
 			urlParameters.add(new BasicNameValuePair("api_type", "app"));
@@ -80,6 +80,10 @@ public class SecurityUtility {
 
 			if (responseObject.containsKey("")) {
 
+			}
+			if(responseObject.containsKey("error")) {
+				System.out.println("ERROR GETTING TOKEN: " + responseObject.getString("error") + " " + responseObject.getString("error_description"));
+				return null;
 			}
 			JWT jwt = new JWT();
 			jwt.setType(responseObject.getString("token_type"));

@@ -50,12 +50,12 @@ public class ExecutionController {
 	@PersistenceContext
 	EntityManager entityManager;
 
-	@Resource
+	@Resource(name = "DefaultManagedExecutorService")
 	private ManagedExecutorService mes;
 	
 	@Inject
 	private ResourceController rc;
-
+	
 	/**
 	 * Runs the process
 	 * 

@@ -13,8 +13,6 @@ import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 import javax.persistence.CascadeType;
-import javax.persistence.CollectionTable;
-import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
@@ -22,7 +20,6 @@ import javax.persistence.Id;
 import javax.persistence.Inheritance;
 import javax.persistence.InheritanceType;
 import javax.persistence.ManyToMany;
-import javax.persistence.MapKeyColumn;
 import javax.persistence.OneToMany;
 
 import edu.harvard.hms.dbmi.bd2k.irct.model.resource.Resource;
@@ -44,14 +41,14 @@ public class Query implements Serializable {
 	@GeneratedValue
 	private Long id;
 	private String name;
-	
-	@ManyToMany(cascade=CascadeType.ALL, fetch=FetchType.EAGER)
+
+	@ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
 	private Map<Long, SubQuery> subQueries;
-	
-	@ManyToMany(cascade=CascadeType.ALL, fetch=FetchType.EAGER)
+
+	@ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
 	private Map<Long, ClauseAbstract> clauses;
 
-	@OneToMany(fetch=FetchType.EAGER)
+	@OneToMany(fetch = FetchType.EAGER)
 	private List<Resource> resources;
 
 	/**
@@ -92,6 +89,56 @@ public class Query implements Serializable {
 		return jsonBuilder.build();
 	}
 
+	/**
+	 * Converts the query into a string
+	 * 
+	 */
+	public String toString() {
+		String select = "";
+		String where = "";
+		String resourceNames = "";
+
+		for (ClauseAbstract clause : this.clauses.values()) {
+			if (clause instanceof SelectClause) {
+				SelectClause sc = (SelectClause) clause;
+				if (!select.equals("")) {
+					select += ", ";
+				}
+				select += sc.getParameter().getPui() + " as " + sc.getAlias();
+			} else if (clause instanceof WhereClause) {
+				WhereClause wc = (WhereClause) clause;
+				if (!where.equals("")) {
+					where += ", ";
+				}
+
+				String predicateFields = "";
+				for (String predicateField : wc.getStringValues().keySet()) {
+					if (!predicateFields.equals("")) {
+						predicateFields += ", ";
+					}
+					predicateFields += predicateField + "="
+							+ wc.getStringValues().get(predicateField);
+				}
+				where += wc.getField().getPui() + " "
+						+ wc.getPredicateType().getDisplayName() + " "
+						+ predicateFields;
+			}
+		}
+		
+		for (Resource resource : resources) {
+			if (!resourceNames.equals("")) {
+				resourceNames += ", ";
+			}
+			resourceNames += resource.getName();
+		}
+		
+		if (select.equals("")) {
+			select = "*";
+		}
+		
+		return "select " + select + " from " + resourceNames + " where " + where;
+	}
+
 	// -------------------------------------------------------------------------
 	// SETTERS AND GETTERS
 	// -------------------------------------------------------------------------
@@ -127,7 +174,8 @@ public class Query implements Serializable {
 	/**
 	 * Sets the name of the query
 	 * 
-	 * @param name Name of the query
+	 * @param name
+	 *            Name of the query
 	 */
 	public void setName(String name) {
 		this.name = name;
@@ -212,7 +260,8 @@ public class Query implements Serializable {
 	 * Sets a map of Clauses where the key is the clause id, and the Clause is
 	 * the value
 	 * 
-	 * @param clauses Map of Clauses
+	 * @param clauses
+	 *            Map of Clauses
 	 */
 	public void setClauses(Map<Long, ClauseAbstract> clauses) {
 		this.clauses = clauses;
