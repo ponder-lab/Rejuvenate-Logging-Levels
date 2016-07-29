@@ -8,11 +8,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.annotation.PostConstruct;
 import javax.ejb.Singleton;
-import javax.ejb.Stateful;
-import javax.ejb.Stateless;
-import javax.enterprise.context.ApplicationScoped;
 
 import edu.harvard.hms.dbmi.bd2k.irct.action.Action;
 import edu.harvard.hms.dbmi.bd2k.irct.event.action.AfterAction;
