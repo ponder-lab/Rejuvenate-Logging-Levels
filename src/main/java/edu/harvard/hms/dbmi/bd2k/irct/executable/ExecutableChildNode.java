@@ -12,10 +12,12 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import edu.harvard.hms.dbmi.bd2k.irct.action.Action;
+import edu.harvard.hms.dbmi.bd2k.irct.event.IRCTEventListener;
 import edu.harvard.hms.dbmi.bd2k.irct.exception.ResourceInterfaceException;
 import edu.harvard.hms.dbmi.bd2k.irct.model.result.Result;
 import edu.harvard.hms.dbmi.bd2k.irct.model.result.ResultStatus;
 import edu.harvard.hms.dbmi.bd2k.irct.model.security.SecureSession;
+import edu.harvard.hms.dbmi.bd2k.irct.util.Utilities;
 
 /**
  * A child node in an execution tree that can be executed. It can have children of its own.
@@ -31,6 +33,8 @@ public class ExecutableChildNode implements Executable {
 	private Map<String, Executable> children;
 	private Map<String, Result> childrenResults;
 	private ExecutableStatus state;
+	
+	private IRCTEventListener irctEventListener;
 
 	@Override
 	public void setup(SecureSession secureSession) {
@@ -38,10 +42,13 @@ public class ExecutableChildNode implements Executable {
 		this.children = new HashMap<String, Executable>();
 		this.childrenResults = new HashMap<String, Result>();
 		this.state = ExecutableStatus.CREATED;
+		this.irctEventListener = Utilities.getIRCTEventListener();
 	}
 
 	@Override
 	public void run() throws ResourceInterfaceException {
+		irctEventListener.beforeAction(session, action);
+		
 		if (isBlocking() && !children.isEmpty()) {
 			runSequentially();
 		} else if (!children.isEmpty()){
@@ -54,6 +61,8 @@ public class ExecutableChildNode implements Executable {
 		this.state = ExecutableStatus.RUNNING;
 		this.action.run(this.session);
 		this.state = ExecutableStatus.COMPLETED;
+		
+		irctEventListener.afterAction(session, action);
 	}
 
 	private void runSequentially() throws ResourceInterfaceException {

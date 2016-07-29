@@ -61,6 +61,19 @@ public class IRCTProcess implements Serializable {
 		this.setResources(new ArrayList<Resource>());
 		this.stringValues = new HashMap<String, String>();
 	}
+	
+	public String toString() {
+		
+		String processFields = "";
+		for (String processField : this.stringValues.keySet()) {
+			if (!processFields.equals("")) {
+				processFields += ", ";
+			}
+			processFields += processField + "="
+					+ this.stringValues.get(processField);
+		}
+		return processType.getDisplayName() + " " + processFields;
+	}
 
 	/**
 	 * Returns the process id

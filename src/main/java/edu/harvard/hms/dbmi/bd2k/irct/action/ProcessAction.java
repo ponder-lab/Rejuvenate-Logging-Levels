@@ -9,6 +9,7 @@ import java.util.Map;
 
 import javax.naming.NamingException;
 
+import edu.harvard.hms.dbmi.bd2k.irct.event.IRCTEventListener;
 import edu.harvard.hms.dbmi.bd2k.irct.exception.ResourceInterfaceException;
 import edu.harvard.hms.dbmi.bd2k.irct.model.process.IRCTProcess;
 import edu.harvard.hms.dbmi.bd2k.irct.model.resource.Resource;
@@ -16,6 +17,7 @@ import edu.harvard.hms.dbmi.bd2k.irct.model.resource.implementation.ProcessResou
 import edu.harvard.hms.dbmi.bd2k.irct.model.result.Result;
 import edu.harvard.hms.dbmi.bd2k.irct.model.result.ResultStatus;
 import edu.harvard.hms.dbmi.bd2k.irct.model.security.SecureSession;
+import edu.harvard.hms.dbmi.bd2k.irct.util.Utilities;
 
 /**
  * Implements the Action interface to run a process on a specific instance
@@ -30,6 +32,7 @@ public class ProcessAction implements Action {
 	private ActionStatus status;
 	private Result result;
 	
+	private IRCTEventListener irctEventListener;
 	
 	/**
 	 * Run a given process on a resource 
@@ -40,6 +43,7 @@ public class ProcessAction implements Action {
 	public void setup(Resource resource, IRCTProcess process) {
 		this.resource = resource;
 		this.process = process;
+		this.irctEventListener = Utilities.getIRCTEventListener();
 	}
 	
 	@Override
@@ -51,6 +55,7 @@ public class ProcessAction implements Action {
 	
 	@Override
 	public void run(SecureSession session) {
+		irctEventListener.beforeProcess(session, process);
 		this.status = ActionStatus.RUNNING;
 		try {
 			ProcessResourceImplementationInterface processInterface = (ProcessResourceImplementationInterface) resource.getImplementingInterface();
@@ -68,6 +73,7 @@ public class ProcessAction implements Action {
 			result.setMessage(e.getMessage());
 			this.status = ActionStatus.ERROR;
 		}
+		irctEventListener.afterProcess(session, process);
 	}
 
 	@Override

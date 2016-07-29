@@ -4,9 +4,11 @@
 package edu.harvard.hms.dbmi.bd2k.irct.executable;
 
 import edu.harvard.hms.dbmi.bd2k.irct.action.Action;
+import edu.harvard.hms.dbmi.bd2k.irct.event.IRCTEventListener;
 import edu.harvard.hms.dbmi.bd2k.irct.exception.ResourceInterfaceException;
 import edu.harvard.hms.dbmi.bd2k.irct.model.result.Result;
 import edu.harvard.hms.dbmi.bd2k.irct.model.security.SecureSession;
+import edu.harvard.hms.dbmi.bd2k.irct.util.Utilities;
 
 /**
  * A leaf node in an execution tree that can be executed. It does not have any
@@ -20,18 +22,26 @@ public class ExecutableLeafNode implements Executable {
 	private SecureSession session;
 	private Action action;
 	private ExecutableStatus state;
+	
+	private IRCTEventListener irctEventListener;
 
 	@Override
 	public void setup(SecureSession secureSession) {
 		this.session = secureSession;
 		this.state = ExecutableStatus.CREATED;
+		
+		this.irctEventListener = Utilities.getIRCTEventListener();
 	}
 
 	@Override
 	public void run() throws ResourceInterfaceException {
+		irctEventListener.beforeAction(session, action);
+		
 		this.state = ExecutableStatus.RUNNING;
 		this.action.run(this.session);
 		this.state = ExecutableStatus.COMPLETED;
+		
+		irctEventListener.afterAction(session, action);
 	}
 
 	@Override

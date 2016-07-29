@@ -3,15 +3,10 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 package edu.harvard.hms.dbmi.bd2k.irct;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.annotation.PostConstruct;
@@ -23,9 +18,10 @@ import javax.persistence.FlushModeType;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
-import javax.servlet.ServletContext;
 
 import edu.harvard.hms.dbmi.bd2k.irct.dataconverter.ResultDataConverter;
+import edu.harvard.hms.dbmi.bd2k.irct.event.EventConverterImplementation;
+import edu.harvard.hms.dbmi.bd2k.irct.event.IRCTEventListener;
 import edu.harvard.hms.dbmi.bd2k.irct.exception.ResourceInterfaceException;
 import edu.harvard.hms.dbmi.bd2k.irct.model.join.IRCTJoin;
 import edu.harvard.hms.dbmi.bd2k.irct.model.resource.Resource;
@@ -42,23 +38,25 @@ import edu.harvard.hms.dbmi.bd2k.irct.model.result.ResultDataType;
 @ApplicationScoped
 public class IRCTApplication {
 
+	@javax.annotation.Resource(mappedName ="java:global/resultDataFolder")
+	private String resultDataFolder = null;
+	
 	private Map<String, Resource> resources;
 	private Map<String, IRCTJoin> supportedJoinTypes;
 	private Map<ResultDataType, List<DataConverterImplementation>> resultDataConverters;
-
-	private Properties properties;
+	private Map<String, EventConverterImplementation> irctEventConverters;
 
 	@Inject
 	Logger log;
 
 	@Inject
 	private EntityManagerFactory objectEntityManager;
-
+	
 	@Inject
-	private ServletContext context;
+	private IRCTEventListener irctEventListener;
 
 	private EntityManager oem;
-
+ 
 	/**
 	 * Initiates the IRCT Application and loading of the joins, resources, and
 	 * predicates.
@@ -70,13 +68,14 @@ public class IRCTApplication {
 		this.oem = objectEntityManager.createEntityManager();
 		this.oem.setFlushMode(FlushModeType.COMMIT);
 
-		log.info("Loading Properties");
-		loadProperties();
-		log.info("Finished Loading Properties");
-
 		log.info("Loading Data Converters");
 		loadDataConverters();
 		log.info("Finished Data Converters");
+		
+		
+		log.info("Loading Event Listeners");
+		loadIRCTEventListeners();
+		log.info("Finished Loading Event Listeners");
 
 		this.oem = objectEntityManager.createEntityManager();
 		this.oem.setFlushMode(FlushModeType.COMMIT);
@@ -93,34 +92,27 @@ public class IRCTApplication {
 	}
 
 	/**
-	 * 
-	 * Load all the properties from the servlet context or from the
-	 * IRCT.properties file
+	 * Load all the Listeners
 	 * 
 	 */
-	private void loadProperties() {
-		this.properties = new Properties();
-		if (context != null) {
-			Enumeration<String> propertyNameEnumeration = context
-					.getInitParameterNames();
-			while (propertyNameEnumeration.hasMoreElements()) {
-				String propertyName = propertyNameEnumeration.nextElement();
-				this.properties.put(propertyName,
-						context.getInitParameter(propertyName));
-			}
-
-		} else {
-			InputStream inputStream = IRCTApplication.class.getClassLoader()
-					.getResourceAsStream("IRCT.properties");
-
-			try {
-				this.properties.load(inputStream);
-			} catch (IOException e) {
-				log.info("Error loading properties: " + e.getMessage());
-				log.log(Level.FINE, "Error loading properties", e);
-			}
+	private void loadIRCTEventListeners() {
+		this.irctEventListener.init();
+		this.irctEventConverters = new HashMap<String, EventConverterImplementation>();
+		CriteriaBuilder cb = oem.getCriteriaBuilder();
+		CriteriaQuery<EventConverterImplementation> criteria = cb
+				.createQuery(EventConverterImplementation.class);
+		Root<EventConverterImplementation> load = criteria
+				.from(EventConverterImplementation.class);
+		criteria.select(load);
+		List<EventConverterImplementation> allEventListeners = oem.createQuery(criteria)
+				.getResultList();
+		
+		for (EventConverterImplementation irctEvent : allEventListeners) {
+			irctEventListener.registerListener(irctEvent.getEventListener());
+			this.irctEventConverters.put(irctEvent.getName(), irctEvent);
 		}
 
+		log.info("Loaded " + allEventListeners.size() + " IRCT Event listeners");
 	}
 
 	/**
@@ -191,6 +183,9 @@ public class IRCTApplication {
 		}
 		log.info("Loaded " + this.resources.size() + " resources");
 	}
+	
+	
+	
 
 	/**
 	 * Adds a given resource to the IRCT application
@@ -349,21 +344,18 @@ public class IRCTApplication {
 	}
 
 	/**
-	 * Get the properties
-	 * 
-	 * @return Properties
+	 * Get the name of the result data folder
+	 * @return Result Data Folder
 	 */
-	public Properties getProperties() {
-		return properties;
+	public String getResultDataFolder() {
+		return resultDataFolder;
 	}
 
 	/**
-	 * Set the properties
-	 * 
-	 * @param properties
-	 *            Properties
+	 * Sets the name of the result data folder
+	 * @param resultDataFolder Result Data Folder
 	 */
-	public void setProperties(Properties properties) {
-		this.properties = properties;
+	public void setResultDataFolder(String resultDataFolder) {
+		this.resultDataFolder = resultDataFolder;
 	}
 }

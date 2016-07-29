@@ -12,6 +12,7 @@ import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 import javax.persistence.Convert;
 import javax.persistence.ElementCollection;
+import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
@@ -21,6 +22,7 @@ import edu.harvard.hms.dbmi.bd2k.irct.model.ontology.DataType;
 import edu.harvard.hms.dbmi.bd2k.irct.model.resource.Field;
 import edu.harvard.hms.dbmi.bd2k.irct.util.converter.DataTypeConverter;
 
+@Entity
 public class JoinType implements Serializable {
 	private static final long serialVersionUID = 7650772906469344618L;
 

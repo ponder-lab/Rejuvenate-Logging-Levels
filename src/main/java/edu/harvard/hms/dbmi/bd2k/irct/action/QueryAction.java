@@ -13,9 +13,12 @@ import edu.harvard.hms.dbmi.bd2k.irct.model.query.Query;
 import edu.harvard.hms.dbmi.bd2k.irct.model.query.WhereClause;
 import edu.harvard.hms.dbmi.bd2k.irct.model.resource.Resource;
 import edu.harvard.hms.dbmi.bd2k.irct.model.resource.implementation.QueryResourceImplementationInterface;
+import edu.harvard.hms.dbmi.bd2k.irct.model.result.Persistable;
 import edu.harvard.hms.dbmi.bd2k.irct.model.result.Result;
 import edu.harvard.hms.dbmi.bd2k.irct.model.result.ResultStatus;
 import edu.harvard.hms.dbmi.bd2k.irct.model.security.SecureSession;
+import edu.harvard.hms.dbmi.bd2k.irct.util.Utilities;
+import edu.harvard.hms.dbmi.bd2k.irct.event.IRCTEventListener;
 import edu.harvard.hms.dbmi.bd2k.irct.exception.ResourceInterfaceException;
 
 /**
@@ -30,6 +33,8 @@ public class QueryAction implements Action {
 	private Resource resource;
 	private ActionStatus status;
 	private Result result;
+	
+	private IRCTEventListener irctEventListener;
 
 	/**
 	 * Sets up the action to run a given query on a resource
@@ -43,6 +48,7 @@ public class QueryAction implements Action {
 		this.query = query;
 		this.resource = resource;
 		this.status = ActionStatus.CREATED;
+		this.irctEventListener = Utilities.getIRCTEventListener();
 	}
 
 	@Override
@@ -62,27 +68,29 @@ public class QueryAction implements Action {
 
 	@Override
 	public void run(SecureSession session) {
+		irctEventListener.beforeQuery(session, resource, query);
 		this.status = ActionStatus.RUNNING;
 		try {
 			QueryResourceImplementationInterface queryInterface = (QueryResourceImplementationInterface) resource
 					.getImplementingInterface();
 
-			result = ActionUtilities.createResult(queryInterface
+			this.result = ActionUtilities.createResult(queryInterface
 					.getQueryDataType(query));
 
 			if (session != null) {
-				result.setUser(session.getUser());
+				this.result.setUser(session.getUser());
 			}
 
-			result = queryInterface.runQuery(session, query, result);
+			this.result = queryInterface.runQuery(session, query, result);
 
 			// Update the result in the database
-			ActionUtilities.mergeResult(result);
+			ActionUtilities.mergeResult(this.result);
 		} catch (Exception e) {
-			result.setResultStatus(ResultStatus.ERROR);
-			result.setMessage(e.getMessage());
+			this.result.setResultStatus(ResultStatus.ERROR);
+			this.result.setMessage(e.getMessage());
 			this.status = ActionStatus.ERROR;
 		}
+		irctEventListener.afterQuery(session, resource, query);
 	}
 
 	@Override
@@ -91,6 +99,7 @@ public class QueryAction implements Action {
 		try {
 			this.result = ((QueryResourceImplementationInterface) resource
 					.getImplementingInterface()).getResults(session, result);
+			
 			while ((this.result.getResultStatus() != ResultStatus.ERROR)
 					&& (this.result.getResultStatus() != ResultStatus.COMPLETE)) {
 				Thread.sleep(3000);
@@ -98,6 +107,15 @@ public class QueryAction implements Action {
 						.getImplementingInterface())
 						.getResults(session, result);
 			}
+			
+			if(this.result.getResultStatus() == ResultStatus.COMPLETE) {
+				if(((Persistable) result.getData()).isPersisted()) {
+					((Persistable) result.getData()).merge();
+				} else {
+					((Persistable) result.getData()).persist();
+				}
+			}
+			
 		} catch (Exception e) {
 			this.result.setResultStatus(ResultStatus.ERROR);
 			this.result.setMessage(e.getMessage());
