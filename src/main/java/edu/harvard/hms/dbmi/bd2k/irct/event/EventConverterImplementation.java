@@ -4,11 +4,18 @@
 package edu.harvard.hms.dbmi.bd2k.irct.event;
 
 import java.io.Serializable;
+import java.util.Map;
 
+import javax.persistence.CollectionTable;
+import javax.persistence.Column;
 import javax.persistence.Convert;
+import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.MapKeyColumn;
 
 import edu.harvard.hms.dbmi.bd2k.irct.util.converter.IRCTEventImplementationConverter;
 
@@ -28,6 +35,12 @@ public class EventConverterImplementation implements Serializable {
 	private long id;
 
 	private String name;
+	
+	@ElementCollection(fetch=FetchType.EAGER)
+	@MapKeyColumn(name = "name")
+	@Column(name = "value")
+	@CollectionTable(name = "event_parameters", joinColumns = @JoinColumn(name = "id"))
+	private Map<String, String> parameters;
 
 	@Convert(converter = IRCTEventImplementationConverter.class)
 	private IRCTEvent eventListener;
@@ -68,6 +81,20 @@ public class EventConverterImplementation implements Serializable {
 	 */
 	public void setName(String name) {
 		this.name = name;
+	}
+
+	/**
+	 * @return the parameters
+	 */
+	public Map<String, String> getParameters() {
+		return parameters;
+	}
+
+	/**
+	 * @param parameters the parameters to set
+	 */
+	public void setParameters(Map<String, String> parameters) {
+		this.parameters = parameters;
 	}
 
 	/**

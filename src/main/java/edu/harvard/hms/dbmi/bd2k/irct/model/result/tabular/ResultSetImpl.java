@@ -3,7 +3,9 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 package edu.harvard.hms.dbmi.bd2k.irct.model.result.tabular;
 
+import java.io.File;
 import java.util.Date;
+import java.util.List;
 
 import org.apache.commons.lang3.ArrayUtils;
 
@@ -38,8 +40,13 @@ public class ResultSetImpl implements ResultSet {
 	@Override
 	public void load(String resultSetLocation) throws ResultSetException,
 			PersistableException {
-		throw new ResultSetException("Not Implemented in this class");
 		
+		
+	}
+	
+	@Override
+	public List<File> getFileList() {
+		return null;
 	}
 
 	@Override

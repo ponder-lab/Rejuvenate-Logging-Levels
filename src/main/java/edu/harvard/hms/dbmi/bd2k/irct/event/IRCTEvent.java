@@ -3,6 +3,8 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 package edu.harvard.hms.dbmi.bd2k.irct.event;
 
+import java.util.Map;
+
 /**
  * The IRCT event listener base that other event listeners extend.
  * 
@@ -11,15 +13,7 @@ package edu.harvard.hms.dbmi.bd2k.irct.event;
  */
 public interface IRCTEvent {
 	/**
-	 * Returns the name of the event
-	 * 
-	 * @return Event Name
-	 */
-	public String getName();
-	
-	
-	/**
 	 * Initializes the event listener
 	 */
-	public void init();
+	public void init(Map<String, String> parameters);
 }

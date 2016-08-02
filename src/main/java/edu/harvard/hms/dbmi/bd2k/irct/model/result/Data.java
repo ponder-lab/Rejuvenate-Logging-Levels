@@ -3,6 +3,9 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 package edu.harvard.hms.dbmi.bd2k.irct.model.result;
 
+import java.io.File;
+import java.util.List;
+
 /**
  * An empty interface that is implemented by all data types 
  * 
@@ -10,5 +13,6 @@ package edu.harvard.hms.dbmi.bd2k.irct.model.result;
  *
  */
 public interface Data {
+	public List<File> getFileList();
 
 }

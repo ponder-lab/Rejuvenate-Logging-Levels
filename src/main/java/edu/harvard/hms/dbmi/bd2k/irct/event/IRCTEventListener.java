@@ -57,19 +57,20 @@ public class IRCTEventListener {
 	 * @param irctEvent
 	 *            Listener
 	 */
-	public void registerListener(IRCTEvent irctEvent) {
-		if (!IRCTEvent.class.isAssignableFrom(irctEvent.getClass())) {
-			return;
-		}
-
+	public void registerListener(EventConverterImplementation eci) {
+		
+		IRCTEvent irctEvent = eci.getEventListener();
 		String eventType = irctEvent.getClass().getInterfaces()[0]
 				.getSimpleName();
 
 		if (!events.containsKey(eventType)) {
 			events.put(eventType, new ArrayList<IRCTEvent>());
 		}
-
+		
+		irctEvent.init(eci.getParameters());
+		
 		events.get(eventType).add(irctEvent);
+		
 	}
 
 	// Action Events
