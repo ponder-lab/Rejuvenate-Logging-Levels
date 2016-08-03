@@ -1,6 +1,8 @@
 package edu.harvard.hms.dbmi.bd2k.irct.model.result.json;
 
+import java.io.File;
 import java.nio.file.Path;
+import java.util.List;
 
 import javax.json.JsonArray;
 import javax.json.JsonObject;
@@ -97,5 +99,11 @@ public class JsonFileResult implements Persistable, JSONResultImpl {
 	@Override
 	public boolean isClosed() {
 		return this.closed;
+	}
+
+	@Override
+	public List<File> getFileList() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

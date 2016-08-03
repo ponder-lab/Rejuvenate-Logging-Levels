@@ -3,6 +3,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 package edu.harvard.hms.dbmi.bd2k.irct.model.result.tabular;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
 import java.nio.ByteBuffer;
@@ -16,9 +17,11 @@ import java.nio.file.StandardOpenOption;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.json.Json;
@@ -634,6 +637,14 @@ public class FileResultSet extends ResultSetImpl implements Persistable {
 			}
 
 		}
+	}
+	
+	@Override
+	public List<File> getFileList() {
+		List<File> files = new ArrayList<File>();
+		files.add(infoFile.toFile());
+		files.add(dataFile.toFile());
+		return files;
 	}
 
 	public boolean isCurrent() {

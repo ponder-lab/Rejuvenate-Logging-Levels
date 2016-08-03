@@ -108,10 +108,9 @@ public class IRCTApplication {
 				.getResultList();
 		
 		for (EventConverterImplementation irctEvent : allEventListeners) {
-			irctEventListener.registerListener(irctEvent.getEventListener());
-			this.irctEventConverters.put(irctEvent.getName(), irctEvent);
+			irctEventListener.registerListener(irctEvent);
 		}
-
+		
 		log.info("Loaded " + allEventListeners.size() + " IRCT Event listeners");
 	}
 
