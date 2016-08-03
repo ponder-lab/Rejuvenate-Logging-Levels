@@ -20,7 +20,6 @@ import javax.persistence.Id;
 import javax.persistence.Inheritance;
 import javax.persistence.InheritanceType;
 import javax.persistence.ManyToMany;
-import javax.persistence.OneToMany;
 
 import edu.harvard.hms.dbmi.bd2k.irct.model.resource.Resource;
 
