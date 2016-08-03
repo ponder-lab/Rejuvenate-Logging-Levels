@@ -15,6 +15,12 @@ import edu.harvard.hms.dbmi.bd2k.irct.model.security.SecureSession;
  */
 public interface AfterExecutionPlan extends IRCTEvent {
 
+	/**
+	 * An action that is run after an execution plan is completed
+	 * 
+	 * @param session Session
+	 * @param executable Executable
+	 */
 	void fire(SecureSession session, Executable executable);
 
 }

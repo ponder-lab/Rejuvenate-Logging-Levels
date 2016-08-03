@@ -13,5 +13,11 @@ import edu.harvard.hms.dbmi.bd2k.irct.model.result.Result;
  *
  */
 public interface AfterGetResult extends IRCTEvent {
+	
+	/**
+	 * An action that is run after a result is retrieved
+	 * 
+	 * @param result Result
+	 */
 	public void fire(Result result);
 }

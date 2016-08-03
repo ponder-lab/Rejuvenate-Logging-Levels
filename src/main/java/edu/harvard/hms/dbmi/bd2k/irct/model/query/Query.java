@@ -48,7 +48,7 @@ public class Query implements Serializable {
 	@ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
 	private Map<Long, ClauseAbstract> clauses;
 
-	@OneToMany(fetch = FetchType.EAGER)
+	@ManyToMany(fetch = FetchType.EAGER)
 	private List<Resource> resources;
 
 	/**
