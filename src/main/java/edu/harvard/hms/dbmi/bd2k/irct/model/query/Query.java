@@ -5,9 +5,11 @@ package edu.harvard.hms.dbmi.bd2k.irct.model.query;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.json.Json;
 import javax.json.JsonObject;
@@ -48,7 +50,7 @@ public class Query implements Serializable {
 	private Map<Long, ClauseAbstract> clauses;
 
 	@ManyToMany(fetch = FetchType.EAGER)
-	private List<Resource> resources;
+	private Set<Resource> resources;
 
 	/**
 	 * Creates an empty query
@@ -57,7 +59,7 @@ public class Query implements Serializable {
 	public Query() {
 		this.setSubQueries(new LinkedHashMap<Long, SubQuery>());
 		this.setClauses(new LinkedHashMap<Long, ClauseAbstract>());
-		this.setResources(new ArrayList<Resource>());
+		this.setResources(new HashSet<Resource>());
 	}
 
 	/**
@@ -291,7 +293,7 @@ public class Query implements Serializable {
 	 * 
 	 * @return Resources
 	 */
-	public List<Resource> getResources() {
+	public Set<Resource> getResources() {
 		return resources;
 	}
 
@@ -301,7 +303,7 @@ public class Query implements Serializable {
 	 * @param resources
 	 *            Resources
 	 */
-	public void setResources(List<Resource> resources) {
+	public void setResources(Set<Resource> resources) {
 		this.resources = resources;
 	}
 }

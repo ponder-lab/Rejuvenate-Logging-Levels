@@ -113,7 +113,7 @@ public class ExecutionController {
 		entityManager.persist(newResult);
 		
 		QueryAction qa = new QueryAction();
-		edu.harvard.hms.dbmi.bd2k.irct.model.resource.Resource resource = query.getResources().get(0);
+		edu.harvard.hms.dbmi.bd2k.irct.model.resource.Resource resource = (edu.harvard.hms.dbmi.bd2k.irct.model.resource.Resource) query.getResources().toArray()[0];
 		if(!resource.isSetup()) {
 			resource = rc.getResource(resource.getName());
 		}
