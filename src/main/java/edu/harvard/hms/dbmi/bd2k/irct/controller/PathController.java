@@ -10,11 +10,13 @@ import java.util.logging.Logger;
 import javax.ejb.Stateless;
 import javax.inject.Inject;
 
+import edu.harvard.hms.dbmi.bd2k.irct.model.find.FindInformationInterface;
 import edu.harvard.hms.dbmi.bd2k.irct.model.ontology.OntologyRelationship;
 import edu.harvard.hms.dbmi.bd2k.irct.model.ontology.Entity;
 import edu.harvard.hms.dbmi.bd2k.irct.model.resource.Resource;
 import edu.harvard.hms.dbmi.bd2k.irct.model.resource.implementation.PathResourceImplementationInterface;
 import edu.harvard.hms.dbmi.bd2k.irct.model.security.SecureSession;
+import edu.harvard.hms.dbmi.bd2k.irct.event.IRCTEventListener;
 import edu.harvard.hms.dbmi.bd2k.irct.exception.ResourceInterfaceException;
 
 /**
@@ -32,6 +34,9 @@ public class PathController {
 
 	@Inject
 	Logger log;
+	
+	@Inject
+	private IRCTEventListener irctEventListener;
 
 	/**
 	 * Traverses the path in the resource with the given relationship
@@ -76,96 +81,48 @@ public class PathController {
 	 *             A resource interface exception occurred
 	 */
 	public List<Entity> searchForTerm(Resource resource, Entity resourcePath,
-			String searchTerm, SecureSession session)
+			FindInformationInterface findInformation, SecureSession session)
 			throws ResourceInterfaceException {
-		List<Entity> returns = new ArrayList<Entity>();
-		if (resource == null) {
-			for (Resource searchResource : rc.getPathResources()) {
-				returns.addAll(searchResourceForTerm(
-						(PathResourceImplementationInterface) searchResource
-								.getImplementingInterface(), null, searchTerm,
-						session));
-			}
-			return returns;
-		} else {
-			if (resource.getImplementingInterface() instanceof PathResourceImplementationInterface) {
-				return searchResourceForTerm(
-						(PathResourceImplementationInterface) resource
-								.getImplementingInterface(),
-						resourcePath, searchTerm, session);
+		List<Entity> matches = new ArrayList<Entity>();
+		List<FindInformationInterface> findInformationList = new ArrayList<FindInformationInterface>();
+		findInformationList.add(findInformation);
+		
+		irctEventListener.beforeFind(resource, resourcePath, findInformationList, session);
+		
+		for (FindInformationInterface findInformationEntry : findInformationList) {
+			if (resource == null) {
+				for (Resource searchResource : rc.getPathResources()) {
+					matches.addAll(find(
+							(PathResourceImplementationInterface) searchResource
+									.getImplementingInterface(), null,
+							findInformationEntry, session));
+				}
+				
+			} else {
+				if (resource.getImplementingInterface() instanceof PathResourceImplementationInterface) {
+					matches.addAll(find(
+							(PathResourceImplementationInterface) resource
+									.getImplementingInterface(),
+							resourcePath, findInformationEntry, session));
+				}
 			}
 		}
-		return null;
+		
+		irctEventListener.afterFind(matches, findInformation, session);
+		
+		
+		return matches;
 	}
 
-	/**
-	 * Searches a resource for a given ontology term from a given ontology. If
-	 * the resource is null it searches all resources for that term regardless
-	 * of path.
-	 * 
-	 * @param resource
-	 *            Resource
-	 * @param resourcePath
-	 *            Resource Path
-	 * @param ontologyType
-	 *            Ontology Type
-	 * @param ontologyTerm
-	 *            Ontology Term
-	 * @param session
-	 *            Session to run it in
-	 * @return Paths
-	 * @throws ResourceInterfaceException
-	 *             A resource interface exception occurred
-	 */
-	public List<Entity> searchForOntology(Resource resource,
-			Entity resourcePath, String ontologyType, String ontologyTerm,
-			SecureSession session) throws ResourceInterfaceException {
-
-		List<Entity> returns = new ArrayList<Entity>();
-		if (resource == null) {
-			for (Resource searchResource : rc.getPathResources()) {
-				returns.addAll(searchResourceForOntologyTerm(
-						(PathResourceImplementationInterface) searchResource
-								.getImplementingInterface(), null,
-						ontologyType, ontologyTerm, session));
-			}
-			return returns;
-		} else {
-			if (resource.getImplementingInterface() instanceof PathResourceImplementationInterface) {
-				return searchResourceForOntologyTerm(
-						(PathResourceImplementationInterface) resource
-								.getImplementingInterface(),
-						resourcePath, ontologyType, ontologyTerm, session);
-			}
-		}
-		return null;
-	}
-
-	private List<Entity> searchResourceForTerm(
-			PathResourceImplementationInterface resource, Entity resourcePath,
-			String searchTerm, SecureSession session)
-			throws ResourceInterfaceException {
+	private List<Entity> find(PathResourceImplementationInterface resource,
+			Entity resourcePath, FindInformationInterface findInformation,
+			SecureSession session) {
 		List<Entity> entities = new ArrayList<Entity>();
 		try {
-			entities = resource.searchPaths(resourcePath, searchTerm, session);
+			entities = resource.find(resourcePath, findInformation, session);
 		} catch (Exception e) {
 			log.info("Unable to search for term on resource " + resource
 					+ " message: " + e.getMessage());
-		}
-		return entities;
-	}
-
-	private List<Entity> searchResourceForOntologyTerm(
-			PathResourceImplementationInterface resource, Entity resourcePath,
-			String ontologyType, String ontologyTerm, SecureSession session)
-			throws ResourceInterfaceException {
-		List<Entity> entities = new ArrayList<Entity>();
-		try {
-			entities = resource.searchOntology(resourcePath, ontologyType,
-					ontologyTerm, session);
-		} catch (Exception e) {
-			log.info("Unable to search for ontology term on resource "
-					+ resource + " message: " + e.getMessage());
 		}
 		return entities;
 	}
