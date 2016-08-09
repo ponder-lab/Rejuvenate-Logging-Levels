@@ -14,6 +14,8 @@ import edu.harvard.hms.dbmi.bd2k.irct.model.result.ResultStatus;
 import edu.harvard.hms.dbmi.bd2k.irct.model.result.exception.PersistableException;
 import edu.harvard.hms.dbmi.bd2k.irct.model.result.exception.ResultSetException;
 import edu.harvard.hms.dbmi.bd2k.irct.model.security.SecureSession;
+import edu.harvard.hms.dbmi.bd2k.irct.util.Utilities;
+import edu.harvard.hms.dbmi.bd2k.irct.event.IRCTEventListener;
 import edu.harvard.hms.dbmi.bd2k.irct.exception.ResourceInterfaceException;
 
 /**
@@ -26,6 +28,8 @@ public class JoinAction implements Action {
 	private IRCTJoin joinType;
 	private ActionStatus status;
 	private Result result;
+	
+	private IRCTEventListener irctEventListener;
 
 	/**
 	 * Sets up the IRCT Join Action
@@ -35,6 +39,7 @@ public class JoinAction implements Action {
 	public void setup(IRCTJoin joinType) {
 		this.status = ActionStatus.CREATED;
 		this.joinType = joinType;
+		this.irctEventListener = Utilities.getIRCTEventListener();
 	}
 	
 	@Override
@@ -46,6 +51,7 @@ public class JoinAction implements Action {
 
 	@Override
 	public void run(SecureSession session) {
+		irctEventListener.beforeJoin(session, joinType);
 		this.status = ActionStatus.RUNNING;
 
 		try {
@@ -63,6 +69,7 @@ public class JoinAction implements Action {
 		}
 		
 		this.status = ActionStatus.COMPLETE;
+		irctEventListener.afterJoin(session, joinType);
 	}
 
 	@Override

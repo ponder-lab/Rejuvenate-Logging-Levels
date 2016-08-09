@@ -3,8 +3,11 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 package edu.harvard.hms.dbmi.bd2k.irct.executable;
 
+
 import edu.harvard.hms.dbmi.bd2k.irct.model.result.Result;
 import edu.harvard.hms.dbmi.bd2k.irct.model.security.SecureSession;
+import edu.harvard.hms.dbmi.bd2k.irct.util.Utilities;
+import edu.harvard.hms.dbmi.bd2k.irct.event.IRCTEventListener;
 import edu.harvard.hms.dbmi.bd2k.irct.exception.ResourceInterfaceException;
 
 /**
@@ -21,6 +24,8 @@ public class ExecutionPlan {
 	private Result results;
 	private SecureSession session;
 
+	private IRCTEventListener irctEventListener;
+	
 	/**
 	 * Setup the execution plan with the base executable
 	 * 
@@ -33,12 +38,16 @@ public class ExecutionPlan {
 		this.session = session;
 		this.status = ExecutableStatus.CREATED;
 		this.results = null;
+		
+		this.irctEventListener = Utilities.getIRCTEventListener();
 	}
 
 	/**
 	 * Run the base execution plan
 	 */
 	public void run() {
+		irctEventListener.beforeExecutionPlan(session, executable);
+		
 		this.status = ExecutableStatus.RUNNING;
 		try {
 			this.executable.setup(session);
@@ -49,6 +58,7 @@ public class ExecutionPlan {
 		}
 
 		this.status = ExecutableStatus.COMPLETED;
+		irctEventListener.afterExecutionPlan(session, executable);
 	}
 
 	/**

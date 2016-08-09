@@ -5,22 +5,23 @@ package edu.harvard.hms.dbmi.bd2k.irct.model.query;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
-import javax.persistence.CollectionTable;
-import javax.persistence.ElementCollection;
+import javax.persistence.CascadeType;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Inheritance;
 import javax.persistence.InheritanceType;
-import javax.persistence.MapKeyColumn;
-import javax.persistence.OneToMany;
+import javax.persistence.ManyToMany;
 
 import edu.harvard.hms.dbmi.bd2k.irct.model.resource.Resource;
 
@@ -41,19 +42,15 @@ public class Query implements Serializable {
 	@GeneratedValue
 	private Long id;
 	private String name;
-	
-	@ElementCollection
-	@CollectionTable(name="query_subquery")
-	@MapKeyColumn(name="query_id")
+
+	@ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
 	private Map<Long, SubQuery> subQueries;
-	
-	@ElementCollection
-	@CollectionTable(name="query_clause")
-	@MapKeyColumn(name="query_id")
+
+	@ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
 	private Map<Long, ClauseAbstract> clauses;
 
-	@OneToMany
-	private List<Resource> resources;
+	@ManyToMany(fetch = FetchType.EAGER)
+	private Set<Resource> resources;
 
 	/**
 	 * Creates an empty query
@@ -62,7 +59,7 @@ public class Query implements Serializable {
 	public Query() {
 		this.setSubQueries(new LinkedHashMap<Long, SubQuery>());
 		this.setClauses(new LinkedHashMap<Long, ClauseAbstract>());
-		this.setResources(new ArrayList<Resource>());
+		this.setResources(new HashSet<Resource>());
 	}
 
 	/**
@@ -91,6 +88,56 @@ public class Query implements Serializable {
 		JsonObjectBuilder jsonBuilder = Json.createObjectBuilder();
 		// TODO: FILL IN
 		return jsonBuilder.build();
+	}
+
+	/**
+	 * Converts the query into a string
+	 * 
+	 */
+	public String toString() {
+		String select = "";
+		String where = "";
+		String resourceNames = "";
+
+		for (ClauseAbstract clause : this.clauses.values()) {
+			if (clause instanceof SelectClause) {
+				SelectClause sc = (SelectClause) clause;
+				if (!select.equals("")) {
+					select += ", ";
+				}
+				select += sc.getParameter().getPui() + " as " + sc.getAlias();
+			} else if (clause instanceof WhereClause) {
+				WhereClause wc = (WhereClause) clause;
+				if (!where.equals("")) {
+					where += ", ";
+				}
+
+				String predicateFields = "";
+				for (String predicateField : wc.getStringValues().keySet()) {
+					if (!predicateFields.equals("")) {
+						predicateFields += ", ";
+					}
+					predicateFields += predicateField + "="
+							+ wc.getStringValues().get(predicateField);
+				}
+				where += wc.getField().getPui() + " "
+						+ wc.getPredicateType().getDisplayName() + " "
+						+ predicateFields;
+			}
+		}
+		
+		for (Resource resource : resources) {
+			if (!resourceNames.equals("")) {
+				resourceNames += ", ";
+			}
+			resourceNames += resource.getName();
+		}
+		
+		if (select.equals("")) {
+			select = "*";
+		}
+		
+		return "select " + select + " from " + resourceNames + " where " + where;
 	}
 
 	// -------------------------------------------------------------------------
@@ -128,7 +175,8 @@ public class Query implements Serializable {
 	/**
 	 * Sets the name of the query
 	 * 
-	 * @param name Name of the query
+	 * @param name
+	 *            Name of the query
 	 */
 	public void setName(String name) {
 		this.name = name;
@@ -213,7 +261,8 @@ public class Query implements Serializable {
 	 * Sets a map of Clauses where the key is the clause id, and the Clause is
 	 * the value
 	 * 
-	 * @param clauses Map of Clauses
+	 * @param clauses
+	 *            Map of Clauses
 	 */
 	public void setClauses(Map<Long, ClauseAbstract> clauses) {
 		this.clauses = clauses;
@@ -244,7 +293,7 @@ public class Query implements Serializable {
 	 * 
 	 * @return Resources
 	 */
-	public List<Resource> getResources() {
+	public Set<Resource> getResources() {
 		return resources;
 	}
 
@@ -254,7 +303,7 @@ public class Query implements Serializable {
 	 * @param resources
 	 *            Resources
 	 */
-	public void setResources(List<Resource> resources) {
+	public void setResources(Set<Resource> resources) {
 		this.resources = resources;
 	}
 }

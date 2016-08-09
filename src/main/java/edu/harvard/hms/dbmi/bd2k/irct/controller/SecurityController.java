@@ -37,6 +37,9 @@ public class SecurityController {
 
 	@Inject
 	Logger log;
+	
+	@javax.annotation.Resource(mappedName ="java:global/KeyTimeOutInMinutes")
+	private String keyTimeOut;
 
 	/**
 	 * Creates a secured randomly generated key unique to that user.
@@ -87,7 +90,7 @@ public class SecurityController {
 
 		Calendar endTime = GregorianCalendar.getInstance();
 		endTime.setTime(new Date());
-		endTime.add(Calendar.MINUTE, -15);
+		endTime.add(Calendar.MINUTE, -1 * Integer.parseInt(keyTimeOut));
 		endTime.getTime();
 
 		cq.where(cb.and(

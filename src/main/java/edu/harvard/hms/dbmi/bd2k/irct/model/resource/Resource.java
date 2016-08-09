@@ -18,17 +18,19 @@ import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.MapKeyColumn;
 import javax.persistence.OneToMany;
+import javax.persistence.Transient;
 
 import edu.harvard.hms.dbmi.bd2k.irct.exception.ResourceInterfaceException;
-import edu.harvard.hms.dbmi.bd2k.irct.model.join.IRCTJoin;
 import edu.harvard.hms.dbmi.bd2k.irct.model.ontology.DataType;
 import edu.harvard.hms.dbmi.bd2k.irct.model.ontology.OntologyRelationship;
 import edu.harvard.hms.dbmi.bd2k.irct.model.ontology.OntologyType;
+import edu.harvard.hms.dbmi.bd2k.irct.model.query.JoinType;
 import edu.harvard.hms.dbmi.bd2k.irct.model.query.PredicateType;
 import edu.harvard.hms.dbmi.bd2k.irct.model.resource.implementation.PathResourceImplementationInterface;
 import edu.harvard.hms.dbmi.bd2k.irct.model.resource.implementation.ResourceImplementationInterface;
@@ -59,44 +61,48 @@ public class Resource implements Serializable {
 	@Convert(converter = ResourceImplementationConverter.class)
 	private ResourceImplementationInterface implementingInterface;
 
-	@ElementCollection
+	@ElementCollection(fetch=FetchType.EAGER)
 	@Convert(converter = DataTypeConverter.class)
 	private List<DataType> dataTypes;
 
-	@ElementCollection
+	@ElementCollection(fetch=FetchType.EAGER)
 	@Convert(converter = OntologyRelationshipConverter.class)
 	private List<OntologyRelationship> relationships;
 
-	@ElementCollection(targetClass = LogicalOperator.class)
+	@ElementCollection(targetClass = LogicalOperator.class, fetch=FetchType.EAGER)
 	@CollectionTable(name = "Resource_LogicalOperator", joinColumns = @JoinColumn(name = "id"))
 	@Column(name = "logicalOperator", nullable = false)
 	@Enumerated(EnumType.STRING)
 	private List<LogicalOperator> logicalOperators;
 
-	@OneToMany
+	@OneToMany(fetch=FetchType.EAGER)
 	private List<PredicateType> supportedPredicates;
 
-	@OneToMany
-	private List<IRCTJoin> supportedJoins;
+	@OneToMany(fetch=FetchType.EAGER)
+	private List<JoinType> supportedJoins;
 
-	@OneToMany
+	@OneToMany(fetch=FetchType.EAGER)
 	private List<ProcessType> supportedProcesses;
 
-	@OneToMany
+	@OneToMany(fetch=FetchType.EAGER)
 	private List<VisualizationType> supportedVisualizations;
 
-	@ElementCollection
+	@ElementCollection(fetch=FetchType.EAGER)
 	@MapKeyColumn(name = "name")
 	@Column(name = "value")
 	@CollectionTable(name = "resource_parameters", joinColumns = @JoinColumn(name = "id"))
 	private Map<String, String> parameters;
 
+	@Transient
+	private boolean setup = false;
+	
 	/**
 	 * Sets up the Resource and the implementing interface
 	 * @throws ResourceInterfaceException Throws a resource interface
 	 */
 	public void setup() throws ResourceInterfaceException {
 		implementingInterface.setup(this.parameters);
+		this.setSetup(true);
 	}
 
 	/**
@@ -163,7 +169,7 @@ public class Resource implements Serializable {
 				// JOINS (Query Interface)
 				JsonArrayBuilder joinArray = Json.createArrayBuilder();
 				if (this.supportedJoins != null) {
-					for (IRCTJoin jt : this.supportedJoins) {
+					for (JoinType jt : this.supportedJoins) {
 						joinArray.add(jt.toJson());
 					}
 				}
@@ -274,6 +280,16 @@ public class Resource implements Serializable {
 		for(DataType dataType : this.dataTypes) {
 			if(dataType.toString().equals(dataTypeName)) {
 				return dataType;
+			}
+		}
+		return null;
+	}
+	
+	
+	public JoinType getSupportedJoinByName(String joinTypeName) {
+		for(JoinType joinType : this.supportedJoins) {
+			if(joinType.toString().equals(joinTypeName)) {
+				return joinType;
 			}
 		}
 		return null;
@@ -441,7 +457,7 @@ public class Resource implements Serializable {
 	 * 
 	 * @return the supportedJoins
 	 */
-	public List<IRCTJoin> getSupportedJoins() {
+	public List<JoinType> getSupportedJoins() {
 		return supportedJoins;
 	}
 
@@ -451,7 +467,7 @@ public class Resource implements Serializable {
 	 * @param supportedJoins
 	 *            the supportedJoins to set
 	 */
-	public void setSupportedJoins(List<IRCTJoin> supportedJoins) {
+	public void setSupportedJoins(List<JoinType> supportedJoins) {
 		this.supportedJoins = supportedJoins;
 	}
 
@@ -510,5 +526,19 @@ public class Resource implements Serializable {
 	 */
 	public void setParameters(Map<String, String> parameters) {
 		this.parameters = parameters;
+	}
+
+	/**
+	 * @return the setup
+	 */
+	public boolean isSetup() {
+		return setup;
+	}
+
+	/**
+	 * @param setup the setup to set
+	 */
+	public void setSetup(boolean setup) {
+		this.setup = setup;
 	}
 }

@@ -20,6 +20,8 @@ import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
 
 import edu.harvard.hms.dbmi.bd2k.irct.dataconverter.ResultDataConverter;
+import edu.harvard.hms.dbmi.bd2k.irct.event.EventConverterImplementation;
+import edu.harvard.hms.dbmi.bd2k.irct.event.IRCTEventListener;
 import edu.harvard.hms.dbmi.bd2k.irct.exception.ResourceInterfaceException;
 import edu.harvard.hms.dbmi.bd2k.irct.model.join.IRCTJoin;
 import edu.harvard.hms.dbmi.bd2k.irct.model.resource.Resource;
@@ -42,15 +44,19 @@ public class IRCTApplication {
 	private Map<String, Resource> resources;
 	private Map<String, IRCTJoin> supportedJoinTypes;
 	private Map<ResultDataType, List<DataConverterImplementation>> resultDataConverters;
+	private Map<String, EventConverterImplementation> irctEventConverters;
 
 	@Inject
 	Logger log;
 
 	@Inject
 	private EntityManagerFactory objectEntityManager;
+	
+	@Inject
+	private IRCTEventListener irctEventListener;
 
 	private EntityManager oem;
-
+ 
 	/**
 	 * Initiates the IRCT Application and loading of the joins, resources, and
 	 * predicates.
@@ -65,6 +71,11 @@ public class IRCTApplication {
 		log.info("Loading Data Converters");
 		loadDataConverters();
 		log.info("Finished Data Converters");
+		
+		
+		log.info("Loading Event Listeners");
+		loadIRCTEventListeners();
+		log.info("Finished Loading Event Listeners");
 
 		this.oem = objectEntityManager.createEntityManager();
 		this.oem.setFlushMode(FlushModeType.COMMIT);
@@ -78,6 +89,29 @@ public class IRCTApplication {
 		log.info("Finished Loading Resources");
 
 		log.info("Finished Starting IRCT Application");
+	}
+
+	/**
+	 * Load all the Listeners
+	 * 
+	 */
+	private void loadIRCTEventListeners() {
+		this.irctEventListener.init();
+		this.irctEventConverters = new HashMap<String, EventConverterImplementation>();
+		CriteriaBuilder cb = oem.getCriteriaBuilder();
+		CriteriaQuery<EventConverterImplementation> criteria = cb
+				.createQuery(EventConverterImplementation.class);
+		Root<EventConverterImplementation> load = criteria
+				.from(EventConverterImplementation.class);
+		criteria.select(load);
+		List<EventConverterImplementation> allEventListeners = oem.createQuery(criteria)
+				.getResultList();
+		
+		for (EventConverterImplementation irctEvent : allEventListeners) {
+			irctEventListener.registerListener(irctEvent);
+		}
+		
+		log.info("Loaded " + allEventListeners.size() + " IRCT Event listeners");
 	}
 
 	/**
@@ -148,6 +182,9 @@ public class IRCTApplication {
 		}
 		log.info("Loaded " + this.resources.size() + " resources");
 	}
+	
+	
+	
 
 	/**
 	 * Adds a given resource to the IRCT application

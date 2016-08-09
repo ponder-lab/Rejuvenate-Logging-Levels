@@ -50,9 +50,12 @@ public class ExecutionController {
 	@PersistenceContext
 	EntityManager entityManager;
 
-	@Resource
+	@Resource(name = "DefaultManagedExecutorService")
 	private ManagedExecutorService mes;
-
+	
+	@Inject
+	private ResourceController rc;
+	
 	/**
 	 * Runs the process
 	 * 
@@ -65,7 +68,6 @@ public class ExecutionController {
 	 */
 	public Long runProcess(IRCTProcess process, SecureSession secureSession)
 			throws PersistableException {
-		log.info("Start Process");
 		Result newResult = new Result();
 		
 		if(secureSession != null) {
@@ -101,7 +103,6 @@ public class ExecutionController {
 	 */
 	public Long runQuery(Query query, SecureSession secureSession)
 			throws PersistableException {
-		log.info("Starting Query");
 		Result newResult = new Result();
 		
 		if(secureSession != null) {
@@ -110,9 +111,13 @@ public class ExecutionController {
 
 		newResult.setResultStatus(ResultStatus.RUNNING);
 		entityManager.persist(newResult);
-
+		
 		QueryAction qa = new QueryAction();
-		qa.setup(query.getResources().get(0), query);
+		edu.harvard.hms.dbmi.bd2k.irct.model.resource.Resource resource = (edu.harvard.hms.dbmi.bd2k.irct.model.resource.Resource) query.getResources().toArray()[0];
+		if(!resource.isSetup()) {
+			resource = rc.getResource(resource.getName());
+		}
+		qa.setup(resource, query);
 
 		ExecutableLeafNode eln = new ExecutableLeafNode();
 		eln.setAction(qa);
@@ -137,7 +142,6 @@ public class ExecutionController {
 	 */
 	public Long runJoin(IRCTJoin joinType, SecureSession secureSession)
 			throws PersistableException {
-		log.info("Starting: " + joinType.getJoinImplementation().getType());
 		Result newResult = new Result();
 		
 		if(secureSession != null) {

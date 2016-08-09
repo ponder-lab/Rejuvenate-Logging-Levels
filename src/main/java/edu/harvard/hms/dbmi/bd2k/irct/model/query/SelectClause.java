@@ -8,6 +8,7 @@ import java.io.Serializable;
 import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
+import javax.persistence.CascadeType;
 import javax.persistence.OneToOne;
 
 import edu.harvard.hms.dbmi.bd2k.irct.model.ontology.Entity;
@@ -22,7 +23,7 @@ import edu.harvard.hms.dbmi.bd2k.irct.model.ontology.Entity;
 @javax.persistence.Entity
 public class SelectClause extends ClauseAbstract implements Serializable {
 	private static final long serialVersionUID = 3728919497144122930L;
-	@OneToOne
+	@OneToOne(cascade=CascadeType.ALL)
 	private Entity parameter;
 	
 	private String alias;

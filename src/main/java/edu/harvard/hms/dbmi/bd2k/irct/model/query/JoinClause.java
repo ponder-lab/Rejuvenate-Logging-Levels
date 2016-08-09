@@ -36,6 +36,20 @@ public class JoinClause extends ClauseAbstract implements Serializable {
 	private JoinType joinType;
 	
 	/**
+	 * @return the joinType
+	 */
+	public JoinType getJoinType() {
+		return joinType;
+	}
+
+	/**
+	 * @param joinType the joinType to set
+	 */
+	public void setJoinType(JoinType joinType) {
+		this.joinType = joinType;
+	}
+
+	/**
 	 * Creates an empty join clause
 	 */
 	public JoinClause() {

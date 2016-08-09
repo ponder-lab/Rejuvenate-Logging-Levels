@@ -13,6 +13,7 @@ import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 import javax.persistence.Convert;
+import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Transient;
 
@@ -29,6 +30,9 @@ public class Entity {
 	
 	
 	@Id
+	@GeneratedValue
+	private Long id;
+	
 	private String pui;
 	private String name;
 	private String displayName;
@@ -145,6 +149,20 @@ public class Entity {
 	// -------------------------------------------------------------------------
 	// SETTERS AND GETTERS
 	// -------------------------------------------------------------------------
+
+	/**
+	 * @return the id
+	 */
+	public Long getId() {
+		return id;
+	}
+
+	/**
+	 * @param id the id to set
+	 */
+	public void setId(Long id) {
+		this.id = id;
+	}
 
 	/**
 	 * Returns the Path Unique Identifier
