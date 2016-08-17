@@ -32,7 +32,7 @@ import edu.harvard.hms.dbmi.bd2k.irct.model.security.User;
 @Stateful
 public class SecurityController {
 
-	@PersistenceContext
+	@PersistenceContext(unitName = "primary")
 	EntityManager entityManager;
 
 	@Inject

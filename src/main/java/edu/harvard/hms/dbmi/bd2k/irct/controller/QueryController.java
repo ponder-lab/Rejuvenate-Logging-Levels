@@ -34,7 +34,7 @@ import edu.harvard.hms.dbmi.bd2k.irct.model.resource.Resource;
 @Stateful
 public class QueryController {
 
-	@PersistenceContext
+	@PersistenceContext(unitName = "primary")
 	EntityManager entityManager;
 
 	@Inject

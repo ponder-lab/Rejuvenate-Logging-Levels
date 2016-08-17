@@ -32,7 +32,7 @@ public class ResourceController {
 	@Inject
 	private IRCTApplication irctApp;
 
-	@PersistenceContext
+	@PersistenceContext(unitName = "primary")
 	EntityManager entityManager;
 
 	private List<String> categories;
