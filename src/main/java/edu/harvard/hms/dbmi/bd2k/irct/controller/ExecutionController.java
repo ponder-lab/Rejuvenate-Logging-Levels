@@ -47,7 +47,7 @@ public class ExecutionController {
 	@Inject
 	Logger log;
 
-	@PersistenceContext
+	@PersistenceContext(unitName = "primary")
 	EntityManager entityManager;
 
 	@Resource(name = "DefaultManagedExecutorService")

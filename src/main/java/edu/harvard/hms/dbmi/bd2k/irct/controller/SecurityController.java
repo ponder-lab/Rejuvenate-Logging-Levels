@@ -11,7 +11,7 @@ import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.logging.Logger;
 
-import javax.ejb.Stateful;
+import javax.ejb.Stateless;
 import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -24,15 +24,15 @@ import edu.harvard.hms.dbmi.bd2k.irct.model.security.Token;
 import edu.harvard.hms.dbmi.bd2k.irct.model.security.User;
 
 /**
- * A stateful controller for managing security.
+ * A stateless controller for managing security.
  * 
  * @author Jeremy R. Easton-Marks
  *
  */
-@Stateful
+@Stateless
 public class SecurityController {
 
-	@PersistenceContext
+	@PersistenceContext(unitName = "primary")
 	EntityManager entityManager;
 
 	@Inject

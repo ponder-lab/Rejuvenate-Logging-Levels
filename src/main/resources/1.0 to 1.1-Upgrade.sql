@@ -9,5 +9,6 @@ update DataConverterImplementation set dataConverter='edu.harvard.hms.dbmi.bd2k.
 SET FOREIGN_KEY_CHECKS = 0;
 DROP TABLE ClauseAbstract;
 DROP TABLE Entity;
-DROP TABLE Query_resource;
+DROP TABLE Query_Resource;
+DROP TABLE where_values;
 SET FOREIGN_KEY_CHECKS = 1;
