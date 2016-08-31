@@ -5,6 +5,7 @@ package edu.harvard.hms.dbmi.bd2k.irct.model.resource.implementation;
 
 import java.util.List;
 
+import edu.harvard.hms.dbmi.bd2k.irct.model.find.FindInformationInterface;
 import edu.harvard.hms.dbmi.bd2k.irct.model.ontology.OntologyRelationship;
 import edu.harvard.hms.dbmi.bd2k.irct.model.ontology.Entity;
 import edu.harvard.hms.dbmi.bd2k.irct.model.security.SecureSession;
@@ -36,33 +37,14 @@ public interface PathResourceImplementationInterface extends
 			throws ResourceInterfaceException;
 
 	/**
-	 * Given a given path find all the searchTerms that are in that path. If
-	 * path is null search the entire resource
-	 * 
-	 * @param path
-	 *            Path
-	 * @param searchTerm
-	 *            Search Term
-	 * @param session Secure Session
-	 * @return Paths
-	 * @throws ResourceInterfaceException
-	 *             A resource exception occurred
-	 */
-	List<Entity> searchPaths(Entity path, String searchTerm, SecureSession session)
-			throws ResourceInterfaceException;
-
-	/**
-	 * Given a given path find all the ontology terms of the given ontology type
-	 * that are in that path. If the path is null search the entire resource
+	 * Given a path find all entities that match the finds
 	 * 
 	 * @param path Path
-	 * @param ontologyType Ontology Type
-	 * @param ontologyTerm Ontology Term
-	 * @param session Secure Session
+	 * @param find Find Data
+	 * @param session Session
 	 * @return Paths
 	 * @throws ResourceInterfaceException A resource exception occurred
 	 */
-	List<Entity> searchOntology(Entity path, String ontologyType,
-			String ontologyTerm, SecureSession session) throws ResourceInterfaceException;
+	List<Entity> find(Entity path, FindInformationInterface findInformation, SecureSession session) throws ResourceInterfaceException;
 
 }

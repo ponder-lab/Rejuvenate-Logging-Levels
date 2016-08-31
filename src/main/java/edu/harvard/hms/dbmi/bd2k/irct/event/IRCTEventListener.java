@@ -21,12 +21,16 @@ import edu.harvard.hms.dbmi.bd2k.irct.event.action.BeforeExecutionPlan;
 import edu.harvard.hms.dbmi.bd2k.irct.event.action.BeforeJoin;
 import edu.harvard.hms.dbmi.bd2k.irct.event.action.BeforeProcess;
 import edu.harvard.hms.dbmi.bd2k.irct.event.action.BeforeQuery;
+import edu.harvard.hms.dbmi.bd2k.irct.event.find.AfterFind;
+import edu.harvard.hms.dbmi.bd2k.irct.event.find.BeforeFind;
 import edu.harvard.hms.dbmi.bd2k.irct.event.result.AfterGetResult;
 import edu.harvard.hms.dbmi.bd2k.irct.event.result.AfterSaveResult;
 import edu.harvard.hms.dbmi.bd2k.irct.event.result.BeforeGetResult;
 import edu.harvard.hms.dbmi.bd2k.irct.event.result.BeforeSaveResult;
 import edu.harvard.hms.dbmi.bd2k.irct.executable.Executable;
+import edu.harvard.hms.dbmi.bd2k.irct.model.find.FindInformationInterface;
 import edu.harvard.hms.dbmi.bd2k.irct.model.join.IRCTJoin;
+import edu.harvard.hms.dbmi.bd2k.irct.model.ontology.Entity;
 import edu.harvard.hms.dbmi.bd2k.irct.model.process.IRCTProcess;
 import edu.harvard.hms.dbmi.bd2k.irct.model.query.Query;
 import edu.harvard.hms.dbmi.bd2k.irct.model.resource.Resource;
@@ -58,7 +62,7 @@ public class IRCTEventListener {
 	 *            Listener
 	 */
 	public void registerListener(EventConverterImplementation eci) {
-		
+
 		IRCTEvent irctEvent = eci.getEventListener();
 		String eventType = irctEvent.getClass().getInterfaces()[0]
 				.getSimpleName();
@@ -66,11 +70,11 @@ public class IRCTEventListener {
 		if (!events.containsKey(eventType)) {
 			events.put(eventType, new ArrayList<IRCTEvent>());
 		}
-		
+
 		irctEvent.init(eci.getParameters());
-		
+
 		events.get(eventType).add(irctEvent);
-		
+
 	}
 
 	// Action Events
@@ -317,6 +321,49 @@ public class IRCTEventListener {
 			return;
 		for (IRCTEvent irctEvent : irctEvents) {
 			((BeforeSaveResult) irctEvent).fire(result);
+		}
+	}
+
+	// FIND EVENTS
+	/**
+	 * Runs the event listeners before a find is executed
+	 * 
+	 * @param resource
+	 *            Resource
+	 * @param resourcePath
+	 *            Path on the resource
+	 * @param findInformation
+	 *            Information for the find
+	 * @param session
+	 *            Session Information
+	 */
+	public void beforeFind(Resource resource, Entity resourcePath,
+			List<FindInformationInterface> findInformation,
+			SecureSession session) {
+		List<IRCTEvent> irctEvents = events.get("BeforeFind");
+		if (irctEvents == null)
+			return;
+		for (IRCTEvent irctEvent : irctEvents) {
+			((BeforeFind) irctEvent).fire(resource, resourcePath,
+					findInformation, session);
+		}
+	}
+
+	/**
+	 * Runs the listeners after a find is executed
+	 * 
+	 * @param returns A list of entities
+	 * @param findInformation Information for the find
+	 * @param session Session Information
+	 */
+	public void afterFind(List<Entity> matches,
+			FindInformationInterface findInformation, SecureSession session) {
+
+		List<IRCTEvent> irctEvents = events.get("AfterFind");
+		if (irctEvents == null)
+			return;
+		for (IRCTEvent irctEvent : irctEvents) {
+			((AfterFind) irctEvent).fire(matches, findInformation, session);
 		}
 	}
 }

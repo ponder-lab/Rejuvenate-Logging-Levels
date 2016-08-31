@@ -196,7 +196,6 @@ public class FileResultSet extends ResultSetImpl implements Persistable {
 
 			// Read the line and load it as the currentRow
 			this.currentRow = loadCurrentLine();
-			// System.out.println(readCurrentLine());
 
 			return true;
 		} catch (IOException | PersistableException e) {
