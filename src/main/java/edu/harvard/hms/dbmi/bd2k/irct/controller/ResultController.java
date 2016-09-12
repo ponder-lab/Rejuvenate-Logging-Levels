@@ -10,7 +10,6 @@ import java.util.List;
 import javax.ejb.Stateless;
 import javax.inject.Inject;
 import javax.persistence.EntityManager;
-import javax.persistence.EntityManagerFactory;
 import javax.persistence.PersistenceContext;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
@@ -39,8 +38,8 @@ import edu.harvard.hms.dbmi.bd2k.irct.model.security.User;
 
 @Stateless
 public class ResultController {
-	@Inject
-	private EntityManagerFactory objectEntityManager;
+	@PersistenceContext(unitName = "primary")
+	EntityManager entityManager;
 
 	@Inject
 	private IRCTApplication irctApp;
@@ -56,8 +55,8 @@ public class ResultController {
 	 * @return List of Resutls
 	 */
 	public List<Result> getAvailableResults(User user) {
-		EntityManager oem = objectEntityManager.createEntityManager();
-		CriteriaBuilder cb = oem.getCriteriaBuilder();
+//		EntityManager entityManager = objectEntityManager.createEntityManager();
+		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
 
 		CriteriaQuery<Result> criteria = cb.createQuery(Result.class);
 		Root<Result> result = criteria.from(Result.class);
@@ -70,7 +69,7 @@ public class ResultController {
 				cb.equal(result.get("resultStatus"), ResultStatus.AVAILABLE));
 		criteria.where(restrictions);
 
-		return oem.createQuery(criteria).getResultList();
+		return entityManager.createQuery(criteria).getResultList();
 	}
 
 	/**
@@ -184,8 +183,8 @@ public class ResultController {
 	private List<Result> getResults(User user, Long resultId) {
 		irctEventListener.beforeGetResult(user, resultId);
 		
-		EntityManager oem = objectEntityManager.createEntityManager();
-		CriteriaBuilder cb = oem.getCriteriaBuilder();
+//		EntityManager entityManager = objectEntityManager.createEntityManager();
+		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
 
 		CriteriaQuery<Result> criteria = cb.createQuery(Result.class);
 		Root<Result> resultRoot = criteria.from(Result.class);
@@ -199,7 +198,7 @@ public class ResultController {
 				cb.equal(resultRoot.get("id"), resultId));
 		criteria.where(restrictions);
 
-		List<Result> results = oem.createQuery(criteria).getResultList();
+		List<Result> results = entityManager.createQuery(criteria).getResultList();
 
 		if ((results == null) || (results.isEmpty())) {
 			return null;
@@ -221,9 +220,9 @@ public class ResultController {
 	 */
 	public Result createResult(ResultDataType resultDataType)
 			throws PersistableException {
-		EntityManager oem = objectEntityManager.createEntityManager();
+//		EntityManager entityManager = objectEntityManager.createEntityManager();
 		Result result = new Result();
-		oem.persist(result);
+		entityManager.persist(result);
 		result.setDataType(resultDataType);
 		result.setStartTime(new Date());
 		if (resultDataType == ResultDataType.TABULAR) {
@@ -241,7 +240,7 @@ public class ResultController {
 			return result;
 		}
 		result.setResultStatus(ResultStatus.CREATED);
-		oem.merge(result);
+		entityManager.merge(result);
 		return result;
 	}
 
@@ -253,8 +252,8 @@ public class ResultController {
 	 */
 	public void mergeResult(Result result) {
 		irctEventListener.beforeSaveResult(result);
-		EntityManager oem = objectEntityManager.createEntityManager();
-		oem.merge(result);
+//		EntityManager entityManager = objectEntityManager.createEntityManager();
+		entityManager.merge(result);
 		irctEventListener.afterSaveResult(result);
 	}
 
