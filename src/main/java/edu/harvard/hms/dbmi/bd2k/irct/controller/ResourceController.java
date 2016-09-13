@@ -10,8 +10,6 @@ import java.util.Map;
 import javax.annotation.PostConstruct;
 import javax.ejb.Stateless;
 import javax.inject.Inject;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 
 import edu.harvard.hms.dbmi.bd2k.irct.IRCTApplication;
 import edu.harvard.hms.dbmi.bd2k.irct.model.resource.Resource;
@@ -31,9 +29,6 @@ import edu.harvard.hms.dbmi.bd2k.irct.model.resource.implementation.Visualizatio
 public class ResourceController {
 	@Inject
 	private IRCTApplication irctApp;
-
-	@PersistenceContext(unitName = "primary")
-	EntityManager entityManager;
 
 	private List<String> categories;
 
