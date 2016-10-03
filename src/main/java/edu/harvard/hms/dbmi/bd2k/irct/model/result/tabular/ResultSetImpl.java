@@ -25,7 +25,7 @@ public class ResultSetImpl implements ResultSet {
 	private String[] columnNames;
 	private long size;
 	private long rowPosition = -1;
-	private boolean closed = false;
+	protected boolean closed = false;
 	protected boolean current = false;
 
 	@Override

@@ -72,6 +72,17 @@ public class FileResultSet extends ResultSetImpl implements Persistable {
 		// TODO Auto-generated method stub
 		return false;
 	}
+	
+	@Override
+	public void close() throws ResultSetException {
+		System.out.println("FileResultSet.close()");
+		try {
+			dataReadFC.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		this.closed = true;
+	}
 
 	@Override
 	public void load(String fileName) throws ResultSetException,

@@ -6,6 +6,8 @@ package edu.harvard.hms.dbmi.bd2k.irct.model.result;
 import java.io.File;
 import java.util.List;
 
+import edu.harvard.hms.dbmi.bd2k.irct.model.result.exception.ResultSetException;
+
 /**
  * An empty interface that is implemented by all data types 
  * 
@@ -14,5 +16,20 @@ import java.util.List;
  */
 public interface Data {
 	public List<File> getFileList();
+	// Administrative
+	/**
+	 * Releases the connection to the datasource
+	 * 
+	 * @throws ResultSetException
+	 *             If a ResultSetException occurs
+	 */
+	void close() throws ResultSetException;
+
+	/**
+	 * Returns the status of the connection to the datasource
+	 * 
+	 * @return true if closed
+	 */
+	boolean isClosed();
 
 }
