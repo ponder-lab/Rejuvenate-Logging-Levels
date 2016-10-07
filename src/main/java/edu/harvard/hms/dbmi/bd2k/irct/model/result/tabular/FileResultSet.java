@@ -142,7 +142,7 @@ public class FileResultSet extends ResultSetImpl implements Persistable {
 		if (isClosed()) {
 			throw new ResultSetException("ResultSet is closed");
 		}
-		if (getRow() == MAXPENDING) {
+		if (this.pendingData.size() == MAXPENDING) {
 			throw new PersistableException("Maximum Pending Size Reached");
 		}
 
@@ -890,6 +890,11 @@ public class FileResultSet extends ResultSetImpl implements Persistable {
 			throws ResultSetException {
 		setCell(columnIndex, obj);
 	}
+	
+	// MAXPENDING
+	public int getMaxPending() {
+		return this.MAXPENDING;
+	}
 
 	/**
 	 * Returns a JSONObject representation of the object. This returns only the
@@ -931,4 +936,5 @@ public class FileResultSet extends ResultSetImpl implements Persistable {
 		return jsonBuilder.build();
 
 	}
+	
 }
