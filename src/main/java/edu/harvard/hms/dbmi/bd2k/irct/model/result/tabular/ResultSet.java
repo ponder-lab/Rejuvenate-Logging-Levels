@@ -17,22 +17,6 @@ import edu.harvard.hms.dbmi.bd2k.irct.model.result.exception.ResultSetException;
  *
  */
 public interface ResultSet extends Data {
-	// Administrative
-	/**
-	 * Releases the connection to the datasource
-	 * 
-	 * @throws ResultSetException
-	 *             If a ResultSetException occurs
-	 */
-	void close() throws ResultSetException;
-
-	/**
-	 * Returns the status of the connection to the datasource
-	 * 
-	 * @return true if closed
-	 */
-	boolean isClosed();
-
 	// Cursor Position
 
 	/**

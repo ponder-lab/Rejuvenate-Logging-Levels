@@ -114,8 +114,10 @@ public class QueryAction implements Action {
 				} else {
 					((Persistable) result.getData()).persist();
 				}
+				
 			}
 			
+			result.getData().close();
 		} catch (Exception e) {
 			this.result.setResultStatus(ResultStatus.ERROR);
 			this.result.setMessage(e.getMessage());

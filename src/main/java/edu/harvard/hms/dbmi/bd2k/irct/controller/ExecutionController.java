@@ -202,6 +202,7 @@ public class ExecutionController {
 						result.setResultStatus(ResultStatus.ERROR);
 						result.setMessage(finalResult.getMessage());
 					}
+					
 					result.setEndTime(new Date());
 					UserTransaction userTransaction = lookup();
 					userTransaction.begin();
@@ -213,6 +214,8 @@ public class ExecutionController {
 				} catch (Exception e) {
 					log.info(e.getMessage());
 					result.setResultStatus(ResultStatus.ERROR);
+				} finally {
+					
 				}
 				return result;
 			}

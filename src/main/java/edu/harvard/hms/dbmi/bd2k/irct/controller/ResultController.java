@@ -220,7 +220,6 @@ public class ResultController {
 	 */
 	public Result createResult(ResultDataType resultDataType)
 			throws PersistableException {
-//		EntityManager entityManager = objectEntityManager.createEntityManager();
 		Result result = new Result();
 		entityManager.persist(result);
 		result.setDataType(resultDataType);
@@ -252,7 +251,6 @@ public class ResultController {
 	 */
 	public void mergeResult(Result result) {
 		irctEventListener.beforeSaveResult(result);
-//		EntityManager entityManager = objectEntityManager.createEntityManager();
 		entityManager.merge(result);
 		irctEventListener.afterSaveResult(result);
 	}
