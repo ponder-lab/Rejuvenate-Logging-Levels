@@ -96,7 +96,10 @@ public class QueryAction implements Action {
 	@Override
 	public Result getResults(SecureSession session)
 			throws ResourceInterfaceException {
-		try {
+		if(this.result.getResultStatus() == ResultStatus.COMPLETE || this.result.getResultStatus() == ResultStatus.ERROR) {
+			return this.result;
+		}
+		try {			
 			this.result = ((QueryResourceImplementationInterface) resource
 					.getImplementingInterface()).getResults(session, result);
 			
