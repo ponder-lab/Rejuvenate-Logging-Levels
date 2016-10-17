@@ -96,38 +96,34 @@ public class QueryAction implements Action {
 	@Override
 	public Result getResults(SecureSession session)
 			throws ResourceInterfaceException {
-		if (this.result.getResultStatus() != ResultStatus.COMPLETE
-				&& this.result.getResultStatus() != ResultStatus.ERROR) {
-			try {
+		try {
+			this.result = ((QueryResourceImplementationInterface) resource
+					.getImplementingInterface()).getResults(session, result);
+
+			while ((this.result.getResultStatus() != ResultStatus.ERROR)
+					&& (this.result.getResultStatus() != ResultStatus.COMPLETE)) {
+				Thread.sleep(3000);
 				this.result = ((QueryResourceImplementationInterface) resource
 						.getImplementingInterface())
 						.getResults(session, result);
-
-				while ((this.result.getResultStatus() != ResultStatus.ERROR)
-						&& (this.result.getResultStatus() != ResultStatus.COMPLETE)) {
-					Thread.sleep(3000);
-					this.result = ((QueryResourceImplementationInterface) resource
-							.getImplementingInterface()).getResults(session,
-							result);
-				}
-
-				if (this.result.getResultStatus() == ResultStatus.COMPLETE) {
-					if (((Persistable) result.getData()).isPersisted()) {
-						((Persistable) result.getData()).merge();
-					} else {
-						((Persistable) result.getData()).persist();
-					}
-
-				}
-
-				result.getData().close();
-			} catch (Exception e) {
-				this.result.setResultStatus(ResultStatus.ERROR);
-				this.result.setMessage(e.getMessage());
 			}
 
-			result.setEndTime(new Date());
+			if (this.result.getResultStatus() == ResultStatus.COMPLETE) {
+				if (((Persistable) result.getData()).isPersisted()) {
+					((Persistable) result.getData()).merge();
+				} else {
+					((Persistable) result.getData()).persist();
+				}
+
+			}
+
+			result.getData().close();
+		} catch (Exception e) {
+			this.result.setResultStatus(ResultStatus.ERROR);
+			this.result.setMessage(e.getMessage());
 		}
+
+		result.setEndTime(new Date());
 		// Save the query Action
 		try {
 			ActionUtilities.mergeResult(result);
