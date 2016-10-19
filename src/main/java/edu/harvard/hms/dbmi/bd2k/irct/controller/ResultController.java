@@ -183,7 +183,6 @@ public class ResultController {
 	private List<Result> getResults(User user, Long resultId) {
 		irctEventListener.beforeGetResult(user, resultId);
 		
-//		EntityManager entityManager = objectEntityManager.createEntityManager();
 		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
 
 		CriteriaQuery<Result> criteria = cb.createQuery(Result.class);
