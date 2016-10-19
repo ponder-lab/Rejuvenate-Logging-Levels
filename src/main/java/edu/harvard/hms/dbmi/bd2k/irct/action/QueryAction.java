@@ -33,7 +33,7 @@ public class QueryAction implements Action {
 	private Resource resource;
 	private ActionStatus status;
 	private Result result;
-	
+
 	private IRCTEventListener irctEventListener;
 
 	/**
@@ -99,7 +99,7 @@ public class QueryAction implements Action {
 		try {
 			this.result = ((QueryResourceImplementationInterface) resource
 					.getImplementingInterface()).getResults(session, result);
-			
+
 			while ((this.result.getResultStatus() != ResultStatus.ERROR)
 					&& (this.result.getResultStatus() != ResultStatus.COMPLETE)) {
 				Thread.sleep(3000);
@@ -107,15 +107,17 @@ public class QueryAction implements Action {
 						.getImplementingInterface())
 						.getResults(session, result);
 			}
-			
-			if(this.result.getResultStatus() == ResultStatus.COMPLETE) {
-				if(((Persistable) result.getData()).isPersisted()) {
+
+			if (this.result.getResultStatus() == ResultStatus.COMPLETE) {
+				if (((Persistable) result.getData()).isPersisted()) {
 					((Persistable) result.getData()).merge();
 				} else {
 					((Persistable) result.getData()).persist();
 				}
+
 			}
-			
+
+			result.getData().close();
 		} catch (Exception e) {
 			this.result.setResultStatus(ResultStatus.ERROR);
 			this.result.setMessage(e.getMessage());

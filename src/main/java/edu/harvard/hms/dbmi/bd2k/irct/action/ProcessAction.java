@@ -84,6 +84,8 @@ public class ProcessAction implements Action {
 				Thread.sleep(5000);
 				this.result = ((ProcessResourceImplementationInterface)resource.getImplementingInterface()).getResults(session, result);
 			}
+			
+			result.getData().close();
 		} catch(Exception e) {
 			this.result.setResultStatus(ResultStatus.ERROR);
 			this.result.setMessage(e.getMessage());
