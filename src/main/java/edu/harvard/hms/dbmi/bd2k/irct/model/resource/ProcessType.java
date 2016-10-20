@@ -10,6 +10,7 @@ import javax.json.Json;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
+import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.Id;
@@ -35,11 +36,13 @@ public class ProcessType implements Serializable {
 	private String description;
 	
 	@JoinTable(name = "ProcessType_Fields")
-	@OneToMany(fetch = FetchType.EAGER)
+//	@OneToMany(fetch = FetchType.EAGER)
+	@OneToMany
 	private List<Field> fields;
 	
 	@JoinTable(name = "ProcessType_Returns")
-	@OneToMany(fetch = FetchType.EAGER)
+//	@OneToMany(fetch = FetchType.EAGER)
+	@OneToMany
 	private List<Field> returns;	
 	/**
 	 * Returns a JSONObject representation of the object. This returns only the

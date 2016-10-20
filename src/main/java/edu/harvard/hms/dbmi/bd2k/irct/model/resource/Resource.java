@@ -61,33 +61,41 @@ public class Resource implements Serializable {
 	@Convert(converter = ResourceImplementationConverter.class)
 	private ResourceImplementationInterface implementingInterface;
 
-	@ElementCollection(fetch=FetchType.EAGER)
+//	@ElementCollection(fetch=FetchType.EAGER)
+	@ElementCollection
 	@Convert(converter = DataTypeConverter.class)
 	private List<DataType> dataTypes;
 
-	@ElementCollection(fetch=FetchType.EAGER)
+//	@ElementCollection(fetch=FetchType.EAGER)
+	@ElementCollection
 	@Convert(converter = OntologyRelationshipConverter.class)
 	private List<OntologyRelationship> relationships;
 
-	@ElementCollection(targetClass = LogicalOperator.class, fetch=FetchType.EAGER)
+//	@ElementCollection(targetClass = LogicalOperator.class, fetch=FetchType.EAGER)
+	@ElementCollection(targetClass = LogicalOperator.class)
 	@CollectionTable(name = "Resource_LogicalOperator", joinColumns = @JoinColumn(name = "id"))
 	@Column(name = "logicalOperator", nullable = false)
 	@Enumerated(EnumType.STRING)
 	private List<LogicalOperator> logicalOperators;
 
-	@OneToMany(fetch=FetchType.EAGER)
+//	@OneToMany(fetch=FetchType.EAGER)
+	@OneToMany
 	private List<PredicateType> supportedPredicates;
 
-	@OneToMany(fetch=FetchType.EAGER)
+//	@OneToMany(fetch=FetchType.EAGER)
+	@OneToMany
 	private List<JoinType> supportedJoins;
 
-	@OneToMany(fetch=FetchType.EAGER)
+//	@OneToMany(fetch=FetchType.EAGER)
+	@OneToMany
 	private List<ProcessType> supportedProcesses;
 
-	@OneToMany(fetch=FetchType.EAGER)
+//	@OneToMany(fetch=FetchType.EAGER)
+	@OneToMany
 	private List<VisualizationType> supportedVisualizations;
 
-	@ElementCollection(fetch=FetchType.EAGER)
+//	@ElementCollection(fetch=FetchType.EAGER)
+	@ElementCollection
 	@MapKeyColumn(name = "name")
 	@Column(name = "value")
 	@CollectionTable(name = "resource_parameters", joinColumns = @JoinColumn(name = "id"))
