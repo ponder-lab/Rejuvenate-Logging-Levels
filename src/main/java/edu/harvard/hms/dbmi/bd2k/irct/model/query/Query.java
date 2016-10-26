@@ -4,8 +4,10 @@
 package edu.harvard.hms.dbmi.bd2k.irct.model.query;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -136,6 +138,17 @@ public class Query implements Serializable {
 		}
 		
 		return "select " + select + " from " + resourceNames + " where " + where;
+	}
+	
+	public <T extends ClauseAbstract> List<T> getClausesOfType(Class<T> clauseType) {
+		List<T> returns = new ArrayList<T>();
+		
+		for(ClauseAbstract clause : this.clauses.values()) {
+			if(clauseType.isAssignableFrom(clause.getClass())) {
+				returns.add((T) clause);
+			}
+		}
+		return returns;
 	}
 
 	// -------------------------------------------------------------------------
