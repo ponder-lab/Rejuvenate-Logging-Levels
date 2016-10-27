@@ -20,6 +20,9 @@ import edu.harvard.hms.dbmi.bd2k.irct.model.query.JoinType;
 import edu.harvard.hms.dbmi.bd2k.irct.model.query.PredicateType;
 import edu.harvard.hms.dbmi.bd2k.irct.model.query.Query;
 import edu.harvard.hms.dbmi.bd2k.irct.model.query.SelectClause;
+import edu.harvard.hms.dbmi.bd2k.irct.model.query.SelectOperationType;
+import edu.harvard.hms.dbmi.bd2k.irct.model.query.SortClause;
+import edu.harvard.hms.dbmi.bd2k.irct.model.query.SortOperationType;
 import edu.harvard.hms.dbmi.bd2k.irct.model.query.WhereClause;
 import edu.harvard.hms.dbmi.bd2k.irct.model.resource.Field;
 import edu.harvard.hms.dbmi.bd2k.irct.model.resource.LogicalOperator;
@@ -118,19 +121,26 @@ public class QueryController {
 	 *            Field
 	 * @param alias
 	 *            Alias for the column
+	 * @param operation
+	 *            Operation
+	 * @param fields
+	 *            Map of Field values
 	 * @return Clause Id
 	 * @throws QueryException
 	 *             An exception occurred adding the select clause
 	 */
 	public Long addSelectClause(Long clauseId, Resource resource, Entity field,
-			String alias) throws QueryException {
+			String alias, SelectOperationType operation,
+			Map<String, String> fields) throws QueryException {
 		// Is this a valid select clause
-		validateSelectClause(resource);
+		validateSelectClause(resource, operation, fields);
 
 		// Crete the select clause
 		SelectClause sc = new SelectClause();
 		sc.setParameters(field);
 		sc.setAlias(alias);
+		sc.setOperationType(operation);
+		sc.setStringValues(fields);
 
 		// Assign the where clause an id if it doesn't have one
 		if (clauseId == null) {
@@ -145,21 +155,59 @@ public class QueryController {
 	}
 
 	/**
+	 * Adds or updates a sort clause
+	 * 
+	 * @param clauseId
+	 *            Clause Id
+	 * @param resource
+	 *            Resource
+	 * @param field
+	 *            Field
+	 * @param operation
+	 *            Operation
+	 * @param fields
+	 *            Map of Field values
+	 * @return Clause Id
+	 * @throws QueryException
+	 *             An exception occurred adding the sort clause
+	 */
+	public Long addSortClause(Long clauseId, Resource resource, Entity field,
+			SortOperationType operation, Map<String, String> fields)
+			throws QueryException {
+		validateSortClause(resource, operation, fields);
+
+		// Create the sort clause
+		SortClause sc = new SortClause();
+		sc.setParameters(field);
+		sc.setStringValues(fields);
+
+		// Assign the where clause an id if it doesn't have one
+		if (clauseId == null) {
+			clauseId = this.lastId;
+			this.lastId++;
+		}
+
+		query.addClause(clauseId, sc);
+
+		return clauseId;
+	}
+
+	/**
 	 * Adds a join clause
 	 * 
 	 * @return
 	 * @throws QueryException
 	 *             An occurred adding the join clause
 	 */
-	public Long addJoinClause(Long clauseId, Resource resource, JoinType joinType, Map<String, String> joinFields) throws QueryException {
+	public Long addJoinClause(Long clauseId, Resource resource,
+			JoinType joinType, Map<String, String> joinFields)
+			throws QueryException {
 		validateJoinClause(resource, joinType, joinFields);
-		
-		
-		
+
 		JoinClause jc = new JoinClause();
 		jc.setJoinType(joinType);
 		jc.setStringValues(joinFields);
-		
+
 		// Assign the where clause an id if it doesn't have one
 		if (clauseId == null) {
 			clauseId = this.lastId;
@@ -210,15 +258,30 @@ public class QueryController {
 		validateFields(predicate.getFields(), queryFields);
 	}
 
-	private void validateSelectClause(Resource resource) throws QueryException {
+	private void validateSelectClause(Resource resource,
+			SelectOperationType operation, Map<String, String> selectFields)
+			throws QueryException {
 		// Is resource part of query?
 		if (this.query.getResources().isEmpty()) {
 			this.query.getResources().add(resource);
 		} else if (!this.query.getResources().contains(resource)) {
 			throw new QueryException("Queries only support one resource");
 		}
+
+		// Is the select operation supported by the resource
+		if (operation != null) {
+			if (!resource.getSupportedSelectOperations()
+						.contains(operation)) {
+				throw new QueryException(
+						"Select operation is not supported by the resource");
+			}
+			// Are all the fields valid?
+			validateFields(operation.getFields(), selectFields);
+
+		}
+
 	}
-	
+
 	private void validateJoinClause(Resource resource, JoinType joinType,
 			Map<String, String> joinFields) throws QueryException {
 		// Is the resource part of query?
@@ -227,15 +290,37 @@ public class QueryController {
 		} else if (!this.query.getResources().contains(resource)) {
 			throw new QueryException("Queries only support one resource");
 		}
-		
+
 		// Does the resource support the join type
-		if(!resource.getSupportedJoins().contains(joinType)) {
+		if (!resource.getSupportedJoins().contains(joinType)) {
 			throw new QueryException(
 					"Join Type is not supported by the resource");
 		}
-		
+
 		// Are all the fields valid?
 		validateFields(joinType.getFields(), joinFields);
+	}
+
+	private void validateSortClause(Resource resource,
+			SortOperationType operation, Map<String, String> sortFields)
+			throws QueryException {
+		// Is resource part of query?
+		if (this.query.getResources().isEmpty()) {
+			this.query.getResources().add(resource);
+		} else if (!this.query.getResources().contains(resource)) {
+			throw new QueryException("Queries only support one resource");
+		}
+
+		// Is the select operation supported by the resource
+		if ((operation != null)
+				&& (!resource.getSupportedSelectOperations()
+						.contains(operation))) {
+			throw new QueryException(
+					"Select operation is not supported by the resource");
+		}
+
+		// Are all the fields valid?
+		validateFields(operation.getFields(), sortFields);
 	}
 
 	private void validateFields(List<Field> fields,

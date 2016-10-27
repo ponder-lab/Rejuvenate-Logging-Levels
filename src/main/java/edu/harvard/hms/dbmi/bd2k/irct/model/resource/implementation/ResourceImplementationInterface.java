@@ -3,7 +3,6 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 package edu.harvard.hms.dbmi.bd2k.irct.model.resource.implementation;
 
-import java.io.Serializable;
 import java.util.Map;
 
 import edu.harvard.hms.dbmi.bd2k.irct.exception.ResourceInterfaceException;
@@ -14,7 +13,7 @@ import edu.harvard.hms.dbmi.bd2k.irct.exception.ResourceInterfaceException;
  * @author Jeremy R. Easton-Marks
  *
  */
-public interface ResourceImplementationInterface extends Serializable {
+public interface ResourceImplementationInterface {
 	/**
 	 * A set of parameters that can used to setup the Resource Implementation
 	 * 
