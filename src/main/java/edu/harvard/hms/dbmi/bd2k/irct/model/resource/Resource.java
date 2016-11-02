@@ -336,7 +336,7 @@ public class Resource implements Serializable {
 	
 	public JoinType getSupportedJoinByName(String joinTypeName) {
 		for(JoinType joinType : this.supportedJoins) {
-			if(joinType.toString().equals(joinTypeName)) {
+			if(joinType.getName().equals(joinTypeName)) {
 				return joinType;
 			}
 		}

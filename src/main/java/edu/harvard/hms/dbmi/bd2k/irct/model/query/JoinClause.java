@@ -7,13 +7,17 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.persistence.CascadeType;
 import javax.persistence.CollectionTable;
 import javax.persistence.Column;
 import javax.persistence.ElementCollection;
-import javax.persistence.Entity;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.MapKeyColumn;
+import javax.persistence.OneToOne;
+import javax.persistence.Transient;
+
+import edu.harvard.hms.dbmi.bd2k.irct.model.ontology.Entity;
 
 /**
  * Creates a clause to support joins done on a remote resource
@@ -21,10 +25,16 @@ import javax.persistence.MapKeyColumn;
  * @author Jeremy R. Easton-Marks
  *
  */
-@Entity
+@javax.persistence.Entity
 public class JoinClause extends ClauseAbstract implements Serializable {
 
 	private static final long serialVersionUID = -8136813552982367867L;
+	
+	@OneToOne(cascade=CascadeType.ALL)
+	private Entity field;
+	
+	@ManyToOne
+	private JoinType joinType;
 	
 	@ElementCollection
 	@CollectionTable(name="join_values", joinColumns=@JoinColumn(name="JOIN_VALUE"))
@@ -32,9 +42,23 @@ public class JoinClause extends ClauseAbstract implements Serializable {
 	@Column(name="join_value")
 	private Map<String, String> stringValues;
 	
-	@ManyToOne
-	private JoinType joinType;
+	@Transient
+	private Map<String, Object> objectValues;
 	
+	/**
+	 * @return the field
+	 */
+	public Entity getField() {
+		return field;
+	}
+
+	/**
+	 * @param field the field to set
+	 */
+	public void setField(Entity field) {
+		this.field = field;
+	}
+
 	/**
 	 * @return the joinType
 	 */
@@ -73,6 +97,22 @@ public class JoinClause extends ClauseAbstract implements Serializable {
 		this.stringValues = stringValues;
 	}
 	
-	
+	/**
+	 * Returns a map of the values of the fields for the process
+	 * 
+	 * @return the objectValues
+	 */
+	public Map<String, Object> getObjectValues() {
+		return objectValues;
+	}
+
+	/**
+	 * Sets a map of the values of the fields for the process
+	 * 
+	 * @param objectValues the objectValues to set
+	 */
+	public void setObjectValues(Map<String, Object> objectValues) {
+		this.objectValues = objectValues;
+	}
 
 }

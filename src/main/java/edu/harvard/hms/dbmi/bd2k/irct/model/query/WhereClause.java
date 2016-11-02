@@ -42,6 +42,7 @@ public class WhereClause extends ClauseAbstract implements Serializable {
 	
 	@Enumerated(EnumType.STRING)
 	private LogicalOperator logicalOperator;
+	
 	@OneToOne(cascade=CascadeType.ALL)
 	private Entity field;
 	

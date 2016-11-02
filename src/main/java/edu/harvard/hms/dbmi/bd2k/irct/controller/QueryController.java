@@ -23,6 +23,7 @@ import edu.harvard.hms.dbmi.bd2k.irct.model.query.SelectClause;
 import edu.harvard.hms.dbmi.bd2k.irct.model.query.SelectOperationType;
 import edu.harvard.hms.dbmi.bd2k.irct.model.query.SortClause;
 import edu.harvard.hms.dbmi.bd2k.irct.model.query.SortOperationType;
+import edu.harvard.hms.dbmi.bd2k.irct.model.query.SubQuery;
 import edu.harvard.hms.dbmi.bd2k.irct.model.query.WhereClause;
 import edu.harvard.hms.dbmi.bd2k.irct.model.resource.Field;
 import edu.harvard.hms.dbmi.bd2k.irct.model.resource.LogicalOperator;
@@ -55,6 +56,10 @@ public class QueryController {
 		this.lastId = 0L;
 	}
 
+	public SubQuery createSubQuery() {
+		return new SubQuery();
+	}
+
 	/**
 	 * Adds or updates a where clause to the query
 	 * 
@@ -78,6 +83,14 @@ public class QueryController {
 			PredicateType predicate, LogicalOperator logicalOperator,
 			Map<String, String> fields) throws QueryException {
 
+		return addWhereClause(null, clauseId, resource, field, predicate, logicalOperator, fields);
+	}
+
+	public Long addWhereClause(SubQuery subQuery, Long clauseId,
+			Resource resource, Entity field, PredicateType predicate,
+			LogicalOperator logicalOperator, Map<String, String> fields)
+			throws QueryException {
+
 		// Is valid where clause
 		validateWhereClause(resource, field, predicate, logicalOperator, fields);
 
@@ -95,7 +108,11 @@ public class QueryController {
 		}
 
 		// Add the where clause to the query
-		query.addClause(clauseId, wc);
+		if (subQuery != null) {
+			subQuery.addClause(clauseId, wc);
+		} else {
+			query.addClause(clauseId, wc);
+		}
 
 		return clauseId;
 	}
@@ -108,6 +125,10 @@ public class QueryController {
 	 */
 	public void deleteWhereClause(Long clauseId) {
 		this.query.getClauses().remove(clauseId);
+	}
+
+	public void deleteWhereClause(SubQuery subQuery, Long clauseId) {
+		subQuery.getClauses().remove(clauseId);
 	}
 
 	/**
@@ -132,6 +153,14 @@ public class QueryController {
 	public Long addSelectClause(Long clauseId, Resource resource, Entity field,
 			String alias, SelectOperationType operation,
 			Map<String, String> fields) throws QueryException {
+		return addSelectClause(null, clauseId, resource, field, alias,
+				operation, fields);
+	}
+
+	public Long addSelectClause(SubQuery subQuery, Long clauseId,
+			Resource resource, Entity field, String alias,
+			SelectOperationType operation, Map<String, String> fields)
+			throws QueryException {
 		// Is this a valid select clause
 		validateSelectClause(resource, operation, fields);
 
@@ -149,7 +178,11 @@ public class QueryController {
 		}
 
 		// Add the where clause to the query
-		query.addClause(clauseId, sc);
+		if (subQuery != null) {
+			subQuery.addClause(clauseId, sc);
+		} else {
+			query.addClause(clauseId, sc);
+		}
 
 		return clauseId;
 	}
@@ -174,6 +207,12 @@ public class QueryController {
 	public Long addSortClause(Long clauseId, Resource resource, Entity field,
 			SortOperationType operation, Map<String, String> fields)
 			throws QueryException {
+		return addSortClause(null, clauseId, resource, field, operation, fields);
+	}
+
+	public Long addSortClause(SubQuery subQuery, Long clauseId,
+			Resource resource, Entity field, SortOperationType operation,
+			Map<String, String> fields) throws QueryException {
 		validateSortClause(resource, operation, fields);
 
 		// Create the sort clause
@@ -187,27 +226,34 @@ public class QueryController {
 			this.lastId++;
 		}
 
-		query.addClause(clauseId, sc);
+		if (subQuery != null) {
+			subQuery.addClause(clauseId, sc);
+		} else {
+			query.addClause(clauseId, sc);
+		}
 
 		return clauseId;
 	}
 
-	/**
-	 * Adds a join clause
-	 * 
-	 * @return
-	 * @throws QueryException
-	 *             An occurred adding the join clause
-	 */
-	public Long addJoinClause(Long clauseId, Resource resource,
-			JoinType joinType, Map<String, String> joinFields)
+	public Long addJoinClause(Long clauseId, Resource resource, Entity field,
+			JoinType joinType, Map<String, String> joinFields,
+			Map<String, Object> objectFields) throws QueryException {
+		return addJoinClause(null, clauseId, resource, field, joinType, joinFields,
+				objectFields);
+	}
+
+	public Long addJoinClause(SubQuery subQuery, Long clauseId,
+			Resource resource, Entity field, JoinType joinType,
+			Map<String, String> joinFields, Map<String, Object> objectFields)
 			throws QueryException {
-		validateJoinClause(resource, joinType, joinFields);
+		validateJoinClause(resource, joinType, joinFields, objectFields);
 
 		JoinClause jc = new JoinClause();
 		jc.setJoinType(joinType);
 		jc.setStringValues(joinFields);
-
+		jc.setField(field);
+		jc.setObjectValues(objectFields);
+		
 		// Assign the where clause an id if it doesn't have one
 		if (clauseId == null) {
 			clauseId = this.lastId;
@@ -215,9 +261,25 @@ public class QueryController {
 		}
 
 		// Add the where clause to the query
-		query.addClause(clauseId, jc);
-
+		if (subQuery != null) {
+			subQuery.addClause(clauseId, jc);
+		} else {
+			query.addClause(clauseId, jc);
+		}
 		return clauseId;
+	}
+
+	public Long addSubQuery(Long subQueryId, SubQuery subQuery) {
+		// Assign the where clause an id if it doesn't have one
+		if (subQueryId == null) {
+			subQueryId = this.lastId;
+			this.lastId++;
+		}
+
+		// Add the where clause to the query
+		query.addSubQuery(subQueryId, subQuery);
+
+		return subQueryId;
 	}
 
 	/**
@@ -226,6 +288,10 @@ public class QueryController {
 	 */
 	public void deleteQuery() {
 		this.query = null;
+	}
+
+	public void deleteSubQuery(Long subQueryId) {
+		this.query.removeSubQuery(subQueryId);
 	}
 
 	private void validateWhereClause(Resource resource, Entity field,
@@ -255,7 +321,7 @@ public class QueryController {
 					"Predicate does not support this type of field");
 		}
 		// Are all the fields valid?
-		validateFields(predicate.getFields(), queryFields);
+		validateFields(predicate.getFields(), queryFields, null);
 	}
 
 	private void validateSelectClause(Resource resource,
@@ -270,20 +336,20 @@ public class QueryController {
 
 		// Is the select operation supported by the resource
 		if (operation != null) {
-			if (!resource.getSupportedSelectOperations()
-						.contains(operation)) {
+			if (!resource.getSupportedSelectOperations().contains(operation)) {
 				throw new QueryException(
 						"Select operation is not supported by the resource");
 			}
 			// Are all the fields valid?
-			validateFields(operation.getFields(), selectFields);
+			validateFields(operation.getFields(), selectFields, null);
 
 		}
 
 	}
 
 	private void validateJoinClause(Resource resource, JoinType joinType,
-			Map<String, String> joinFields) throws QueryException {
+			Map<String, String> joinFields, Map<String, Object> objectFields)
+			throws QueryException {
 		// Is the resource part of query?
 		if (this.query.getResources().isEmpty()) {
 			this.query.getResources().add(resource);
@@ -298,7 +364,7 @@ public class QueryController {
 		}
 
 		// Are all the fields valid?
-		validateFields(joinType.getFields(), joinFields);
+		validateFields(joinType.getFields(), joinFields, objectFields);
 	}
 
 	private void validateSortClause(Resource resource,
@@ -320,43 +386,47 @@ public class QueryController {
 		}
 
 		// Are all the fields valid?
-		validateFields(operation.getFields(), sortFields);
+		validateFields(operation.getFields(), sortFields, null);
 	}
 
 	private void validateFields(List<Field> fields,
-			Map<String, String> valueFields) throws QueryException {
+			Map<String, String> valueFields, Map<String, Object> objectFields) throws QueryException {
+		
 		for (Field predicateField : fields) {
-			// Is the predicate field required and is in the query fields
-			if (predicateField.isRequired()
-					&& (!valueFields.containsKey(predicateField.getPath()))) {
-				throw new QueryException("Required field is not set");
-			}
-			String queryFieldValue = valueFields.get(predicateField.getPath());
+			
+			if(predicateField.isRequired() && ((valueFields != null) && (valueFields.containsKey(predicateField.getPath())))) {
+				String queryFieldValue = valueFields.get(predicateField.getPath());
 
-			if (queryFieldValue != null) {
-				// Is the predicate field data type allowed for this query field
-				if (!predicateField.getDataTypes().isEmpty()) {
-					boolean validateFieldValue = false;
+				if (queryFieldValue != null) {
+					// Is the predicate field data type allowed for this query field
+					if (!predicateField.getDataTypes().isEmpty()) {
+						boolean validateFieldValue = false;
 
-					for (DataType dt : predicateField.getDataTypes()) {
-						if (dt.validate(queryFieldValue)) {
-							validateFieldValue = true;
-							break;
+						for (DataType dt : predicateField.getDataTypes()) {
+							if (dt.validate(queryFieldValue)) {
+								validateFieldValue = true;
+								break;
+							}
+						}
+
+						if (!validateFieldValue) {
+							throw new QueryException(
+									"The field value set is not a supported type for this field");
 						}
 					}
-
-					if (!validateFieldValue) {
+					// Is the predicate field of allowedTypes
+					if (!predicateField.getPermittedValues().isEmpty()
+							&& (!predicateField.getPermittedValues().contains(
+									queryFieldValue))) {
 						throw new QueryException(
-								"The field value set is not a supported type for this field");
+								"The field value is not of an allowed type");
 					}
 				}
-				// Is the predicate field of allowedTypes
-				if (!predicateField.getPermittedValues().isEmpty()
-						&& (!predicateField.getPermittedValues().contains(
-								queryFieldValue))) {
-					throw new QueryException(
-							"The field value is not of an allowed type");
-				}
+				
+			} else if (predicateField.isRequired() && ((objectFields != null) && (objectFields.containsKey(predicateField.getPath())))) {
+				
+			} else if(predicateField.isRequired()) {
+				throw new QueryException("Required field " + predicateField.getName() + " is not set");
 			}
 		}
 	}

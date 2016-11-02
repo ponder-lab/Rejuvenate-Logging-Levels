@@ -727,7 +727,55 @@ public enum PrimitiveDataType implements DataType {
 		public String toString(byte[] bytes) {
 			return new String(bytes);
 		}
-	};
+	}, SUBQUERY {
+
+		@Override
+		public byte[] toBytes(Object value) {
+			// TODO Auto-generated method stub
+			return null;
+		}
+
+		@Override
+		public Object fromBytes(byte[] bytes) {
+			// TODO Auto-generated method stub
+			return null;
+		}
+
+		@Override
+		public String getName() {
+			// TODO Auto-generated method stub
+			return null;
+		}
+
+		@Override
+		public Pattern getPattern() {
+			// TODO Auto-generated method stub
+			return null;
+		}
+
+		@Override
+		public String getDescription() {
+			// TODO Auto-generated method stub
+			return null;
+		}
+
+		@Override
+		public DataType typeOf() {
+			// TODO Auto-generated method stub
+			return null;
+		}
+
+		@Override
+		public byte[] fromString(String value) {
+			// TODO Auto-generated method stub
+			return null;
+		}
+
+		@Override
+		public String toString(byte[] bytes) {
+			// TODO Auto-generated method stub
+			return null;
+		}};
 	
 	@Override
 	public boolean validate(String value) {
