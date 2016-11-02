@@ -730,6 +730,11 @@ public enum PrimitiveDataType implements DataType {
 	}, SUBQUERY {
 
 		@Override
+		public boolean validate(String value) {
+			return true;
+		}
+		
+		@Override
 		public byte[] toBytes(Object value) {
 			// TODO Auto-generated method stub
 			return null;
@@ -743,8 +748,7 @@ public enum PrimitiveDataType implements DataType {
 
 		@Override
 		public String getName() {
-			// TODO Auto-generated method stub
-			return null;
+			return "subQuery";
 		}
 
 		@Override
