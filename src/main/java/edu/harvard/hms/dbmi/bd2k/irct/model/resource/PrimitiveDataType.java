@@ -753,19 +753,17 @@ public enum PrimitiveDataType implements DataType {
 
 		@Override
 		public Pattern getPattern() {
-			// TODO Auto-generated method stub
-			return null;
+			return Pattern.compile(".*",
+					Pattern.CASE_INSENSITIVE);
 		}
 
 		@Override
 		public String getDescription() {
-			// TODO Auto-generated method stub
-			return null;
+			return "";
 		}
 
 		@Override
 		public DataType typeOf() {
-			// TODO Auto-generated method stub
 			return null;
 		}
 
