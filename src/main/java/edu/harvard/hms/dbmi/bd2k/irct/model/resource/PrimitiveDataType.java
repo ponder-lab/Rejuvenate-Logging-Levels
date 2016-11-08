@@ -28,10 +28,10 @@ public enum PrimitiveDataType implements DataType {
 	BOOLEAN {
 		@Override
 		public byte[] toBytes(Object value) {
-			if(value == null) {
-				return new byte[] {(byte) Character.MIN_VALUE};
+			if (value == null) {
+				return new byte[] { (byte) Character.MIN_VALUE };
 			}
-			
+
 			byte b[] = new byte[1];
 
 			ByteBuffer buf = ByteBuffer.wrap(b);
@@ -45,10 +45,11 @@ public enum PrimitiveDataType implements DataType {
 
 		@Override
 		public Object fromBytes(byte[] bytes) {
-			if((bytes.length == 1) && (bytes[0] == Character.reverseBytes(Character.MIN_VALUE))) {
+			if ((bytes.length == 1)
+					&& (bytes[0] == Character.reverseBytes(Character.MIN_VALUE))) {
 				return null;
 			}
-			
+
 			ByteBuffer buf = ByteBuffer.wrap(bytes);
 			if (buf.getChar() == 'T') {
 				return true;
@@ -101,19 +102,20 @@ public enum PrimitiveDataType implements DataType {
 	BYTE {
 		@Override
 		public byte[] toBytes(Object value) {
-			if(value == null) {
-				return new byte[] {(byte) Character.MIN_VALUE};
+			if (value == null) {
+				return new byte[] { (byte) Character.MIN_VALUE };
 			}
-			
+
 			return new byte[] { (Byte) value };
 		}
 
 		@Override
 		public Object fromBytes(byte[] bytes) {
-			if((bytes.length == 1) && (bytes[0] == Character.reverseBytes(Character.MIN_VALUE))) {
+			if ((bytes.length == 1)
+					&& (bytes[0] == Character.reverseBytes(Character.MIN_VALUE))) {
 				return null;
 			}
-			
+
 			return bytes[0];
 		}
 
@@ -153,10 +155,10 @@ public enum PrimitiveDataType implements DataType {
 	DOUBLE {
 		@Override
 		public byte[] toBytes(Object value) {
-			if(value == null) {
-				return new byte[] {(byte) Character.MIN_VALUE};
+			if (value == null) {
+				return new byte[] { (byte) Character.MIN_VALUE };
 			}
-			
+
 			byte b[] = new byte[8];
 
 			ByteBuffer buf = ByteBuffer.wrap(b);
@@ -166,10 +168,11 @@ public enum PrimitiveDataType implements DataType {
 
 		@Override
 		public Object fromBytes(byte[] bytes) {
-			if((bytes.length == 1) && (bytes[0] == Character.reverseBytes(Character.MIN_VALUE))) {
+			if ((bytes.length == 1)
+					&& (bytes[0] == Character.reverseBytes(Character.MIN_VALUE))) {
 				return null;
 			}
-			
+
 			ByteBuffer buf = ByteBuffer.wrap(bytes);
 			return buf.getDouble();
 		}
@@ -211,10 +214,10 @@ public enum PrimitiveDataType implements DataType {
 	FLOAT {
 		@Override
 		public byte[] toBytes(Object value) {
-			if(value == null) {
-				return new byte[] {(byte) Character.MIN_VALUE};
+			if (value == null) {
+				return new byte[] { (byte) Character.MIN_VALUE };
 			}
-			
+
 			byte b[] = new byte[4];
 
 			ByteBuffer buf = ByteBuffer.wrap(b);
@@ -224,10 +227,11 @@ public enum PrimitiveDataType implements DataType {
 
 		@Override
 		public Object fromBytes(byte[] bytes) {
-			if((bytes.length == 1) && (bytes[0] == Character.reverseBytes(Character.MIN_VALUE))) {
+			if ((bytes.length == 1)
+					&& (bytes[0] == Character.reverseBytes(Character.MIN_VALUE))) {
 				return null;
 			}
-			
+
 			ByteBuffer buf = ByteBuffer.wrap(bytes);
 			return buf.getFloat();
 		}
@@ -269,10 +273,10 @@ public enum PrimitiveDataType implements DataType {
 	INTEGER {
 		@Override
 		public byte[] toBytes(Object value) {
-			if(value == null) {
-				return new byte[] {(byte) Character.MIN_VALUE};
+			if (value == null) {
+				return new byte[] { (byte) Character.MIN_VALUE };
 			}
-			
+
 			byte b[] = new byte[4];
 
 			ByteBuffer buf = ByteBuffer.wrap(b);
@@ -282,10 +286,11 @@ public enum PrimitiveDataType implements DataType {
 
 		@Override
 		public Object fromBytes(byte[] bytes) {
-			if((bytes.length == 1) && (bytes[0] == Character.reverseBytes(Character.MIN_VALUE))) {
+			if ((bytes.length == 1)
+					&& (bytes[0] == Character.reverseBytes(Character.MIN_VALUE))) {
 				return null;
 			}
-			
+
 			ByteBuffer buf = ByteBuffer.wrap(bytes);
 			return buf.getInt();
 		}
@@ -326,10 +331,10 @@ public enum PrimitiveDataType implements DataType {
 	LONG {
 		@Override
 		public byte[] toBytes(Object value) {
-			if(value == null) {
-				return new byte[] {(byte) Character.MIN_VALUE};
+			if (value == null) {
+				return new byte[] { (byte) Character.MIN_VALUE };
 			}
-			
+
 			byte b[] = new byte[8];
 
 			ByteBuffer buf = ByteBuffer.wrap(b);
@@ -339,10 +344,11 @@ public enum PrimitiveDataType implements DataType {
 
 		@Override
 		public Object fromBytes(byte[] bytes) {
-			if((bytes.length == 1) && (bytes[0] == Character.reverseBytes(Character.MIN_VALUE))) {
+			if ((bytes.length == 1)
+					&& (bytes[0] == Character.reverseBytes(Character.MIN_VALUE))) {
 				return null;
 			}
-			
+
 			ByteBuffer buf = ByteBuffer.wrap(bytes);
 			return buf.getLong();
 		}
@@ -383,8 +389,8 @@ public enum PrimitiveDataType implements DataType {
 	STRING {
 		@Override
 		public byte[] toBytes(Object value) {
-			if(value == null) {
-				return new byte[] {(byte) Character.MIN_VALUE};
+			if (value == null) {
+				return new byte[] { (byte) Character.MIN_VALUE };
 			}
 			String data = ((String) value).trim();
 			return (data).getBytes(StandardCharsets.UTF_16);
@@ -392,7 +398,8 @@ public enum PrimitiveDataType implements DataType {
 
 		@Override
 		public Object fromBytes(byte[] bytes) {
-			if((bytes.length == 1) && (bytes[0] == Character.reverseBytes(Character.MIN_VALUE))) {
+			if ((bytes.length == 1)
+					&& (bytes[0] == Character.reverseBytes(Character.MIN_VALUE))) {
 				return null;
 			}
 			return new String(bytes, StandardCharsets.UTF_16).trim();
@@ -431,10 +438,10 @@ public enum PrimitiveDataType implements DataType {
 	RESULTSET {
 		@Override
 		public byte[] toBytes(Object value) {
-			if(value == null) {
-				return new byte[] {(byte) Character.MIN_VALUE};
+			if (value == null) {
+				return new byte[] { (byte) Character.MIN_VALUE };
 			}
-			
+
 			byte b[] = new byte[8];
 
 			ByteBuffer buf = ByteBuffer.wrap(b);
@@ -444,10 +451,11 @@ public enum PrimitiveDataType implements DataType {
 
 		@Override
 		public Object fromBytes(byte[] bytes) {
-			if((bytes.length == 1) && (bytes[0] == Character.reverseBytes(Character.MIN_VALUE))) {
+			if ((bytes.length == 1)
+					&& (bytes[0] == Character.reverseBytes(Character.MIN_VALUE))) {
 				return null;
 			}
-			
+
 			ByteBuffer buf = ByteBuffer.wrap(bytes);
 			return buf.getLong();
 		}
@@ -488,20 +496,21 @@ public enum PrimitiveDataType implements DataType {
 	COLUMN {
 		@Override
 		public byte[] toBytes(Object value) {
-			if(value == null) {
-				return new byte[] {(byte) Character.MIN_VALUE};
+			if (value == null) {
+				return new byte[] { (byte) Character.MIN_VALUE };
 			}
-			
+
 			String data = ((String) value).trim();
 			return (data).getBytes(StandardCharsets.UTF_16);
 		}
 
 		@Override
 		public Object fromBytes(byte[] bytes) {
-			if((bytes.length == 1) && (bytes[0] == Character.reverseBytes(Character.MIN_VALUE))) {
+			if ((bytes.length == 1)
+					&& (bytes[0] == Character.reverseBytes(Character.MIN_VALUE))) {
 				return null;
 			}
-			
+
 			return new String(bytes, StandardCharsets.UTF_16).trim();
 		}
 
@@ -541,10 +550,10 @@ public enum PrimitiveDataType implements DataType {
 
 		@Override
 		public byte[] toBytes(Object value) {
-			if(value == null) {
-				return new byte[] {(byte) Character.MIN_VALUE};
+			if (value == null) {
+				return new byte[] { (byte) Character.MIN_VALUE };
 			}
-			
+
 			// Convert to Date into String in correct format
 			String dateString = dateFormat.format((Date) value);
 			return fromString(dateString);
@@ -552,10 +561,11 @@ public enum PrimitiveDataType implements DataType {
 
 		@Override
 		public Object fromBytes(byte[] bytes) {
-			if((bytes.length == 1) && (bytes[0] == Character.reverseBytes(Character.MIN_VALUE))) {
+			if ((bytes.length == 1)
+					&& (bytes[0] == Character.reverseBytes(Character.MIN_VALUE))) {
 				return null;
 			}
-			
+
 			try {
 				return dateFormat.parse(toString(bytes));
 			} catch (ParseException e) {
@@ -606,10 +616,10 @@ public enum PrimitiveDataType implements DataType {
 
 		@Override
 		public byte[] toBytes(Object value) {
-			if(value == null) {
-				return new byte[] {(byte) Character.MIN_VALUE};
+			if (value == null) {
+				return new byte[] { (byte) Character.MIN_VALUE };
 			}
-			
+
 			// Convert to Date into String in correct format
 			String dateString = dateTimeFormat.format((Date) value);
 			return fromString(dateString);
@@ -617,10 +627,11 @@ public enum PrimitiveDataType implements DataType {
 
 		@Override
 		public Object fromBytes(byte[] bytes) {
-			if((bytes.length == 1) && (bytes[0] == Character.reverseBytes(Character.MIN_VALUE))) {
+			if ((bytes.length == 1)
+					&& (bytes[0] == Character.reverseBytes(Character.MIN_VALUE))) {
 				return null;
 			}
-			
+
 			try {
 				return dateTimeFormat.parse(toString(bytes));
 			} catch (ParseException e) {
@@ -670,10 +681,10 @@ public enum PrimitiveDataType implements DataType {
 
 		@Override
 		public byte[] toBytes(Object value) {
-			if(value == null) {
-				return new byte[] {(byte) Character.MIN_VALUE};
+			if (value == null) {
+				return new byte[] { (byte) Character.MIN_VALUE };
 			}
-			
+
 			// Convert to Date into String in correct format
 			String dateString = timeFormat.format((Date) value);
 			return fromString(dateString);
@@ -681,10 +692,11 @@ public enum PrimitiveDataType implements DataType {
 
 		@Override
 		public Object fromBytes(byte[] bytes) {
-			if((bytes.length == 1) && (bytes[0] == Character.reverseBytes(Character.MIN_VALUE))) {
+			if ((bytes.length == 1)
+					&& (bytes[0] == Character.reverseBytes(Character.MIN_VALUE))) {
 				return null;
 			}
-			
+
 			try {
 				return timeFormat.parse(toString(bytes));
 			} catch (ParseException e) {
@@ -727,13 +739,14 @@ public enum PrimitiveDataType implements DataType {
 		public String toString(byte[] bytes) {
 			return new String(bytes);
 		}
-	}, SUBQUERY {
+	},
+	SUBQUERY {
 
 		@Override
 		public boolean validate(String value) {
 			return true;
 		}
-		
+
 		@Override
 		public byte[] toBytes(Object value) {
 			// TODO Auto-generated method stub
@@ -753,13 +766,12 @@ public enum PrimitiveDataType implements DataType {
 
 		@Override
 		public Pattern getPattern() {
-			return Pattern.compile(".*",
-					Pattern.CASE_INSENSITIVE);
+			return Pattern.compile(".*", Pattern.CASE_INSENSITIVE);
 		}
 
 		@Override
 		public String getDescription() {
-			return "";
+			return "A IRCT subquery";
 		}
 
 		@Override
@@ -777,13 +789,64 @@ public enum PrimitiveDataType implements DataType {
 		public String toString(byte[] bytes) {
 			// TODO Auto-generated method stub
 			return null;
-		}};
-	
+		}
+	},
+	ARRAY {
+
+		@Override
+		public boolean validate(String value) {
+			return true;
+		}
+
+		@Override
+		public byte[] toBytes(Object value) {
+			// TODO Auto-generated method stub
+			return null;
+		}
+
+		@Override
+		public Object fromBytes(byte[] bytes) {
+			// TODO Auto-generated method stub
+			return null;
+		}
+
+		@Override
+		public String getName() {
+			return "array";
+		}
+
+		@Override
+		public Pattern getPattern() {
+			return Pattern.compile(".*", Pattern.CASE_INSENSITIVE);
+		}
+
+		@Override
+		public String getDescription() {
+			return "An array";
+		}
+
+		@Override
+		public DataType typeOf() {
+			return null;
+		}
+
+		@Override
+		public byte[] fromString(String value) {
+			// TODO Auto-generated method stub
+			return null;
+		}
+
+		@Override
+		public String toString(byte[] bytes) {
+			// TODO Auto-generated method stub
+			return null;
+		}
+	};
+
 	@Override
 	public boolean validate(String value) {
 		return getPattern().matcher(value).matches();
 	}
-
 
 	@Override
 	public JsonObject toJson() {

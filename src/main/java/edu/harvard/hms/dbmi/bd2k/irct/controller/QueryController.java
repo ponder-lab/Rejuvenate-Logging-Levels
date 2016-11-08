@@ -81,14 +81,14 @@ public class QueryController {
 	 */
 	public Long addWhereClause(Long clauseId, Resource resource, Entity field,
 			PredicateType predicate, LogicalOperator logicalOperator,
-			Map<String, String> fields) throws QueryException {
+			Map<String, String> fields, Map<String, Object> objectFields) throws QueryException {
 
-		return addWhereClause(null, clauseId, resource, field, predicate, logicalOperator, fields);
+		return addWhereClause(null, clauseId, resource, field, predicate, logicalOperator, fields, objectFields);
 	}
 
 	public Long addWhereClause(SubQuery subQuery, Long clauseId,
 			Resource resource, Entity field, PredicateType predicate,
-			LogicalOperator logicalOperator, Map<String, String> fields)
+			LogicalOperator logicalOperator, Map<String, String> fields, Map<String, Object> objectFields)
 			throws QueryException {
 
 		// Is valid where clause
@@ -100,6 +100,7 @@ public class QueryController {
 		wc.setLogicalOperator(logicalOperator);
 		wc.setPredicateType(predicate);
 		wc.setStringValues(fields);
+		wc.setObjectValues(objectFields);
 
 		// Assign the where clause an id if it doesn't have one
 		if (clauseId == null) {
@@ -154,12 +155,12 @@ public class QueryController {
 			String alias, SelectOperationType operation,
 			Map<String, String> fields) throws QueryException {
 		return addSelectClause(null, clauseId, resource, field, alias,
-				operation, fields);
+				operation, fields, null);
 	}
 
 	public Long addSelectClause(SubQuery subQuery, Long clauseId,
 			Resource resource, Entity field, String alias,
-			SelectOperationType operation, Map<String, String> fields)
+			SelectOperationType operation, Map<String, String> fields, Map<String, Object> objectFields)
 			throws QueryException {
 		// Is this a valid select clause
 		validateSelectClause(resource, operation, fields);
@@ -170,6 +171,7 @@ public class QueryController {
 		sc.setAlias(alias);
 		sc.setOperationType(operation);
 		sc.setStringValues(fields);
+		sc.setObjectValues(objectFields);
 
 		// Assign the where clause an id if it doesn't have one
 		if (clauseId == null) {
@@ -205,20 +207,21 @@ public class QueryController {
 	 *             An exception occurred adding the sort clause
 	 */
 	public Long addSortClause(Long clauseId, Resource resource, Entity field,
-			SortOperationType operation, Map<String, String> fields)
+			SortOperationType operation, Map<String, String> fields, Map<String, Object> objectFields)
 			throws QueryException {
-		return addSortClause(null, clauseId, resource, field, operation, fields);
+		return addSortClause(null, clauseId, resource, field, operation, fields, objectFields);
 	}
 
 	public Long addSortClause(SubQuery subQuery, Long clauseId,
 			Resource resource, Entity field, SortOperationType operation,
-			Map<String, String> fields) throws QueryException {
+			Map<String, String> fields, Map<String, Object> objectFields) throws QueryException {
 		validateSortClause(resource, operation, fields);
 
 		// Create the sort clause
 		SortClause sc = new SortClause();
 		sc.setParameters(field);
 		sc.setStringValues(fields);
+		sc.setObjectValues(objectFields);
 
 		// Assign the where clause an id if it doesn't have one
 		if (clauseId == null) {
@@ -269,17 +272,13 @@ public class QueryController {
 		return clauseId;
 	}
 
-	public Long addSubQuery(Long subQueryId, SubQuery subQuery) {
-		// Assign the where clause an id if it doesn't have one
-		if (subQueryId == null) {
-			subQueryId = this.lastId;
-			this.lastId++;
+	public void addSubQuery(String subQueryId, SubQuery subQuery) throws QueryException {
+		if(subQueryId == null) {
+			throw new QueryException("Invalid SubQuery ID");
 		}
-
+		
 		// Add the where clause to the query
 		query.addSubQuery(subQueryId, subQuery);
-
-		return subQueryId;
 	}
 
 	/**

@@ -18,6 +18,7 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.MapKeyColumn;
 import javax.persistence.OneToOne;
+import javax.persistence.Transient;
 
 import edu.harvard.hms.dbmi.bd2k.irct.model.ontology.Entity;
 
@@ -43,6 +44,9 @@ public class SortClause extends ClauseAbstract implements Serializable {
 	@Column(name="value")
 	@CollectionTable(name="sort_values", joinColumns=@JoinColumn(name="sort_id"))
 	private Map<String, String> stringValues;
+	
+	@Transient
+	private Map<String, Object> objectValues;
 
 	/**
 	 * Creates an empty sort clause
@@ -137,6 +141,20 @@ public class SortClause extends ClauseAbstract implements Serializable {
 	 */
 	public void setStringValues(Map<String, String> stringValues) {
 		this.stringValues = stringValues;
+	}
+
+	/**
+	 * @return the objectValues
+	 */
+	public Map<String, Object> getObjectValues() {
+		return objectValues;
+	}
+
+	/**
+	 * @param objectValues the objectValues to set
+	 */
+	public void setObjectValues(Map<String, Object> objectValues) {
+		this.objectValues = objectValues;
 	}
 
 	
