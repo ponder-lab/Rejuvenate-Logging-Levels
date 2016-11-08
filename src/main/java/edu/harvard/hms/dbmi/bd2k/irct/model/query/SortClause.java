@@ -23,36 +23,35 @@ import javax.persistence.Transient;
 import edu.harvard.hms.dbmi.bd2k.irct.model.ontology.Entity;
 
 /**
- * The select clause provides a list of parameters and/or operations that should
+ * The sort clause provides a method to sort data that is to
  * be returned by the query.
  * 
  * @author Jeremy R. Easton-Marks
  *
  */
 @javax.persistence.Entity
-public class SelectClause extends ClauseAbstract implements Serializable {
-	private static final long serialVersionUID = 3728919497144122930L;
+public class SortClause extends ClauseAbstract implements Serializable {
+	private static final long serialVersionUID = 1746287992174155091L;
+
 	@OneToOne(cascade = CascadeType.ALL)
 	private Entity parameter;
-
-	private String alias;
-
-	@ManyToOne
-	private SelectOperationType operationType;
 	
+	@ManyToOne
+	private SortOperationType operationType;
+
 	@ElementCollection(fetch = FetchType.EAGER)
 	@MapKeyColumn(name="name")
 	@Column(name="value")
-	@CollectionTable(name="select_values", joinColumns=@JoinColumn(name="select_id"))
+	@CollectionTable(name="sort_values", joinColumns=@JoinColumn(name="sort_id"))
 	private Map<String, String> stringValues;
-
+	
 	@Transient
 	private Map<String, Object> objectValues;
-	
+
 	/**
-	 * Creates an empty select clause
+	 * Creates an empty sort clause
 	 */
-	public SelectClause() {
+	public SortClause() {
 	}
 
 	/**
@@ -107,55 +106,38 @@ public class SelectClause extends ClauseAbstract implements Serializable {
 	}
 
 	/**
-	 * Returns the alias to set for the select clause
-	 * 
-	 * @return the alias
-	 */
-	public String getAlias() {
-		return alias;
-	}
-
-	/**
-	 * Gets the alias for the select clause
-	 * @param alias
-	 *            the alias to set
-	 */
-	public void setAlias(String alias) {
-		this.alias = alias;
-	}
-
-	/**
-	 * Returns the operation type of the select if added
+	 * Returns the sort operation
 	 * 
 	 * @return the operationType
 	 */
-	public SelectOperationType getOperationType() {
+	public SortOperationType getOperationType() {
 		return operationType;
 	}
 
 	/**
-	 * Returns the operation type of the select if added
+	 * Sets the sort operation
 	 * 
-	 * @param operationType
-	 *            the operationType to set
+	 * @param operationType the operationType to set
 	 */
-	public void setOperationType(SelectOperationType operationType) {
+	public void setOperationType(SortOperationType operationType) {
 		this.operationType = operationType;
 	}
 
 	/**
-	 * Returns a string representation of the values
+	 * Returns the values that the sort type operates against if it is
+	 * needed.
 	 * 
-	 * @return the stringValues
+	 * @return Value
 	 */
 	public Map<String, String> getStringValues() {
 		return stringValues;
 	}
 
 	/**
-	 * Sets a string representation of the values
+	 * Sets the value that the sort type operates against if it is needed.
 	 * 
-	 * @param stringValues the stringValues to set
+	 * @param stringValues
+	 *            A map of values
 	 */
 	public void setStringValues(Map<String, String> stringValues) {
 		this.stringValues = stringValues;
@@ -174,4 +156,8 @@ public class SelectClause extends ClauseAbstract implements Serializable {
 	public void setObjectValues(Map<String, Object> objectValues) {
 		this.objectValues = objectValues;
 	}
+
+	
+
+	
 }
