@@ -190,6 +190,15 @@ public class Resource implements Serializable {
 					}
 				}
 				jsonBuilder.add("joins", joinArray.build());
+				
+				// SORTS (Query Interface)
+				JsonArrayBuilder sortArray = Json.createArrayBuilder();
+				if (this.supportedSortOperations != null) {
+					for (SortOperationType st : this.supportedSortOperations) {
+						sortArray.add(st.toJson());
+					}
+				}
+				jsonBuilder.add("sorts", sortArray.build());
 			}
 			if (this.implementingInterface instanceof PathResourceImplementationInterface) {
 				// PROCESSES (Process Interface)
