@@ -221,6 +221,7 @@ public class QueryController {
 		SortClause sc = new SortClause();
 		sc.setParameters(field);
 		sc.setStringValues(fields);
+		sc.setOperationType(operation);
 		sc.setObjectValues(objectFields);
 
 		// Assign the where clause an id if it doesn't have one
@@ -376,12 +377,12 @@ public class QueryController {
 			throw new QueryException("Queries only support one resource");
 		}
 
-		// Is the select operation supported by the resource
+		// Is the sort operation supported by the resource
 		if ((operation != null)
-				&& (!resource.getSupportedSelectOperations()
+				&& (!resource.getSupportedSortOperations()
 						.contains(operation))) {
 			throw new QueryException(
-					"Select operation is not supported by the resource");
+					"Sort operation is not supported by the resource");
 		}
 
 		// Are all the fields valid?
