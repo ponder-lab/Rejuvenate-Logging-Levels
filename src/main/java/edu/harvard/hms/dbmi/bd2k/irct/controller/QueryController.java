@@ -75,6 +75,8 @@ public class QueryController {
 	 *            Logical Operator
 	 * @param fields
 	 *            Map of Field values
+	 * @param objectFields
+	 *            Map of Object values
 	 * @return Id of the clause
 	 * @throws QueryException
 	 *             An exception occurred adding the where clause
@@ -202,6 +204,8 @@ public class QueryController {
 	 *            Operation
 	 * @param fields
 	 *            Map of Field values
+	 * @param objectFields
+	 *            Map of Object values
 	 * @return Clause Id
 	 * @throws QueryException
 	 *             An exception occurred adding the sort clause

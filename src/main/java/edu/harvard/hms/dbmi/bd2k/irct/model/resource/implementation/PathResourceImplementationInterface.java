@@ -40,7 +40,7 @@ public interface PathResourceImplementationInterface extends
 	 * Given a path find all entities that match the finds
 	 * 
 	 * @param path Path
-	 * @param find Find Data
+	 * @param findInformation Information on find
 	 * @param session Session
 	 * @return Paths
 	 * @throws ResourceInterfaceException A resource exception occurred

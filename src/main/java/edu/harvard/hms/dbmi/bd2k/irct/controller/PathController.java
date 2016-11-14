@@ -72,8 +72,8 @@ public class PathController {
 	 *            Resource
 	 * @param resourcePath
 	 *            Resource Path
-	 * @param searchTerm
-	 *            Search Term
+	 * @param findInformation
+	 *            Information for the find operation
 	 * @param session
 	 *            Session to run it in
 	 * @return Paths
