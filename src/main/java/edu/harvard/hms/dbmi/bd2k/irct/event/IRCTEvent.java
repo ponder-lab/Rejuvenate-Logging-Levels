@@ -14,6 +14,8 @@ import java.util.Map;
 public interface IRCTEvent {
 	/**
 	 * Initializes the event listener
+	 *  
+	 * @param parameters Map of parameters
 	 */
 	public void init(Map<String, String> parameters);
 }

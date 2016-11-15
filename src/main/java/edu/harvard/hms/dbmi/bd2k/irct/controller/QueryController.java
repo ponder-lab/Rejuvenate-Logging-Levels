@@ -75,6 +75,8 @@ public class QueryController {
 	 *            Logical Operator
 	 * @param fields
 	 *            Map of Field values
+	 * @param objectFields
+	 *            Map of Object values
 	 * @return Id of the clause
 	 * @throws QueryException
 	 *             An exception occurred adding the where clause
@@ -202,6 +204,8 @@ public class QueryController {
 	 *            Operation
 	 * @param fields
 	 *            Map of Field values
+	 * @param objectFields
+	 *            Map of Object values
 	 * @return Clause Id
 	 * @throws QueryException
 	 *             An exception occurred adding the sort clause
@@ -221,6 +225,7 @@ public class QueryController {
 		SortClause sc = new SortClause();
 		sc.setParameters(field);
 		sc.setStringValues(fields);
+		sc.setOperationType(operation);
 		sc.setObjectValues(objectFields);
 
 		// Assign the where clause an id if it doesn't have one
@@ -376,12 +381,12 @@ public class QueryController {
 			throw new QueryException("Queries only support one resource");
 		}
 
-		// Is the select operation supported by the resource
+		// Is the sort operation supported by the resource
 		if ((operation != null)
-				&& (!resource.getSupportedSelectOperations()
+				&& (!resource.getSupportedSortOperations()
 						.contains(operation))) {
 			throw new QueryException(
-					"Select operation is not supported by the resource");
+					"Sort operation is not supported by the resource");
 		}
 
 		// Are all the fields valid?
