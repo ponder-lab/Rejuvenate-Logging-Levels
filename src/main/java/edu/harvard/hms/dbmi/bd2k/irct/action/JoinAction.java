@@ -7,8 +7,8 @@ import java.util.Map;
 
 import javax.naming.NamingException;
 
-import edu.harvard.hms.dbmi.bd2k.irct.join.JoinImplementation;
-import edu.harvard.hms.dbmi.bd2k.irct.model.join.IRCTJoin;
+import edu.harvard.hms.dbmi.bd2k.irct.model.join.Join;
+import edu.harvard.hms.dbmi.bd2k.irct.model.join.JoinImplementation;
 import edu.harvard.hms.dbmi.bd2k.irct.model.result.Result;
 import edu.harvard.hms.dbmi.bd2k.irct.model.result.ResultStatus;
 import edu.harvard.hms.dbmi.bd2k.irct.model.result.exception.PersistableException;
@@ -25,7 +25,7 @@ import edu.harvard.hms.dbmi.bd2k.irct.exception.ResourceInterfaceException;
  *
  */
 public class JoinAction implements Action {
-	private IRCTJoin joinType;
+	private Join join;
 	private ActionStatus status;
 	private Result result;
 	
@@ -36,26 +36,26 @@ public class JoinAction implements Action {
 	 * 
 	 * @param joinType The join to run
 	 */
-	public void setup(IRCTJoin joinType) {
+	public void setup(Join join) {
 		this.status = ActionStatus.CREATED;
-		this.joinType = joinType;
+		this.join = join;
 		this.irctEventListener = Utilities.getIRCTEventListener();
 	}
 	
 	@Override
 	public void updateActionParams(Map<String, Result> updatedParams) {
 		for(String key : updatedParams.keySet()) {
-			this.joinType.getValues().put(key, updatedParams.get(key).getId().toString());
+			this.join.getObjectValues().put(key, updatedParams.get(key).getId().toString());
 		}
 	}
 
 	@Override
 	public void run(SecureSession session) {
-		irctEventListener.beforeJoin(session, joinType);
+		irctEventListener.beforeJoin(session, join);
 		this.status = ActionStatus.RUNNING;
 
 		try {
-			JoinImplementation joinImplementation = (JoinImplementation) joinType.getJoinImplementation();
+			JoinImplementation joinImplementation = (JoinImplementation) join.getJoinImplementation();
 			result = ActionUtilities.createResult(joinImplementation.getJoinDataType());
 			if(session != null) {
 				result.setUser(session.getUser());
@@ -69,13 +69,13 @@ public class JoinAction implements Action {
 		}
 		
 		this.status = ActionStatus.COMPLETE;
-		irctEventListener.afterJoin(session, joinType);
+		irctEventListener.afterJoin(session, join);
 	}
 
 	@Override
 	public Result getResults(SecureSession session) throws ResourceInterfaceException {
 		if(this.result.getResultStatus() != ResultStatus.ERROR && this.result.getResultStatus() != ResultStatus.COMPLETE) {
-			this.result = this.joinType.getJoinImplementation().getResults(this.result);
+			this.result = this.join.getJoinImplementation().getResults(this.result);
 		}
 		try {
 			ActionUtilities.mergeResult(result);

@@ -29,7 +29,7 @@ import edu.harvard.hms.dbmi.bd2k.irct.event.result.BeforeGetResult;
 import edu.harvard.hms.dbmi.bd2k.irct.event.result.BeforeSaveResult;
 import edu.harvard.hms.dbmi.bd2k.irct.executable.Executable;
 import edu.harvard.hms.dbmi.bd2k.irct.model.find.FindInformationInterface;
-import edu.harvard.hms.dbmi.bd2k.irct.model.join.IRCTJoin;
+import edu.harvard.hms.dbmi.bd2k.irct.model.join.Join;
 import edu.harvard.hms.dbmi.bd2k.irct.model.ontology.Entity;
 import edu.harvard.hms.dbmi.bd2k.irct.model.process.IRCTProcess;
 import edu.harvard.hms.dbmi.bd2k.irct.model.query.Query;
@@ -119,12 +119,12 @@ public class IRCTEventListener {
 	 * @param joinType
 	 *            Type of Join
 	 */
-	public void afterJoin(SecureSession session, IRCTJoin joinType) {
+	public void afterJoin(SecureSession session, Join join) {
 		List<IRCTEvent> irctEvents = events.get("AfterJoin");
 		if (irctEvents == null)
 			return;
 		for (IRCTEvent irctEvent : irctEvents) {
-			((AfterJoin) irctEvent).fire(session, joinType);
+			((AfterJoin) irctEvent).fire(session, join);
 		}
 	}
 
@@ -210,12 +210,12 @@ public class IRCTEventListener {
 	 * @param joinType
 	 *            Join
 	 */
-	public void beforeJoin(SecureSession session, IRCTJoin joinType) {
+	public void beforeJoin(SecureSession session, Join join) {
 		List<IRCTEvent> irctEvents = events.get("BeforeJoin");
 		if (irctEvents == null)
 			return;
 		for (IRCTEvent irctEvent : irctEvents) {
-			((BeforeJoin) irctEvent).fire(session, joinType);
+			((BeforeJoin) irctEvent).fire(session, join);
 		}
 	}
 

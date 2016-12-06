@@ -23,7 +23,7 @@ import edu.harvard.hms.dbmi.bd2k.irct.action.ProcessAction;
 import edu.harvard.hms.dbmi.bd2k.irct.action.QueryAction;
 import edu.harvard.hms.dbmi.bd2k.irct.executable.ExecutableLeafNode;
 import edu.harvard.hms.dbmi.bd2k.irct.executable.ExecutionPlan;
-import edu.harvard.hms.dbmi.bd2k.irct.model.join.IRCTJoin;
+import edu.harvard.hms.dbmi.bd2k.irct.model.join.Join;
 import edu.harvard.hms.dbmi.bd2k.irct.model.process.IRCTProcess;
 import edu.harvard.hms.dbmi.bd2k.irct.model.query.Query;
 import edu.harvard.hms.dbmi.bd2k.irct.model.result.Persistable;
@@ -133,14 +133,14 @@ public class ExecutionController {
 	/**
 	 * Run a join by creating an execution plan
 	 * 
-	 * @param joinType
+	 * @param join
 	 *            Join to run
 	 * @param secureSession Session to run it in
 	 * @return Result Id
 	 * @throws PersistableException
 	 *             An error occurred
 	 */
-	public Long runJoin(IRCTJoin joinType, SecureSession secureSession)
+	public Long runJoin(Join join, SecureSession secureSession)
 			throws PersistableException {
 		Result newResult = new Result();
 		
@@ -151,7 +151,7 @@ public class ExecutionController {
 		newResult.setResultStatus(ResultStatus.RUNNING);
 
 		JoinAction ja = new JoinAction();
-		ja.setup(joinType);
+		ja.setup(join);
 
 		ExecutableLeafNode eln = new ExecutableLeafNode();
 		eln.setAction(ja);

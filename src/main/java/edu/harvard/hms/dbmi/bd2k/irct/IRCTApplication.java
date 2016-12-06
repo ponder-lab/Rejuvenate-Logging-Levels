@@ -44,7 +44,6 @@ public class IRCTApplication {
 	private Map<String, Resource> resources;
 	private Map<String, IRCTJoin> supportedJoinTypes;
 	private Map<ResultDataType, List<DataConverterImplementation>> resultDataConverters;
-	private Map<String, EventConverterImplementation> irctEventConverters;
 
 	@Inject
 	Logger log;
@@ -97,7 +96,6 @@ public class IRCTApplication {
 	 */
 	private void loadIRCTEventListeners() {
 		this.irctEventListener.init();
-		this.irctEventConverters = new HashMap<String, EventConverterImplementation>();
 		CriteriaBuilder cb = oem.getCriteriaBuilder();
 		CriteriaQuery<EventConverterImplementation> criteria = cb
 				.createQuery(EventConverterImplementation.class);
