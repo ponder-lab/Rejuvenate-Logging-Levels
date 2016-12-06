@@ -4,8 +4,10 @@
 package edu.harvard.hms.dbmi.bd2k.irct.model.query;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -42,7 +44,7 @@ public class Query implements Serializable {
 	private String name;
 
 	@ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
-	private Map<Long, SubQuery> subQueries;
+	private Map<String, SubQuery> subQueries;
 
 	@ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
 	private Map<Long, ClauseAbstract> clauses;
@@ -55,7 +57,7 @@ public class Query implements Serializable {
 	 * 
 	 */
 	public Query() {
-		this.setSubQueries(new LinkedHashMap<Long, SubQuery>());
+		this.setSubQueries(new LinkedHashMap<String, SubQuery>());
 		this.setClauses(new LinkedHashMap<Long, ClauseAbstract>());
 		this.setResources(new HashSet<Resource>());
 	}
@@ -123,19 +125,32 @@ public class Query implements Serializable {
 						+ predicateFields;
 			}
 		}
-		
+
 		for (Resource resource : resources) {
 			if (!resourceNames.equals("")) {
 				resourceNames += ", ";
 			}
 			resourceNames += resource.getName();
 		}
-		
+
 		if (select.equals("")) {
 			select = "*";
 		}
-		
-		return "select " + select + " from " + resourceNames + " where " + where;
+
+		return "select " + select + " from " + resourceNames + " where "
+				+ where;
+	}
+
+	public <T extends ClauseAbstract> List<T> getClausesOfType(
+			Class<T> clauseType) {
+		List<T> returns = new ArrayList<T>();
+
+		for (ClauseAbstract clause : this.clauses.values()) {
+			if (clauseType.isAssignableFrom(clause.getClass())) {
+				returns.add((T) clause);
+			}
+		}
+		return returns;
 	}
 
 	// -------------------------------------------------------------------------
@@ -188,8 +203,20 @@ public class Query implements Serializable {
 	 * @param subQuery
 	 *            SubQuery
 	 */
-	public final void addSubQuery(Long id, SubQuery subQuery) {
+	public final void addSubQuery(String id, SubQuery subQuery) {
 		this.subQueries.put(id, subQuery);
+	}
+
+	/**
+	 * Returns a SubQuery if the subquery exists. Returns null if no subquery by
+	 * that id exists.
+	 * 
+	 * @param id
+	 *            SubQuery ID
+	 * @return SubQuery
+	 */
+	public final SubQuery getSubQuery(String id) {
+		return this.subQueries.get(id);
 	}
 
 	/**
@@ -208,7 +235,7 @@ public class Query implements Serializable {
 	 * 
 	 * @return SubQuery Map
 	 */
-	public final Map<Long, SubQuery> getSubQueries() {
+	public final Map<String, SubQuery> getSubQueries() {
 		return subQueries;
 	}
 
@@ -219,7 +246,7 @@ public class Query implements Serializable {
 	 * @param subQueries
 	 *            SubQuery Map
 	 */
-	public final void setSubQueries(Map<Long, SubQuery> subQueries) {
+	public final void setSubQueries(Map<String, SubQuery> subQueries) {
 		this.subQueries = subQueries;
 	}
 

@@ -18,7 +18,6 @@ import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
-import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
@@ -32,6 +31,8 @@ import edu.harvard.hms.dbmi.bd2k.irct.model.ontology.OntologyRelationship;
 import edu.harvard.hms.dbmi.bd2k.irct.model.ontology.OntologyType;
 import edu.harvard.hms.dbmi.bd2k.irct.model.query.JoinType;
 import edu.harvard.hms.dbmi.bd2k.irct.model.query.PredicateType;
+import edu.harvard.hms.dbmi.bd2k.irct.model.query.SelectOperationType;
+import edu.harvard.hms.dbmi.bd2k.irct.model.query.SortOperationType;
 import edu.harvard.hms.dbmi.bd2k.irct.model.resource.implementation.PathResourceImplementationInterface;
 import edu.harvard.hms.dbmi.bd2k.irct.model.resource.implementation.ResourceImplementationInterface;
 import edu.harvard.hms.dbmi.bd2k.irct.model.visualization.VisualizationType;
@@ -61,33 +62,39 @@ public class Resource implements Serializable {
 	@Convert(converter = ResourceImplementationConverter.class)
 	private ResourceImplementationInterface implementingInterface;
 
-	@ElementCollection(fetch=FetchType.EAGER)
+	@ElementCollection
 	@Convert(converter = DataTypeConverter.class)
 	private List<DataType> dataTypes;
 
-	@ElementCollection(fetch=FetchType.EAGER)
+	@ElementCollection
 	@Convert(converter = OntologyRelationshipConverter.class)
 	private List<OntologyRelationship> relationships;
 
-	@ElementCollection(targetClass = LogicalOperator.class, fetch=FetchType.EAGER)
+	@ElementCollection(targetClass = LogicalOperator.class)
 	@CollectionTable(name = "Resource_LogicalOperator", joinColumns = @JoinColumn(name = "id"))
 	@Column(name = "logicalOperator", nullable = false)
 	@Enumerated(EnumType.STRING)
 	private List<LogicalOperator> logicalOperators;
 
-	@OneToMany(fetch=FetchType.EAGER)
+	@OneToMany
 	private List<PredicateType> supportedPredicates;
+	
+	@OneToMany
+	private List<SelectOperationType> supportedSelectOperations;
+	
+	@OneToMany
+	private List<SortOperationType> supportedSortOperations;
 
-	@OneToMany(fetch=FetchType.EAGER)
+	@OneToMany
 	private List<JoinType> supportedJoins;
 
-	@OneToMany(fetch=FetchType.EAGER)
+	@OneToMany
 	private List<ProcessType> supportedProcesses;
 
-	@OneToMany(fetch=FetchType.EAGER)
+	@OneToMany
 	private List<VisualizationType> supportedVisualizations;
 
-	@ElementCollection(fetch=FetchType.EAGER)
+	@ElementCollection
 	@MapKeyColumn(name = "name")
 	@Column(name = "value")
 	@CollectionTable(name = "resource_parameters", joinColumns = @JoinColumn(name = "id"))
@@ -165,6 +172,15 @@ public class Resource implements Serializable {
 					}
 				}
 				jsonBuilder.add("predicates", predicateArray.build());
+				
+				// PREDICATES (Query Interface)
+				JsonArrayBuilder selectArray = Json.createArrayBuilder();
+				if (this.supportedPredicates != null) {
+					for (SelectOperationType pt : this.supportedSelectOperations) {
+						selectArray.add(pt.toJson());
+					}
+				}
+				jsonBuilder.add("selectOperations", selectArray.build());
 
 				// JOINS (Query Interface)
 				JsonArrayBuilder joinArray = Json.createArrayBuilder();
@@ -174,6 +190,15 @@ public class Resource implements Serializable {
 					}
 				}
 				jsonBuilder.add("joins", joinArray.build());
+				
+				// SORTS (Query Interface)
+				JsonArrayBuilder sortArray = Json.createArrayBuilder();
+				if (this.supportedSortOperations != null) {
+					for (SortOperationType st : this.supportedSortOperations) {
+						sortArray.add(st.toJson());
+					}
+				}
+				jsonBuilder.add("sorts", sortArray.build());
 			}
 			if (this.implementingInterface instanceof PathResourceImplementationInterface) {
 				// PROCESSES (Process Interface)
@@ -241,6 +266,38 @@ public class Resource implements Serializable {
 	}
 	
 	/**
+	 * Returns a select operation from its name. It will return null if it does not exist
+	 * 
+	 * @param operationName Operation name
+	 * @return Select Operation Type
+	 */
+	public SelectOperationType getSupportedSelectOperationByName(
+			String operationName) {
+		for(SelectOperationType operationType : this.supportedSelectOperations) {
+			if(operationType.getName().equals(operationName)) {
+				return operationType;
+			}
+		}
+		return null;
+	}
+	
+	/**
+	 * Returns a sort operation from its name. It will return null if it does not exist.
+	 * 
+	 * @param operationName Sort name
+	 * @return Sort Operation Type
+	 */
+	public SortOperationType getSupportedSortOperationByName(
+			String operationName) {
+		for(SortOperationType operationType : this.supportedSortOperations) {
+			if(operationType.getName().equals(operationName)) {
+				return operationType;
+			}
+		}
+		return null;
+	}
+	
+	/**
 	 * Returns a process type from its name. It will return null if it does not exist.
 	 * 
 	 * @param processName Process Name
@@ -288,7 +345,7 @@ public class Resource implements Serializable {
 	
 	public JoinType getSupportedJoinByName(String joinTypeName) {
 		for(JoinType joinType : this.supportedJoins) {
-			if(joinType.toString().equals(joinTypeName)) {
+			if(joinType.getName().equals(joinTypeName)) {
 				return joinType;
 			}
 		}
@@ -453,6 +510,43 @@ public class Resource implements Serializable {
 	}
 
 	/**
+	 * Returns a list of select operation that are supported by the resource
+	 *  
+	 * @return the supportedSelectOperations
+	 */
+	public List<SelectOperationType> getSupportedSelectOperations() {
+		return supportedSelectOperations;
+	}
+
+	/**
+	 * Sets the list of select operations that are supported by the resources
+	 * 
+	 * @param supportedSelectOperations the supportedSelectOperations to set
+	 */
+	public void setSupportedSelectOperations(
+			List<SelectOperationType> supportedSelectOperations) {
+		this.supportedSelectOperations = supportedSelectOperations;
+	}
+
+	/**
+	 * Returns a list of sort operation that are supported by the resource
+	 * 
+	 * @return the supportedSortOperations
+	 */
+	public List<SortOperationType> getSupportedSortOperations() {
+		return supportedSortOperations;
+	}
+
+	/**
+	 * Sets the list of sort operations that are supporterd by the resource
+	 * 
+	 * @param supportedSortOperations the supportedSortOperations to set
+	 */
+	public void setSupportedSortOperations(List<SortOperationType> supportedSortOperations) {
+		this.supportedSortOperations = supportedSortOperations;
+	}
+
+	/**
 	 * Returns a list joins that are supported by the resource
 	 * 
 	 * @return the supportedJoins
@@ -541,4 +635,6 @@ public class Resource implements Serializable {
 	public void setSetup(boolean setup) {
 		this.setup = setup;
 	}
+
+	
 }

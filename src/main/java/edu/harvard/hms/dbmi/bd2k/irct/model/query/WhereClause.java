@@ -22,6 +22,7 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.MapKeyColumn;
 import javax.persistence.OneToOne;
+import javax.persistence.Transient;
 
 import edu.harvard.hms.dbmi.bd2k.irct.model.ontology.Entity;
 import edu.harvard.hms.dbmi.bd2k.irct.model.resource.LogicalOperator;
@@ -42,6 +43,7 @@ public class WhereClause extends ClauseAbstract implements Serializable {
 	
 	@Enumerated(EnumType.STRING)
 	private LogicalOperator logicalOperator;
+	
 	@OneToOne(cascade=CascadeType.ALL)
 	private Entity field;
 	
@@ -53,6 +55,9 @@ public class WhereClause extends ClauseAbstract implements Serializable {
 	@Column(name="value")
 	@CollectionTable(name="where_values", joinColumns=@JoinColumn(name="where_id"))
 	private Map<String, String> stringValues;
+	
+	@Transient
+	private Map<String, Object> objectValues;
 	
 	/**
 	 * Creates an empty where clause
@@ -215,6 +220,20 @@ public class WhereClause extends ClauseAbstract implements Serializable {
 	 */
 	public void setStringValues(Map<String, String> stringValues) {
 		this.stringValues = stringValues;
+	}
+
+	/**
+	 * @return the objectValues
+	 */
+	public Map<String, Object> getObjectValues() {
+		return objectValues;
+	}
+
+	/**
+	 * @param objectValues the objectValues to set
+	 */
+	public void setObjectValues(Map<String, Object> objectValues) {
+		this.objectValues = objectValues;
 	}
 
 }

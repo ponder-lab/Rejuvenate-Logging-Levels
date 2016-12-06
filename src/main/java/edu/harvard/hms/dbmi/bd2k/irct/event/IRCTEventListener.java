@@ -58,8 +58,7 @@ public class IRCTEventListener {
 	/**
 	 * Registers a new event listener
 	 * 
-	 * @param irctEvent
-	 *            Listener
+	 * @param eci Event Implementation
 	 */
 	public void registerListener(EventConverterImplementation eci) {
 
@@ -352,7 +351,7 @@ public class IRCTEventListener {
 	/**
 	 * Runs the listeners after a find is executed
 	 * 
-	 * @param returns A list of entities
+	 * @param matches A list of entities
 	 * @param findInformation Information for the find
 	 * @param session Session Information
 	 */
