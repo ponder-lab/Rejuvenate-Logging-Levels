@@ -149,7 +149,8 @@ public class ExecutionController {
 		}
 		
 		newResult.setResultStatus(ResultStatus.RUNNING);
-
+		entityManager.persist(newResult);
+		
 		JoinAction ja = new JoinAction();
 		ja.setup(join);
 

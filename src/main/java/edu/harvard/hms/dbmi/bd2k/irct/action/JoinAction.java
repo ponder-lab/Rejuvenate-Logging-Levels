@@ -48,7 +48,7 @@ public class JoinAction implements Action {
 			this.join.getObjectValues().put(key, updatedParams.get(key).getId().toString());
 		}
 	}
-
+	
 	@Override
 	public void run(SecureSession session) {
 		irctEventListener.beforeJoin(session, join);
@@ -60,7 +60,10 @@ public class JoinAction implements Action {
 			if(session != null) {
 				result.setUser(session.getUser());
 			}
-			result = joinImplementation.run(result);
+			
+			join.getObjectValues().putAll(ActionUtilities.convertResultSetFieldToObject(session.getUser(), join.getJoinType().getFields(), join.getStringValues()));
+			
+			result = joinImplementation.run(session, join, result);
 			this.status = ActionStatus.COMPLETE;
 			ActionUtilities.mergeResult(result);
 		} catch (PersistableException | NamingException | ResultSetException e) {

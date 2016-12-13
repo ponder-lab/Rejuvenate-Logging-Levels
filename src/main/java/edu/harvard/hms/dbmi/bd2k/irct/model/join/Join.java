@@ -4,6 +4,7 @@
 package edu.harvard.hms.dbmi.bd2k.irct.model.join;
 
 import java.io.Serializable;
+import java.util.HashMap;
 import java.util.Map;
 
 import javax.persistence.CollectionTable;
@@ -27,6 +28,8 @@ public class Join implements Serializable {
 	private Long id;
 
 	private JoinImplementation joinImplementation;
+	
+	private IRCTJoin joinType;
 
 	@ElementCollection(fetch = FetchType.EAGER)
 	@MapKeyColumn(name = "name")
@@ -36,6 +39,11 @@ public class Join implements Serializable {
 
 	@Transient
 	private Map<String, Object> objectValues;
+	
+	public Join() {
+		this.stringValues = new HashMap<String, String>();
+		this.objectValues = new HashMap<String, Object>();
+	}
 
 	/**
 	 * @return the id
@@ -65,6 +73,20 @@ public class Join implements Serializable {
 	 */
 	public void setJoinImplementation(JoinImplementation joinImplementation) {
 		this.joinImplementation = joinImplementation;
+	}
+
+	/**
+	 * @return the joinType
+	 */
+	public IRCTJoin getJoinType() {
+		return joinType;
+	}
+
+	/**
+	 * @param joinType the joinType to set
+	 */
+	public void setJoinType(IRCTJoin joinType) {
+		this.joinType = joinType;
 	}
 
 	/**

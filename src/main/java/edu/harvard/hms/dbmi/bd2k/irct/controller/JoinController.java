@@ -53,8 +53,10 @@ public class JoinController {
 		validateFields(irctJoin.getFields(), fields, objectFields);
 
 		getJoin().setJoinImplementation(irctJoin.getJoinImplementation());
+		getJoin().setJoinType(irctJoin);
 		getJoin().setStringValues(fields);
 		getJoin().setObjectValues(objectFields);
+		
 	}
 
 	private void validateFields(List<Field> fields,
