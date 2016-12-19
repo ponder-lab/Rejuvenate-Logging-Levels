@@ -30,7 +30,8 @@ public class ResultSetImpl implements ResultSet {
 
 	@Override
 	public void appendColumn(Column column) throws ResultSetException {
-		if ((getSize() == 0) && (!ArrayUtils.contains(columnNames, column.getName()))) {
+		if ((getSize() == 0)
+				&& (!ArrayUtils.contains(columnNames, column.getName()))) {
 			this.columns = ArrayUtils.add(columns, column);
 			this.columnNames = ArrayUtils.add(columnNames, column.getName());
 			this.current = false;
@@ -40,10 +41,9 @@ public class ResultSetImpl implements ResultSet {
 	@Override
 	public void load(String resultSetLocation) throws ResultSetException,
 			PersistableException {
-		
-		
+
 	}
-	
+
 	@Override
 	public List<File> getFileList() {
 		return null;
@@ -154,7 +154,7 @@ public class ResultSetImpl implements ResultSet {
 		}
 		return (getRowPosition() == size - 1);
 	}
-	
+
 	@Override
 	public long getRow() throws ResultSetException {
 		if (isClosed()) {
@@ -204,7 +204,7 @@ public class ResultSetImpl implements ResultSet {
 
 		return columns[columnIndex];
 	}
-	
+
 	@Override
 	public Column[] getColumns() throws ResultSetException {
 		if (isClosed()) {
@@ -224,7 +224,7 @@ public class ResultSetImpl implements ResultSet {
 	public boolean getBoolean(String columnLabel) throws ResultSetException {
 		throw new ResultSetException("Not Implemented in this class");
 	}
-	
+
 	@Override
 	public void updateBoolean(int columnIndex, boolean value)
 			throws ResultSetException {
@@ -379,7 +379,7 @@ public class ResultSetImpl implements ResultSet {
 	public String getString(int columnIndex) throws ResultSetException {
 		throw new ResultSetException("Not Implemented in this class");
 	}
-	
+
 	@Override
 	public String getString(String columnLabel) throws ResultSetException {
 		throw new ResultSetException("Not Implemented in this class");
@@ -398,24 +398,13 @@ public class ResultSetImpl implements ResultSet {
 	}
 
 	// OBJECT
-	/**
-	 * Get an object from a column from the current row
-	 * 
-	 * @param columnIndex Column Index
-	 * @return Object from the column
-	 * @throws ResultSetException A result set exception occurred
-	 */
+
+	@Override
 	public Object getObject(int columnIndex) throws ResultSetException {
 		throw new ResultSetException("Not Implemented in this class");
 	}
 
-	/**
-	 * Updates an object from a column from the current row
-	 * 
-	 * @param columnIndex Column Index
-	 * @param obj Object to set
-	 * @throws ResultSetException A result set exception occurred
-	 */
+	@Override
 	public void updateObject(int columnIndex, Object obj)
 			throws ResultSetException {
 		throw new ResultSetException("Not Implemented in this class");
@@ -423,6 +412,7 @@ public class ResultSetImpl implements ResultSet {
 
 	/**
 	 * Gets the current row position
+	 * 
 	 * @return current row
 	 */
 	public long getRowPosition() {
@@ -432,7 +422,8 @@ public class ResultSetImpl implements ResultSet {
 	/**
 	 * Sets the current row position
 	 * 
-	 * @param rowPosition Row
+	 * @param rowPosition
+	 *            Row
 	 */
 	public void setRowPosition(long rowPosition) {
 		this.rowPosition = rowPosition;
@@ -441,6 +432,6 @@ public class ResultSetImpl implements ResultSet {
 	@Override
 	public void appendRow() throws ResultSetException, PersistableException {
 		throw new ResultSetException("Not Implemented in this class");
-		
+
 	}
 }
