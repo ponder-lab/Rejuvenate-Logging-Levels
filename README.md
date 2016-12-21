@@ -33,4 +33,4 @@ This is the first release of the IRCT-API.
 This release fixes bugs in the IRCT-API 0.2 release
 
 ### 0.2
-This is the initial commit of the IRCT-API it provides a proof of concept of the IRCT.
+This is the initial prerelease of the IRCT-API it provides a proof of concept of the IRCT.
