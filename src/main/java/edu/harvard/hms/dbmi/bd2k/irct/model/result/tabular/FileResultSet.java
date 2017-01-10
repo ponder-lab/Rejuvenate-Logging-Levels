@@ -75,7 +75,6 @@ public class FileResultSet extends ResultSetImpl implements Persistable {
 	
 	@Override
 	public void close() throws ResultSetException {
-		System.out.println("FileResultSet.close()");
 		try {
 			dataReadFC.close();
 		} catch (IOException e) {
