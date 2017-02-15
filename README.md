@@ -9,7 +9,7 @@ The IRCT Application Programming Interface (IRCT-API) is the core of the IRCT pr
 ## Version Information
 
 ### 1.3.1
-This release includes improved documentation.
+This release includes improved documentation and minor code cleanup.
 
 ### 1.3
 The 1.3 release of the IRCT allows for subqueries, and for queries to be contained as values in fields. It also adds support for arrays to be values in fields. Queries can also include sort clauses, and select operations can now have aggregates.
