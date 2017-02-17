@@ -67,6 +67,8 @@ public class Result {
 	private String resultSetLocation;
 
 	private String message;
+	
+	private String jobType;
 
 	/**
 	 * Returns a JSONObject representation of the object. This returns only the
@@ -306,5 +308,24 @@ public class Result {
 	 */
 	public void setMessage(String message) {
 		this.message = message;
+	}
+
+
+	/**
+	 * Returns the type of Action created this Result
+	 * 
+	 * @return the jobType
+	 */
+	public String getJobType() {
+		return jobType;
+	}
+
+	/**
+	 * Sets the type of Action created this result
+	 * 
+	 * @param jobType the jobType to set
+	 */
+	public void setJobType(String jobType) {
+		this.jobType = jobType;
 	}
 }

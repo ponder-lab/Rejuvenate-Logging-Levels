@@ -69,7 +69,7 @@ public class ExecutionController {
 	public Long runProcess(IRCTProcess process, SecureSession secureSession)
 			throws PersistableException {
 		Result newResult = new Result();
-		
+		newResult.setJobType("EXECUTION");
 		if(secureSession != null) {
 			newResult.setUser(secureSession.getUser());
 		}
@@ -104,7 +104,7 @@ public class ExecutionController {
 	public Long runQuery(Query query, SecureSession secureSession)
 			throws PersistableException {
 		Result newResult = new Result();
-		
+		newResult.setJobType("EXECUTION");
 		if(secureSession != null) {
 			newResult.setUser(secureSession.getUser());
 		}
@@ -143,7 +143,7 @@ public class ExecutionController {
 	public Long runJoin(IRCTJoin joinType, SecureSession secureSession)
 			throws PersistableException {
 		Result newResult = new Result();
-		
+		newResult.setJobType("EXECUTION");
 		if(secureSession != null) {
 			newResult.setUser(secureSession.getUser());
 		}
