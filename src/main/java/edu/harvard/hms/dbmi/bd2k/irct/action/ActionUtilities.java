@@ -39,7 +39,9 @@ public class ActionUtilities {
 	static protected Result createResult(ResultDataType resultDataType) throws NamingException, PersistableException {
 		InitialContext ic = new InitialContext();
 		ResultController resultController = (ResultController) ic.lookup("java:module/ResultController");
-		return resultController.createResult(resultDataType);
+		Result result = resultController.createResult(resultDataType); 
+		result.setJobType("ACTION");
+		return result;
 	}
 	
 	/**
