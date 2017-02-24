@@ -434,4 +434,9 @@ public class ResultSetImpl implements ResultSet {
 		throw new ResultSetException("Not Implemented in this class");
 
 	}
+
+	@Override
+	public Row getCurrentRow() throws ResultSetException {
+		throw new ResultSetException("Not Implemented in this class");
+	}
 }

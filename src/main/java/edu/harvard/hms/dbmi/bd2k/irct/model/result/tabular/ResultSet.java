@@ -598,4 +598,12 @@ public interface ResultSet extends Data {
 	 *             If a ResultSetException occurs
 	 */
 	void appendColumn(Column column) throws ResultSetException;
+	
+	/**
+	 * Returns the current row
+	 * 
+	 * @return Current Row
+	 * @throws ResultSetException If a ResultSetException occurs
+	 */
+	Row getCurrentRow() throws ResultSetException;
 }
