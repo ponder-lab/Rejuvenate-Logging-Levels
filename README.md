@@ -8,6 +8,9 @@ The IRCT Application Programming Interface (IRCT-API) is the core of the IRCT pr
 
 ## Version Information
 
+### 1.4
+This release provides support for the IRCT to run joins on two or more results from different resources.
+
 ### 1.3.2
 Updated the Result field to include information about what part of the execution process created this result (i.e. EXECUTION/ACTION)
 
