@@ -9,7 +9,7 @@ The IRCT Application Programming Interface (IRCT-API) is the core of the IRCT pr
 ## Version Information
 
 ### 1.4
-This release provides support for the IRCT to run joins on two or more results from different resources.
+This release provides support for the IRCT to run joins on two or more results from different resources. It also adds support for select clauses to have fields that are not associated with an operation. It removes old versions of Joins that were never used in production. It cleans up unused JPA annotations.
 
 ### 1.3.2
 Updated the Result field to include information about what part of the execution process created this result (i.e. EXECUTION/ACTION)
