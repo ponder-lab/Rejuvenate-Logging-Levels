@@ -3,6 +3,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 package edu.harvard.hms.dbmi.bd2k.irct.action;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import javax.naming.NamingException;
@@ -16,6 +17,7 @@ import edu.harvard.hms.dbmi.bd2k.irct.model.result.exception.ResultSetException;
 import edu.harvard.hms.dbmi.bd2k.irct.model.security.SecureSession;
 import edu.harvard.hms.dbmi.bd2k.irct.util.Utilities;
 import edu.harvard.hms.dbmi.bd2k.irct.event.IRCTEventListener;
+import edu.harvard.hms.dbmi.bd2k.irct.exception.JoinActionSetupException;
 import edu.harvard.hms.dbmi.bd2k.irct.exception.ResourceInterfaceException;
 
 /**
@@ -40,6 +42,7 @@ public class JoinAction implements Action {
 		this.status = ActionStatus.CREATED;
 		this.join = join;
 		this.irctEventListener = Utilities.getIRCTEventListener();
+		
 	}
 	
 	@Override
@@ -56,6 +59,7 @@ public class JoinAction implements Action {
 
 		try {
 			JoinImplementation joinImplementation = (JoinImplementation) join.getJoinImplementation();
+			joinImplementation.setup(new HashMap<String, Object>());
 			result = ActionUtilities.createResult(joinImplementation.getJoinDataType());
 			if(session != null) {
 				result.setUser(session.getUser());
@@ -66,7 +70,7 @@ public class JoinAction implements Action {
 			result = joinImplementation.run(session, join, result);
 			this.status = ActionStatus.COMPLETE;
 			ActionUtilities.mergeResult(result);
-		} catch (PersistableException | NamingException | ResultSetException e) {
+		} catch (PersistableException | NamingException | ResultSetException | JoinActionSetupException e) {
 			result.setMessage(e.getMessage());
 			this.status = ActionStatus.ERROR;
 		}
