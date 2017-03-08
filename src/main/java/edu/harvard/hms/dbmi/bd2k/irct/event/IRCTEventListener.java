@@ -116,7 +116,7 @@ public class IRCTEventListener {
 	 * 
 	 * @param session
 	 *            Session
-	 * @param joinType
+	 * @param join
 	 *            Type of Join
 	 */
 	public void afterJoin(SecureSession session, Join join) {
@@ -207,7 +207,7 @@ public class IRCTEventListener {
 	 * 
 	 * @param session
 	 *            Session
-	 * @param joinType
+	 * @param join
 	 *            Join
 	 */
 	public void beforeJoin(SecureSession session, Join join) {

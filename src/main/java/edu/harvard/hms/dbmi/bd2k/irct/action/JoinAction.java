@@ -36,7 +36,7 @@ public class JoinAction implements Action {
 	/**
 	 * Sets up the IRCT Join Action
 	 * 
-	 * @param joinType The join to run
+	 * @param join The join to run
 	 */
 	public void setup(Join join) {
 		this.status = ActionStatus.CREATED;
