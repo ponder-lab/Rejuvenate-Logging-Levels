@@ -890,6 +890,10 @@ public class FileResultSet extends ResultSetImpl implements Persistable {
 		setCell(columnIndex, obj);
 	}
 	
+	@Override
+	public Row getCurrentRow() throws ResultSetException {
+		return currentRow;
+	}
 	// MAXPENDING
 	public int getMaxPending() {
 		return this.MAXPENDING;
@@ -935,5 +939,5 @@ public class FileResultSet extends ResultSetImpl implements Persistable {
 		return jsonBuilder.build();
 
 	}
-	
+
 }

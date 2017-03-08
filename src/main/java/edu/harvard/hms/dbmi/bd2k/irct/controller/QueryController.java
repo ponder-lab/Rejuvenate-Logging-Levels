@@ -30,7 +30,7 @@ import edu.harvard.hms.dbmi.bd2k.irct.model.resource.LogicalOperator;
 import edu.harvard.hms.dbmi.bd2k.irct.model.resource.Resource;
 
 /**
- * A stateless controller for creating a query
+ * A stateful controller for creating a query
  * 
  * @author Jeremy R. Easton-Marks
  *

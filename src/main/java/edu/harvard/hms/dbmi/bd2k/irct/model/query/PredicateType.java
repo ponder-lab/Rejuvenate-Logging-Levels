@@ -10,11 +10,9 @@ import javax.json.Json;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
-import javax.persistence.CascadeType;
 import javax.persistence.Convert;
 import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
-import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
@@ -43,7 +41,7 @@ public class PredicateType implements Serializable {
 	private String description;
 	private boolean defaultPredicate;
 	
-	@OneToMany(fetch=FetchType.EAGER, cascade=CascadeType.ALL)
+	@OneToMany
 	private List<Field> fields;
 
 	@ElementCollection

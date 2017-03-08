@@ -4,7 +4,7 @@
 package edu.harvard.hms.dbmi.bd2k.irct.event.action;
 
 import edu.harvard.hms.dbmi.bd2k.irct.event.IRCTEvent;
-import edu.harvard.hms.dbmi.bd2k.irct.model.join.IRCTJoin;
+import edu.harvard.hms.dbmi.bd2k.irct.model.join.Join;
 import edu.harvard.hms.dbmi.bd2k.irct.model.security.SecureSession;
 
 /**
@@ -15,6 +15,6 @@ import edu.harvard.hms.dbmi.bd2k.irct.model.security.SecureSession;
  */
 public interface BeforeJoin extends IRCTEvent {
 
-	void fire(SecureSession session, IRCTJoin joinType);
+	void fire(SecureSession session, Join join);
 
 }

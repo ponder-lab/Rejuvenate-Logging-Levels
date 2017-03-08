@@ -3,69 +3,134 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 package edu.harvard.hms.dbmi.bd2k.irct.controller;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import javax.ejb.Stateful;
-//import javax.inject.Inject;
+import javax.inject.Inject;
 
-import edu.harvard.hms.dbmi.bd2k.irct.exception.ActionNotSetException;
-import edu.harvard.hms.dbmi.bd2k.irct.exception.FieldException;
-import edu.harvard.hms.dbmi.bd2k.irct.exception.JoinActionSetupException;
+import edu.harvard.hms.dbmi.bd2k.irct.IRCTApplication;
+import edu.harvard.hms.dbmi.bd2k.irct.exception.JoinException;
 import edu.harvard.hms.dbmi.bd2k.irct.model.join.IRCTJoin;
+import edu.harvard.hms.dbmi.bd2k.irct.model.join.Join;
+import edu.harvard.hms.dbmi.bd2k.irct.model.ontology.DataType;
+import edu.harvard.hms.dbmi.bd2k.irct.model.resource.Field;
 
 /**
- * A stateless controller for creating and running joins.
+ * A stateful controller for creating joins.
  * 
- * NOTE: THIS CONTROLLER HAS NOT BEEN FULL IMPLEMENTED
  * 
  * @author Jeremy R. Easton-Marks
  *
  */
 @Stateful
 public class JoinController {
-	
-//	@Inject
-//	private ResultController rc;
 
-	private IRCTJoin joinType;
+	@Inject
+	private IRCTApplication irctApp;
+	
+	private Join join;
 
 	/**
-	 * Creates a new join of the type passed in.
+	 * Creates a new join
 	 * 
-	 * @param joinType
-	 *            The name of the join to create
 	 */
-	public void createJoin(IRCTJoin joinType) {
-		this.setJoinType(joinType);
+	public void createJoin() {
+		this.setJoin(new Join());
 	}
-	
-	
-	public void setup(Map<String, String> parameters) throws ActionNotSetException, FieldException, JoinActionSetupException {
 
-		if(this.joinType == null) {
-			throw new ActionNotSetException("Join has not been created");
-		}
-		//TODO: FILL IN
+	/**
+	 * Sets up an IRCT Join
+	 * 
+	 * @param irctJoin Join to perform
+	 * @param fields Map of field values
+	 * @param objectFields Map of object values
+	 * @throws JoinException A Join Exception occurred
+	 */
+	public void setup(IRCTJoin irctJoin, Map<String, String> fields,
+			Map<String, Object> objectFields) throws JoinException {
+		validateFields(irctJoin.getFields(), fields, objectFields);
+
+		getJoin().setJoinImplementation(irctJoin.getJoinImplementation());
+		getJoin().setJoinType(irctJoin);
+		getJoin().setStringValues(fields);
+		getJoin().setObjectValues(objectFields);
 		
-//		Map<String, Object> actionParameters = Utilities.createActionParametersFromStringMap(this.joinType.getFields(), parameters, rc);
-//		if(actionParameters != null) {
-//			this.joinType.getJoinImplementation().setup(actionParameters);
-//		}
 	}
 
+	private void validateFields(List<Field> fields,
+			Map<String, String> valueFields, Map<String, Object> objectFields)
+			throws JoinException {
+
+		for (Field predicateField : fields) {
+
+			if (predicateField.isRequired()
+					&& ((valueFields != null) && (valueFields
+							.containsKey(predicateField.getPath())))) {
+				String queryFieldValue = valueFields.get(predicateField
+						.getPath());
+
+				if (queryFieldValue != null) {
+					// Is the predicate field data type allowed for this query
+					// field
+					if (!predicateField.getDataTypes().isEmpty()) {
+						boolean validateFieldValue = false;
+
+						for (DataType dt : predicateField.getDataTypes()) {
+							if (dt.validate(queryFieldValue)) {
+								validateFieldValue = true;
+								break;
+							}
+						}
+
+						if (!validateFieldValue) {
+							throw new JoinException(
+									"The field value set is not a supported type for this field");
+						}
+					}
+					// Is the predicate field of allowedTypes
+					if (!predicateField.getPermittedValues().isEmpty()
+							&& (!predicateField.getPermittedValues().contains(
+									queryFieldValue))) {
+						throw new JoinException(
+								"The field value is not of an allowed type");
+					}
+				}
+
+			} else if (predicateField.isRequired()
+					&& ((objectFields != null) && (objectFields
+							.containsKey(predicateField.getPath())))) {
+
+			} else if (predicateField.isRequired()) {
+				throw new JoinException("Required field "
+						+ predicateField.getName() + " is not set");
+			}
+		}
+	}
+	
+	public IRCTJoin getIRCTJoin(String joinName) {
+		return irctApp.getSupportedJoinTypes().get(joinName);
+	}
+	
+	public List<IRCTJoin> getSupportedJoins() {
+		return new ArrayList<IRCTJoin>(irctApp.getSupportedJoinTypes().values());
+	}
 
 	/**
-	 * @return the joinType
+	 * @return the join
 	 */
-	public IRCTJoin getJoinType() {
-		return joinType;
+	public Join getJoin() {
+		return join;
 	}
-
 
 	/**
-	 * @param joinType the joinType to set
+	 * @param join
+	 *            the join to set
 	 */
-	public void setJoinType(IRCTJoin joinType) {
-		this.joinType = joinType;
+	public void setJoin(Join join) {
+		this.join = join;
 	}
+
+	
 }

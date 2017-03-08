@@ -1,0 +1,23 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+package edu.harvard.hms.dbmi.bd2k.irct.exception;
+
+/**
+ * Indicates a Join Exception occurred of some type
+ * 
+ * @author Jeremy R. Easton-Marks
+ *
+ */
+public class JoinException extends Exception {
+	private static final long serialVersionUID = -279848447372423320L;
+
+	/**
+	 * An exception occurred setting up a query
+	 * 
+	 * @param message Message
+	 */
+	public JoinException(String message) {
+		super(message);
+	}
+}

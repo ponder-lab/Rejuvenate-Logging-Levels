@@ -5,27 +5,21 @@ package edu.harvard.hms.dbmi.bd2k.irct.model.join;
 
 import java.io.Serializable;
 import java.util.List;
-import java.util.Map;
 
 import javax.json.Json;
 import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
-import javax.persistence.CollectionTable;
-import javax.persistence.Column;
 import javax.persistence.Convert;
-import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.MapKeyColumn;
 import javax.persistence.OneToMany;
 
-import edu.harvard.hms.dbmi.bd2k.irct.join.JoinImplementation;
+import edu.harvard.hms.dbmi.bd2k.irct.model.join.JoinImplementation;
 import edu.harvard.hms.dbmi.bd2k.irct.model.resource.Field;
-import edu.harvard.hms.dbmi.bd2k.irct.util.converter.JoinActionConverter;
+import edu.harvard.hms.dbmi.bd2k.irct.util.converter.JoinImplementationConverter;
 
 /**
  * The join type class provides a way for the IRCT application to keep track of
@@ -50,13 +44,7 @@ public class IRCTJoin implements Serializable {
 	@OneToMany(fetch = FetchType.EAGER)
 	private List<Field> fields;
 	
-	@ElementCollection
-	@CollectionTable(name="join_values", joinColumns=@JoinColumn(name="JOIN_VALUE"))
-	@MapKeyColumn(name="join_id")
-	@Column(name="join_value")
-	private Map<String, String> values;
-	
-	@Convert(converter = JoinActionConverter.class)
+	@Convert(converter = JoinImplementationConverter.class)
 	private JoinImplementation joinImplementation;
 	
 	/**
@@ -176,14 +164,6 @@ public class IRCTJoin implements Serializable {
 	 */
 	public void setFields(List<Field> fields) {
 		this.fields = fields;
-	}
-
-	public Map<String, String> getValues() {
-		return values;
-	}
-
-	public void setValues(Map<String, String> values) {
-		this.values = values;
 	}
 
 	public JoinImplementation getJoinImplementation() {

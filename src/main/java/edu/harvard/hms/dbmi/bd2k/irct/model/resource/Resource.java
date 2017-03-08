@@ -83,6 +83,9 @@ public class Resource implements Serializable {
 	private List<SelectOperationType> supportedSelectOperations;
 	
 	@OneToMany
+	private List<Field> supportedSelectFields;
+	
+	@OneToMany
 	private List<SortOperationType> supportedSortOperations;
 
 	@OneToMany
@@ -173,7 +176,7 @@ public class Resource implements Serializable {
 				}
 				jsonBuilder.add("predicates", predicateArray.build());
 				
-				// PREDICATES (Query Interface)
+				// Supported Select Operations (Query Interface)
 				JsonArrayBuilder selectArray = Json.createArrayBuilder();
 				if (this.supportedPredicates != null) {
 					for (SelectOperationType pt : this.supportedSelectOperations) {
@@ -182,6 +185,15 @@ public class Resource implements Serializable {
 				}
 				jsonBuilder.add("selectOperations", selectArray.build());
 
+				// Supported Select Fields (Query Interface)
+				JsonArrayBuilder selectFieldsArray = Json.createArrayBuilder();
+				if (this.supportedPredicates != null) {
+					for (Field field : this.supportedSelectFields) {
+						selectFieldsArray.add(field.toJson());
+					}
+				}
+				jsonBuilder.add("selectFields", selectFieldsArray.build());
+				
 				// JOINS (Query Interface)
 				JsonArrayBuilder joinArray = Json.createArrayBuilder();
 				if (this.supportedJoins != null) {
@@ -526,6 +538,24 @@ public class Resource implements Serializable {
 	public void setSupportedSelectOperations(
 			List<SelectOperationType> supportedSelectOperations) {
 		this.supportedSelectOperations = supportedSelectOperations;
+	}
+
+	/**
+	 * Gets the list of supported select fields that are supported by the resource
+	 * 
+	 * @return the supportedSelectFields
+	 */
+	public List<Field> getSupportedSelectFields() {
+		return supportedSelectFields;
+	}
+
+	/**
+	 * Sets the list of supported select fields that are supported by the resource
+	 * 
+	 * @param supportedSelectFields the supportedSelectFields to set
+	 */
+	public void setSupportedSelectFields(List<Field> supportedSelectFields) {
+		this.supportedSelectFields = supportedSelectFields;
 	}
 
 	/**

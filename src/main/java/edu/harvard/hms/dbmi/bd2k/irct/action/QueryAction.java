@@ -80,6 +80,8 @@ public class QueryAction implements Action {
 			if (session != null) {
 				this.result.setUser(session.getUser());
 			}
+			
+			
 
 			this.result = queryInterface.runQuery(session, query, result);
 

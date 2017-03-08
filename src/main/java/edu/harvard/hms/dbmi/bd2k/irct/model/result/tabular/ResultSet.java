@@ -547,6 +547,26 @@ public interface ResultSet extends Data {
 	void updateString(String columnLabel, String value)
 			throws ResultSetException;
 
+	
+	/**
+	 * Get an object from a column from the current row
+	 * 
+	 * @param columnIndex Column Index
+	 * @return Object from the column
+	 * @throws ResultSetException A result set exception occurred
+	 */
+	Object getObject(int columnIndex) throws ResultSetException;
+
+	/**
+	 * Updates an object from a column from the current row
+	 * 
+	 * @param columnIndex Column Index
+	 * @param obj Object to set
+	 * @throws ResultSetException A result set exception occurred
+	 */
+	void updateObject(int columnIndex, Object obj) throws ResultSetException;
+	
+	
 	/**
 	 * Returns the column size
 	 * 
@@ -578,5 +598,12 @@ public interface ResultSet extends Data {
 	 *             If a ResultSetException occurs
 	 */
 	void appendColumn(Column column) throws ResultSetException;
-
+	
+	/**
+	 * Returns the current row
+	 * 
+	 * @return Current Row
+	 * @throws ResultSetException If a ResultSetException occurs
+	 */
+	Row getCurrentRow() throws ResultSetException;
 }
