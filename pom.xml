@@ -2,7 +2,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>edu.harvard.hms.dbmi.bd2k.irct</groupId>
 	<artifactId>IRCT-API</artifactId>
-	<version>1.4-STAGING</version>
+	<version>1.4</version>
 	<name>INTER-RESOURCE COMMUNICATION TOOL : API</name>
 	<description></description>
 	<dependencies>
