@@ -46,7 +46,7 @@ public class Logging {
 				ASTNode.METHOD_DECLARATION);
 
 		if (this.enclosingMethodDeclaration == null) {
-			LOGGER.warning("Stream: " + this.creation + " not handled.");
+			LOGGER.warning("Logging: " + this.creation + " not handled.");
 			this.addStatusEntry(PreconditionFailure.CURRENTLY_NOT_HANDLED, "Logging: " + this.creation
 					+ " is most likely used in a context that is currently not handled by this plug-in.");
 		}
