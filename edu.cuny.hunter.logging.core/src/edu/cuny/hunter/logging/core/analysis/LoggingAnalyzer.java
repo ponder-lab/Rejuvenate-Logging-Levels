@@ -25,6 +25,8 @@ public class LoggingAnalyzer extends ASTVisitor {
 				.filter(s -> s.getStatus().isOK())
 				.collect(Collectors.groupingBy(Logging::getCreationJavaProject, Collectors.toSet()));
 
+		this.getLoggingSet().forEach(e -> {System.out.println(e);});
+		
 		// TODO: analyze logging here.
 
 	}

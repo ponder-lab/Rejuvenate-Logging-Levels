@@ -85,5 +85,11 @@ public class Logging {
 	public MethodDeclaration getEnclosingMethodDeclaration() {
 		return this.enclosingMethodDeclaration;
 	}
+	
+	@Override
+	public String toString() {
+		return "The AST Location: " + this.creation.getStartPosition() + "\n" + "The enclosing method: "
+				+ this.enclosingMethodDeclaration + "\n";
+	}
 
 }

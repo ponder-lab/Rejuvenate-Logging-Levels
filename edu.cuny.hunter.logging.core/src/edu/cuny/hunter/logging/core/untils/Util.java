@@ -33,31 +33,29 @@ public final class Util {
 		return processor;
 	}
 
-	static Set<ITypeBinding> getImplementedInterfaces(ITypeBinding type) {
+	static Set<ITypeBinding> getImplementedClasses(ITypeBinding type) {
 		Set<ITypeBinding> ret = new HashSet<>();
-
-		if (type.isInterface())
-			ret.add(type);
-
-		ret.addAll(getAllInterfaces(type));
+		ret.add(type);
+		ret.addAll(getAllClasses(type));
 		return ret;
 	}
 
-	static Set<ITypeBinding> getAllInterfaces(ITypeBinding type) {
+	static Set<ITypeBinding> getAllClasses(ITypeBinding type) {
 		Set<ITypeBinding> ret = new HashSet<>();
-		ITypeBinding[] interfaces = type.getInterfaces();
-		ret.addAll(Arrays.asList(interfaces));
+		ITypeBinding superClass = type.getSuperclass();
 
-		for (ITypeBinding interfaceBinding : interfaces)
-			ret.addAll(getAllInterfaces(interfaceBinding));
+		if (superClass != null) {
+			ret.add(superClass);
+			ret.addAll(getAllClasses(superClass));
+		}
 
 		return ret;
 	}
 
 	public static boolean implementsLogging(ITypeBinding type) {
-		Set<ITypeBinding> implementedInterfaces = getImplementedInterfaces(type);
-		return implementedInterfaces.stream()
-				.anyMatch(i -> i.getErasure().getQualifiedName().equals("java.util.logging"));
+		Set<ITypeBinding> implementedClasses = getImplementedClasses(type);
+		return implementedClasses.stream()
+				.anyMatch(i -> i.getErasure().getQualifiedName().equals("java.util.logging.Logger"));
 	}
 
 }
