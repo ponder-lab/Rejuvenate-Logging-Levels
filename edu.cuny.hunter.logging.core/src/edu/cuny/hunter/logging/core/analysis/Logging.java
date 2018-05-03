@@ -33,11 +33,6 @@ public class Logging {
 	private final TypeDeclaration enclosingTypeDeclaration;
 
 	private static final Logger LOGGER = Logger.getLogger(LoggerNames.LOGGER_NAME);
-
-	private static final String PLUGIN_ID = FrameworkUtil.getBundle(Logging.class).getSymbolicName();
-
-	private RefactoringStatus status = new RefactoringStatus();
-
 	private final Level loggingLevel;
 
 	public Logging(MethodInvocation loggingCreation, Level loggingLevel) {
@@ -54,18 +49,6 @@ public class Logging {
 
 	public MethodInvocation getCreation() {
 		return this.creation;
-	}
-
-	void addStatusEntry(PreconditionFailure failure, String message) {
-		MethodInvocation creation = this.getCreation();
-		CompilationUnit compilationUnit = (CompilationUnit) ASTNodes.getParent(creation, ASTNode.COMPILATION_UNIT);
-		ICompilationUnit compilationUnit2 = (ICompilationUnit) compilationUnit.getJavaElement();
-		RefactoringStatusContext context = JavaStatusContext.create(compilationUnit2, creation);
-		this.getStatus().addEntry(RefactoringStatus.ERROR, message, context, PLUGIN_ID, failure.getCode(), this);
-	}
-
-	public RefactoringStatus getStatus() {
-		return this.status;
 	}
 
 	public IJavaProject getCreationJavaProject() {

@@ -19,25 +19,6 @@ import edu.cuny.hunter.logging.core.untils.Util;;
 
 public class LoggingWizard extends RefactoringWizard {
 
-	// TODO: GUI implementations
-	// private static class LoggingInputPage extends UserInputWizardPage {
-	//
-	// private static final String PAGE_NAME = "LoggingInputPage";;
-	// private static final String DESCRIPTION = Messages.Name;
-	//
-	// public LoggingInputPage() {
-	// super(PAGE_NAME);
-	// setDescription(DESCRIPTION);
-	// }
-	//
-	// @Override
-	// public void createControl(Composite parent) {
-	// // TODO Auto-generated method stub
-	//
-	// }
-	//
-	// }
-
 	@SuppressWarnings("restriction")
 	public static void startRefactoring(IJavaProject[] javaProjects, Shell shell, Optional<IProgressMonitor> monitor)
 			throws JavaModelException {

@@ -22,7 +22,6 @@ public class LoggingAnalyzer extends ASTVisitor {
 
 		// collect the projects to be analyzed.
 		Map<IJavaProject, Set<Logging>> projectToLoggings = this.getLoggingSet().stream()
-				.filter(s -> s.getStatus().isOK())
 				.collect(Collectors.groupingBy(Logging::getCreationJavaProject, Collectors.toSet()));
 
 		this.getLoggingSet().forEach(e -> {
