@@ -1,0 +1,15 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Ui
+Bundle-SymbolicName: edu.cuny.hunter.logging.ui;singleton:=true
+Bundle-Version: 1.0.0.qualifier
+Require-Bundle: org.eclipse.ui,
+ org.eclipse.jdt.core;bundle-version="3.13.100",
+ org.eclipse.core.resources;bundle-version="3.12.0",
+ org.eclipse.core.runtime;bundle-version="3.13.0",
+ org.eclipse.ltk.ui.refactoring;bundle-version="3.9.0",
+ org.eclipse.ltk.core.refactoring;bundle-version="3.8.0",
+ org.eclipse.jdt.ui;bundle-version="3.13.51",
+ edu.cuny.hunter.logging.core;bundle-version="1.0.0"
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Import-Package: edu.cuny.citytech.refactoring.common.core
