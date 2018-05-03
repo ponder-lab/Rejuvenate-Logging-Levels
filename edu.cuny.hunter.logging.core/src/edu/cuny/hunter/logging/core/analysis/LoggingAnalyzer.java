@@ -10,7 +10,6 @@ import org.eclipse.jdt.core.dom.ASTVisitor;
 import org.eclipse.jdt.core.dom.IMethodBinding;
 import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.MethodInvocation;
-import org.eclipse.jdt.internal.corext.util.JdtFlags;
 import edu.cuny.hunter.logging.core.untils.Util;
 
 @SuppressWarnings("restriction")
@@ -25,8 +24,10 @@ public class LoggingAnalyzer extends ASTVisitor {
 				.filter(s -> s.getStatus().isOK())
 				.collect(Collectors.groupingBy(Logging::getCreationJavaProject, Collectors.toSet()));
 
-		this.getLoggingSet().forEach(e -> {System.out.println(e);});
-		
+		this.getLoggingSet().forEach(e -> {
+			e.logInfo();
+		});
+
 		// TODO: analyze logging here.
 
 	}
@@ -41,27 +42,14 @@ public class LoggingAnalyzer extends ASTVisitor {
 	@Override
 	public boolean visit(MethodInvocation node) {
 		IMethodBinding methodBinding = node.resolveMethodBinding();
-		ITypeBinding returnType = methodBinding.getReturnType();
-		boolean returnTypeImplementsLogging = Util.implementsLogging(returnType);
 
 		ITypeBinding declaringClass = methodBinding.getDeclaringClass();
-		boolean declaringClassImplementsLogging = Util.implementsLogging(declaringClass);
+		boolean declaringClassExtendsLogging = Util.isLoggingClass(declaringClass);
 
-		// TODO: This could be problematic if the API
-		// implementation treats itself as a "client."
-		String[] declaringClassPackageNameComponents = declaringClass.getPackage().getNameComponents();
-		boolean isFromAPI = declaringClassPackageNameComponents.length > 0
-				&& declaringClassPackageNameComponents[0].equals("java");
-
-		boolean instanceMethod = !JdtFlags.isStatic(methodBinding);
-		boolean intermediateOperation = instanceMethod && declaringClassImplementsLogging;
-
-		// java.util.logging is the top-level interface for all logging.
-		if (returnTypeImplementsLogging && !intermediateOperation && isFromAPI) {
-			Logging logging = null;
-			logging = new Logging(node);
-
+		if (declaringClassExtendsLogging) {
+			Logging logging = new Logging(node);
 			this.getLoggingSet().add(logging);
+
 		}
 
 		return super.visit(node);

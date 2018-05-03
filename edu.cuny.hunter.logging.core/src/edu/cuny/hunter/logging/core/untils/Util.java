@@ -33,7 +33,7 @@ public final class Util {
 		return processor;
 	}
 
-	static Set<ITypeBinding> getImplementedClasses(ITypeBinding type) {
+	static Set<ITypeBinding> getExtendedClasses(ITypeBinding type) {
 		Set<ITypeBinding> ret = new HashSet<>();
 		ret.add(type);
 		ret.addAll(getAllClasses(type));
@@ -52,9 +52,14 @@ public final class Util {
 		return ret;
 	}
 
-	public static boolean implementsLogging(ITypeBinding type) {
-		Set<ITypeBinding> implementedClasses = getImplementedClasses(type);
-		return implementedClasses.stream()
+	public static boolean isLoggingStatement(String methodName) {
+		System.out.println(methodName);
+		return true;
+	}
+
+	public static boolean isLoggingClass(ITypeBinding declaringClass) {
+		Set<ITypeBinding> extendedClasses = getExtendedClasses(declaringClass);
+		return extendedClasses.stream()
 				.anyMatch(i -> i.getErasure().getQualifiedName().equals("java.util.logging.Logger"));
 	}
 

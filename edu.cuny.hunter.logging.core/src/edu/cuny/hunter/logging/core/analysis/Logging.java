@@ -1,5 +1,6 @@
 package edu.cuny.hunter.logging.core.analysis;
 
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.eclipse.jdt.core.ICompilationUnit;
@@ -25,6 +26,8 @@ public class Logging {
 
 	private final MethodInvocation creation;
 
+	private final IMethod method;
+
 	private final MethodDeclaration enclosingMethodDeclaration;
 
 	private final TypeDeclaration enclosingTypeDeclaration;
@@ -35,8 +38,7 @@ public class Logging {
 
 	private RefactoringStatus status = new RefactoringStatus();
 
-	// TODO: find the logging level
-	private String loggingLevel;
+	private final Level loggingLevel;
 
 	public Logging(MethodInvocation loggingCreation) {
 		this.creation = loggingCreation;
@@ -45,11 +47,53 @@ public class Logging {
 		this.enclosingMethodDeclaration = (MethodDeclaration) ASTNodes.getParent(this.getCreation(),
 				ASTNode.METHOD_DECLARATION);
 
-		if (this.enclosingMethodDeclaration == null) {
-			LOGGER.warning("Logging: " + this.creation + " not handled.");
-			this.addStatusEntry(PreconditionFailure.CURRENTLY_NOT_HANDLED, "Logging: " + this.creation
-					+ " is most likely used in a context that is currently not handled by this plug-in.");
-		}
+		IMethodBinding methodBinding = this.getCreation().resolveMethodBinding();
+		this.method = (IMethod) methodBinding.getJavaElement();
+		loggingLevel = discoverLoggingLevel(methodBinding.getName());
+	}
+
+	/**
+	 * We only focus on the logging level, which is set by the developer. Hence, we
+	 * do not record the logging level which is embedded by the logging package.
+	 * e.g. each time we call method entering, a logging record which has "FINER"
+	 * level is created.
+	 * 
+	 * @param methodName
+	 *            the name of method
+	 * @return logging level
+	 */
+	public Level discoverLoggingLevel(String methodName) {
+		// TODO: method could be used to find more logging level
+		if (methodName.equals("config"))
+			return Level.CONFIG;
+		if (methodName.equals("fine"))
+			return Level.FINE;
+		if (methodName.equals("finer"))
+			return Level.FINER;
+		if (methodName.equals("finest"))
+			return Level.FINEST;
+		if (methodName.equals("info"))
+			return Level.INFO;
+		if (methodName.equals("severe"))
+			return Level.SEVERE;
+		if (methodName.equals("warning"))
+			return Level.WARNING;
+
+		// TODO: may need wala?
+		if (methodName.equals("log"))
+			return null;
+		if (methodName.equals("logp"))
+			return null;
+		if (methodName.equals("logrb"))
+			return null;
+		if (methodName.equals("setLevel"))
+			return null;
+
+		// TODO: the handler can contain logging level
+		if (methodName.equals("addHandler"))
+			return null;
+
+		return null;
 	}
 
 	public MethodInvocation getCreation() {
@@ -69,7 +113,11 @@ public class Logging {
 	}
 
 	public IJavaProject getCreationJavaProject() {
-		return this.getEnclosingEclipseMethod().getJavaProject();
+		return this.getMethod().getJavaProject();
+	}
+
+	public IMethod getMethod() {
+		return this.method;
 	}
 
 	public IMethod getEnclosingEclipseMethod() {
@@ -85,7 +133,21 @@ public class Logging {
 	public MethodDeclaration getEnclosingMethodDeclaration() {
 		return this.enclosingMethodDeclaration;
 	}
-	
+
+	public void logInfo() {
+
+		if (this.getEnclosingMethodDeclaration() != null) {
+			LOGGER.info("Find a logging statement. The AST location is " + this.creation.getStartPosition()
+					+ ". The enclosing method is " + this.getEnclosingMethodDeclaration().getName()
+					+ ". The creation Java project: " + this.getCreationJavaProject().getElementName() + ". ");
+		} else {
+			LOGGER.info("Find a logging statement. The AST location is " + this.creation.getStartPosition()
+					+ ". The logging object is a field. " + "The creation Java project: "
+					+ this.getCreationJavaProject().getElementName() + ". ");
+		}
+
+	}
+
 	@Override
 	public String toString() {
 		return "The AST Location: " + this.creation.getStartPosition() + "\n" + "The enclosing method: "

@@ -39,11 +39,10 @@ import edu.cuny.hunter.logging.core.messages.Messages;
 @SuppressWarnings({ "restriction", "deprecation" })
 public class LoggingRefactoringProcessor extends RefactoringProcessor {
 
+	private Set<Logging> loggingSet;
 	private IJavaProject[] javaProjects;
 	private CodeGenerationSettings settings;
 	private Map<ITypeRoot, CompilationUnit> typeRootToCompilationUnitMap = new HashMap<>();
-
-	private Set<Logging> loggingSet;
 	private Map<ICompilationUnit, CompilationUnitRewrite> compilationUnitToCompilationUnitRewriteMap = new HashMap<>();
 
 	public LoggingRefactoringProcessor(IJavaProject[] javaProjects, final CodeGenerationSettings settings,
@@ -58,14 +57,12 @@ public class LoggingRefactoringProcessor extends RefactoringProcessor {
 
 	@Override
 	public Object[] getElements() {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
 	public String getIdentifier() {
-		// TODO Auto-generated method stub
-		return null;
+		return LoggingDescriptor.REFACTORING_ID;
 	}
 
 	@Override
@@ -75,15 +72,16 @@ public class LoggingRefactoringProcessor extends RefactoringProcessor {
 
 	@Override
 	public boolean isApplicable() throws CoreException {
-		// TODO Auto-generated method stub
-		return false;
+		return true;
 	}
 
 	@Override
 	public RefactoringStatus checkInitialConditions(IProgressMonitor pm)
 			throws CoreException, OperationCanceledException {
-		// TODO Auto-generated method stub
-		return null;
+		this.clearCaches();
+		RefactoringStatus status = new RefactoringStatus();
+		pm.beginTask(Messages.CheckingPreconditions, 1);
+		return status;
 	}
 
 	protected IJavaProject[] getJavaProjects() {
@@ -163,8 +161,7 @@ public class LoggingRefactoringProcessor extends RefactoringProcessor {
 
 			// TODO: Fill in description.
 
-			LoggingDescriptor descriptor = new LoggingDescriptor(
-					null, "TODO", null, arguments, flags);
+			LoggingDescriptor descriptor = new LoggingDescriptor(null, "TODO", null, arguments, flags);
 
 			return new DynamicValidationRefactoringChange(descriptor, this.getProcessorName(), manager.getAllChanges());
 		} finally {
@@ -172,7 +169,7 @@ public class LoggingRefactoringProcessor extends RefactoringProcessor {
 			this.clearCaches();
 		}
 	}
-	
+
 	private void manageCompilationUnit(final TextEditBasedChangeManager manager, CompilationUnitRewrite rewrite,
 			Optional<IProgressMonitor> monitor) throws CoreException {
 		monitor.ifPresent(m -> m.beginTask("Creating change ...", IProgressMonitor.UNKNOWN));
@@ -183,7 +180,7 @@ public class LoggingRefactoringProcessor extends RefactoringProcessor {
 
 		manager.manage(rewrite.getCu(), change);
 	}
-	
+
 	private CompilationUnitRewrite getCompilationUnitRewrite(ICompilationUnit unit, CompilationUnit root) {
 		CompilationUnitRewrite rewrite = this.getCompilationUnitToCompilationUnitRewriteMap().get(unit);
 		if (rewrite == null) {
@@ -192,7 +189,6 @@ public class LoggingRefactoringProcessor extends RefactoringProcessor {
 		}
 		return rewrite;
 	}
-
 
 	public void clearCaches() {
 		this.getTypeRootToCompilationUnitMap().clear();

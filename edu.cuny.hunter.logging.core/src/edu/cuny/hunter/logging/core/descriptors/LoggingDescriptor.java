@@ -6,7 +6,7 @@ import org.eclipse.jdt.core.refactoring.descriptors.JavaRefactoringDescriptor;
 
 public class LoggingDescriptor extends JavaRefactoringDescriptor {
 
-	public static final String REFACTORING_ID = "edu.cuny.hunter.logging.research"; //$NON-NLS-1$
+	public static final String REFACTORING_ID = "edu.cuny.hunter.logging.evolution"; //$NON-NLS-1$
 
 	protected LoggingDescriptor() {
 		super(REFACTORING_ID);
