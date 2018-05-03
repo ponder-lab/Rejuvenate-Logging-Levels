@@ -136,15 +136,8 @@ public class Logging {
 
 	public void logInfo() {
 
-		if (this.getEnclosingMethodDeclaration() != null) {
-			LOGGER.info("Find a logging statement. The AST location is " + this.creation.getStartPosition()
-					+ ". The enclosing method is " + this.getEnclosingMethodDeclaration().getName()
-					+ ". The creation Java project: " + this.getCreationJavaProject().getElementName() + ". ");
-		} else {
-			LOGGER.info("Find a logging statement. The AST location is " + this.creation.getStartPosition()
-					+ ". The logging object is a field. " + "The creation Java project: "
-					+ this.getCreationJavaProject().getElementName() + ". ");
-		}
+		LOGGER.info("Find a logging statement. The AST location: " + this.creation.getStartPosition()
+				+ ". The method name: " + this.method.getElementName() + ".");
 
 	}
 
