@@ -3,6 +3,7 @@ package edu.cuny.hunter.logging.core.analysis;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
 import java.util.stream.Collectors;
 
 import org.eclipse.jdt.core.IJavaProject;
@@ -47,8 +48,12 @@ public class LoggingAnalyzer extends ASTVisitor {
 		boolean declaringClassExtendsLogging = Util.isLoggingClass(declaringClass);
 
 		if (declaringClassExtendsLogging) {
-			Logging logging = new Logging(node);
-			this.getLoggingSet().add(logging);
+			Level loggingLevel = Util.isLoggingMethod(methodBinding.getName());
+
+			if (loggingLevel != null) {
+				Logging logging = new Logging(node, loggingLevel);
+				this.getLoggingSet().add(logging);
+			}
 
 		}
 

@@ -40,60 +40,16 @@ public class Logging {
 
 	private final Level loggingLevel;
 
-	public Logging(MethodInvocation loggingCreation) {
+	public Logging(MethodInvocation loggingCreation, Level loggingLevel) {
 		this.creation = loggingCreation;
 		this.enclosingTypeDeclaration = (TypeDeclaration) ASTNodes.getParent(this.getCreation(),
 				ASTNode.TYPE_DECLARATION);
 		this.enclosingMethodDeclaration = (MethodDeclaration) ASTNodes.getParent(this.getCreation(),
 				ASTNode.METHOD_DECLARATION);
+		this.loggingLevel = loggingLevel;
 
 		IMethodBinding methodBinding = this.getCreation().resolveMethodBinding();
 		this.method = (IMethod) methodBinding.getJavaElement();
-		loggingLevel = discoverLoggingLevel(methodBinding.getName());
-	}
-
-	/**
-	 * We only focus on the logging level, which is set by the developer. Hence, we
-	 * do not record the logging level which is embedded by the logging package.
-	 * e.g. each time we call method entering, a logging record which has "FINER"
-	 * level is created.
-	 * 
-	 * @param methodName
-	 *            the name of method
-	 * @return logging level
-	 */
-	public Level discoverLoggingLevel(String methodName) {
-		// TODO: method could be used to find more logging level
-		if (methodName.equals("config"))
-			return Level.CONFIG;
-		if (methodName.equals("fine"))
-			return Level.FINE;
-		if (methodName.equals("finer"))
-			return Level.FINER;
-		if (methodName.equals("finest"))
-			return Level.FINEST;
-		if (methodName.equals("info"))
-			return Level.INFO;
-		if (methodName.equals("severe"))
-			return Level.SEVERE;
-		if (methodName.equals("warning"))
-			return Level.WARNING;
-
-		// TODO: may need wala?
-		if (methodName.equals("log"))
-			return null;
-		if (methodName.equals("logp"))
-			return null;
-		if (methodName.equals("logrb"))
-			return null;
-		if (methodName.equals("setLevel"))
-			return null;
-
-		// TODO: the handler can contain logging level
-		if (methodName.equals("addHandler"))
-			return null;
-
-		return null;
 	}
 
 	public MethodInvocation getCreation() {
@@ -137,14 +93,9 @@ public class Logging {
 	public void logInfo() {
 
 		LOGGER.info("Find a logging statement. The AST location: " + this.creation.getStartPosition()
-				+ ". The method name: " + this.method.getElementName() + ".");
+				+ ". The method name: " + this.method.getElementName() + ". The logging level: " + this.loggingLevel
+				+ ". ");
 
-	}
-
-	@Override
-	public String toString() {
-		return "The AST Location: " + this.creation.getStartPosition() + "\n" + "The enclosing method: "
-				+ this.enclosingMethodDeclaration + "\n";
 	}
 
 }

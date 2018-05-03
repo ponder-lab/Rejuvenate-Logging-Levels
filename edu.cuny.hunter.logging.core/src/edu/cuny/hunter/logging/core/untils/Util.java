@@ -1,9 +1,9 @@
 package edu.cuny.hunter.logging.core.untils;
 
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
+import java.util.logging.Level;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jdt.core.IJavaProject;
@@ -61,6 +61,51 @@ public final class Util {
 		Set<ITypeBinding> extendedClasses = getExtendedClasses(declaringClass);
 		return extendedClasses.stream()
 				.anyMatch(i -> i.getErasure().getQualifiedName().equals("java.util.logging.Logger"));
+	}
+
+	/**
+	 * We only focus on the logging level, which is set by the developer. Hence, we
+	 * do not record the logging level which is embedded by the logging package.
+	 * e.g. each time we call method entering, a logging record which has "FINER"
+	 * level is created.
+	 * 
+	 * @param methodName
+	 *            the name of method
+	 * @return logging level
+	 */
+	public static Level isLoggingMethod(String methodName) {
+		// TODO: method could be used to find more logging level
+		if (methodName.equals("config"))
+			return Level.CONFIG;
+		if (methodName.equals("fine"))
+			return Level.FINE;
+		if (methodName.equals("finer"))
+			return Level.FINER;
+		if (methodName.equals("finest"))
+			return Level.FINEST;
+		if (methodName.equals("info"))
+			return Level.INFO;
+		if (methodName.equals("severe"))
+			return Level.SEVERE;
+		if (methodName.equals("warning"))
+			return Level.WARNING;
+
+		// TODO: may need wala?
+		// They should not be null
+		if (methodName.equals("log")) 
+			return null;
+		if (methodName.equals("logp"))
+			return null;
+		if (methodName.equals("logrb"))
+			return null;
+		if (methodName.equals("setLevel"))
+			return null;
+
+		// TODO: the handler can contain logging level
+		if (methodName.equals("addHandler"))
+			return null;
+
+		return null;
 	}
 
 }
