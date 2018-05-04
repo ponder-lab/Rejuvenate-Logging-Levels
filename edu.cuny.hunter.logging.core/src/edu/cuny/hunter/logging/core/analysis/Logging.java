@@ -22,8 +22,6 @@ import edu.cuny.hunter.logging.core.untils.LoggerNames;
 @SuppressWarnings("restriction")
 public class Logging {
 
-	private static final String BASE_STREAM_TYPE_NAME = "logging";
-
 	private final MethodInvocation creation;
 
 	private final IMethod method;
@@ -31,7 +29,8 @@ public class Logging {
 	private final MethodDeclaration enclosingMethodDeclaration;
 
 	private final TypeDeclaration enclosingTypeDeclaration;
-
+	
+	private static final String BASE_STREAM_TYPE_NAME = "logging";
 	private static final Logger LOGGER = Logger.getLogger(LoggerNames.LOGGER_NAME);
 	private final Level loggingLevel;
 

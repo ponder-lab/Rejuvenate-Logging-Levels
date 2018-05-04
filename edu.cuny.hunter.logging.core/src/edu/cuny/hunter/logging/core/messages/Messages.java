@@ -5,6 +5,7 @@ import org.eclipse.osgi.util.NLS;
 public class Messages extends NLS {
 	private static final String BUNDLE_NAME = "edu.cuny.hunter.logging.core.messages.messages"; //$NON-NLS-1$
 	public static String Name;
+	public static String CreatingChange;
 
 	static {
 		// initialize resource bundle

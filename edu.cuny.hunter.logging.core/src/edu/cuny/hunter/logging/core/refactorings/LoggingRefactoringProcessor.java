@@ -2,6 +2,7 @@ package edu.cuny.hunter.logging.core.refactorings;
 
 import java.util.Optional;
 import java.util.Set;
+import java.util.logging.Logger;
 import java.util.HashMap;
 import java.util.Map;
 import org.eclipse.core.runtime.CoreException;
@@ -35,6 +36,7 @@ import edu.cuny.hunter.logging.core.analysis.Logging;
 import edu.cuny.hunter.logging.core.analysis.LoggingAnalyzer;
 import edu.cuny.hunter.logging.core.descriptors.LoggingDescriptor;
 import edu.cuny.hunter.logging.core.messages.Messages;
+import edu.cuny.hunter.logging.core.untils.LoggerNames;
 
 @SuppressWarnings({ "restriction", "deprecation" })
 public class LoggingRefactoringProcessor extends RefactoringProcessor {
@@ -44,6 +46,9 @@ public class LoggingRefactoringProcessor extends RefactoringProcessor {
 	private CodeGenerationSettings settings;
 	private Map<ITypeRoot, CompilationUnit> typeRootToCompilationUnitMap = new HashMap<>();
 	private Map<ICompilationUnit, CompilationUnitRewrite> compilationUnitToCompilationUnitRewriteMap = new HashMap<>();
+
+	private static final String BASE_STREAM_TYPE_NAME = "logging";
+	private static final Logger LOGGER = Logger.getLogger(LoggerNames.LOGGER_NAME);
 
 	public LoggingRefactoringProcessor(IJavaProject[] javaProjects, final CodeGenerationSettings settings,
 			Optional<IProgressMonitor> monitor) {
@@ -80,7 +85,6 @@ public class LoggingRefactoringProcessor extends RefactoringProcessor {
 			throws CoreException, OperationCanceledException {
 		this.clearCaches();
 		RefactoringStatus status = new RefactoringStatus();
-		pm.beginTask(Messages.CheckingPreconditions, 1);
 		return status;
 	}
 
@@ -92,8 +96,6 @@ public class LoggingRefactoringProcessor extends RefactoringProcessor {
 	public RefactoringStatus checkFinalConditions(final IProgressMonitor monitor, final CheckConditionsContext context)
 			throws CoreException, OperationCanceledException {
 		try {
-			SubMonitor subMonitor = SubMonitor.convert(monitor, Messages.CheckingPreconditions,
-					this.getJavaProjects().length * 1000);
 			final RefactoringStatus status = new RefactoringStatus();
 			LoggingAnalyzer analyzer = new LoggingAnalyzer();
 			this.setLoggingSet(analyzer.getLoggingSet());
@@ -107,7 +109,7 @@ public class LoggingRefactoringProcessor extends RefactoringProcessor {
 							IPackageFragment fragment = (IPackageFragment) child;
 							ICompilationUnit[] units = fragment.getCompilationUnits();
 							for (ICompilationUnit unit : units) {
-								CompilationUnit compilationUnit = this.getCompilationUnit(unit, subMonitor.split(1));
+								CompilationUnit compilationUnit = this.getCompilationUnit(unit, monitor);
 								compilationUnit.accept(analyzer);
 							}
 						}
@@ -119,7 +121,7 @@ public class LoggingRefactoringProcessor extends RefactoringProcessor {
 
 			return status;
 		} catch (Exception e) {
-			// JavaPlugin.log(e);
+			LOGGER.info("Cannot accpet the visitors. ");
 			throw e;
 		} finally {
 			monitor.done();
