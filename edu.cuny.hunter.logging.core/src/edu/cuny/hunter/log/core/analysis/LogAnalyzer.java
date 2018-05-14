@@ -15,15 +15,15 @@ import edu.cuny.hunter.log.core.untils.Util;
 @SuppressWarnings("restriction")
 public class LogAnalyzer extends ASTVisitor {
 
-	private Set<LogInvocation> loggingSet = new HashSet<>();
+	private Set<LogInvocation> logInvocationSet = new HashSet<>();
 
 	public void analyze() {
 
 		// collect the projects to be analyzed.
-		Map<IJavaProject, Set<LogInvocation>> projectToLoggings = this.getLoggingSet().stream()
+		Map<IJavaProject, Set<LogInvocation>> projectToLoggings = this.getLogInvocationSet().stream()
 				.collect(Collectors.groupingBy(LogInvocation::getExpressionJavaProject, Collectors.toSet()));
 
-		this.getLoggingSet().forEach(e -> {
+		this.getLogInvocationSet().forEach(e -> {
 			e.logInfo();
 		});
 
@@ -31,8 +31,8 @@ public class LogAnalyzer extends ASTVisitor {
 
 	}
 
-	public Set<LogInvocation> getLoggingSet() {
-		return this.loggingSet;
+	public Set<LogInvocation> getLogInvocationSet() {
+		return this.logInvocationSet;
 	}
 
 	/**
@@ -45,7 +45,7 @@ public class LogAnalyzer extends ASTVisitor {
 		
 		if (logLevel != null) {
 			LogInvocation logInvocation = new LogInvocation(node, logLevel);
-			this.getLoggingSet().add(logInvocation);
+			this.getLogInvocationSet().add(logInvocation);
 		}
 		
 		return super.visit(node);

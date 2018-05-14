@@ -48,10 +48,18 @@ public class LogInvocation {
 		return (IMethod) binding.getJavaElement();
 	}
 
+	public int getStartPosition() {
+		return this.expression.getStartPosition();
+	}
+	
+	public Level getLoggingLevel() {
+		return this.loggingLevel;
+	}
+
 	public void logInfo() {
 
-		LOGGER.info("Find a logging statement. The AST location: " + this.expression.getStartPosition()
-				+ ". The logging level: " + this.loggingLevel + ". ");
+		LOGGER.info("Find a logging statement. The AST location: " + getStartPosition() + ". The logging level: "
+				+ getLoggingLevel() + ". ");
 
 	}
 

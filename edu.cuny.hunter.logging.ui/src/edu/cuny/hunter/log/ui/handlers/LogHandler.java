@@ -1,4 +1,4 @@
-package edu.cuny.hunter.logging.ui.handlers;
+package edu.cuny.hunter.log.ui.handlers;
 
 import java.util.HashSet;
 import java.util.List;
@@ -19,8 +19,8 @@ import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.handlers.HandlerUtil;
 
-import edu.cuny.hunter.logging.ui.messages.Messages;
-import edu.cuny.hunter.logging.ui.wizards.LogWizard;
+import edu.cuny.hunter.log.ui.messages.Messages;
+import edu.cuny.hunter.log.ui.wizards.LogWizard;
 
 /**
  * Our sample handler extends AbstractHandler, an IHandler base class.
