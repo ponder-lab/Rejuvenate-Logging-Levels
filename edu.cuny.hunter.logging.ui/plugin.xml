@@ -9,7 +9,7 @@
             id="edu.cuny.hunter.logging.ui.commands.category">
       </category>
       <command
-            name="Process logging levels."
+            name="Logging level research."
             categoryId="edu.cuny.hunter.logging.ui.commands.category"
             id="edu.cuny.hunter.logging.ui.commands.sampleCommand">
       </command>
@@ -18,7 +18,7 @@
          point="org.eclipse.ui.handlers">
       <handler
             commandId="edu.cuny.hunter.logging.ui.commands.sampleCommand"
-            class="edu.cuny.hunter.logging.ui.handlers.LoggingHandler">
+            class="edu.cuny.hunter.logging.ui.handlers.LogHandler">
       </handler>
    </extension>
    <extension
@@ -62,7 +62,7 @@
             locationURI="popup:org.eclipse.jdt.ui.source.menu?after=additions">
          <command
                commandId="edu.cuny.hunter.logging.ui.commands.sampleCommand"
-               label="Process logging levels."
+               label="Logging level research."
                style="push">
             <visibleWhen
                   checkEnabled="false">
