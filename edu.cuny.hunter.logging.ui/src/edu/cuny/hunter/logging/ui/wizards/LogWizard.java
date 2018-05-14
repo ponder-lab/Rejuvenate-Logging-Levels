@@ -14,22 +14,22 @@ import org.eclipse.ltk.ui.refactoring.UserInputWizardPage;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Shell;
 
-import edu.cuny.hunter.logging.core.messages.Messages;
-import edu.cuny.hunter.logging.core.untils.Util;;
+import edu.cuny.hunter.log.core.messages.Messages;
+import edu.cuny.hunter.log.core.untils.Util;;
 
-public class LoggingWizard extends RefactoringWizard {
+public class LogWizard extends RefactoringWizard {
 
 	@SuppressWarnings("restriction")
 	public static void startRefactoring(IJavaProject[] javaProjects, Shell shell, Optional<IProgressMonitor> monitor)
 			throws JavaModelException {
 		Refactoring refactoring = Util.createRefactoring(javaProjects, monitor);
-		RefactoringWizard wizard = new LoggingWizard(refactoring);
+		RefactoringWizard wizard = new LogWizard(refactoring);
 
 		new RefactoringStarter().activate(wizard, shell, RefactoringMessages.OpenRefactoringWizardAction_refactoring,
 				RefactoringSaveHelper.SAVE_REFACTORING);
 	}
 
-	public LoggingWizard(Refactoring refactoring) {
+	public LogWizard(Refactoring refactoring) {
 		super(refactoring,
 				RefactoringWizard.DIALOG_BASED_USER_INTERFACE & RefactoringWizard.CHECK_INITIAL_CONDITIONS_ON_OPEN);
 		this.setWindowTitle(Messages.Name);

@@ -1,4 +1,4 @@
-package edu.cuny.hunter.logging.core.refactorings;
+package edu.cuny.hunter.log.core.refactorings;
 
 import java.util.Optional;
 import java.util.Set;
@@ -32,16 +32,16 @@ import org.eclipse.jdt.internal.corext.refactoring.structure.CompilationUnitRewr
 import org.eclipse.jdt.internal.corext.refactoring.util.RefactoringASTParser;
 import org.eclipse.jdt.internal.corext.refactoring.util.TextEditBasedChangeManager;
 
-import edu.cuny.hunter.logging.core.analysis.Logging;
-import edu.cuny.hunter.logging.core.analysis.LoggingAnalyzer;
-import edu.cuny.hunter.logging.core.descriptors.LoggingDescriptor;
-import edu.cuny.hunter.logging.core.messages.Messages;
-import edu.cuny.hunter.logging.core.untils.LoggerNames;
+import edu.cuny.hunter.log.core.analysis.LogAnalyzer;
+import edu.cuny.hunter.log.core.analysis.LogInvocation;
+import edu.cuny.hunter.log.core.descriptors.LogDescriptor;
+import edu.cuny.hunter.log.core.messages.Messages;
+import edu.cuny.hunter.log.core.untils.LoggerNames;
 
 @SuppressWarnings({ "restriction", "deprecation" })
-public class LoggingRefactoringProcessor extends RefactoringProcessor {
+public class LogRefactoringProcessor extends RefactoringProcessor {
 
-	private Set<Logging> loggingSet;
+	private Set<LogInvocation> loggingSet;
 	private IJavaProject[] javaProjects;
 	private CodeGenerationSettings settings;
 	private Map<ITypeRoot, CompilationUnit> typeRootToCompilationUnitMap = new HashMap<>();
@@ -50,7 +50,7 @@ public class LoggingRefactoringProcessor extends RefactoringProcessor {
 	private static final String BASE_STREAM_TYPE_NAME = "logging";
 	private static final Logger LOGGER = Logger.getLogger(LoggerNames.LOGGER_NAME);
 
-	public LoggingRefactoringProcessor(IJavaProject[] javaProjects, final CodeGenerationSettings settings,
+	public LogRefactoringProcessor(IJavaProject[] javaProjects, final CodeGenerationSettings settings,
 			Optional<IProgressMonitor> monitor) {
 		try {
 			this.javaProjects = javaProjects;
@@ -67,7 +67,7 @@ public class LoggingRefactoringProcessor extends RefactoringProcessor {
 
 	@Override
 	public String getIdentifier() {
-		return LoggingDescriptor.REFACTORING_ID;
+		return LogDescriptor.REFACTORING_ID;
 	}
 
 	@Override
@@ -97,7 +97,7 @@ public class LoggingRefactoringProcessor extends RefactoringProcessor {
 			throws CoreException, OperationCanceledException {
 		try {
 			final RefactoringStatus status = new RefactoringStatus();
-			LoggingAnalyzer analyzer = new LoggingAnalyzer();
+			LogAnalyzer analyzer = new LogAnalyzer();
 			this.setLoggingSet(analyzer.getLoggingSet());
 
 			for (IJavaProject jproj : this.getJavaProjects()) {
@@ -163,7 +163,7 @@ public class LoggingRefactoringProcessor extends RefactoringProcessor {
 
 			// TODO: Fill in description.
 
-			LoggingDescriptor descriptor = new LoggingDescriptor(null, "TODO", null, arguments, flags);
+			LogDescriptor descriptor = new LogDescriptor(null, "TODO", null, arguments, flags);
 
 			return new DynamicValidationRefactoringChange(descriptor, this.getProcessorName(), manager.getAllChanges());
 		} finally {
@@ -206,7 +206,7 @@ public class LoggingRefactoringProcessor extends RefactoringProcessor {
 		return new RefactoringParticipant[0];
 	}
 
-	protected void setLoggingSet(Set<Logging> loggingSet) {
+	protected void setLoggingSet(Set<LogInvocation> loggingSet) {
 		this.loggingSet = loggingSet;
 	}
 

@@ -1,4 +1,4 @@
-package edu.cuny.hunter.logging.core.analysis;
+package edu.cuny.hunter.log.core.analysis;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -10,7 +10,8 @@ import org.eclipse.jdt.core.dom.IMethodBinding;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.MethodInvocation;
 import org.eclipse.jdt.internal.corext.dom.ASTNodes;
-import edu.cuny.hunter.logging.core.untils.LoggerNames;
+
+import edu.cuny.hunter.log.core.untils.LoggerNames;
 
 @SuppressWarnings("restriction")
 public class LogInvocation {

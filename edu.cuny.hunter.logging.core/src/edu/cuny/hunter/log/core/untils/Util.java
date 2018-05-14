@@ -1,6 +1,7 @@
-package edu.cuny.hunter.logging.core.untils;
+package edu.cuny.hunter.log.core.untils;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.logging.Level;
@@ -8,28 +9,31 @@ import java.util.logging.Level;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaModelException;
+import org.eclipse.jdt.core.dom.Expression;
+import org.eclipse.jdt.core.dom.IMethodBinding;
 import org.eclipse.jdt.core.dom.ITypeBinding;
+import org.eclipse.jdt.core.dom.MethodInvocation;
 import org.eclipse.jdt.internal.corext.codemanipulation.CodeGenerationSettings;
 import org.eclipse.jdt.internal.ui.preferences.JavaPreferencesSettings;
 import org.eclipse.ltk.core.refactoring.participants.ProcessorBasedRefactoring;
 
-import edu.cuny.hunter.logging.core.refactorings.LoggingRefactoringProcessor;
+import edu.cuny.hunter.log.core.refactorings.LogRefactoringProcessor;
 
 @SuppressWarnings("restriction")
 public final class Util {
 	public static ProcessorBasedRefactoring createRefactoring(IJavaProject[] projects,
 			Optional<IProgressMonitor> monitor) throws JavaModelException {
-		LoggingRefactoringProcessor processor = createLoggingProcessor(projects, monitor);
+		LogRefactoringProcessor processor = createLoggingProcessor(projects, monitor);
 		return new ProcessorBasedRefactoring(processor);
 	}
 
-	public static LoggingRefactoringProcessor createLoggingProcessor(IJavaProject[] projects,
+	public static LogRefactoringProcessor createLoggingProcessor(IJavaProject[] projects,
 			Optional<IProgressMonitor> monitor) throws JavaModelException {
 		if (projects.length < 1)
 			throw new IllegalArgumentException("No projects.");
 
 		CodeGenerationSettings settings = JavaPreferencesSettings.getCodeGenerationSettings(projects[0]);
-		LoggingRefactoringProcessor processor = new LoggingRefactoringProcessor(projects, settings, monitor);
+		LogRefactoringProcessor processor = new LogRefactoringProcessor(projects, settings, monitor);
 		return processor;
 	}
 
@@ -57,24 +61,23 @@ public final class Util {
 		return true;
 	}
 
-	public static boolean isLoggingClass(ITypeBinding declaringClass) {
-		Set<ITypeBinding> extendedClasses = getExtendedClasses(declaringClass);
-		return extendedClasses.stream()
-				.anyMatch(i -> i.getErasure().getQualifiedName().equals("java.util.logging.Logger"));
-	}
-
 	/**
 	 * We only focus on the logging level, which is set by the developer. Hence, we
 	 * do not record the logging level which is embedded by the logging package.
 	 * e.g. each time we call method entering, a logging record which has "FINER"
 	 * level is created.
 	 * 
-	 * @param methodName
-	 *            the name of method
+	 * @param node
 	 * @return logging level
 	 */
-	public static Level isLoggingMethod(String methodName) {
-		// TODO: method could be used to find more logging level
+	public static Level isLogExpression(MethodInvocation node) {
+		IMethodBinding methodBinding = node.resolveMethodBinding();
+
+		if (!methodBinding.getDeclaringClass().getQualifiedName().equals("java.util.logging.Logger"))
+			return null;
+
+		String methodName = methodBinding.getName();
+
 		if (methodName.equals("config"))
 			return Level.CONFIG;
 		if (methodName.equals("fine"))
@@ -90,21 +93,51 @@ public final class Util {
 		if (methodName.equals("warning"))
 			return Level.WARNING;
 
+		List<Expression> arguments = node.arguments();
+		if (arguments.size() == 0)
+			return null;
+		String firstArgument = arguments.get(0).toString();
+
 		// TODO: may need wala?
 		// They should not be null
-		if (methodName.equals("log")) 
-			return null;
-		if (methodName.equals("logp"))
-			return null;
-		if (methodName.equals("logrb"))
-			return null;
-		if (methodName.equals("setLevel"))
-			return null;
+		if (methodName.equals("log")) {
+			Level loggingLevel = getLoggingLevel(firstArgument);
+			if (loggingLevel == null)
+				System.out.println("Need to process LogRecord.");
+			return loggingLevel;
+		}
+		if (methodName.equals("logp")) {
+			Level loggingLevel = getLoggingLevel(firstArgument);
+			return loggingLevel;
+		}
+		if (methodName.equals("logrb")) {
+			Level loggingLevel = getLoggingLevel(firstArgument);
+			return loggingLevel;
+		}
 
-		// TODO: the handler can contain logging level
-		if (methodName.equals("addHandler"))
-			return null;
+		return null;
+	}
 
+	/**
+	 * Return a corresponding logging level of a string
+	 * @param argument
+	 * @return
+	 */
+	public static Level getLoggingLevel(String argument) {
+		if (argument.equals("Level.SEVERE"))
+			return Level.SEVERE;
+		if (argument.equals("Level.WARNING"))
+			return Level.WARNING;
+		if (argument.equals("Level.INFO"))
+			return Level.INFO;
+		if (argument.equals("Level.CONFIG"))
+			return Level.CONFIG;
+		if (argument.equals("Level.FINE"))
+			return Level.FINE;
+		if (argument.equals("Level.FINER"))
+			return Level.FINER;
+		if (argument.equals("Level.FINEST"))
+			return Level.FINEST;
 		return null;
 	}
 

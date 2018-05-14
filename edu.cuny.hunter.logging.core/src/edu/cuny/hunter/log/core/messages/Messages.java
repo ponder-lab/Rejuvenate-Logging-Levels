@@ -1,4 +1,4 @@
-package edu.cuny.hunter.logging.core.messages;
+package edu.cuny.hunter.log.core.messages;
 
 import org.eclipse.osgi.util.NLS;
 

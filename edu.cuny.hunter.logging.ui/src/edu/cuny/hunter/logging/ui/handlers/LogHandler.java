@@ -20,7 +20,7 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.handlers.HandlerUtil;
 
 import edu.cuny.hunter.logging.ui.messages.Messages;
-import edu.cuny.hunter.logging.ui.wizards.LoggingWizard;
+import edu.cuny.hunter.logging.ui.wizards.LogWizard;
 
 /**
  * Our sample handler extends AbstractHandler, an IHandler base class.
@@ -29,7 +29,7 @@ import edu.cuny.hunter.logging.ui.wizards.LoggingWizard;
  * @see org.eclipse.core.commands.AbstractHandler
  */
 @SuppressWarnings("restriction")
-public class LoggingHandler extends AbstractHandler {
+public class LogHandler extends AbstractHandler {
 
 	@Override
 	public Object execute(ExecutionEvent event) throws ExecutionException {
@@ -56,7 +56,7 @@ public class LoggingHandler extends AbstractHandler {
 				if (javaProjectSet.isEmpty())
 					MessageDialog.openError(shell, Messages.Name, Messages.NoProjects);
 				else
-					LoggingWizard.startRefactoring(javaProjectSet.toArray(new IJavaProject[javaProjectSet.size()]),
+					LogWizard.startRefactoring(javaProjectSet.toArray(new IJavaProject[javaProjectSet.size()]),
 							shell, Optional.empty());
 			} catch (JavaModelException e) {
 				JavaPlugin.log(e);

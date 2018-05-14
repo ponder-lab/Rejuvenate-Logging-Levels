@@ -1,4 +1,4 @@
-package edu.cuny.hunter.logging.core.analysis;
+package edu.cuny.hunter.log.core.analysis;
 
 import java.util.HashSet;
 import java.util.Map;
@@ -8,21 +8,20 @@ import java.util.stream.Collectors;
 
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.dom.ASTVisitor;
-import org.eclipse.jdt.core.dom.IMethodBinding;
-import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.MethodInvocation;
-import edu.cuny.hunter.logging.core.untils.Util;
+
+import edu.cuny.hunter.log.core.untils.Util;
 
 @SuppressWarnings("restriction")
-public class LoggingAnalyzer extends ASTVisitor {
+public class LogAnalyzer extends ASTVisitor {
 
-	private Set<Logging> loggingSet = new HashSet<>();
+	private Set<LogInvocation> loggingSet = new HashSet<>();
 
 	public void analyze() {
 
 		// collect the projects to be analyzed.
-		Map<IJavaProject, Set<Logging>> projectToLoggings = this.getLoggingSet().stream()
-				.collect(Collectors.groupingBy(Logging::getCreationJavaProject, Collectors.toSet()));
+		Map<IJavaProject, Set<LogInvocation>> projectToLoggings = this.getLoggingSet().stream()
+				.collect(Collectors.groupingBy(LogInvocation::getExpressionJavaProject, Collectors.toSet()));
 
 		this.getLoggingSet().forEach(e -> {
 			e.logInfo();
@@ -32,7 +31,7 @@ public class LoggingAnalyzer extends ASTVisitor {
 
 	}
 
-	public Set<Logging> getLoggingSet() {
+	public Set<LogInvocation> getLoggingSet() {
 		return this.loggingSet;
 	}
 
@@ -41,21 +40,14 @@ public class LoggingAnalyzer extends ASTVisitor {
 	 */
 	@Override
 	public boolean visit(MethodInvocation node) {
-		IMethodBinding methodBinding = node.resolveMethodBinding();
-
-		ITypeBinding declaringClass = methodBinding.getDeclaringClass();
-		boolean declaringClassExtendsLogging = Util.isLoggingClass(declaringClass);
-
-		if (declaringClassExtendsLogging) {
-			Level loggingLevel = Util.isLoggingMethod(methodBinding.getName());
-
-			if (loggingLevel != null) {
-				Logging logging = new Logging(node, loggingLevel);
-				this.getLoggingSet().add(logging);
-			}
-
+		
+		Level logLevel = Util.isLogExpression(node);
+		
+		if (logLevel != null) {
+			LogInvocation logInvocation = new LogInvocation(node, logLevel);
+			this.getLoggingSet().add(logInvocation);
 		}
-
+		
 		return super.visit(node);
 	}
 
