@@ -1,4 +1,4 @@
-package edu.cuny.hunter.logging.ui.wizards;
+package edu.cuny.hunter.log.ui.wizards;
 
 import java.util.Optional;
 

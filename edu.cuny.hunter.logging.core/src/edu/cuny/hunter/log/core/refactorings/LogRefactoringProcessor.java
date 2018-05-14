@@ -4,12 +4,12 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.logging.Logger;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.OperationCanceledException;
-import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.core.runtime.SubProgressMonitor;
 import org.eclipse.jdt.core.ICompilationUnit;
 import org.eclipse.jdt.core.IJavaElement;
@@ -41,13 +41,12 @@ import edu.cuny.hunter.log.core.untils.LoggerNames;
 @SuppressWarnings({ "restriction", "deprecation" })
 public class LogRefactoringProcessor extends RefactoringProcessor {
 
-	private Set<LogInvocation> loggingSet;
+	private Set<LogInvocation> logInvocationSet = new HashSet<>();
 	private IJavaProject[] javaProjects;
 	private CodeGenerationSettings settings;
 	private Map<ITypeRoot, CompilationUnit> typeRootToCompilationUnitMap = new HashMap<>();
 	private Map<ICompilationUnit, CompilationUnitRewrite> compilationUnitToCompilationUnitRewriteMap = new HashMap<>();
 
-	private static final String BASE_STREAM_TYPE_NAME = "logging";
 	private static final Logger LOGGER = Logger.getLogger(LoggerNames.LOGGER_NAME);
 
 	public LogRefactoringProcessor(IJavaProject[] javaProjects, final CodeGenerationSettings settings,
@@ -88,7 +87,7 @@ public class LogRefactoringProcessor extends RefactoringProcessor {
 		return status;
 	}
 
-	protected IJavaProject[] getJavaProjects() {
+	public IJavaProject[] getJavaProjects() {
 		return this.javaProjects;
 	}
 
@@ -98,7 +97,7 @@ public class LogRefactoringProcessor extends RefactoringProcessor {
 		try {
 			final RefactoringStatus status = new RefactoringStatus();
 			LogAnalyzer analyzer = new LogAnalyzer();
-			this.setLoggingSet(analyzer.getLoggingSet());
+			this.setLogInvocationSet(analyzer.getLogInvocationSet());
 
 			for (IJavaProject jproj : this.getJavaProjects()) {
 				IPackageFragmentRoot[] roots = jproj.getPackageFragmentRoots();
@@ -206,8 +205,12 @@ public class LogRefactoringProcessor extends RefactoringProcessor {
 		return new RefactoringParticipant[0];
 	}
 
-	protected void setLoggingSet(Set<LogInvocation> loggingSet) {
-		this.loggingSet = loggingSet;
+	protected void setLogInvocationSet(Set<LogInvocation> logInvocationSet) {
+		this.logInvocationSet = logInvocationSet;
+	}
+
+	public Set<LogInvocation> getLogInvocationSet() {
+		return this.logInvocationSet;
 	}
 
 }
