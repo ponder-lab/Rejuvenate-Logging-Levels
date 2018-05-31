@@ -21,8 +21,15 @@ import edu.cuny.hunter.log.core.analysis.LogAnalyzer;
 
 @SuppressWarnings("restriction")
 public class LogEvolutionRefactoringTest extends RefactoringTest {
+
+	private static final String REFACTORING_PATH = "LogEvolution/";
+
 	private static final String RESOURCE_PATH = "resources";
 
+	@Override
+	public String getRefactoringPath() {
+		return REFACTORING_PATH;
+	}
 
 	public LogEvolutionRefactoringTest(String name) {
 		super(name);
