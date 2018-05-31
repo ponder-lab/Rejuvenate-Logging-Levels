@@ -4,6 +4,8 @@ import junit.framework.Test;
 import junit.framework.TestSuite;
 
 import java.io.IOException;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
@@ -19,6 +21,9 @@ import edu.cuny.hunter.log.core.analysis.LogAnalyzer;
 
 @SuppressWarnings("restriction")
 public class LoggingEvolutionTest extends RefactoringTest {
+	
+	
+	private static final String RESOURCE_PATH = "resources";
 
 	public LoggingEvolutionTest(String name) {
 		super(name);
@@ -80,5 +85,22 @@ public class LoggingEvolutionTest extends RefactoringTest {
 	protected void tearDown() throws Exception {
 		super.tearDown();
 	}
+
+	/*
+	 * This method could fix the issue that the bundle has no entry.
+	 */
+	@Override
+	public String getFileContents(String fileName) throws IOException {
+		Path absolutePath = getAbsolutePath(fileName);
+		byte[] encoded = Files.readAllBytes(absolutePath);
+		return new String(encoded, Charset.defaultCharset());
+	}
+	
+	private static Path getAbsolutePath(String fileName) {
+		Path path = Paths.get(RESOURCE_PATH, fileName);
+		Path absolutePath = path.toAbsolutePath();
+		return absolutePath;
+	}
+
 
 }
