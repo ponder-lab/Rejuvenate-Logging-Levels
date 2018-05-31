@@ -20,12 +20,11 @@ import org.eclipse.jdt.ui.tests.refactoring.RefactoringTest;
 import edu.cuny.hunter.log.core.analysis.LogAnalyzer;
 
 @SuppressWarnings("restriction")
-public class LoggingEvolutionTest extends RefactoringTest {
-	
-	
+public class LogEvolutionRefactoringTest extends RefactoringTest {
 	private static final String RESOURCE_PATH = "resources";
 
-	public LoggingEvolutionTest(String name) {
+
+	public LogEvolutionRefactoringTest(String name) {
 		super(name);
 	}
 
@@ -34,7 +33,7 @@ public class LoggingEvolutionTest extends RefactoringTest {
 	}
 
 	public static Test suite() {
-		return setUpTest(new TestSuite(LoggingEvolutionTest.class));
+		return setUpTest(new TestSuite(LogEvolutionRefactoringTest.class));
 	}
 
 	public static Test setUpTest(Test test) {
@@ -46,14 +45,12 @@ public class LoggingEvolutionTest extends RefactoringTest {
 	}
 
 	@Override
-	protected ICompilationUnit createCUfromTestFile(IPackageFragment pack, String className) throws Exception {
+	protected ICompilationUnit createCUfromTestFile(IPackageFragment pack, String cuName) throws Exception {
 
-		System.out.println(System.getProperty("user.dir") + "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-
-		ICompilationUnit unit = super.createCUfromTestFile(pack, className);
+		ICompilationUnit unit = super.createCUfromTestFile(pack, cuName);
 
 		if (!unit.isStructureKnown())
-			throw new IllegalArgumentException(className + " has structural errors.");
+			throw new IllegalArgumentException(cuName + " has structural errors.");
 
 		Path directory = Paths.get(unit.getParent().getParent().getResource().getLocation().toString());
 
@@ -63,8 +60,6 @@ public class LoggingEvolutionTest extends RefactoringTest {
 	}
 
 	public void testFindLocations() throws Exception {
-
-		IPackageFragment p = getPackageP();
 
 		// compute the actual results.
 		ICompilationUnit cu = createCUfromTestFile(getPackageP(), "A");
@@ -95,12 +90,11 @@ public class LoggingEvolutionTest extends RefactoringTest {
 		byte[] encoded = Files.readAllBytes(absolutePath);
 		return new String(encoded, Charset.defaultCharset());
 	}
-	
+
 	private static Path getAbsolutePath(String fileName) {
 		Path path = Paths.get(RESOURCE_PATH, fileName);
 		Path absolutePath = path.toAbsolutePath();
 		return absolutePath;
 	}
-
 
 }
