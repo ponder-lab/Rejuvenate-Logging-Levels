@@ -73,7 +73,8 @@ public final class Util {
 	public static Level isLogExpression(MethodInvocation node) {
 		IMethodBinding methodBinding = node.resolveMethodBinding();
 
-		if (!methodBinding.getDeclaringClass().getQualifiedName().equals("java.util.logging.Logger"))
+		if (methodBinding == null
+				|| !methodBinding.getDeclaringClass().getQualifiedName().equals("java.util.logging.Logger"))
 			return null;
 
 		String methodName = methodBinding.getName();
