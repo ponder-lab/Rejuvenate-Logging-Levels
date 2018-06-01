@@ -3,11 +3,15 @@ package edu.cuny.hunter.log.ui.tests;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+
+import javax.tools.JavaCompiler;
+import javax.tools.ToolProvider;
 
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jdt.core.ICompilationUnit;
@@ -47,8 +51,21 @@ public class LogEvolutionRefactoringTest extends RefactoringTest {
 		return new Java18Setup(test);
 	}
 
+	/**
+	 * Compile the test case
+	 */
 	private static boolean compiles(String source, Path path) throws IOException {
-		return compiles(source, path.resolve("bin/p/A.java"));
+		// Save source in .java file.
+		File sourceFile = new File(path.toFile(), "bin/p/A.java");
+		sourceFile.getParentFile().mkdirs();
+		Files.write(sourceFile.toPath(), source.getBytes());
+
+		// Compile source file.
+		JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
+		boolean compileSuccess = compiler.run(null, null, null, sourceFile.getPath()) == 0;
+
+		sourceFile.delete();
+		return compileSuccess;
 	}
 
 	@Override
