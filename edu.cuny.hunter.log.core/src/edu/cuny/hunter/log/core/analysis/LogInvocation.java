@@ -17,13 +17,13 @@ import edu.cuny.hunter.log.core.untils.LoggerNames;
 public class LogInvocation {
 
 	private final MethodInvocation expression;
-	private final Level loggingLevel;
+	private final Level logLevel;
 
 	private static final Logger LOGGER = Logger.getLogger(LoggerNames.LOGGER_NAME);
 
 	public LogInvocation(MethodInvocation logExpression, Level loggingLevel) {
 		this.expression = logExpression;
-		this.loggingLevel = loggingLevel;
+		this.logLevel = loggingLevel;
 	}
 
 	public MethodInvocation getExpression() {
@@ -52,14 +52,14 @@ public class LogInvocation {
 		return this.expression.getStartPosition();
 	}
 	
-	public Level getLoggingLevel() {
-		return this.loggingLevel;
+	public Level getLogLevel() {
+		return this.logLevel;
 	}
 
 	public void logInfo() {
 
 		LOGGER.info("Find a logging statement. The AST location: " + getStartPosition() + ". The logging level: "
-				+ getLoggingLevel() + ". ");
+				+ getLogLevel() + ". ");
 
 	}
 
