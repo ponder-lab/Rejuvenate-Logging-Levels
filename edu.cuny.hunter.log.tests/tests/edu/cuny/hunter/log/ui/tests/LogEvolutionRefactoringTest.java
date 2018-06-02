@@ -9,6 +9,9 @@ import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.HashMap;
+import java.util.Set;
+import java.util.logging.Level;
 
 import javax.tools.JavaCompiler;
 import javax.tools.ToolProvider;
@@ -22,6 +25,7 @@ import org.eclipse.jdt.core.dom.ASTParser;
 import org.eclipse.jdt.ui.tests.refactoring.Java18Setup;
 import org.eclipse.jdt.ui.tests.refactoring.RefactoringTest;
 import edu.cuny.hunter.log.core.analysis.LogAnalyzer;
+import edu.cuny.hunter.log.core.analysis.LogInvocation;
 
 @SuppressWarnings("restriction")
 public class LogEvolutionRefactoringTest extends RefactoringTest {
@@ -83,7 +87,7 @@ public class LogEvolutionRefactoringTest extends RefactoringTest {
 		return unit;
 	}
 
-	public void testFindLocations() throws Exception {
+	private void helper(LogInvocationExpectedResult... expectedResults) throws Exception {
 
 		// compute the actual results.
 		ICompilationUnit cu = createCUfromTestFile(getPackageP(), "A");
@@ -94,11 +98,37 @@ public class LogEvolutionRefactoringTest extends RefactoringTest {
 
 		ASTNode ast = parser.createAST(new NullProgressMonitor());
 
-		LogAnalyzer loggingAnalyer = new LogAnalyzer();
-		ast.accept(loggingAnalyer);
+		LogAnalyzer logAnalyer = new LogAnalyzer();
+		ast.accept(logAnalyer);
 
-		loggingAnalyer.analyze();
+		logAnalyer.analyze();
 
+		Set<LogInvocation> logInvocationSet = logAnalyer.getLogInvocationSet();
+
+		assertEquals("The number of log invocation should not be 0:", 0, logInvocationSet.size());
+
+		HashMap<String, LogInvocation> expressionToInvocation = new HashMap<String, LogInvocation>();
+		logInvocationSet.forEach(logInvocation -> {
+			expressionToInvocation.put(logInvocation.getExpression().toString(), logInvocation);
+		});
+
+		for (LogInvocationExpectedResult result : expectedResults) {
+			LogInvocation logInvocation = expressionToInvocation.get(result.getLogExpression());
+
+			assertNotNull("The log expression cannot be detected in the project!", logInvocation);
+
+			assertEquals("Unexpected log level for " + result.getLogExpression(), result.getLogLevel(),
+					logInvocation.getLogLevel());
+		}
+
+	}
+
+	public void testFindLocations() throws Exception {
+		helper(new LogInvocationExpectedResult("LOGGER.info(\"Logger Name: \" + LOGGER.getName())", Level.INFO),
+				new LogInvocationExpectedResult("LOGGER.config(\"index is set to \" + index)", Level.CONFIG),
+				new LogInvocationExpectedResult("LOGGER.log(Level.SEVERE,\"Exception occur\",ex)", Level.SEVERE),
+				new LogInvocationExpectedResult("LOGGER.warning(\"Can cause ArrayIndexOutOfBoundsException\")",
+						Level.WARNING));
 	}
 
 	protected void tearDown() throws Exception {
