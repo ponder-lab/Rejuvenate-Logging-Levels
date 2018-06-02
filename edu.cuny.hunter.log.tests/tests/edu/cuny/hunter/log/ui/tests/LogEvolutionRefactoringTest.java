@@ -80,7 +80,7 @@ public class LogEvolutionRefactoringTest extends RefactoringTest {
 		if (!unit.isStructureKnown())
 			throw new IllegalArgumentException(cuName + " has structural errors.");
 
-		Path directory = Paths.get(unit.getParent().getParent().getResource().getLocation().toString());
+		Path directory = Paths.get(unit.getParent().getParent().getParent().getResource().getLocation().toString());
 
 		assertTrue("Should compile the testing cases:", compiles(unit.getSource(), directory));
 
