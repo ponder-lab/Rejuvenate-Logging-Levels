@@ -67,17 +67,12 @@ public final class Util {
 	 * e.g. each time we call method entering, a logging record which has "FINER"
 	 * level is created.
 	 * 
-	 * @param node
+	 * @param methodName
+	 *            the name of method
 	 * @return logging level
 	 */
-	public static Level isLogExpression(MethodInvocation node) {
-		IMethodBinding methodBinding = node.resolveMethodBinding();
-
-		if (!methodBinding.getDeclaringClass().getQualifiedName().equals("java.util.logging.Logger"))
-			return null;
-
-		String methodName = methodBinding.getName();
-
+	public static Level isLoggingMethod(String methodName) {
+		// TODO: method could be used to find more logging level
 		if (methodName.equals("config"))
 			return Level.CONFIG;
 		if (methodName.equals("fine"))
@@ -93,52 +88,23 @@ public final class Util {
 		if (methodName.equals("warning"))
 			return Level.WARNING;
 
-		List<Expression> arguments = node.arguments();
-		if (arguments.size() == 0)
-			return null;
-		String firstArgument = arguments.get(0).toString();
-
 		// TODO: may need wala?
 		// They should not be null
-		if (methodName.equals("log")) {
-			Level loggingLevel = getLoggingLevel(firstArgument);
-			if (loggingLevel == null)
-				System.out.println("Need to process LogRecord.");
-			return loggingLevel;
-		}
-		if (methodName.equals("logp")) {
-			Level loggingLevel = getLoggingLevel(firstArgument);
-			return loggingLevel;
-		}
-		if (methodName.equals("logrb")) {
-			Level loggingLevel = getLoggingLevel(firstArgument);
-			return loggingLevel;
-		}
+		if (methodName.equals("log")) 
+			return null;
+		if (methodName.equals("logp"))
+			return null;
+		if (methodName.equals("logrb"))
+			return null;
+		if (methodName.equals("setLevel"))
+			return null;
+
+		// TODO: the handler can contain logging level
+		if (methodName.equals("addHandler"))
+			return null;
 
 		return null;
 	}
 
-	/**
-	 * Return a corresponding logging level of a string
-	 * @param argument
-	 * @return
-	 */
-	public static Level getLoggingLevel(String argument) {
-		if (argument.equals("Level.SEVERE"))
-			return Level.SEVERE;
-		if (argument.equals("Level.WARNING"))
-			return Level.WARNING;
-		if (argument.equals("Level.INFO"))
-			return Level.INFO;
-		if (argument.equals("Level.CONFIG"))
-			return Level.CONFIG;
-		if (argument.equals("Level.FINE"))
-			return Level.FINE;
-		if (argument.equals("Level.FINER"))
-			return Level.FINER;
-		if (argument.equals("Level.FINEST"))
-			return Level.FINEST;
-		return null;
-	}
 
 }
