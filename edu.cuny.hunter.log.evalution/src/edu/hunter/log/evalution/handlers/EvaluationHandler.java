@@ -69,7 +69,7 @@ public class EvaluationHandler extends AbstractHandler {
 
 					try {
 						CSVPrinter resultPrinter = createCSVPrinter("result.csv",
-								new String[] { "subject raw", "log expression", "start pos", "logging level" });
+								new String[] { "subject raw", "log expression", "start pos", "logging level", "type FQN" });
 
 						// for each selected java project
 						for (IJavaProject project : javaProjectList) {
@@ -87,7 +87,8 @@ public class EvaluationHandler extends AbstractHandler {
 							while (logInvocationIterator.hasNext()) {
 								LogInvocation logInvocation = logInvocationIterator.next();
 								resultPrinter.printRecord(project.getElementName(), logInvocation.getExpression(),
-										logInvocation.getStartPosition(), logInvocation.getLogLevel());
+										logInvocation.getStartPosition(), logInvocation.getLogLevel(),
+										logInvocation.getEnclosingType().getFullyQualifiedName());
 							}
 						}
 

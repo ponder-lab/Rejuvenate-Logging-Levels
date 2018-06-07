@@ -5,6 +5,7 @@ import java.util.logging.Logger;
 
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IMethod;
+import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.IMethodBinding;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
@@ -37,6 +38,19 @@ public class LogInvocation {
 	public MethodDeclaration getEnclosingMethodDeclaration() {
 		return (MethodDeclaration) ASTNodes.getParent(this.getExpression(), ASTNode.METHOD_DECLARATION);
 	}
+	
+	/**
+	 * Through the enclosing type, I can type FQN
+	 */
+	public IType getEnclosingType() {
+		MethodDeclaration enclosingMethodDeclaration = getEnclosingMethodDeclaration();
+
+		if (enclosingMethodDeclaration == null)
+			return null;
+
+		IMethodBinding binding = enclosingMethodDeclaration.resolveBinding();
+		return (IType) binding.getDeclaringClass().getJavaElement();
+	}
 
 	public IMethod getEnclosingEclipseMethod() {
 		MethodDeclaration enclosingMethodDeclaration = this.getEnclosingMethodDeclaration();
@@ -57,10 +71,8 @@ public class LogInvocation {
 	}
 
 	public void logInfo() {
-
-		LOGGER.info("Find a logging statement. The AST location: " + getStartPosition() + ". The logging level: "
-				+ getLogLevel() + ". ");
-
+		LOGGER.info("Find a log expression." + this.getExpression().toString() + " The logging level: " + getLogLevel()
+				+ ". ");
 	}
 
 }
