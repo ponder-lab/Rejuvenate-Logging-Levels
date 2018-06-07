@@ -19,20 +19,12 @@ import javax.tools.ToolProvider;
 
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jdt.core.ICompilationUnit;
-import org.eclipse.jdt.core.IJavaElement;
-import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IPackageFragment;
-import org.eclipse.jdt.core.IPackageFragmentRoot;
-import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.dom.AST;
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.ASTParser;
-import org.eclipse.jdt.core.dom.CompilationUnit;
-import org.eclipse.jdt.internal.corext.refactoring.util.RefactoringASTParser;
 import org.eclipse.jdt.ui.tests.refactoring.Java18Setup;
 import org.eclipse.jdt.ui.tests.refactoring.RefactoringTest;
-import org.eclipse.jdt.ui.tests.refactoring.RefactoringTestSetup;
-
 import edu.cuny.hunter.log.core.analysis.LogAnalyzer;
 import edu.cuny.hunter.log.core.analysis.LogInvocation;
 
@@ -95,20 +87,20 @@ public class LogEvolutionRefactoringTest extends RefactoringTest {
 
 		return unit;
 	}
-	
+
 	private void helper(LogInvocationExpectedResult... expectedResults) throws Exception {
 
 		// compute the actual results.
 		ICompilationUnit cu = createCUfromTestFile(getPackageP(), "A");
 
-		CompilationUnit unit = RefactoringASTParser.parseWithASTProvider(cu, true, new NullProgressMonitor());
+		ASTParser parser = ASTParser.newParser(AST.JLS8);
+		parser.setResolveBindings(true);
+		parser.setSource(cu);
 
-		// ASTNode ast = parser.createAST(new NullProgressMonitor());
+		ASTNode ast = parser.createAST(new NullProgressMonitor());
 
 		LogAnalyzer logAnalyzer = new LogAnalyzer();
-		logAnalyzer.setTest(false);
-
-		unit.accept(logAnalyzer);
+		ast.accept(logAnalyzer);
 
 		logAnalyzer.analyze();
 
