@@ -98,14 +98,14 @@ public class LogEvolutionRefactoringTest extends RefactoringTest {
 
 		ASTNode ast = parser.createAST(new NullProgressMonitor());
 
-		LogAnalyzer logAnalyer = new LogAnalyzer();
-		ast.accept(logAnalyer);
+		LogAnalyzer logAnalyzer = new LogAnalyzer();
+		ast.accept(logAnalyzer);
 
-		logAnalyer.analyze();
+		logAnalyzer.analyze();
 
-		Set<LogInvocation> logInvocationSet = logAnalyer.getLogInvocationSet();
+		Set<LogInvocation> logInvocationSet = logAnalyzer.getLogInvocationSet();
 
-		assertEquals("The number of log invocation should not be 0:", 0, logInvocationSet.size());
+		assertNotSame("The number of log invocations should not be 0:", 0, logInvocationSet.size());
 
 		HashMap<String, LogInvocation> expressionToInvocation = new HashMap<String, LogInvocation>();
 		logInvocationSet.forEach(logInvocation -> {

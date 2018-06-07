@@ -16,7 +16,6 @@ import org.eclipse.jdt.core.dom.MethodInvocation;
 import org.eclipse.jdt.internal.corext.codemanipulation.CodeGenerationSettings;
 import org.eclipse.jdt.internal.ui.preferences.JavaPreferencesSettings;
 import org.eclipse.ltk.core.refactoring.participants.ProcessorBasedRefactoring;
-
 import edu.cuny.hunter.log.core.refactorings.LogRefactoringProcessor;
 
 @SuppressWarnings("restriction")
@@ -54,6 +53,17 @@ public final class Util {
 		return true;
 	}
 
+	public static Level isLogExpression(MethodInvocation node, boolean b) {
+		if (b) {
+			IMethodBinding methodBinding = node.resolveMethodBinding();
+
+			if (methodBinding == null
+					|| !methodBinding.getDeclaringClass().getQualifiedName().equals("java.util.logging.Logger"))
+				return null;
+		}
+		return isLogExpression(node);
+	}
+
 	/**
 	 * We only focus on the logging level, which is set by the developer. Hence, we
 	 * do not record the logging level which is embedded by the logging package.
@@ -64,13 +74,8 @@ public final class Util {
 	 * @return logging level
 	 */
 	public static Level isLogExpression(MethodInvocation node) {
-		IMethodBinding methodBinding = node.resolveMethodBinding();
 
-		if (methodBinding == null
-				|| !methodBinding.getDeclaringClass().getQualifiedName().equals("java.util.logging.Logger"))
-			return null;
-
-		String methodName = methodBinding.getName();
+		String methodName = node.getName().toString();
 
 		if (methodName.equals("config"))
 			return Level.CONFIG;
@@ -114,6 +119,7 @@ public final class Util {
 
 	/**
 	 * Return a corresponding logging level of a string
+	 * 
 	 * @param argument
 	 * @return
 	 */
