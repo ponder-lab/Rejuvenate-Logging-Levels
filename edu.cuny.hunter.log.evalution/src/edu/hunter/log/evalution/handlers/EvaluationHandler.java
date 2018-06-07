@@ -69,7 +69,7 @@ public class EvaluationHandler extends AbstractHandler {
 
 					try {
 						CSVPrinter resultPrinter = createCSVPrinter("result.csv",
-								new String[] { "subject", "log expression", "start pos", "logging level" });
+								new String[] { "subject raw", "log expression", "start pos", "logging level" });
 
 						// for each selected java project
 						for (IJavaProject project : javaProjectList) {
