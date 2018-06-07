@@ -37,13 +37,6 @@ public final class Util {
 		return processor;
 	}
 
-	static Set<ITypeBinding> getExtendedClasses(ITypeBinding type) {
-		Set<ITypeBinding> ret = new HashSet<>();
-		ret.add(type);
-		ret.addAll(getAllClasses(type));
-		return ret;
-	}
-
 	static Set<ITypeBinding> getAllClasses(ITypeBinding type) {
 		Set<ITypeBinding> ret = new HashSet<>();
 		ITypeBinding superClass = type.getSuperclass();
