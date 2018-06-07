@@ -25,7 +25,8 @@ import org.eclipse.jdt.internal.ui.util.SelectionUtil;
 import org.eclipse.ui.handlers.HandlerUtil;
 import edu.cuny.hunter.log.core.analysis.LogInvocation;
 import edu.cuny.hunter.log.core.refactorings.LogRefactoringProcessor;
-import edu.cuny.hunter.log.core.untils.LoggerNames;
+import edu.cuny.hunter.log.core.utils.LoggerNames;
+
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.ltk.core.refactoring.participants.ProcessorBasedRefactoring;
 

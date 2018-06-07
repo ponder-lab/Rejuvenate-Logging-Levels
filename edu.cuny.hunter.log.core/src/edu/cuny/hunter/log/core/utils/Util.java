@@ -1,4 +1,4 @@
-package edu.cuny.hunter.log.core.untils;
+package edu.cuny.hunter.log.core.utils;
 
 import java.util.HashSet;
 import java.util.List;
@@ -35,13 +35,6 @@ public final class Util {
 		CodeGenerationSettings settings = JavaPreferencesSettings.getCodeGenerationSettings(projects[0]);
 		LogRefactoringProcessor processor = new LogRefactoringProcessor(projects, settings, monitor);
 		return processor;
-	}
-
-	static Set<ITypeBinding> getExtendedClasses(ITypeBinding type) {
-		Set<ITypeBinding> ret = new HashSet<>();
-		ret.add(type);
-		ret.addAll(getAllClasses(type));
-		return ret;
 	}
 
 	static Set<ITypeBinding> getAllClasses(ITypeBinding type) {

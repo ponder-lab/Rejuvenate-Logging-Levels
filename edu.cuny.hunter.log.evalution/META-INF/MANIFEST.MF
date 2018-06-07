@@ -10,7 +10,7 @@ Require-Bundle: org.eclipse.ui,
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Import-Package: edu.cuny.hunter.log.core.analysis,
  edu.cuny.hunter.log.core.refactorings,
- edu.cuny.hunter.log.core.untils,
+ edu.cuny.hunter.log.core.utils,
  org.eclipse.jdt.core,
  org.eclipse.jdt.internal.corext.codemanipulation,
  org.eclipse.jdt.internal.ui.preferences,

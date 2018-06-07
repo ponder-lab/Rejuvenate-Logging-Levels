@@ -11,7 +11,7 @@ import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.MethodInvocation;
 import org.eclipse.jdt.internal.corext.dom.ASTNodes;
 
-import edu.cuny.hunter.log.core.untils.LoggerNames;
+import edu.cuny.hunter.log.core.utils.LoggerNames;
 
 @SuppressWarnings("restriction")
 public class LogInvocation {
