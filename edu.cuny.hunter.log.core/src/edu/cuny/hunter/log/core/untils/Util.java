@@ -73,7 +73,8 @@ public final class Util {
 	public static Level isLogExpression(MethodInvocation node) {
 		IMethodBinding methodBinding = node.resolveMethodBinding();
 
-		if (!methodBinding.getDeclaringClass().getQualifiedName().equals("java.util.logging.Logger"))
+		if (methodBinding == null
+				|| !methodBinding.getDeclaringClass().getQualifiedName().equals("java.util.logging.Logger"))
 			return null;
 
 		String methodName = methodBinding.getName();
@@ -101,17 +102,17 @@ public final class Util {
 		// TODO: may need wala?
 		// They should not be null
 		if (methodName.equals("log")) {
-			Level loggingLevel = getLoggingLevel(firstArgument);
+			Level loggingLevel = getLogLevel(firstArgument);
 			if (loggingLevel == null)
 				System.out.println("Need to process LogRecord.");
 			return loggingLevel;
 		}
 		if (methodName.equals("logp")) {
-			Level loggingLevel = getLoggingLevel(firstArgument);
+			Level loggingLevel = getLogLevel(firstArgument);
 			return loggingLevel;
 		}
 		if (methodName.equals("logrb")) {
-			Level loggingLevel = getLoggingLevel(firstArgument);
+			Level loggingLevel = getLogLevel(firstArgument);
 			return loggingLevel;
 		}
 
@@ -123,7 +124,7 @@ public final class Util {
 	 * @param argument
 	 * @return
 	 */
-	public static Level getLoggingLevel(String argument) {
+	public static Level getLogLevel(String argument) {
 		if (argument.equals("Level.SEVERE"))
 			return Level.SEVERE;
 		if (argument.equals("Level.WARNING"))

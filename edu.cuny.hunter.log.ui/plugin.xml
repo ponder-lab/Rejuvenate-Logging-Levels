@@ -9,7 +9,7 @@
             id="edu.cuny.hunter.logging.ui.commands.category">
       </category>
       <command
-            name="Logging level research."
+            name="Suggest a log level."
             categoryId="edu.cuny.hunter.logging.ui.commands.category"
             id="edu.cuny.hunter.logging.ui.commands.sampleCommand">
       </command>
@@ -62,7 +62,7 @@
             locationURI="popup:org.eclipse.jdt.ui.refactoring.menu?after=additions">
          <command
                commandId="edu.cuny.hunter.logging.ui.commands.sampleCommand"
-               label="Logging level research."
+               label="Suggest log level."
                style="push">
             <visibleWhen
                   checkEnabled="false">

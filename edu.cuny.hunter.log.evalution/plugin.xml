@@ -9,7 +9,7 @@
             id="edu.hunter.log.evalution.commands.category">
       </category>
       <command
-            name="Evaluate logging projects."
+            name="Evaluate log projects."
             categoryId="edu.hunter.log.evalution.commands.category"
             id="edu.hunter.log.evalution.commands.sampleCommand">
       </command>
@@ -62,7 +62,7 @@
             locationURI="popup:org.eclipse.jdt.ui.refactoring.menu?after=additions">
          <command
                commandId="edu.hunter.log.evalution.commands.sampleCommand"
-               label="Evaluate logging projects."
+               label="Evaluate log projects."
                style="push">
             <visibleWhen
                   checkEnabled="false">

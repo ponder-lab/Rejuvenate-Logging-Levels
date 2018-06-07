@@ -86,7 +86,7 @@ public class EvaluationHandler extends AbstractHandler {
 							while (logInvocationIterator.hasNext()) {
 								LogInvocation logInvocation = logInvocationIterator.next();
 								resultPrinter.printRecord(project.getElementName(), logInvocation.getExpression(),
-										logInvocation.getStartPosition(), logInvocation.getLoggingLevel());
+										logInvocation.getStartPosition(), logInvocation.getLogLevel());
 							}
 						}
 
