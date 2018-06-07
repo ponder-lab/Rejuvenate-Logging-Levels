@@ -10,7 +10,7 @@ import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.dom.ASTVisitor;
 import org.eclipse.jdt.core.dom.MethodInvocation;
 
-import edu.cuny.hunter.log.core.untils.Util;
+import edu.cuny.hunter.log.core.utils.Util;
 
 @SuppressWarnings("restriction")
 public class LogAnalyzer extends ASTVisitor {

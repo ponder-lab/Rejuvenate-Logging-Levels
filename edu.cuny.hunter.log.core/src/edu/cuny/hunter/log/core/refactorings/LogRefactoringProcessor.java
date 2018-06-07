@@ -36,7 +36,7 @@ import edu.cuny.hunter.log.core.analysis.LogAnalyzer;
 import edu.cuny.hunter.log.core.analysis.LogInvocation;
 import edu.cuny.hunter.log.core.descriptors.LogDescriptor;
 import edu.cuny.hunter.log.core.messages.Messages;
-import edu.cuny.hunter.log.core.untils.LoggerNames;
+import edu.cuny.hunter.log.core.utils.LoggerNames;
 
 @SuppressWarnings({ "restriction", "deprecation" })
 public class LogRefactoringProcessor extends RefactoringProcessor {

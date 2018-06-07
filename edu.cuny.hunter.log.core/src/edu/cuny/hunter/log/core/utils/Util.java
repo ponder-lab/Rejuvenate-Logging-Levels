@@ -1,4 +1,4 @@
-package edu.cuny.hunter.log.core.untils;
+package edu.cuny.hunter.log.core.utils;
 
 import java.util.HashSet;
 import java.util.List;

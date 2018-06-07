@@ -15,7 +15,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Shell;
 
 import edu.cuny.hunter.log.core.messages.Messages;
-import edu.cuny.hunter.log.core.untils.Util;;
+import edu.cuny.hunter.log.core.utils.Util;;
 
 public class LogWizard extends RefactoringWizard {
 

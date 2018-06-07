@@ -28,4 +28,4 @@ Import-Package: org.eclipse.core.runtime;version="3.5.0",
 Export-Package: edu.cuny.hunter.log.core.analysis,
  edu.cuny.hunter.log.core.messages,
  edu.cuny.hunter.log.core.refactorings,
- edu.cuny.hunter.log.core.untils
+ edu.cuny.hunter.log.core.utils
