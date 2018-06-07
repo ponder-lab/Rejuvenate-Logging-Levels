@@ -10,6 +10,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 
@@ -18,12 +19,20 @@ import javax.tools.ToolProvider;
 
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jdt.core.ICompilationUnit;
+import org.eclipse.jdt.core.IJavaElement;
+import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IPackageFragment;
+import org.eclipse.jdt.core.IPackageFragmentRoot;
+import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.dom.AST;
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.ASTParser;
+import org.eclipse.jdt.core.dom.CompilationUnit;
+import org.eclipse.jdt.internal.corext.refactoring.util.RefactoringASTParser;
 import org.eclipse.jdt.ui.tests.refactoring.Java18Setup;
 import org.eclipse.jdt.ui.tests.refactoring.RefactoringTest;
+import org.eclipse.jdt.ui.tests.refactoring.RefactoringTestSetup;
+
 import edu.cuny.hunter.log.core.analysis.LogAnalyzer;
 import edu.cuny.hunter.log.core.analysis.LogInvocation;
 
@@ -86,26 +95,26 @@ public class LogEvolutionRefactoringTest extends RefactoringTest {
 
 		return unit;
 	}
-
+	
 	private void helper(LogInvocationExpectedResult... expectedResults) throws Exception {
 
 		// compute the actual results.
 		ICompilationUnit cu = createCUfromTestFile(getPackageP(), "A");
 
-		ASTParser parser = ASTParser.newParser(AST.JLS8);
-		parser.setResolveBindings(true);
-		parser.setSource(cu);
+		CompilationUnit unit = RefactoringASTParser.parseWithASTProvider(cu, true, new NullProgressMonitor());
 
-		ASTNode ast = parser.createAST(new NullProgressMonitor());
+		// ASTNode ast = parser.createAST(new NullProgressMonitor());
 
-		LogAnalyzer logAnalyer = new LogAnalyzer();
-		ast.accept(logAnalyer);
+		LogAnalyzer logAnalyzer = new LogAnalyzer();
+		logAnalyzer.setTest(false);
 
-		logAnalyer.analyze();
+		unit.accept(logAnalyzer);
 
-		Set<LogInvocation> logInvocationSet = logAnalyer.getLogInvocationSet();
+		logAnalyzer.analyze();
 
-		assertEquals("The number of log invocation should not be 0:", 0, logInvocationSet.size());
+		Set<LogInvocation> logInvocationSet = logAnalyzer.getLogInvocationSet();
+
+		assertNotSame("The number of log invocations should not be 0:", 0, logInvocationSet.size());
 
 		HashMap<String, LogInvocation> expressionToInvocation = new HashMap<String, LogInvocation>();
 		logInvocationSet.forEach(logInvocation -> {

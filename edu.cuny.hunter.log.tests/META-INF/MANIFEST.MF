@@ -9,6 +9,7 @@ Import-Package: edu.cuny.hunter.log.core.analysis,
  org.eclipse.core.runtime;version="3.5.0",
  org.eclipse.jdt.core,
  org.eclipse.jdt.core.dom,
+ org.eclipse.jdt.internal.corext.refactoring.util,
  org.eclipse.jdt.testplugin,
  org.eclipse.jdt.ui.tests.refactoring
 Require-Bundle: org.junit;bundle-version="4.12.0",

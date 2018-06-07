@@ -16,6 +16,8 @@ import edu.cuny.hunter.log.core.utils.Util;
 public class LogAnalyzer extends ASTVisitor {
 
 	private Set<LogInvocation> logInvocationSet = new HashSet<>();
+	
+	private static boolean test;
 
 	public void analyze() {
 
@@ -34,6 +36,10 @@ public class LogAnalyzer extends ASTVisitor {
 	public Set<LogInvocation> getLogInvocationSet() {
 		return this.logInvocationSet;
 	}
+	
+	public void setTest(boolean test) {
+		this.test = test;
+	}
 
 	/**
 	 * This method is used to find a set of logging objects
@@ -41,7 +47,7 @@ public class LogAnalyzer extends ASTVisitor {
 	@Override
 	public boolean visit(MethodInvocation node) {
 		
-		Level logLevel = Util.isLogExpression(node);
+		Level logLevel = Util.isLogExpression(node, test);
 		
 		if (logLevel != null) {
 			LogInvocation logInvocation = new LogInvocation(node, logLevel);
