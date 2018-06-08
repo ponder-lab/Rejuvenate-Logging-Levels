@@ -4,7 +4,8 @@ Bundle-Name: Core
 Bundle-SymbolicName: edu.cuny.hunter.log.core;singleton:=true
 Bundle-Version: 1.0.0.qualifier
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
-Import-Package: org.eclipse.core.runtime;version="3.5.0",
+Import-Package: edu.cuny.citytech.refactoring.common.core.refactorings,
+ org.eclipse.core.runtime;version="3.5.0",
  org.eclipse.jdt.core,
  org.eclipse.jdt.core.dom,
  org.eclipse.jdt.core.refactoring,
