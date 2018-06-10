@@ -4,6 +4,7 @@ import java.util.Map;
 
 import org.eclipse.jdt.core.refactoring.descriptors.JavaRefactoringDescriptor;
 
+@SuppressWarnings("unchecked")
 public class LogDescriptor extends JavaRefactoringDescriptor {
 
 	public static final String REFACTORING_ID = "edu.cuny.hunter.logging.evolution"; //$NON-NLS-1$
