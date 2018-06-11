@@ -4,19 +4,22 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.dom.ASTVisitor;
 import org.eclipse.jdt.core.dom.MethodInvocation;
 
+import edu.cuny.hunter.log.core.utils.LoggerNames;
 import edu.cuny.hunter.log.core.utils.Util;
 
-@SuppressWarnings("restriction")
 public class LogAnalyzer extends ASTVisitor {
 
+	private static final Logger LOGGER = Logger.getLogger(LoggerNames.LOGGER_NAME);
+
 	private Set<LogInvocation> logInvocationSet = new HashSet<>();
-	
+
 	private static boolean test;
 
 	public void analyze() {
@@ -36,7 +39,7 @@ public class LogAnalyzer extends ASTVisitor {
 	public Set<LogInvocation> getLogInvocationSet() {
 		return this.logInvocationSet;
 	}
-	
+
 	public void setTest(boolean test) {
 		this.test = test;
 	}
@@ -46,15 +49,25 @@ public class LogAnalyzer extends ASTVisitor {
 	 */
 	@Override
 	public boolean visit(MethodInvocation node) {
-		
-		Level logLevel = Util.isLogExpression(node, test);
-		
-		if (logLevel != null) {
-			LogInvocation logInvocation = new LogInvocation(node, logLevel);
-			this.getLogInvocationSet().add(logInvocation);
+
+		Level logLevel = null;
+
+		try {
+			logLevel = Util.isLogExpression(node, test);
+		} catch (IllegalStateException e) {
+			LOGGER.warning("Need to process LogRecord!");
+			createLogInvocation(node, null);
 		}
-		
+
+		if (logLevel != null)
+			createLogInvocation(node, logLevel);
+
 		return super.visit(node);
+	}
+
+	private void createLogInvocation(MethodInvocation node, Level logLevel) {
+		LogInvocation logInvocation = new LogInvocation(node, logLevel);
+		this.getLogInvocationSet().add(logInvocation);
 	}
 
 }
