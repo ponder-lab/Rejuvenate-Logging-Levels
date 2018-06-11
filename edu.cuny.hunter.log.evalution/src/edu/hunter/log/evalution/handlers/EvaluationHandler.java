@@ -26,6 +26,7 @@ import org.eclipse.ui.handlers.HandlerUtil;
 import edu.cuny.hunter.log.core.analysis.LogInvocation;
 import edu.cuny.hunter.log.core.refactorings.LogRefactoringProcessor;
 import edu.cuny.hunter.log.core.utils.LoggerNames;
+import edu.hunter.log.evalution.utils.Util;
 
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.ltk.core.refactoring.participants.ProcessorBasedRefactoring;
@@ -68,8 +69,8 @@ public class EvaluationHandler extends AbstractHandler {
 							.getCodeGenerationSettings(javaProjectList.get(0));
 
 					try {
-						CSVPrinter resultPrinter = createCSVPrinter("result.csv",
-								new String[] { "subject raw", "log expression", "start pos", "logging level", "type FQN" });
+						CSVPrinter resultPrinter = createCSVPrinter("result.csv", new String[] { "subject raw",
+								"log expression", "start pos", "logging level", "type FQN", "enclosing method" });
 
 						// for each selected java project
 						for (IJavaProject project : javaProjectList) {
@@ -88,7 +89,8 @@ public class EvaluationHandler extends AbstractHandler {
 								LogInvocation logInvocation = logInvocationIterator.next();
 								resultPrinter.printRecord(project.getElementName(), logInvocation.getExpression(),
 										logInvocation.getStartPosition(), logInvocation.getLogLevel(),
-										logInvocation.getEnclosingType().getFullyQualifiedName());
+										logInvocation.getEnclosingType().getFullyQualifiedName(),
+										Util.getMethodIdentifier(logInvocation.getEnclosingEclipseMethod()));
 							}
 						}
 
