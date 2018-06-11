@@ -11,6 +11,7 @@ import org.eclipse.jdt.core.dom.IMethodBinding;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.MethodInvocation;
 import org.eclipse.jdt.internal.corext.dom.ASTNodes;
+import org.eclipse.mylyn.internal.context.core.DegreeOfInterest;
 
 import edu.cuny.hunter.log.core.utils.LoggerNames;
 
@@ -19,6 +20,8 @@ public class LogInvocation {
 
 	private final MethodInvocation expression;
 	private final Level logLevel;
+	
+	private static DegreeOfInterest degreeOfInterest;
 
 	private static final Logger LOGGER = Logger.getLogger(LoggerNames.LOGGER_NAME);
 
