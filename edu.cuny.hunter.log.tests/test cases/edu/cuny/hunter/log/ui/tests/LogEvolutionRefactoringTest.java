@@ -26,6 +26,7 @@ import org.eclipse.jdt.ui.tests.refactoring.Java18Setup;
 import org.eclipse.jdt.ui.tests.refactoring.RefactoringTest;
 import edu.cuny.hunter.log.core.analysis.LogAnalyzer;
 import edu.cuny.hunter.log.core.analysis.LogInvocation;
+import edu.cuny.hunter.log.core.analysis.PreconditionFailure;
 
 @SuppressWarnings("restriction")
 public class LogEvolutionRefactoringTest extends RefactoringTest {
@@ -124,11 +125,17 @@ public class LogEvolutionRefactoringTest extends RefactoringTest {
 	}
 
 	public void testFindLocations() throws Exception {
-		helper(new LogInvocationExpectedResult("LOGGER.info(\"Logger Name: \" + LOGGER.getName())", Level.INFO),
-				new LogInvocationExpectedResult("LOGGER.config(\"index is set to \" + index)", Level.CONFIG),
-				new LogInvocationExpectedResult("LOGGER.log(Level.SEVERE,\"Exception occur\",ex)", Level.SEVERE),
+		helper(new LogInvocationExpectedResult("LOGGER.info(\"Logger Name: \" + LOGGER.getName())", Level.INFO, null),
+				new LogInvocationExpectedResult("LOGGER.config(\"index is set to \" + index)", Level.CONFIG, null),
+				new LogInvocationExpectedResult("LOGGER.log(Level.SEVERE,\"Exception occur\",ex)", Level.SEVERE, null),
 				new LogInvocationExpectedResult("LOGGER.warning(\"Can cause ArrayIndexOutOfBoundsException\")",
-						Level.WARNING));
+						Level.WARNING, null));
+	}
+
+	public void testArgumentLogRecord() throws Exception {
+		helper(new LogInvocationExpectedResult("Logger.getGlobal().info(\"hi\")", Level.INFO, null),
+				new LogInvocationExpectedResult("Logger.getGlobal().log(record)", null,
+						PreconditionFailure.CURRENTLY_NOT_HANDLED));
 	}
 
 	protected void tearDown() throws Exception {
