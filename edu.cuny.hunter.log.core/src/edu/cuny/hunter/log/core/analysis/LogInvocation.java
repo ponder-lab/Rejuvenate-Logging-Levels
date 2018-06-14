@@ -1,5 +1,6 @@
 package edu.cuny.hunter.log.core.analysis;
 
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -18,6 +19,15 @@ import org.eclipse.ltk.core.refactoring.RefactoringStatus;
 import org.eclipse.ltk.core.refactoring.RefactoringStatusContext;
 import org.osgi.framework.FrameworkUtil;
 
+import org.eclipse.mylyn.context.core.ContextCore;
+import org.eclipse.mylyn.context.core.IInteractionContext;
+import org.eclipse.mylyn.context.core.IInteractionContextManager;
+import org.eclipse.mylyn.internal.context.core.DegreeOfInterest;
+import org.eclipse.mylyn.internal.context.core.InteractionContext;
+import org.eclipse.mylyn.internal.context.core.InteractionContextScaling;
+import org.eclipse.mylyn.internal.tasks.core.TaskList;
+import org.eclipse.mylyn.internal.tasks.ui.TasksUiPlugin;
+import org.eclipse.mylyn.monitor.core.InteractionEvent;
 import edu.cuny.hunter.log.core.utils.LoggerNames;
 
 @SuppressWarnings("restriction")
@@ -29,6 +39,7 @@ public class LogInvocation {
 	private RefactoringStatus status = new RefactoringStatus();
 
 	private static final String PLUGIN_ID = FrameworkUtil.getBundle(LogInvocation.class).getSymbolicName();
+	private static DegreeOfInterest degreeOfInterest;
 
 	private static final Logger LOGGER = Logger.getLogger(LoggerNames.LOGGER_NAME);
 
@@ -40,6 +51,9 @@ public class LogInvocation {
 			this.addStatusEntry(PreconditionFailure.CURRENTLY_NOT_HANDLED,
 					this.getExpression() + "has argument LogRecord which cannot be handled yet.");
 		}
+		
+		this.degreeOfInterest = getDegreeOfInterest();
+
 	}
 
 	void addStatusEntry(PreconditionFailure failure, String message) {
@@ -52,6 +66,35 @@ public class LogInvocation {
 
 	public RefactoringStatus getStatus() {
 		return status;
+	}
+
+	public TaskList getTaskList() {
+		return TasksUiPlugin.getTaskList();
+	}
+
+	/**
+	 * Get DOI
+	 */
+	public static DegreeOfInterest getDegreeOfInterest() {
+
+		final InteractionContext mockContext = new InteractionContext("doitest", new InteractionContextScaling());
+		DegreeOfInterest doi = new DegreeOfInterest(mockContext, ContextCore.getCommonContextScaling());
+		List<InteractionEvent> eventList = getEvents();
+		eventList.forEach(e -> {
+			doi.addEvent(e);
+		});
+
+		return doi;
+	}
+
+	/**
+	 * Get a list of interaction events
+	 */
+	public static List<InteractionEvent> getEvents() {
+		IInteractionContextManager iContextManager = org.eclipse.mylyn.context.core.ContextCore.getContextManager();
+		IInteractionContext iContext = iContextManager.getActiveContext();
+		List<InteractionEvent> eventsBeforeStrip = iContext.getInteractionHistory();
+		return eventsBeforeStrip;
 	}
 
 	public MethodInvocation getExpression() {
