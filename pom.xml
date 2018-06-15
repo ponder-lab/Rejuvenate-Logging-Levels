@@ -33,9 +33,12 @@
       <layout>p2</layout>
       <url>http://download.eclipse.org/eclipse/updates/4.7</url>
     </repository>
+	<repository>
+      <id>mylyn</id>
+      <layout>p2</layout>
+      <url>http://download.eclipse.org/mylyn/releases/3.23</url>
+    </repository>
   </repositories>
-
-    
   
   <build>
     <plugins>
