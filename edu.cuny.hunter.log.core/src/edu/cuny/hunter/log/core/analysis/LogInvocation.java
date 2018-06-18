@@ -75,6 +75,8 @@ public class LogInvocation {
 		IMethod enclosingMethod = this.getEnclosingEclipseMethod();
 		IInteractionElement interactionElement = ContextCore.getContextManager()
 				.getElement(enclosingMethod.getHandleIdentifier());
+		if (interactionElement == null)
+			return null;
 		return interactionElement.getInterest();
 	}
 
