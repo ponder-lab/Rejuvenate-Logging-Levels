@@ -1,6 +1,5 @@
 package edu.cuny.hunter.log.core.analysis;
 
-import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -20,14 +19,10 @@ import org.eclipse.ltk.core.refactoring.RefactoringStatusContext;
 import org.osgi.framework.FrameworkUtil;
 
 import org.eclipse.mylyn.context.core.ContextCore;
-import org.eclipse.mylyn.context.core.IInteractionContext;
-import org.eclipse.mylyn.context.core.IInteractionContextManager;
-import org.eclipse.mylyn.internal.context.core.DegreeOfInterest;
-import org.eclipse.mylyn.internal.context.core.InteractionContext;
-import org.eclipse.mylyn.internal.context.core.InteractionContextScaling;
+import org.eclipse.mylyn.context.core.IDegreeOfInterest;
+import org.eclipse.mylyn.context.core.IInteractionElement;
 import org.eclipse.mylyn.internal.tasks.core.TaskList;
 import org.eclipse.mylyn.internal.tasks.ui.TasksUiPlugin;
-import org.eclipse.mylyn.monitor.core.InteractionEvent;
 import edu.cuny.hunter.log.core.utils.LoggerNames;
 
 @SuppressWarnings("restriction")
@@ -39,7 +34,8 @@ public class LogInvocation {
 	private RefactoringStatus status = new RefactoringStatus();
 
 	private static final String PLUGIN_ID = FrameworkUtil.getBundle(LogInvocation.class).getSymbolicName();
-	private static DegreeOfInterest degreeOfInterest;
+
+	private static IDegreeOfInterest degreeOfInterest;
 
 	private static final Logger LOGGER = Logger.getLogger(LoggerNames.LOGGER_NAME);
 
@@ -75,61 +71,11 @@ public class LogInvocation {
 	/**
 	 * Get DOI
 	 */
-	public DegreeOfInterest getDegreeOfInterest() {
-
-		final InteractionContext mockContext = new InteractionContext("doitest", new InteractionContextScaling());
-		DegreeOfInterest doi = new DegreeOfInterest(mockContext, ContextCore.getCommonContextScaling());
-		List<InteractionEvent> eventList = getEvents();
-		eventList.forEach(e -> {
-			if (relatedToEncolsingMethod(e)) {
-				doi.addEvent(e);
-			}
-		});
-
-		return doi;
-	}
-
-	/**
-	 * If handler includes '~', the interaction event is related to a method. e.g.,
-	 * "=Test/src<p{A.java[A~mm" Then, I just need to check whether mm is the
-	 * enclosing method name.
-	 */
-	private boolean relatedToEncolsingMethod(InteractionEvent e) {
-		String handle = e.getStructureHandle();
-
-		// related to a method
-		int index = handle.indexOf('~');
-
-		// no method related to the event
-		if (index == -1)
-			return false;
-
-		String enclosingMethod = this.getEnclosingMethodDeclaration().getName().toString();
-
-		int endIndex = index + 1 + enclosingMethod.length();
-
-		if (endIndex > handle.length())
-			return false;
-		
-		String eventMethod = handle.substring(index + 1, endIndex);
-
-		if (!eventMethod.equals(enclosingMethod))
-			return false;
-
-		if (endIndex == handle.length() || handle.charAt(endIndex) == '~')
-			return true;
-
-		return false;
-	}
-
-	/**
-	 * Get a list of interaction events
-	 */
-	public static List<InteractionEvent> getEvents() {
-		IInteractionContextManager iContextManager = org.eclipse.mylyn.context.core.ContextCore.getContextManager();
-		IInteractionContext iContext = iContextManager.getActiveContext();
-		List<InteractionEvent> eventsBeforeStrip = iContext.getInteractionHistory();
-		return eventsBeforeStrip;
+	public IDegreeOfInterest getDegreeOfInterest() {
+		IMethod enclosingMethod = this.getEnclosingEclipseMethod();
+		IInteractionElement interactionElement = ContextCore.getContextManager()
+				.getElement(enclosingMethod.getHandleIdentifier());
+		return interactionElement.getInterest();
 	}
 
 	public MethodInvocation getExpression() {
