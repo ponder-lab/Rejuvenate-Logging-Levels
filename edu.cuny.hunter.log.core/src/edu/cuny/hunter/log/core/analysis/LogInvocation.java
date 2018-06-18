@@ -104,11 +104,6 @@ public class LogInvocation {
 		if (index == -1)
 			return false;
 
-		// the logging expression is assigned to a field
-		if (this.getEnclosingMethodDeclaration() == null) {
-			throw new IllegalArgumentException("Could not find enclosing method.");
-		}
-
 		String enclosingMethod = this.getEnclosingMethodDeclaration().getName().toString();
 
 		int endIndex = index + 1 + enclosingMethod.length();
