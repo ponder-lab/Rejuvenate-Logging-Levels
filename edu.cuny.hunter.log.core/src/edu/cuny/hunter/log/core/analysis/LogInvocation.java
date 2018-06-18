@@ -51,7 +51,7 @@ public class LogInvocation {
 			this.addStatusEntry(PreconditionFailure.CURRENTLY_NOT_HANDLED,
 					this.getExpression() + "has argument LogRecord which cannot be handled yet.");
 		}
-		
+
 		this.degreeOfInterest = getDegreeOfInterest();
 
 	}
@@ -75,16 +75,56 @@ public class LogInvocation {
 	/**
 	 * Get DOI
 	 */
-	public static DegreeOfInterest getDegreeOfInterest() {
+	public DegreeOfInterest getDegreeOfInterest() {
 
 		final InteractionContext mockContext = new InteractionContext("doitest", new InteractionContextScaling());
 		DegreeOfInterest doi = new DegreeOfInterest(mockContext, ContextCore.getCommonContextScaling());
 		List<InteractionEvent> eventList = getEvents();
 		eventList.forEach(e -> {
-			doi.addEvent(e);
+			if (relatedToEncolsingMethod(e)) {
+				doi.addEvent(e);
+			}
 		});
 
 		return doi;
+	}
+
+	/**
+	 * If handler includes '~', the interaction event is related to a method. e.g.,
+	 * "=Test/src<p{A.java[A~mm" Then, I just need to check whether mm is the
+	 * enclosing method name.
+	 */
+	private boolean relatedToEncolsingMethod(InteractionEvent e) {
+		String handle = e.getStructureHandle();
+
+		// related to a method
+		int index = handle.indexOf('~');
+
+		// no method related to the event
+		if (index == -1)
+			return false;
+
+		// the logging expression is assigned to a field
+		if (this.getEnclosingMethodDeclaration() == null) {
+			throw new IllegalArgumentException("Could not find enclosing method.");
+		}
+
+		String enclosingMethod = this.getEnclosingMethodDeclaration().getName().toString();
+
+		int endIndex = index + 1 + enclosingMethod.length();
+
+		if (endIndex > handle.length())
+			return false;
+		
+		String eventMethod = handle.substring(index + 1, endIndex);
+
+		if (!eventMethod.equals(enclosingMethod))
+			return false;
+
+		if (endIndex == handle.length() || handle.charAt(endIndex) == '~')
+			return true;
+
+		return false;
 	}
 
 	/**
