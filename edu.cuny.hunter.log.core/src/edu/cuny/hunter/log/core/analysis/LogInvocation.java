@@ -124,8 +124,9 @@ public class LogInvocation {
 	}
 
 	public void logInfo() {
+		IDegreeOfInterest degreeOfInterest = this.getDegreeOfInterest();
 		LOGGER.info("Find a log expression." + this.getExpression().toString() + " The logging level: " + getLogLevel()
-				+ ". ");
+				+ ". Degree of Interest " + (degreeOfInterest == null ? "N/A" : degreeOfInterest.getValue()) + ". ");
 	}
 
 }
