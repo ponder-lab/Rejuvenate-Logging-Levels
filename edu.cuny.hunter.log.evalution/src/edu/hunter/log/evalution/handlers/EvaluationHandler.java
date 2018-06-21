@@ -69,8 +69,9 @@ public class EvaluationHandler extends AbstractHandler {
 							.getCodeGenerationSettings(javaProjectList.get(0));
 
 					try {
-						CSVPrinter resultPrinter = createCSVPrinter("result.csv", new String[] { "subject raw",
-								"log expression", "start pos", "logging level", "type FQN", "enclosing method" });
+						CSVPrinter resultPrinter = createCSVPrinter("result.csv",
+								new String[] { "subject raw", "log expression", "start pos", "logging level",
+										"type FQN", "enclosing method", "DOI" });
 
 						// for each selected java project
 						for (IJavaProject project : javaProjectList) {
@@ -90,7 +91,8 @@ public class EvaluationHandler extends AbstractHandler {
 								resultPrinter.printRecord(project.getElementName(), logInvocation.getExpression(),
 										logInvocation.getStartPosition(), logInvocation.getLogLevel(),
 										logInvocation.getEnclosingType().getFullyQualifiedName(),
-										Util.getMethodIdentifier(logInvocation.getEnclosingEclipseMethod()));
+										Util.getMethodIdentifier(logInvocation.getEnclosingEclipseMethod()),
+										logInvocation.getDegreeOfInterestValue());
 							}
 						}
 
