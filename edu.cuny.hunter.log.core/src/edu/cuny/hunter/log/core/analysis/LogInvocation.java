@@ -35,7 +35,9 @@ public class LogInvocation {
 
 	private static final String PLUGIN_ID = FrameworkUtil.getBundle(LogInvocation.class).getSymbolicName();
 
-	private static IDegreeOfInterest degreeOfInterest;
+	private IDegreeOfInterest degreeOfInterest;
+
+	private float degreeOfInterestValue;
 
 	private static final Logger LOGGER = Logger.getLogger(LoggerNames.LOGGER_NAME);
 
@@ -48,8 +50,16 @@ public class LogInvocation {
 					this.getExpression() + "has argument LogRecord which cannot be handled yet.");
 		}
 
-		this.degreeOfInterest = getDegreeOfInterest();
+		degreeOfInterest = getDegreeOfInterest();
 
+		if (degreeOfInterest != null) {
+			degreeOfInterestValue = degreeOfInterest.getValue();
+		}
+
+	}
+
+	public float getDegreeOfInterestValue() {
+		return degreeOfInterestValue;
 	}
 
 	void addStatusEntry(PreconditionFailure failure, String message) {
