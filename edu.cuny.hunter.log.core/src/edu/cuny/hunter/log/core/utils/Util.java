@@ -53,8 +53,9 @@ public final class Util {
 		return true;
 	}
 
+	// if b is true, then it is junit test
 	public static Level isLogExpression(MethodInvocation node, boolean b) {
-		if (b) {
+		if (!b) {
 			IMethodBinding methodBinding = node.resolveMethodBinding();
 
 			if (methodBinding == null

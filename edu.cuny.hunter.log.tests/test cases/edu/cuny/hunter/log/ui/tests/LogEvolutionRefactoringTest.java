@@ -99,7 +99,7 @@ public class LogEvolutionRefactoringTest extends RefactoringTest {
 
 		ASTNode ast = parser.createAST(new NullProgressMonitor());
 
-		LogAnalyzer logAnalyzer = new LogAnalyzer();
+		LogAnalyzer logAnalyzer = new LogAnalyzer(true);
 		ast.accept(logAnalyzer);
 
 		logAnalyzer.analyze();
