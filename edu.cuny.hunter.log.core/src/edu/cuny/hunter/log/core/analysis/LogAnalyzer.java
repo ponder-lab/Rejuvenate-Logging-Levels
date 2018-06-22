@@ -62,7 +62,7 @@ public class LogAnalyzer extends ASTVisitor {
 		try {
 			logLevel = Util.isLogExpression(node, test);
 		} catch (IllegalStateException e) {
-			LOGGER.warning("Need to process LogRecord!");
+			LOGGER.warning("Need to process variable or LogRecord!");
 			createLogInvocation(node, null);
 		}
 
