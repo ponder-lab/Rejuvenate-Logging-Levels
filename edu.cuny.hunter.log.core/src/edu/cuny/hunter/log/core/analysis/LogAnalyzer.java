@@ -20,7 +20,14 @@ public class LogAnalyzer extends ASTVisitor {
 
 	private Set<LogInvocation> logInvocationSet = new HashSet<>();
 
-	private static boolean test;
+	private boolean test;
+
+	public LogAnalyzer(boolean b) {
+		this.test = b;
+	}
+
+	public LogAnalyzer() {
+	}
 
 	public void analyze() {
 
