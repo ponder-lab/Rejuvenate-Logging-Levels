@@ -40,8 +40,6 @@ public class LogInvocation {
 	private float degreeOfInterestValue;
 
 	private static final Logger LOGGER = Logger.getLogger(LoggerNames.LOGGER_NAME);
-	
-	private Action action;
 
 	public LogInvocation(MethodInvocation logExpression, Level loggingLevel) {
 		this.expression = logExpression;
@@ -57,13 +55,7 @@ public class LogInvocation {
 		if (degreeOfInterest != null) {
 			degreeOfInterestValue = degreeOfInterest.getValue();
 		}
-		
-		setAction(degreeOfInterestValue);
 
-	}
-
-	private void setAction(float degreeOfInterestValue2) {
-		// TODO set action
 	}
 
 	public float getDegreeOfInterestValue() {
@@ -145,10 +137,6 @@ public class LogInvocation {
 		IDegreeOfInterest degreeOfInterest = this.getDegreeOfInterest();
 		LOGGER.info("Find a log expression." + this.getExpression().toString() + " The logging level: " + getLogLevel()
 				+ ". Degree of Interest " + (degreeOfInterest == null ? "N/A" : degreeOfInterest.getValue()) + ". ");
-	}
-	
-	public Action getAction() {
-		return this.action;
 	}
 
 }
