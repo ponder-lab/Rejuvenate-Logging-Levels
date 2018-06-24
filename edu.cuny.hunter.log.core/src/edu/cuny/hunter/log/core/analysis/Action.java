@@ -1,0 +1,12 @@
+package edu.cuny.hunter.log.core.analysis;
+
+public enum Action {
+	NONE,
+	CONVERT_TO_SEVERE,
+	CONVERT_TO_WARNING,
+	CONVERT_TO_INFO,
+	CONVERT_TO_CONFIG,
+	CONVERT_TO_FINE,
+	CONVERT_TO_FINER,
+	CONVERT_TO_FINEST
+}
