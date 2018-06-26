@@ -13,5 +13,5 @@ Import-Package: edu.cuny.hunter.log.core.analysis,
  org.eclipse.jdt.testplugin,
  org.eclipse.jdt.ui.tests.refactoring
 Require-Bundle: org.junit;bundle-version="4.12.0",
- edu.cuny.citytech.refactoring.common.core;bundle-version="1.1.0",
- edu.cuny.citytech.refactoring.common.tests;bundle-version="1.6.0"
+ edu.cuny.citytech.refactoring.common.core;bundle-version="1.2.0",
+ edu.cuny.citytech.refactoring.common.tests;bundle-version="1.7.0"
