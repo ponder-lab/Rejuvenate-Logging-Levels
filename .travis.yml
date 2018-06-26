@@ -10,4 +10,4 @@ before_install:
   - "export DISPLAY=:99.0"
   - "sh -e /etc/init.d/xvfb start"
 notifications:
-  slack: cunyponder:3OfGEYTotEt5lUkewK49szDE
+  slack: cunyponder:XFDsp7tedVx88UWj28dfzXFi
