@@ -1,6 +1,7 @@
 package edu.cuny.hunter.log.core.analysis;
 
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
@@ -35,12 +36,26 @@ public class LogAnalyzer extends ASTVisitor {
 		Map<IJavaProject, Set<LogInvocation>> projectToLoggings = this.getLogInvocationSet().stream()
 				.collect(Collectors.groupingBy(LogInvocation::getExpressionJavaProject, Collectors.toSet()));
 
+		HashSet<Float> degreeOfInterests = new HashSet<>();
 		this.getLogInvocationSet().forEach(e -> {
 			e.logInfo();
+			degreeOfInterests.add(e.getDegreeOfInterestValue());
 		});
 
 		// TODO: analyze logging here.
 
+	}
+	
+	/**
+	 * Build a list of boundary. The DOI values could be divided into 7 groups by
+	 * this boundary. 7 groups are corresponding to 7 logging levels
+	 * 
+	 * @param degreeOfInterests
+	 * @return a list of boundary
+	 */
+	private LinkedList<Float> buildBoundary(HashSet<Float> degreeOfInterests) {
+		//TODO: implementation
+		return null;
 	}
 
 	public Set<LogInvocation> getLogInvocationSet() {
