@@ -7,11 +7,11 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.dom.ASTVisitor;
 import org.eclipse.jdt.core.dom.MethodInvocation;
-
 import edu.cuny.hunter.log.core.utils.LoggerNames;
 import edu.cuny.hunter.log.core.utils.Util;
 
@@ -20,6 +20,8 @@ public class LogAnalyzer extends ASTVisitor {
 	private static final Logger LOGGER = Logger.getLogger(LoggerNames.LOGGER_NAME);
 
 	private Set<LogInvocation> logInvocationSet = new HashSet<>();
+
+	private static LinkedList<Float> boundary;
 
 	private boolean test;
 
@@ -37,15 +39,60 @@ public class LogAnalyzer extends ASTVisitor {
 				.collect(Collectors.groupingBy(LogInvocation::getExpressionJavaProject, Collectors.toSet()));
 
 		HashSet<Float> degreeOfInterests = new HashSet<>();
-		this.getLogInvocationSet().forEach(e -> {
-			e.logInfo();
-			degreeOfInterests.add(e.getDegreeOfInterestValue());
-		});
+		for (LogInvocation logInvocation : this.logInvocationSet) {
+			logInvocation.logInfo();
+			degreeOfInterests.add(logInvocation.getDegreeOfInterestValue());
+		}
 
-		// TODO: analyze logging here.
+		// build boundary
+		boundary = buildBoundary(degreeOfInterests);
+		// check whether action is needed
+		for (LogInvocation logInvocation : this.logInvocationSet)
+			if (this.doAction(logInvocation))
+				// TODO: add more log messages here
+				LOGGER.info("Refactoring happens!");
 
 	}
-	
+
+	private boolean doAction(LogInvocation logInvocation) {
+		Level currentLogLevel = logInvocation.getLogLevel();
+		Level suggestedLogLevel = getSuggestedLogLevel(boundary, logInvocation.getDegreeOfInterestValue());
+
+		// TODO: do action here
+		if (currentLogLevel == suggestedLogLevel)
+			return false;
+		if (suggestedLogLevel == null || currentLogLevel == null)
+			return false;
+		return true;
+	}
+
+	/**
+	 * Get the suggested log level based on boundary.
+	 * 
+	 * @param boundary
+	 * @param DOI
+	 * @return the suggested log level
+	 */
+	private static Level getSuggestedLogLevel(LinkedList<Float> boundary, float DOI) {
+		if (boundary == null)
+			return null;
+		if (DOI >= boundary.get(0) && DOI < boundary.get(1))
+			return Level.FINEST;
+		if (DOI < boundary.get(2))
+			return Level.FINER;
+		if (DOI < boundary.get(3))
+			return Level.FINE;
+		if (DOI < boundary.get(4))
+			return Level.CONFIG;
+		if (DOI < boundary.get(5))
+			return Level.INFO;
+		if (DOI < boundary.get(6))
+			return Level.WARNING;
+		if (DOI <= boundary.get(7))
+			return Level.SEVERE;
+		return null;
+	}
+
 	/**
 	 * Build a list of boundary. The DOI values could be divided into 7 groups by
 	 * this boundary. 7 groups are corresponding to 7 logging levels
@@ -54,8 +101,36 @@ public class LogAnalyzer extends ASTVisitor {
 	 * @return a list of boundary
 	 */
 	private LinkedList<Float> buildBoundary(HashSet<Float> degreeOfInterests) {
-		//TODO: implementation
-		return null;
+		float min = getMinDOI(degreeOfInterests);
+		float max = getMaxDOI(degreeOfInterests);
+		LinkedList<Float> boundary = new LinkedList<>();
+		if (min <= max) {
+			float interval = (max - min) / 7;
+			IntStream.range(0, 8).forEach(i -> boundary.add(min + i * interval));
+			return boundary;
+		} else
+			return null;
+	}
+
+	/**
+	 * Get the minimum of DOIs
+	 * 
+	 * @param degreeOfInterests
+	 */
+	private float getMinDOI(HashSet<Float> degreeOfInterests) {
+		float min = Float.MAX_VALUE;
+		for (float d : degreeOfInterests)
+			if (d < min)
+				min = d;
+		return min;
+	}
+
+	private float getMaxDOI(HashSet<Float> degreeOfInterests) {
+		float max = Float.MIN_VALUE;
+		for (float d : degreeOfInterests)
+			if (d > max)
+				max = d;
+		return max;
 	}
 
 	public Set<LogInvocation> getLogInvocationSet() {
