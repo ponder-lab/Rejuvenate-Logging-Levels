@@ -53,8 +53,9 @@ public final class Util {
 		return true;
 	}
 
+	// if b is true, then it is junit test
 	public static Level isLogExpression(MethodInvocation node, boolean b) {
-		if (b) {
+		if (!b) {
 			IMethodBinding methodBinding = node.resolveMethodBinding();
 
 			if (methodBinding == null
@@ -101,8 +102,9 @@ public final class Util {
 		// They should not be null
 		if (methodName.equals("log")) {
 			Level loggingLevel = getLogLevel(firstArgument);
-			if (loggingLevel == null)
-				System.out.println("Need to process LogRecord.");
+			if (loggingLevel == null) {
+				throw new IllegalStateException("The log level cannot be detected.");
+			}
 			return loggingLevel;
 		}
 		if (methodName.equals("logp")) {
@@ -121,7 +123,7 @@ public final class Util {
 	 * Return a corresponding logging level of a string
 	 * 
 	 * @param argument
-	 * @return
+	 * @return logging level
 	 */
 	public static Level getLogLevel(String argument) {
 		if (argument.equals("Level.SEVERE"))

@@ -30,3 +30,7 @@ Export-Package: edu.cuny.hunter.log.core.analysis,
  edu.cuny.hunter.log.core.messages,
  edu.cuny.hunter.log.core.refactorings,
  edu.cuny.hunter.log.core.utils
+Require-Bundle: org.eclipse.mylyn.context.core;bundle-version="3.23.2",
+ org.eclipse.mylyn.monitor.core;bundle-version="3.23.2",
+ org.eclipse.mylyn.tasks.ui;bundle-version="3.23.2",
+ org.eclipse.mylyn.tasks.core;bundle-version="3.23.2"
