@@ -11,10 +11,10 @@ Require-Bundle: org.eclipse.ui,
  edu.cuny.hunter.log.core;bundle-version="1.0.0",
  org.eclipse.equinox.app,
  org.eclipse.ltk.ui.refactoring,
- org.eclipse.jdt.ui
+ org.eclipse.jdt.ui,
+ edu.cuny.citytech.refactoring.common.ui;bundle-version="1.2.0"
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
-Import-Package: edu.cuny.citytech.refactoring.common.core,
- edu.cuny.hunter.log.ui.wizards,
+Import-Package: edu.cuny.hunter.log.ui.wizards,
  org.eclipse.jdt.internal.core.manipulation,
  org.eclipse.jdt.internal.ui.util
 Export-Package: edu.cuny.hunter.log.ui.messages,

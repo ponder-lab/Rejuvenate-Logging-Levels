@@ -23,6 +23,7 @@ import org.eclipse.jdt.internal.corext.codemanipulation.CodeGenerationSettings;
 import org.eclipse.jdt.internal.ui.preferences.JavaPreferencesSettings;
 import org.eclipse.jdt.internal.ui.util.SelectionUtil;
 import org.eclipse.ui.handlers.HandlerUtil;
+import edu.cuny.citytech.refactoring.common.core.RefactoringProcessor;
 import edu.cuny.hunter.log.core.analysis.LogInvocation;
 import edu.cuny.hunter.log.core.refactorings.LogRefactoringProcessor;
 import edu.cuny.hunter.log.core.utils.LoggerNames;
@@ -69,6 +70,7 @@ public class EvaluationHandler extends AbstractHandler {
 							.getCodeGenerationSettings(javaProjectList.get(0));
 
 					try {
+            
 						CSVPrinter resultPrinter = createCSVPrinter("result.csv",
 								new String[] { "subject raw", "log expression", "start pos", "logging level",
 										"type FQN", "enclosing method", "DOI" });
@@ -82,7 +84,7 @@ public class EvaluationHandler extends AbstractHandler {
 							LogRefactoringProcessor logRefactoringProcessor = new LogRefactoringProcessor(
 									new IJavaProject[] { project }, settings, monitor);
 
-							new ProcessorBasedRefactoring(logRefactoringProcessor)
+							new ProcessorBasedRefactoring((RefactoringProcessor) logRefactoringProcessor)
 									.checkAllConditions(new NullProgressMonitor());
 
 							Iterator<LogInvocation> logInvocationIterator = logRefactoringProcessor

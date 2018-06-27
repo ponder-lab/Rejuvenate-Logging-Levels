@@ -7,7 +7,7 @@ import org.eclipse.osgi.util.NLS;
  *
  */
 public class Messages extends NLS {
-	private static final String BUNDLE_NAME = "edu.cuny.hunter.logging.ui.messages.messages"; //$NON-NLS-1$
+	private static final String BUNDLE_NAME = "edu.cuny.hunter.log.ui.messages.Messages"; //$NON-NLS-1$
 	public static String Name;
 	public static String NoProjects;
 
