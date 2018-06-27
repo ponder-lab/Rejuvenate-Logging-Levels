@@ -121,5 +121,9 @@ public class LogEvolutionRefactoringTest extends RefactoringTest {
 	protected void tearDown() throws Exception {
 		super.tearDown();
 	}
+	
+	@Override
+	public void testPlainMethod() throws Exception {
+	}
 
 }
