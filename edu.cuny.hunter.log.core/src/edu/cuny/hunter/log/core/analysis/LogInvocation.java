@@ -41,7 +41,7 @@ public class LogInvocation {
 
 	private static final Logger LOGGER = Logger.getLogger(LoggerNames.LOGGER_NAME);
 
-	private Action action;
+	private Action action = Action.NONE;
 
 	public LogInvocation(MethodInvocation logExpression, Level loggingLevel) {
 		this.expression = logExpression;
