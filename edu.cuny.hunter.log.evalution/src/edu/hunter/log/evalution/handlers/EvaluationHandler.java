@@ -76,7 +76,7 @@ public class EvaluationHandler extends AbstractHandler {
 										"type FQN", "enclosing method", "DOI" });
 						CSVPrinter actionPrinter = createCSVPrinter("log_actions.csv",
 								new String[] { "subject raw", "log expression", "start pos", "logging level",
-										"type FQN", "enclosing method", "DOI", "action" });
+										"type FQN", "enclosing method", "action" });
 
 						// for each selected java project
 						for (IJavaProject project : javaProjectList) {
