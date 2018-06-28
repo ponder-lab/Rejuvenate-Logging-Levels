@@ -49,8 +49,8 @@ public class LogAnalyzer extends ASTVisitor {
 		// check whether action is needed
 		for (LogInvocation logInvocation : this.logInvocationSet)
 			if (this.doAction(logInvocation))
-				// TODO: add more log messages here
-				LOGGER.info("Refactoring happens!");
+				LOGGER.info("Do action: " + logInvocation.getAction() + "! The changed log expression is "
+						+ logInvocation.getExpression());
 
 	}
 
@@ -58,11 +58,25 @@ public class LogAnalyzer extends ASTVisitor {
 		Level currentLogLevel = logInvocation.getLogLevel();
 		Level suggestedLogLevel = getSuggestedLogLevel(boundary, logInvocation.getDegreeOfInterestValue());
 
-		// TODO: do action here
 		if (currentLogLevel == suggestedLogLevel)
 			return false;
 		if (suggestedLogLevel == null || currentLogLevel == null)
 			return false;
+
+		if (suggestedLogLevel == Level.FINEST)
+			logInvocation.setAction(Action.CONVERT_TO_FINEST);
+		if (suggestedLogLevel == Level.FINER)
+			logInvocation.setAction(Action.CONVERT_TO_FINER);
+		if (suggestedLogLevel == Level.FINE)
+			logInvocation.setAction(Action.CONVERT_TO_FINE);
+		if (suggestedLogLevel == Level.CONFIG)
+			logInvocation.setAction(Action.CONVERT_TO_CONFIG);
+		if (suggestedLogLevel == Level.INFO)
+			logInvocation.setAction(Action.CONVERT_TO_INFO);
+		if (suggestedLogLevel == Level.WARNING)
+			logInvocation.setAction(Action.CONVERT_TO_WARNING);
+		if (suggestedLogLevel == Level.SEVERE)
+			logInvocation.setAction(Action.CONVERT_TO_SEVERE);
 		return true;
 	}
 
@@ -76,6 +90,10 @@ public class LogAnalyzer extends ASTVisitor {
 	private static Level getSuggestedLogLevel(LinkedList<Float> boundary, float DOI) {
 		if (boundary == null)
 			return null;
+		if (Float.compare(boundary.getFirst(), boundary.getLast()) == 0) {
+			LOGGER.info("The DOI values are all same. Cannot get valid results.");
+			return null;
+		}
 		if (DOI >= boundary.get(0) && DOI < boundary.get(1))
 			return Level.FINEST;
 		if (DOI < boundary.get(2))
