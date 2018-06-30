@@ -13,51 +13,11 @@
     <module>edu.cuny.hunter.log.core</module>
     <module>edu.cuny.hunter.log.tests</module>
   </modules>
-  <profiles>
-    <profile>
-      <id>jacoco</id>
-      <activation>
-        <activeByDefault>false</activeByDefault>
-      </activation>
-      <build>
-        <plugins>
-          <plugin>
-            <groupId>org.jacoco</groupId>
-            <artifactId>jacoco-maven-plugin</artifactId>
-            <version>${jacoco-version}</version>
-            <executions>
-              <execution>
-                <goals>
-                  <goal>prepare-agent</goal>
-                </goals>
-              </execution>
-            </executions>
-          </plugin>
-        </plugins>
-        <pluginManagement>
-          <plugins>
-            <plugin>
-              <groupId>org.eluder.coveralls</groupId>
-              <artifactId>coveralls-maven-plugin</artifactId>
-              <version>4.3.0</version>
-              <configuration>
-                <jacocoReports>
-                  <jacocoReport>${project.basedir}/edu.cuny.hunter.log.tests.report/target/site/jacoco-aggregate/jacoco.xml</jacocoReport>
-                </jacocoReports>
-                <repoToken>AiVmiw565QmgJ654qQZkZfJHmxyEO3Hox</repoToken>
-                <serviceName>travis-pro</serviceName>
-              </configuration>
-            </plugin>
-          </plugins>
-        </pluginManagement>
-      </build>
-    </profile>
-  </profiles>
   
   <properties>
     <tycho-version>0.26.0</tycho-version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-	<jacoco-version>0.7.8</jacoco-version>
+	<jacoco-version>0.7.6</jacoco-version>
   </properties>
   <repositories>
     <repository>
@@ -84,6 +44,48 @@
   
   <build>
     <plugins>
+	
+	<plugin>
+		<groupId>org.eluder.coveralls</groupId>
+				<artifactId>coveralls-maven-plugin</artifactId>
+				<version>4.3.0</version>
+				<configuration>
+					<repoToken>AiVmiw565QmgJ654qQZkZfJHmxyEO3Hox</repoToken>
+				</configuration>
+	</plugin>
+	<plugin>
+				<groupId>org.jacoco</groupId>
+				<artifactId>jacoco-maven-plugin</artifactId>
+				<version>0.7.8</version>
+				<executions>
+					  <execution>
+                        <id>default-prepare-agent</id>
+                        <goals>
+                            <goal>prepare-agent</goal>
+                        </goals>
+                    </execution>
+					<execution>
+                        <id>default-prepare-agent-integration</id>
+                        <goals>
+                            <goal>prepare-agent-integration</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>default-report</id>
+                        <goals>
+                            <goal>report</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>default-report-integration</id>
+                        <goals>
+                            <goal>report-integration</goal>
+                        </goals>
+                    </execution>
+				</executions>
+	</plugin>
+	
+	
       <plugin>
         <groupId>org.eclipse.tycho</groupId>
         <artifactId>tycho-maven-plugin</artifactId>
