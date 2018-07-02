@@ -74,6 +74,9 @@ public class EvaluationHandler extends AbstractHandler {
 						CSVPrinter resultPrinter = createCSVPrinter("result.csv",
 								new String[] { "subject raw", "log expression", "start pos", "logging level",
 										"type FQN", "enclosing method", "DOI" });
+						CSVPrinter actionPrinter = createCSVPrinter("log_actions.csv",
+								new String[] { "subject raw", "log expression", "start pos", "logging level",
+										"type FQN", "enclosing method", "action" });
 
 						// for each selected java project
 						for (IJavaProject project : javaProjectList) {
@@ -95,10 +98,17 @@ public class EvaluationHandler extends AbstractHandler {
 										logInvocation.getEnclosingType().getFullyQualifiedName(),
 										Util.getMethodIdentifier(logInvocation.getEnclosingEclipseMethod()),
 										logInvocation.getDegreeOfInterestValue());
+
+								actionPrinter.printRecord(project.getElementName(), logInvocation.getExpression(),
+										logInvocation.getStartPosition(), logInvocation.getLogLevel(),
+										logInvocation.getEnclosingType().getFullyQualifiedName(),
+										Util.getMethodIdentifier(logInvocation.getEnclosingEclipseMethod()),
+										logInvocation.getAction());
 							}
 						}
 
 						resultPrinter.close();
+						actionPrinter.close();
 					} catch (IOException e) {
 						LOGGER.severe("Cannot create printer.");
 					} catch (OperationCanceledException | CoreException e) {
@@ -108,4 +118,5 @@ public class EvaluationHandler extends AbstractHandler {
 		}
 		return null;
 	}
+
 }
