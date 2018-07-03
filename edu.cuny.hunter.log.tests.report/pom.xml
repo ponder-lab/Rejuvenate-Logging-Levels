@@ -39,44 +39,6 @@
 		</profile>
 	</profiles>
 
-
-	<dependencyManagement>
-		<dependencies>
-			<dependency>
-				<groupId>org.eclipse.platform</groupId>
-				<artifactId>org.eclipse.swt</artifactId>
-				<version>3.105.3</version>
-			</dependency>
-			<dependency>
-				<groupId>org.eclipse.platform</groupId>
-				<artifactId>org.eclipse.ui.workbench</artifactId>
-				<version>3.108.3</version>
-			</dependency>
-			<dependency>
-				<groupId>org.eclipse.platform</groupId>
-				<artifactId>org.eclipse.e4.ui.workbench</artifactId>
-				<version>1.4.0</version>
-				<exclusions>
-					<exclusion>
-						<groupId>org.eclipse.emf</groupId>
-						<artifactId>org.eclipse.emf.ecore.change</artifactId>
-					</exclusion>
-				</exclusions>
-			</dependency>
-
-
-		</dependencies>
-	</dependencyManagement>
-
-
-
-
-
-
-
-
-
-
 	<dependencies>
 		<dependency>
 			<groupId>edu.cuny.hunter.log</groupId>
@@ -96,8 +58,6 @@
 			<version>1.0.0-SNAPSHOT</version>
 			<scope>test</scope>
 		</dependency>
-
-
 	</dependencies>
 
 </project>
