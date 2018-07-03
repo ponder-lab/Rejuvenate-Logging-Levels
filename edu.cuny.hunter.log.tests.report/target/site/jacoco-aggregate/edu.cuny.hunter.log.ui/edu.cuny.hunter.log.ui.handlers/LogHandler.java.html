@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../jacoco-resources/report.gif" type="image/gif"/><title>LogHandler.java</title><link rel="stylesheet" href="../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../index.html" class="el_report">edu.cuny.hunter.log.tests.report</a> &gt; <a href="../index.html" class="el_bundle">edu.cuny.hunter.log.ui</a> &gt; <a href="index.source.html" class="el_package">edu.cuny.hunter.log.ui.handlers</a> &gt; <span class="el_source">LogHandler.java</span></div><h1>LogHandler.java</h1><pre class="source lang-java linenums">package edu.cuny.hunter.log.ui.handlers;
+
+import java.util.HashSet;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+
+import org.eclipse.core.commands.AbstractHandler;
+import org.eclipse.core.commands.ExecutionEvent;
+import org.eclipse.core.commands.ExecutionException;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.jdt.core.IJavaElement;
+import org.eclipse.jdt.core.IJavaProject;
+import org.eclipse.jdt.core.JavaModelException;
+import org.eclipse.jdt.internal.ui.JavaPlugin;
+import org.eclipse.jdt.internal.ui.util.SelectionUtil;
+import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.swt.widgets.Shell;
+import org.eclipse.ui.handlers.HandlerUtil;
+
+import edu.cuny.hunter.log.ui.messages.Messages;
+import edu.cuny.hunter.log.ui.wizards.LogWizard;
+
+/**
+ * Our sample handler extends AbstractHandler, an IHandler base class.
+ * 
+ * @see org.eclipse.core.commands.IHandler
+ * @see org.eclipse.core.commands.AbstractHandler
+ */
+@SuppressWarnings(&quot;restriction&quot;)
+<span class="nc" id="L32">public class LogHandler extends AbstractHandler {</span>
+
+	@Override
+	public Object execute(ExecutionEvent event) throws ExecutionException {
+<span class="nc" id="L36">		Optional&lt;IProgressMonitor&gt; monitor = Optional.empty();</span>
+<span class="nc" id="L37">		ISelection currentSelection = HandlerUtil.getCurrentSelectionChecked(event);</span>
+<span class="nc" id="L38">		List&lt;?&gt; list = SelectionUtil.toList(currentSelection);</span>
+
+<span class="nc" id="L40">		Set&lt;IJavaProject&gt; javaProjectSet = new HashSet&lt;&gt;();</span>
+
+<span class="nc bnc" id="L42" title="All 2 branches missed.">		if (list != null)</span>
+			try {
+<span class="nc bnc" id="L44" title="All 2 branches missed.">				for (Object obj : list)</span>
+<span class="nc bnc" id="L45" title="All 2 branches missed.">					if (obj instanceof IJavaElement) {</span>
+<span class="nc" id="L46">						IJavaElement jElem = (IJavaElement) obj;</span>
+<span class="nc bnc" id="L47" title="All 2 branches missed.">						switch (jElem.getElementType()) {</span>
+						case IJavaElement.JAVA_PROJECT:
+<span class="nc" id="L49">							javaProjectSet.add((IJavaProject) jElem);</span>
+							break;
+						}
+					}
+
+<span class="nc" id="L54">				Shell shell = HandlerUtil.getActiveShellChecked(event);</span>
+
+<span class="nc bnc" id="L56" title="All 2 branches missed.">				if (javaProjectSet.isEmpty())</span>
+<span class="nc" id="L57">					MessageDialog.openError(shell, Messages.Name, Messages.NoProjects);</span>
+				else
+<span class="nc" id="L59">					LogWizard.startRefactoring(javaProjectSet.toArray(new IJavaProject[javaProjectSet.size()]),</span>
+<span class="nc" id="L60">							shell, Optional.empty());</span>
+<span class="nc" id="L61">			} catch (JavaModelException e) {</span>
+<span class="nc" id="L62">				JavaPlugin.log(e);</span>
+<span class="nc" id="L63">				throw new ExecutionException(&quot;Failed to start refactoring&quot;, e);</span>
+			}
+<span class="nc" id="L65">		return null;</span>
+
+	}
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.8.201612092310</span></div></body></html>

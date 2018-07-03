@@ -3,8 +3,8 @@
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<name>Logging Level Evolution</name>
-	<url>https://github.com/ponder-lab/Java-8-Stream-Refactoring</url>
-	<description>This prototype refactoring plug-in for Eclipse represents ongoing work in developing an automated refactoring tool that would assist developers in optimizing their Java 8 stream client code.</description>
+	<url>https://github.com/ponder-lab/Logging-Level-Evolution-Plugin</url>
+	<description>This plugin helps the developers select the suitable logging levels.</description>
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>edu.cuny.hunter.log</groupId>
 	<artifactId>parent</artifactId>
@@ -14,12 +14,55 @@
 		<module>edu.cuny.hunter.log.ui</module>
 		<module>edu.cuny.hunter.log.core</module>
 		<module>edu.cuny.hunter.log.tests</module>
+		<module>edu.cuny.hunter.log.tests.report</module>
 	</modules>
-
+	
+	<profiles>
+    <profile>
+      <id>jacoco</id>
+      <activation>
+        <activeByDefault>false</activeByDefault>
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.jacoco</groupId>
+            <artifactId>jacoco-maven-plugin</artifactId>
+            <version>${jacoco-version}</version>
+            <executions>
+              <execution>
+                <goals>
+                  <goal>prepare-agent</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+        <pluginManagement>
+          <plugins>
+            <plugin>
+              <groupId>org.eluder.coveralls</groupId>
+              <artifactId>coveralls-maven-plugin</artifactId>
+              <version>4.3.0</version>
+              <configuration>
+                <jacocoReports>
+                  <jacocoReport>${project.basedir}/edu.cuny.hunter.log.tests.report/target/site/jacoco-aggregate/jacoco.xml</jacocoReport>
+                </jacocoReports>
+                <repoToken>A6zEYTCheTRBcuXpjb0pjXXFghpPmDhpU</repoToken>
+                <serviceName>travis-pro</serviceName>
+              </configuration>
+            </plugin>
+          </plugins>
+        </pluginManagement>
+      </build>
+    </profile>
+  </profiles>
+	
+	
 	<properties>
 		<tycho-version>0.26.0</tycho-version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<jacoco-version>0.7.6</jacoco-version>
+		<jacoco-version>0.7.8</jacoco-version>
 	</properties>
 	<repositories>
 		<repository>
@@ -46,48 +89,6 @@
 
 	<build>
 		<plugins>
-
-			<plugin>
-				<groupId>org.eluder.coveralls</groupId>
-				<artifactId>coveralls-maven-plugin</artifactId>
-				<version>4.3.0</version>
-				<configuration>
-					<repoToken>A6zEYTCheTRBcuXpjb0pjXXFghpPmDhpU</repoToken>
-				</configuration>
-			</plugin>
-			<plugin>
-				<groupId>org.jacoco</groupId>
-				<artifactId>jacoco-maven-plugin</artifactId>
-				<version>0.7.8</version>
-				<executions>
-					<execution>
-						<id>default-prepare-agent</id>
-						<goals>
-							<goal>prepare-agent</goal>
-						</goals>
-					</execution>
-					<execution>
-						<id>default-prepare-agent-integration</id>
-						<goals>
-							<goal>prepare-agent-integration</goal>
-						</goals>
-					</execution>
-					<execution>
-						<id>default-report</id>
-						<goals>
-							<goal>report</goal>
-						</goals>
-					</execution>
-					<execution>
-						<id>default-report-integration</id>
-						<goals>
-							<goal>report-integration</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
-
-
 			<plugin>
 				<groupId>org.eclipse.tycho</groupId>
 				<artifactId>tycho-maven-plugin</artifactId>
