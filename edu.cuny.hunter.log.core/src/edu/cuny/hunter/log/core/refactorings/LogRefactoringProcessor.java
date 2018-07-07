@@ -92,6 +92,17 @@ public class LogRefactoringProcessor extends RefactoringProcessor {
 			// analyze and set entry points.
 			analyzer.analyze();
 
+			// get the status of each log invocation.
+			RefactoringStatus collectedStatus = this.getLogInvocationSet().stream().map(LogInvocation::getStatus)
+					.collect(() -> new RefactoringStatus(), (a, b) -> a.merge(b), (a, b) -> a.merge(b));
+			status.merge(collectedStatus);
+
+			if (!status.hasFatalError()) {
+				// those log invocations whose logging level can be optimized
+				Set<LogInvocation> optimizableLogSet = this.getOptimizableSet();
+
+			}
+
 			return status;
 		} catch (Exception e) {
 			LOGGER.info("Cannot accpet the visitors. ");
@@ -99,6 +110,15 @@ public class LogRefactoringProcessor extends RefactoringProcessor {
 		} finally {
 			monitor.done();
 		}
+	}
+
+	private Set<LogInvocation> getOptimizableSet() {
+		HashSet<LogInvocation> optimizableSet = new HashSet<>();
+		for (LogInvocation logInvocation : this.logInvocationSet) {
+			// TODO: action here
+		}
+
+		return null;
 	}
 
 	private IJavaProject[] getJavaProjects() {
@@ -113,26 +133,24 @@ public class LogRefactoringProcessor extends RefactoringProcessor {
 			final TextEditBasedChangeManager manager = new TextEditBasedChangeManager();
 
 			// save the source changes.
-			ICompilationUnit[] units = getCompilationUnitToCompilationUnitRewriteMap().keySet().stream()
+			ICompilationUnit[] units = this.getCompilationUnitToCompilationUnitRewriteMap().keySet().stream()
 					.filter(cu -> !manager.containsChangesIn(cu)).toArray(ICompilationUnit[]::new);
 
 			for (ICompilationUnit cu : units) {
-				CompilationUnit compilationUnit = getCompilationUnit(cu, pm);
-				super.manageCompilationUnit(manager, super.getCompilationUnitRewrite(cu, compilationUnit),
+				CompilationUnit compilationUnit = this.getCompilationUnit(cu, pm);
+				this.manageCompilationUnit(manager, this.getCompilationUnitRewrite(cu, compilationUnit),
 						Optional.of(new SubProgressMonitor(pm, IProgressMonitor.UNKNOWN)));
 			}
 
 			final Map<String, String> arguments = new HashMap<>();
 			int flags = RefactoringDescriptor.STRUCTURAL_CHANGE | RefactoringDescriptor.MULTI_CHANGE;
 
-			// TODO: Fill in description.
-
 			LogDescriptor descriptor = new LogDescriptor(null, "TODO", null, arguments, flags);
 
 			return new DynamicValidationRefactoringChange(descriptor, this.getProcessorName(), manager.getAllChanges());
 		} finally {
 			pm.done();
-			clearCaches();
+			this.clearCaches();
 		}
 	}
 
