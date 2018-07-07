@@ -26,6 +26,7 @@ import org.eclipse.jdt.internal.corext.codemanipulation.CodeGenerationSettings;
 import org.eclipse.jdt.internal.corext.refactoring.changes.DynamicValidationRefactoringChange;
 import org.eclipse.jdt.internal.corext.refactoring.util.TextEditBasedChangeManager;
 import edu.cuny.citytech.refactoring.common.core.RefactoringProcessor;
+import edu.cuny.hunter.log.core.analysis.Action;
 import edu.cuny.hunter.log.core.analysis.LogAnalyzer;
 import edu.cuny.hunter.log.core.analysis.LogInvocation;
 import edu.cuny.hunter.log.core.descriptors.LogDescriptor;
@@ -99,8 +100,10 @@ public class LogRefactoringProcessor extends RefactoringProcessor {
 
 			if (!status.hasFatalError()) {
 				// those log invocations whose logging level can be optimized
-				Set<LogInvocation> optimizableLogSet = this.getOptimizableSet();
-
+				Set<LogInvocation> optimizableLogSet = this.getOptimizableLogSet();
+				if (optimizableLogSet.isEmpty()) {
+					status.addFatalError(Messages.NoOptimizableLog);
+				}
 			}
 
 			return status;
@@ -112,13 +115,17 @@ public class LogRefactoringProcessor extends RefactoringProcessor {
 		}
 	}
 
-	private Set<LogInvocation> getOptimizableSet() {
+	/**
+	 * get a set of optimizable log set
+	 */
+	private Set<LogInvocation> getOptimizableLogSet() {
 		HashSet<LogInvocation> optimizableSet = new HashSet<>();
 		for (LogInvocation logInvocation : this.logInvocationSet) {
-			// TODO: action here
+			if (!logInvocation.getAction().equals(Action.NONE))
+				optimizableSet.add(logInvocation);
 		}
 
-		return null;
+		return optimizableSet;
 	}
 
 	private IJavaProject[] getJavaProjects() {
