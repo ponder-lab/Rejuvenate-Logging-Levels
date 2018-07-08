@@ -12,7 +12,8 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.equinox.app,
  org.eclipse.ltk.ui.refactoring,
  org.eclipse.jdt.ui,
- edu.cuny.citytech.refactoring.common.ui;bundle-version="1.2.0"
+ edu.cuny.citytech.refactoring.common.ui;bundle-version="1.2.0",
+ edu.cuny.citytech.refactoring.common.core;bundle-version="1.2.0"
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Import-Package: edu.cuny.hunter.log.ui.wizards,
  org.eclipse.jdt.internal.core.manipulation,
