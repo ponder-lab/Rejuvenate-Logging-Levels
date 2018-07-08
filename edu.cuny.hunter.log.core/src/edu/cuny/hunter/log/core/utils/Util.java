@@ -73,6 +73,10 @@ public final class Util {
 
 		String methodName = node.getName().toString();
 
+		if (methodName.equals("all"))
+			return Level.ALL;
+		if (methodName.equals("off"))
+			return Level.OFF;
 		if (methodName.equals("config"))
 			return Level.CONFIG;
 		if (methodName.equals("fine"))
@@ -135,6 +139,10 @@ public final class Util {
 			return Level.FINER;
 		if (argument.equals("Level.FINEST"))
 			return Level.FINEST;
+		if (argument.equals("Level.ALL"))
+			return Level.ALL;
+		if (argument.equals("Level.OFF"))
+			return Level.OFF;
 		return null;
 	}
 
