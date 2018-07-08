@@ -17,6 +17,7 @@ import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.jdt.core.IPackageFragmentRoot;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.ltk.core.refactoring.Change;
+import org.eclipse.ltk.core.refactoring.NullChange;
 import org.eclipse.ltk.core.refactoring.RefactoringDescriptor;
 import org.eclipse.ltk.core.refactoring.RefactoringStatus;
 import org.eclipse.ltk.core.refactoring.participants.CheckConditionsContext;
@@ -24,6 +25,7 @@ import org.eclipse.ltk.core.refactoring.participants.RefactoringParticipant;
 import org.eclipse.ltk.core.refactoring.participants.SharableParticipants;
 import org.eclipse.jdt.internal.corext.codemanipulation.CodeGenerationSettings;
 import org.eclipse.jdt.internal.corext.refactoring.changes.DynamicValidationRefactoringChange;
+import org.eclipse.jdt.internal.corext.refactoring.structure.CompilationUnitRewrite;
 import org.eclipse.jdt.internal.corext.refactoring.util.TextEditBasedChangeManager;
 import edu.cuny.citytech.refactoring.common.core.RefactoringProcessor;
 import edu.cuny.hunter.log.core.analysis.Action;
@@ -135,9 +137,20 @@ public class LogRefactoringProcessor extends RefactoringProcessor {
 	@Override
 	public Change createChange(IProgressMonitor pm) throws CoreException, OperationCanceledException {
 		try {
-			pm.beginTask(Messages.CreatingChange, 1);
-
 			final TextEditBasedChangeManager manager = new TextEditBasedChangeManager();
+			Set<LogInvocation> optimizableLogs = this.getLogInvocationSet();
+
+			if (optimizableLogs.isEmpty())
+				return new NullChange(Messages.NoOptimizableLog);
+
+			pm.beginTask("Transforming logging levels ...", optimizableLogs.size());
+			for (LogInvocation logInvocation : optimizableLogs) {
+				CompilationUnitRewrite rewrite = this.getCompilationUnitRewrite(
+						logInvocation.getEnclosingEclipseMethod().getCompilationUnit(),
+						logInvocation.getEnclosingCompilationUnit());
+				logInvocation.transform(rewrite);
+				pm.worked(1);
+			}
 
 			// save the source changes.
 			ICompilationUnit[] units = this.getCompilationUnitToCompilationUnitRewriteMap().keySet().stream()
@@ -151,6 +164,8 @@ public class LogRefactoringProcessor extends RefactoringProcessor {
 
 			final Map<String, String> arguments = new HashMap<>();
 			int flags = RefactoringDescriptor.STRUCTURAL_CHANGE | RefactoringDescriptor.MULTI_CHANGE;
+
+			// TODO: Fill in description.
 
 			LogDescriptor descriptor = new LogDescriptor(null, "TODO", null, arguments, flags);
 

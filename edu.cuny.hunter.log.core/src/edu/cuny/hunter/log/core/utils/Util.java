@@ -48,11 +48,6 @@ public final class Util {
 		return ret;
 	}
 
-	public static boolean isLoggingStatement(String methodName) {
-		System.out.println(methodName);
-		return true;
-	}
-
 	// if b is true, then it is junit test
 	public static Level isLogExpression(MethodInvocation node, boolean b) {
 		if (!b) {
