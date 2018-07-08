@@ -63,6 +63,8 @@ public class LogAnalyzer extends ASTVisitor {
 		if (suggestedLogLevel == null || currentLogLevel == null)
 			return false;
 
+		if (suggestedLogLevel == Level.ALL)
+			logInvocation.setAction(Action.CONVERT_TO_ALL);
 		if (suggestedLogLevel == Level.FINEST)
 			logInvocation.setAction(Action.CONVERT_TO_FINEST);
 		if (suggestedLogLevel == Level.FINER)
@@ -77,6 +79,8 @@ public class LogAnalyzer extends ASTVisitor {
 			logInvocation.setAction(Action.CONVERT_TO_WARNING);
 		if (suggestedLogLevel == Level.SEVERE)
 			logInvocation.setAction(Action.CONVERT_TO_SEVERE);
+		if (suggestedLogLevel == Level.OFF)
+			logInvocation.setAction(Action.CONVERT_TO_OFF);
 		return true;
 	}
 
@@ -95,19 +99,23 @@ public class LogAnalyzer extends ASTVisitor {
 			return null;
 		}
 		if (DOI >= boundary.get(0) && DOI < boundary.get(1))
-			return Level.FINEST;
+			return Level.ALL;
 		if (DOI < boundary.get(2))
-			return Level.FINER;
+			return Level.FINEST;
 		if (DOI < boundary.get(3))
-			return Level.FINE;
+			return Level.FINER;
 		if (DOI < boundary.get(4))
-			return Level.CONFIG;
+			return Level.FINE;
 		if (DOI < boundary.get(5))
-			return Level.INFO;
+			return Level.CONFIG;
 		if (DOI < boundary.get(6))
+			return Level.INFO;
+		if (DOI < boundary.get(7))
 			return Level.WARNING;
-		if (DOI <= boundary.get(7))
+		if (DOI < boundary.get(8))
 			return Level.SEVERE;
+		if (DOI <= boundary.get(9))
+			return Level.OFF;
 		return null;
 	}
 
@@ -123,8 +131,8 @@ public class LogAnalyzer extends ASTVisitor {
 		float max = getMaxDOI(degreeOfInterests);
 		LinkedList<Float> boundary = new LinkedList<>();
 		if (min <= max) {
-			float interval = (max - min) / 7;
-			IntStream.range(0, 8).forEach(i -> boundary.add(min + i * interval));
+			float interval = (max - min) / 9;
+			IntStream.range(0, 10).forEach(i -> boundary.add(min + i * interval));
 			return boundary;
 		} else
 			return null;
