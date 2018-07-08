@@ -7,13 +7,21 @@ import org.eclipse.jdt.core.ICompilationUnit;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IMethod;
 import org.eclipse.jdt.core.IType;
+import org.eclipse.jdt.core.dom.AST;
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.IMethodBinding;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.MethodInvocation;
+import org.eclipse.jdt.core.dom.QualifiedName;
+import org.eclipse.jdt.core.dom.SimpleName;
+import org.eclipse.jdt.core.dom.TypeDeclaration;
+import org.eclipse.jdt.core.dom.rewrite.ASTRewrite;
+import org.eclipse.jdt.internal.compiler.ast.Argument;
+import org.eclipse.jdt.internal.compiler.lookup.LocalVariableBinding;
 import org.eclipse.jdt.internal.corext.dom.ASTNodes;
 import org.eclipse.jdt.internal.corext.refactoring.base.JavaStatusContext;
+import org.eclipse.jdt.internal.corext.refactoring.structure.CompilationUnitRewrite;
 import org.eclipse.ltk.core.refactoring.RefactoringStatus;
 import org.eclipse.ltk.core.refactoring.RefactoringStatusContext;
 import org.osgi.framework.FrameworkUtil;
@@ -24,11 +32,12 @@ import org.eclipse.mylyn.context.core.IInteractionElement;
 import org.eclipse.mylyn.internal.tasks.core.TaskList;
 import org.eclipse.mylyn.internal.tasks.ui.TasksUiPlugin;
 import edu.cuny.hunter.log.core.utils.LoggerNames;
+import edu.cuny.hunter.log.core.utils.Util;
 
 @SuppressWarnings("restriction")
 public class LogInvocation {
 
-	private final MethodInvocation expression;
+	private final MethodInvocation logExpression;
 	private final Level logLevel;
 
 	private RefactoringStatus status = new RefactoringStatus();
@@ -44,7 +53,7 @@ public class LogInvocation {
 	private Action action = Action.NONE;
 
 	public LogInvocation(MethodInvocation logExpression, Level loggingLevel) {
-		this.expression = logExpression;
+		this.logExpression = logExpression;
 		this.logLevel = loggingLevel;
 
 		if (loggingLevel == null) {
@@ -96,7 +105,7 @@ public class LogInvocation {
 	}
 
 	public MethodInvocation getExpression() {
-		return this.expression;
+		return this.logExpression;
 	}
 
 	public IJavaProject getExpressionJavaProject() {
@@ -131,7 +140,7 @@ public class LogInvocation {
 	}
 
 	public int getStartPosition() {
-		return this.expression.getStartPosition();
+		return this.logExpression.getStartPosition();
 	}
 
 	public Level getLogLevel() {
@@ -146,6 +155,143 @@ public class LogInvocation {
 
 	public Action getAction() {
 		return this.action;
+	}
+
+	public CompilationUnit getEnclosingCompilationUnit() {
+		return (CompilationUnit) ASTNodes.getParent(this.getEnclosingTypeDeclaration(), ASTNode.COMPILATION_UNIT);
+	}
+
+	private ASTNode getEnclosingTypeDeclaration() {
+		return (TypeDeclaration) ASTNodes.getParent(this.getExpression(), ASTNode.TYPE_DECLARATION);
+	}
+
+	/**
+	 * Basic method to do transformation.
+	 */
+	private void convert(String target, String targetLogLevel, CompilationUnitRewrite rewrite) {
+
+		MethodInvocation expression = this.getExpression();
+
+		if (expression != null)
+			if (expression.getNodeType() == ASTNode.METHOD_INVOCATION) {
+
+				String identifier = expression.getName().getIdentifier();
+				AST ast = logExpression.getAST();
+
+				ASTRewrite astRewrite = rewrite.getASTRewrite();
+
+				// The methods (e.g., warning() -> critical()).
+				if (isLoggingLevelMethod(identifier)) {
+					SimpleName newMethodName = ast.newSimpleName(target);
+					astRewrite.replace(expression.getName(), newMethodName, null);
+
+				} else // The parameters (e.g., log(Level.WARNING) -> log(Level.CRITICAL).
+				if (isLogMethod(identifier)) {
+					ASTNode argument = (ASTNode) expression.arguments().get(0);
+					QualifiedName newParaName = ast.newQualifiedName(ast.newSimpleName("Level"),
+							ast.newSimpleName(targetLogLevel));
+					astRewrite.replace(argument, newParaName, null);
+				}
+			}
+	}
+
+	/**
+	 * Check whether the log method could have the parameter for logging level
+	 */
+	private static boolean isLogMethod(String methodName) {
+		if (methodName.equals("log") || methodName.equals("logp") || methodName.equals("logrb"))
+			return true;
+		return false;
+	}
+
+	/**
+	 * Check whehter the logging method contains logging level
+	 */
+	private static boolean isLoggingLevelMethod(String methodName) {
+		if (methodName.equals("config") || methodName.equals("fine") || methodName.equals("finest")
+				|| methodName.equals("info") || methodName.equals("severe") || methodName.equals("warning"))
+			return true;
+		return false;
+	}
+
+	/**
+	 * Do transformation!
+	 * 
+	 * @param rewrite
+	 */
+	public void transform(CompilationUnitRewrite rewrite) {
+		switch (this.getAction()) {
+		case CONVERT_TO_ALL:
+			this.convertToALL(rewrite);
+			break;
+		case CONVERT_TO_FINEST:
+			this.convertToFinest(rewrite);
+			break;
+		case CONVERT_TO_FINER:
+			this.convertToFiner(rewrite);
+			break;
+		case CONVERT_TO_FINE:
+			this.convertToFine(rewrite);
+			break;
+		case CONVERT_TO_INFO:
+			this.convertToInfo(rewrite);
+			break;
+		case CONVERT_TO_CONFIG:
+			this.convertToConfig(rewrite);
+			break;
+		case CONVERT_TO_WARNING:
+			this.convertToWarning(rewrite);
+			break;
+		case CONVERT_TO_SEVERE:
+			this.convertToSevere(rewrite);
+			break;
+		case CONVERT_TO_OFF:
+			this.convertToOff(rewrite);
+			break;
+		}
+	}
+
+	private void convertToFinest(CompilationUnitRewrite rewrite) {
+		convert("finest", "FINEST", rewrite);
+	}
+
+	private void convertToOff(CompilationUnitRewrite rewrite) {
+		convert("off", "OFF", rewrite);
+
+	}
+
+	private void convertToSevere(CompilationUnitRewrite rewrite) {
+		convert("severe", "SEVERE", rewrite);
+
+	}
+
+	private void convertToWarning(CompilationUnitRewrite rewrite) {
+		convert("warning", "WARNING", rewrite);
+	}
+
+	private void convertToConfig(CompilationUnitRewrite rewrite) {
+		convert("config", "CONFIG", rewrite);
+
+	}
+
+	private void convertToInfo(CompilationUnitRewrite rewrite) {
+		convert("info", "INFO", rewrite);
+
+	}
+
+	private void convertToFine(CompilationUnitRewrite rewrite) {
+		convert("fine", "FINE", rewrite);
+
+	}
+
+	private void convertToFiner(CompilationUnitRewrite rewrite) {
+		convert("finer", "FINER", rewrite);
+
+	}
+
+	private void convertToALL(CompilationUnitRewrite rewrite) {
+		convert("all", "ALL", rewrite);
+
 	}
 
 }

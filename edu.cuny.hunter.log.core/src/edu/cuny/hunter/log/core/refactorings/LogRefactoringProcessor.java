@@ -17,6 +17,7 @@ import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.jdt.core.IPackageFragmentRoot;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.ltk.core.refactoring.Change;
+import org.eclipse.ltk.core.refactoring.NullChange;
 import org.eclipse.ltk.core.refactoring.RefactoringDescriptor;
 import org.eclipse.ltk.core.refactoring.RefactoringStatus;
 import org.eclipse.ltk.core.refactoring.participants.CheckConditionsContext;
@@ -24,8 +25,10 @@ import org.eclipse.ltk.core.refactoring.participants.RefactoringParticipant;
 import org.eclipse.ltk.core.refactoring.participants.SharableParticipants;
 import org.eclipse.jdt.internal.corext.codemanipulation.CodeGenerationSettings;
 import org.eclipse.jdt.internal.corext.refactoring.changes.DynamicValidationRefactoringChange;
+import org.eclipse.jdt.internal.corext.refactoring.structure.CompilationUnitRewrite;
 import org.eclipse.jdt.internal.corext.refactoring.util.TextEditBasedChangeManager;
 import edu.cuny.citytech.refactoring.common.core.RefactoringProcessor;
+import edu.cuny.hunter.log.core.analysis.Action;
 import edu.cuny.hunter.log.core.analysis.LogAnalyzer;
 import edu.cuny.hunter.log.core.analysis.LogInvocation;
 import edu.cuny.hunter.log.core.descriptors.LogDescriptor;
@@ -92,6 +95,19 @@ public class LogRefactoringProcessor extends RefactoringProcessor {
 			// analyze and set entry points.
 			analyzer.analyze();
 
+			// get the status of each log invocation.
+			RefactoringStatus collectedStatus = this.getLogInvocationSet().stream().map(LogInvocation::getStatus)
+					.collect(() -> new RefactoringStatus(), (a, b) -> a.merge(b), (a, b) -> a.merge(b));
+			status.merge(collectedStatus);
+
+			if (!status.hasFatalError()) {
+				// those log invocations whose logging level can be optimized
+				Set<LogInvocation> optimizableLogSet = this.getOptimizableLogSet();
+				if (optimizableLogSet.isEmpty()) {
+					status.addFatalError(Messages.NoOptimizableLog);
+				}
+			}
+
 			return status;
 		} catch (Exception e) {
 			LOGGER.info("Cannot accpet the visitors. ");
@@ -101,6 +117,19 @@ public class LogRefactoringProcessor extends RefactoringProcessor {
 		}
 	}
 
+	/**
+	 * get a set of optimizable log set
+	 */
+	private Set<LogInvocation> getOptimizableLogSet() {
+		HashSet<LogInvocation> optimizableSet = new HashSet<>();
+		for (LogInvocation logInvocation : this.logInvocationSet) {
+			if (!logInvocation.getAction().equals(Action.NONE))
+				optimizableSet.add(logInvocation);
+		}
+
+		return optimizableSet;
+	}
+
 	private IJavaProject[] getJavaProjects() {
 		return this.javaProjects;
 	}
@@ -108,17 +137,28 @@ public class LogRefactoringProcessor extends RefactoringProcessor {
 	@Override
 	public Change createChange(IProgressMonitor pm) throws CoreException, OperationCanceledException {
 		try {
-			pm.beginTask(Messages.CreatingChange, 1);
-
 			final TextEditBasedChangeManager manager = new TextEditBasedChangeManager();
+			Set<LogInvocation> optimizableLogs = this.getLogInvocationSet();
+
+			if (optimizableLogs.isEmpty())
+				return new NullChange(Messages.NoOptimizableLog);
+
+			pm.beginTask("Transforming logging levels ...", optimizableLogs.size());
+			for (LogInvocation logInvocation : optimizableLogs) {
+				CompilationUnitRewrite rewrite = this.getCompilationUnitRewrite(
+						logInvocation.getEnclosingEclipseMethod().getCompilationUnit(),
+						logInvocation.getEnclosingCompilationUnit());
+				logInvocation.transform(rewrite);
+				pm.worked(1);
+			}
 
 			// save the source changes.
-			ICompilationUnit[] units = getCompilationUnitToCompilationUnitRewriteMap().keySet().stream()
+			ICompilationUnit[] units = this.getCompilationUnitToCompilationUnitRewriteMap().keySet().stream()
 					.filter(cu -> !manager.containsChangesIn(cu)).toArray(ICompilationUnit[]::new);
 
 			for (ICompilationUnit cu : units) {
-				CompilationUnit compilationUnit = getCompilationUnit(cu, pm);
-				super.manageCompilationUnit(manager, super.getCompilationUnitRewrite(cu, compilationUnit),
+				CompilationUnit compilationUnit = this.getCompilationUnit(cu, pm);
+				this.manageCompilationUnit(manager, this.getCompilationUnitRewrite(cu, compilationUnit),
 						Optional.of(new SubProgressMonitor(pm, IProgressMonitor.UNKNOWN)));
 			}
 
@@ -132,7 +172,7 @@ public class LogRefactoringProcessor extends RefactoringProcessor {
 			return new DynamicValidationRefactoringChange(descriptor, this.getProcessorName(), manager.getAllChanges());
 		} finally {
 			pm.done();
-			clearCaches();
+			this.clearCaches();
 		}
 	}
 
