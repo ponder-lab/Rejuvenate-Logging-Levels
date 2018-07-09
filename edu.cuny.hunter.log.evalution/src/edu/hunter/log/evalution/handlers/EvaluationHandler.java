@@ -42,6 +42,8 @@ import org.eclipse.ltk.core.refactoring.participants.ProcessorBasedRefactoring;
 public class EvaluationHandler extends AbstractHandler {
 
 	private static final Logger LOGGER = Logger.getLogger(LoggerNames.LOGGER_NAME);
+	private static final String PARTICULAR_CONFIG_LOG_LEVEL_KEY = "edu.hunter.log.evalution.particularConfigLogLevel";
+	private static final boolean PARTICULAR_CONFIG_LOG_LEVEL_DEFAULT = false;
 
 	public static CSVPrinter createCSVPrinter(String fileName, String[] header) throws IOException {
 		return new CSVPrinter(new FileWriter(fileName, true), CSVFormat.EXCEL.withHeader(header));
@@ -70,7 +72,7 @@ public class EvaluationHandler extends AbstractHandler {
 							.getCodeGenerationSettings(javaProjectList.get(0));
 
 					try {
-            
+
 						CSVPrinter resultPrinter = createCSVPrinter("result.csv",
 								new String[] { "subject raw", "log expression", "start pos", "logging level",
 										"type FQN", "enclosing method", "DOI" });
@@ -82,7 +84,7 @@ public class EvaluationHandler extends AbstractHandler {
 						for (IJavaProject project : javaProjectList) {
 
 							LogRefactoringProcessor logRefactoringProcessor = new LogRefactoringProcessor(
-									new IJavaProject[] { project }, settings, monitor);
+									new IJavaProject[] { project }, this.shouldUseConfigLogLevel(), settings, monitor);
 
 							new ProcessorBasedRefactoring((RefactoringProcessor) logRefactoringProcessor)
 									.checkAllConditions(new NullProgressMonitor());
@@ -117,6 +119,15 @@ public class EvaluationHandler extends AbstractHandler {
 				}
 		}
 		return null;
+	}
+
+	private boolean shouldUseConfigLogLevel() {
+		String useConfigLogLevels = System.getenv(PARTICULAR_CONFIG_LOG_LEVEL_KEY);
+
+		if (useConfigLogLevels == null)
+			return PARTICULAR_CONFIG_LOG_LEVEL_DEFAULT;
+		else
+			return Boolean.valueOf(useConfigLogLevels);
 	}
 
 }
