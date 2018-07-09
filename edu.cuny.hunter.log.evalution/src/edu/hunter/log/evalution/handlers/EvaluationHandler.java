@@ -42,8 +42,8 @@ import org.eclipse.ltk.core.refactoring.participants.ProcessorBasedRefactoring;
 public class EvaluationHandler extends AbstractHandler {
 
 	private static final Logger LOGGER = Logger.getLogger(LoggerNames.LOGGER_NAME);
-	private static final String USE_CONFIG_LOG_LEVEL_KEY = "edu.hunter.log.evalution.useConfigLogLevel";
-	private static final boolean USE_CONFIG_LOG_LEVEL_DEFAULT = false;
+	private static final String PARTICULAR_CONFIG_LOG_LEVEL_KEY = "edu.hunter.log.evalution.particularConfigLogLevel";
+	private static final boolean PARTICULAR_CONFIG_LOG_LEVEL_DEFAULT = false;
 
 	public static CSVPrinter createCSVPrinter(String fileName, String[] header) throws IOException {
 		return new CSVPrinter(new FileWriter(fileName, true), CSVFormat.EXCEL.withHeader(header));
@@ -122,10 +122,10 @@ public class EvaluationHandler extends AbstractHandler {
 	}
 
 	private boolean shouldUseConfigLogLevel() {
-		String useConfigLogLevels = System.getenv(USE_CONFIG_LOG_LEVEL_KEY);
+		String useConfigLogLevels = System.getenv(PARTICULAR_CONFIG_LOG_LEVEL_KEY);
 
 		if (useConfigLogLevels == null)
-			return USE_CONFIG_LOG_LEVEL_DEFAULT;
+			return PARTICULAR_CONFIG_LOG_LEVEL_DEFAULT;
 		else
 			return Boolean.valueOf(useConfigLogLevels);
 	}

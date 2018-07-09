@@ -23,7 +23,7 @@ public class LogAnalyzer extends ASTVisitor {
 
 	private static LinkedList<Float> boundary;
 
-	private static boolean useConfigLogLevel = false;
+	private static boolean particularConfigLogLevel = false;
 
 	private int test;
 
@@ -32,7 +32,7 @@ public class LogAnalyzer extends ASTVisitor {
 	}
 
 	public LogAnalyzer(boolean configLogLevel) {
-		useConfigLogLevel = configLogLevel;
+		particularConfigLogLevel = configLogLevel;
 	}
 
 	public LogAnalyzer() {
@@ -51,19 +51,19 @@ public class LogAnalyzer extends ASTVisitor {
 		}
 
 		// build boundary
-		boundary = buildBoundary(degreeOfInterests, useConfigLogLevel);
+		boundary = buildBoundary(degreeOfInterests, particularConfigLogLevel);
 		// check whether action is needed
 		for (LogInvocation logInvocation : this.logInvocationSet)
-			if (this.doAction(logInvocation, useConfigLogLevel))
+			if (this.doAction(logInvocation, particularConfigLogLevel))
 				LOGGER.info("Do action: " + logInvocation.getAction() + "! The changed log expression is "
 						+ logInvocation.getExpression());
 
 	}
 
-	private boolean doAction(LogInvocation logInvocation, boolean useConfigLogLevel) {
+	private boolean doAction(LogInvocation logInvocation, boolean particularConfigLogLevel) {
 		Level currentLogLevel = logInvocation.getLogLevel();
 		Level suggestedLogLevel = getSuggestedLogLevel(boundary, logInvocation.getDegreeOfInterestValue(),
-				useConfigLogLevel);
+				particularConfigLogLevel);
 
 		if (currentLogLevel == suggestedLogLevel)
 			return false;
@@ -98,7 +98,7 @@ public class LogAnalyzer extends ASTVisitor {
 	 * @param DOI
 	 * @return the suggested log level
 	 */
-	private static Level getSuggestedLogLevel(LinkedList<Float> boundary, float DOI, boolean useConfigLogLevel) {
+	private static Level getSuggestedLogLevel(LinkedList<Float> boundary, float DOI, boolean particularConfigLogLevel) {
 		if (boundary == null)
 			return null;
 		if (Float.compare(boundary.getFirst(), boundary.getLast()) == 0) {
@@ -113,7 +113,7 @@ public class LogAnalyzer extends ASTVisitor {
 			return Level.FINER;
 		if (DOI < boundary.get(4))
 			return Level.FINE;
-		if (useConfigLogLevel) {
+		if (!particularConfigLogLevel) {
 			LOGGER.info("Config logging level will be refactored.");
 			if (DOI < boundary.get(5))
 				return Level.CONFIG;
@@ -146,12 +146,12 @@ public class LogAnalyzer extends ASTVisitor {
 	 * @param degreeOfInterests
 	 * @return a list of boundary
 	 */
-	private LinkedList<Float> buildBoundary(HashSet<Float> degreeOfInterests, boolean useConfigLogLevel) {
+	private LinkedList<Float> buildBoundary(HashSet<Float> degreeOfInterests, boolean particularConfigLogLevel) {
 		float min = getMinDOI(degreeOfInterests);
 		float max = getMaxDOI(degreeOfInterests);
 		LinkedList<Float> boundary = new LinkedList<>();
 		if (min <= max) {
-			if (useConfigLogLevel) {
+			if (!particularConfigLogLevel) {
 				float interval = (max - min) / 9;
 				IntStream.range(0, 10).forEach(i -> boundary.add(min + i * interval));
 			} else {
