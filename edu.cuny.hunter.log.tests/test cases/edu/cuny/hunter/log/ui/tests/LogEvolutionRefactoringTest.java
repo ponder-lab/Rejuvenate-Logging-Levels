@@ -86,7 +86,7 @@ public class LogEvolutionRefactoringTest extends RefactoringTest {
 
 		ASTNode ast = parser.createAST(new NullProgressMonitor());
 
-		LogAnalyzer logAnalyzer = new LogAnalyzer(true);
+		LogAnalyzer logAnalyzer = new LogAnalyzer(1);
 		ast.accept(logAnalyzer);
 
 		logAnalyzer.analyze();
@@ -128,7 +128,7 @@ public class LogEvolutionRefactoringTest extends RefactoringTest {
 	protected void tearDown() throws Exception {
 		super.tearDown();
 	}
-	
+
 	@Override
 	public void testPlainMethod() throws Exception {
 	}

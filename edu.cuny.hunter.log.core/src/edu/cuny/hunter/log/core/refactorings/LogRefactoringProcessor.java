@@ -44,6 +44,8 @@ public class LogRefactoringProcessor extends RefactoringProcessor {
 
 	private static final Logger LOGGER = Logger.getLogger(LoggerNames.LOGGER_NAME);
 
+	private boolean useConfigLogLevel = false;
+
 	public LogRefactoringProcessor(final CodeGenerationSettings settings) {
 		super(settings);
 	}
@@ -53,6 +55,17 @@ public class LogRefactoringProcessor extends RefactoringProcessor {
 		super(settings);
 		try {
 			this.javaProjects = javaProjects;
+		} finally {
+			monitor.ifPresent(IProgressMonitor::done);
+		}
+	}
+
+	public LogRefactoringProcessor(IJavaProject[] javaProjects, boolean useConfigLogLevel,
+			final CodeGenerationSettings settings, Optional<IProgressMonitor> monitor) {
+		super(settings);
+		try {
+			this.javaProjects = javaProjects;
+			this.useConfigLogLevel = useConfigLogLevel;
 		} finally {
 			monitor.ifPresent(IProgressMonitor::done);
 		}
@@ -73,7 +86,7 @@ public class LogRefactoringProcessor extends RefactoringProcessor {
 			throws CoreException, OperationCanceledException {
 		try {
 			final RefactoringStatus status = new RefactoringStatus();
-			LogAnalyzer analyzer = new LogAnalyzer();
+			LogAnalyzer analyzer = new LogAnalyzer(this.useConfigLogLevel);
 			this.setLogInvocationSet(analyzer.getLogInvocationSet());
 
 			for (IJavaProject jproj : this.getJavaProjects()) {

@@ -23,10 +23,16 @@ public class LogAnalyzer extends ASTVisitor {
 
 	private static LinkedList<Float> boundary;
 
-	private boolean test;
+	private static boolean useConfigLogLevel = false;
 
-	public LogAnalyzer(boolean b) {
-		this.test = b;
+	private int test;
+
+	public LogAnalyzer(int isTest) {
+		this.test = isTest;
+	}
+
+	public LogAnalyzer(boolean configLogLevel) {
+		useConfigLogLevel = configLogLevel;
 	}
 
 	public LogAnalyzer() {
@@ -45,18 +51,19 @@ public class LogAnalyzer extends ASTVisitor {
 		}
 
 		// build boundary
-		boundary = buildBoundary(degreeOfInterests);
+		boundary = buildBoundary(degreeOfInterests, useConfigLogLevel);
 		// check whether action is needed
 		for (LogInvocation logInvocation : this.logInvocationSet)
-			if (this.doAction(logInvocation))
+			if (this.doAction(logInvocation, useConfigLogLevel))
 				LOGGER.info("Do action: " + logInvocation.getAction() + "! The changed log expression is "
 						+ logInvocation.getExpression());
 
 	}
 
-	private boolean doAction(LogInvocation logInvocation) {
+	private boolean doAction(LogInvocation logInvocation, boolean useConfigLogLevel) {
 		Level currentLogLevel = logInvocation.getLogLevel();
-		Level suggestedLogLevel = getSuggestedLogLevel(boundary, logInvocation.getDegreeOfInterestValue());
+		Level suggestedLogLevel = getSuggestedLogLevel(boundary, logInvocation.getDegreeOfInterestValue(),
+				useConfigLogLevel);
 
 		if (currentLogLevel == suggestedLogLevel)
 			return false;
@@ -91,7 +98,7 @@ public class LogAnalyzer extends ASTVisitor {
 	 * @param DOI
 	 * @return the suggested log level
 	 */
-	private static Level getSuggestedLogLevel(LinkedList<Float> boundary, float DOI) {
+	private static Level getSuggestedLogLevel(LinkedList<Float> boundary, float DOI, boolean useConfigLogLevel) {
 		if (boundary == null)
 			return null;
 		if (Float.compare(boundary.getFirst(), boundary.getLast()) == 0) {
@@ -106,16 +113,29 @@ public class LogAnalyzer extends ASTVisitor {
 			return Level.FINER;
 		if (DOI < boundary.get(4))
 			return Level.FINE;
-		if (DOI < boundary.get(5))
-			return Level.CONFIG;
-		if (DOI < boundary.get(6))
-			return Level.INFO;
-		if (DOI < boundary.get(7))
-			return Level.WARNING;
-		if (DOI < boundary.get(8))
-			return Level.SEVERE;
-		if (DOI <= boundary.get(9))
-			return Level.OFF;
+		if (useConfigLogLevel) {
+			LOGGER.info("Config logging level will be refactored.");
+			if (DOI < boundary.get(5))
+				return Level.CONFIG;
+			if (DOI < boundary.get(6))
+				return Level.INFO;
+			if (DOI < boundary.get(7))
+				return Level.WARNING;
+			if (DOI < boundary.get(8))
+				return Level.SEVERE;
+			if (DOI <= boundary.get(9))
+				return Level.OFF;
+		} else {
+			LOGGER.info("Config logging level will not be refactored.");
+			if (DOI < boundary.get(5))
+				return Level.INFO;
+			if (DOI < boundary.get(6))
+				return Level.WARNING;
+			if (DOI < boundary.get(7))
+				return Level.SEVERE;
+			if (DOI <= boundary.get(8))
+				return Level.OFF;
+		}
 		return null;
 	}
 
@@ -126,13 +146,19 @@ public class LogAnalyzer extends ASTVisitor {
 	 * @param degreeOfInterests
 	 * @return a list of boundary
 	 */
-	private LinkedList<Float> buildBoundary(HashSet<Float> degreeOfInterests) {
+	private LinkedList<Float> buildBoundary(HashSet<Float> degreeOfInterests, boolean useConfigLogLevel) {
 		float min = getMinDOI(degreeOfInterests);
 		float max = getMaxDOI(degreeOfInterests);
 		LinkedList<Float> boundary = new LinkedList<>();
 		if (min <= max) {
-			float interval = (max - min) / 9;
-			IntStream.range(0, 10).forEach(i -> boundary.add(min + i * interval));
+			if (useConfigLogLevel) {
+				float interval = (max - min) / 9;
+				IntStream.range(0, 10).forEach(i -> boundary.add(min + i * interval));
+			} else {
+				float interval = (max - min) / 8;
+				IntStream.range(0, 9).forEach(i -> boundary.add(min + i * interval));
+			}
+
 			return boundary;
 		} else
 			return null;
@@ -163,7 +189,7 @@ public class LogAnalyzer extends ASTVisitor {
 		return this.logInvocationSet;
 	}
 
-	public void setTest(boolean test) {
+	public void setTest(int test) {
 		this.test = test;
 	}
 
