@@ -63,7 +63,6 @@ public class LogWizard extends RefactoringWizard {
 					Button btn = (Button) event.getSource();
 					boolean selection = btn.getSelection();
 					LogInputPage.this.settings.put(key, selection);
-					System.out.println("config" + selection + "!!!!!!!!!!!!!!!!!!");
 					valueConsumer.accept(selection);
 				}
 			});
