@@ -24,7 +24,6 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
-import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.PlatformUI;
 import edu.cuny.hunter.log.core.messages.Messages;
 import edu.cuny.hunter.log.core.refactorings.LogRefactoringProcessor;
@@ -40,6 +39,8 @@ public class LogWizard extends RefactoringWizard {
 		private static final String DIALOG_SETTING_SECTION = "OptimizeLoggingLevel"; //$NON-NLS-1$
 
 		public static final String PAGE_NAME = "LogInputPage"; //$NON-NLS-1$
+
+		private static final String PARTICULAR_CONFIG_LOG_LEVEL = "useConfigLogLevel";
 
 		private LogRefactoringProcessor processor;
 
@@ -58,31 +59,13 @@ public class LogWizard extends RefactoringWizard {
 			button.setSelection(value);
 			button.addSelectionListener(new SelectionAdapter() {
 				@Override
-				public void widgetSelected(SelectionEvent e) {
-					boolean selection = ((Button) e.widget).getSelection();
+				public void widgetSelected(SelectionEvent event) {
+					Button btn = (Button) event.getSource();
+					boolean selection = btn.getSelection();
 					LogInputPage.this.settings.put(key, selection);
+					System.out.println("config" + selection + "!!!!!!!!!!!!!!!!!!");
 					valueConsumer.accept(selection);
 				}
-			});
-		}
-
-		private void addIntegerButton(String text, String key, Consumer<Integer> valueConsumer, Composite result) {
-			Label label = new Label(result, SWT.HORIZONTAL);
-			label.setText(text);
-
-			Text textBox = new Text(result, SWT.SINGLE);
-			int value = this.settings.getInt(key);
-			valueConsumer.accept(value);
-			textBox.setText(String.valueOf(value));
-			textBox.addModifyListener(event -> {
-				int selection;
-				try {
-					selection = Integer.parseInt(((Text) event.widget).getText());
-				} catch (NumberFormatException e) {
-					return;
-				}
-				LogInputPage.this.settings.put(key, selection);
-				valueConsumer.accept(selection);
 			});
 		}
 
@@ -107,10 +90,9 @@ public class LogWizard extends RefactoringWizard {
 			Label separator = new Label(result, SWT.SEPARATOR | SWT.HORIZONTAL);
 			separator.setLayoutData(new GridData(SWT.FILL, SWT.BEGINNING, true, false));
 
-			Composite compositeForIntegerButton = new Composite(result, SWT.NONE);
-			GridLayout layoutForIntegerButton = new GridLayout(2, false);
-
-			compositeForIntegerButton.setLayout(layoutForIntegerButton);
+			// set up buttons.
+			this.addBooleanButton("Treat CONFIG logging level as particular logging level.",
+					PARTICULAR_CONFIG_LOG_LEVEL, this.getProcessor()::setParticularConfigLogLevel, result);
 
 			this.updateStatus();
 			Dialog.applyDialogFont(result);
@@ -126,8 +108,9 @@ public class LogWizard extends RefactoringWizard {
 			this.settings = this.getDialogSettings().getSection(DIALOG_SETTING_SECTION);
 			if (this.settings == null) {
 				this.settings = this.getDialogSettings().addNewSection(DIALOG_SETTING_SECTION);
-
+				this.settings.put(PARTICULAR_CONFIG_LOG_LEVEL, this.getProcessor().getParticularConfigLogLevel());
 			}
+			this.processor.setParticularConfigLogLevel(this.settings.getBoolean(PARTICULAR_CONFIG_LOG_LEVEL));
 		}
 
 		private void setProcessor(LogRefactoringProcessor processor) {

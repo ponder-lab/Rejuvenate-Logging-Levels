@@ -69,6 +69,8 @@ public class LogAnalyzer extends ASTVisitor {
 			return false;
 		if (suggestedLogLevel == null || currentLogLevel == null)
 			return false;
+		if (particularConfigLogLevel && currentLogLevel == Level.CONFIG)
+			return false;
 
 		if (suggestedLogLevel == Level.ALL)
 			logInvocation.setAction(Action.CONVERT_TO_ALL);
@@ -114,7 +116,7 @@ public class LogAnalyzer extends ASTVisitor {
 		if (DOI < boundary.get(4))
 			return Level.FINE;
 		if (!particularConfigLogLevel) {
-			LOGGER.info("Config logging level will be refactored.");
+			LOGGER.info("CONFIG logging level could be refactored.");
 			if (DOI < boundary.get(5))
 				return Level.CONFIG;
 			if (DOI < boundary.get(6))
@@ -126,7 +128,7 @@ public class LogAnalyzer extends ASTVisitor {
 			if (DOI <= boundary.get(9))
 				return Level.OFF;
 		} else {
-			LOGGER.info("Config logging level will not be refactored.");
+			LOGGER.info("CONFIG logging level could not be refactored.");
 			if (DOI < boundary.get(5))
 				return Level.INFO;
 			if (DOI < boundary.get(6))
