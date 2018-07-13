@@ -17,8 +17,6 @@ import org.eclipse.jdt.core.dom.QualifiedName;
 import org.eclipse.jdt.core.dom.SimpleName;
 import org.eclipse.jdt.core.dom.TypeDeclaration;
 import org.eclipse.jdt.core.dom.rewrite.ASTRewrite;
-import org.eclipse.jdt.internal.compiler.ast.Argument;
-import org.eclipse.jdt.internal.compiler.lookup.LocalVariableBinding;
 import org.eclipse.jdt.internal.corext.dom.ASTNodes;
 import org.eclipse.jdt.internal.corext.refactoring.base.JavaStatusContext;
 import org.eclipse.jdt.internal.corext.refactoring.structure.CompilationUnitRewrite;
@@ -32,7 +30,6 @@ import org.eclipse.mylyn.context.core.IInteractionElement;
 import org.eclipse.mylyn.internal.tasks.core.TaskList;
 import org.eclipse.mylyn.internal.tasks.ui.TasksUiPlugin;
 import edu.cuny.hunter.log.core.utils.LoggerNames;
-import edu.cuny.hunter.log.core.utils.Util;
 
 @SuppressWarnings("restriction")
 public class LogInvocation {
@@ -168,6 +165,7 @@ public class LogInvocation {
 	/**
 	 * Basic method to do transformation.
 	 */
+	@SuppressWarnings("unchecked")
 	private void convert(String target, String targetLogLevel, CompilationUnitRewrite rewrite) {
 
 		MethodInvocation expression = this.getExpression();
@@ -183,7 +181,24 @@ public class LogInvocation {
 				// The methods (e.g., warning() -> critical()).
 				if (isLoggingLevelMethod(identifier)) {
 					SimpleName newMethodName = ast.newSimpleName(target);
-					astRewrite.replace(expression.getName(), newMethodName, null);
+
+					// there are no off() and all()
+					if (target.equals("off") || target.equals("all")) {
+
+						// change method name
+						MethodInvocation newMethodInvocation = (MethodInvocation) ASTNode.copySubtree(ast, expression);
+						newMethodInvocation.setName(ast.newSimpleName("log"));
+
+						// change parameter name
+						QualifiedName newParaName = ast.newQualifiedName(ast.newSimpleName("Level"),
+								ast.newSimpleName(targetLogLevel));
+						newMethodInvocation.arguments().add(0, newParaName);
+
+						astRewrite.replace(expression, newMethodInvocation, null);
+
+					} else {
+						astRewrite.replace(expression.getName(), newMethodName, null);
+					}
 
 				} else // The parameters (e.g., log(Level.WARNING) -> log(Level.CRITICAL).
 				if (isLogMethod(identifier)) {

@@ -63,7 +63,6 @@ public class LogWizard extends RefactoringWizard {
 					Button btn = (Button) event.getSource();
 					boolean selection = btn.getSelection();
 					LogInputPage.this.settings.put(key, selection);
-					System.out.println("config" + selection + "!!!!!!!!!!!!!!!!!!");
 					valueConsumer.accept(selection);
 				}
 			});
@@ -83,15 +82,8 @@ public class LogWizard extends RefactoringWizard {
 			layout.numColumns = 1;
 			result.setLayout(layout);
 
-			Label doit = new Label(result, SWT.WRAP);
-			doit.setText("Optimize Logging Level.");
-			doit.setLayoutData(new GridData());
-
-			Label separator = new Label(result, SWT.SEPARATOR | SWT.HORIZONTAL);
-			separator.setLayoutData(new GridData(SWT.FILL, SWT.BEGINNING, true, false));
-
 			// set up buttons.
-			this.addBooleanButton("Treat CONFIG logging level as particular logging level.",
+			this.addBooleanButton("Treat CONFIG logging level as category and not traditional levels.",
 					PARTICULAR_CONFIG_LOG_LEVEL, this.getProcessor()::setParticularConfigLogLevel, result);
 
 			this.updateStatus();
