@@ -40,7 +40,7 @@ public class LogWizard extends RefactoringWizard {
 
 		public static final String PAGE_NAME = "LogInputPage"; //$NON-NLS-1$
 
-		private static final String PARTICULAR_CONFIG_LOG_LEVEL = "useConfigLogLevel";
+		private static final String USE_LOG_CATEGORY = "useLogCategory";
 
 		private LogRefactoringProcessor processor;
 
@@ -83,8 +83,8 @@ public class LogWizard extends RefactoringWizard {
 			result.setLayout(layout);
 
 			// set up buttons.
-			this.addBooleanButton("Treat CONFIG logging level as category and not traditional levels.",
-					PARTICULAR_CONFIG_LOG_LEVEL, this.getProcessor()::setParticularConfigLogLevel, result);
+			this.addBooleanButton("Treat CONFIG/WARNING/SEVERE logging levels as category and not traditional levels.",
+					USE_LOG_CATEGORY, this.getProcessor()::setParticularConfigLogLevel, result);
 
 			this.updateStatus();
 			Dialog.applyDialogFont(result);
@@ -100,9 +100,9 @@ public class LogWizard extends RefactoringWizard {
 			this.settings = this.getDialogSettings().getSection(DIALOG_SETTING_SECTION);
 			if (this.settings == null) {
 				this.settings = this.getDialogSettings().addNewSection(DIALOG_SETTING_SECTION);
-				this.settings.put(PARTICULAR_CONFIG_LOG_LEVEL, this.getProcessor().getParticularConfigLogLevel());
+				this.settings.put(USE_LOG_CATEGORY, this.getProcessor().getParticularConfigLogLevel());
 			}
-			this.processor.setParticularConfigLogLevel(this.settings.getBoolean(PARTICULAR_CONFIG_LOG_LEVEL));
+			this.processor.setParticularConfigLogLevel(this.settings.getBoolean(USE_LOG_CATEGORY));
 		}
 
 		private void setProcessor(LogRefactoringProcessor processor) {
