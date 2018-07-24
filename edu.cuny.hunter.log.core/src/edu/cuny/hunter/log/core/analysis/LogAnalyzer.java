@@ -69,7 +69,8 @@ public class LogAnalyzer extends ASTVisitor {
 			return false;
 		if (suggestedLogLevel == null || currentLogLevel == null)
 			return false;
-		if (particularConfigLogLevel && currentLogLevel == Level.CONFIG)
+		if (particularConfigLogLevel && (currentLogLevel == Level.CONFIG || currentLogLevel == Level.WARNING
+				|| currentLogLevel == Level.SEVERE))
 			return false;
 
 		if (suggestedLogLevel == Level.ALL)
@@ -128,14 +129,10 @@ public class LogAnalyzer extends ASTVisitor {
 			if (DOI <= boundary.get(9))
 				return Level.OFF;
 		} else {
-			LOGGER.info("CONFIG logging level could not be refactored.");
+			LOGGER.info("CONFIG/WARNING/SEVERE logging level could not be refactored.");
 			if (DOI < boundary.get(5))
 				return Level.INFO;
-			if (DOI < boundary.get(6))
-				return Level.WARNING;
-			if (DOI < boundary.get(7))
-				return Level.SEVERE;
-			if (DOI <= boundary.get(8))
+			if (DOI <= boundary.get(6))
 				return Level.OFF;
 		}
 		return null;
@@ -157,8 +154,8 @@ public class LogAnalyzer extends ASTVisitor {
 				float interval = (max - min) / 9;
 				IntStream.range(0, 10).forEach(i -> boundary.add(min + i * interval));
 			} else {
-				float interval = (max - min) / 8;
-				IntStream.range(0, 9).forEach(i -> boundary.add(min + i * interval));
+				float interval = (max - min) / 6;
+				IntStream.range(0, 7).forEach(i -> boundary.add(min + i * interval));
 			}
 
 			return boundary;
