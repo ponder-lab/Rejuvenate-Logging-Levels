@@ -23,13 +23,17 @@ import org.eclipse.jdt.internal.corext.codemanipulation.CodeGenerationSettings;
 import org.eclipse.jdt.internal.ui.preferences.JavaPreferencesSettings;
 import org.eclipse.jdt.internal.ui.util.SelectionUtil;
 import org.eclipse.ui.handlers.HandlerUtil;
+import org.osgi.framework.FrameworkUtil;
+
 import edu.cuny.citytech.refactoring.common.core.RefactoringProcessor;
 import edu.cuny.hunter.log.core.analysis.LogInvocation;
+import edu.cuny.hunter.log.core.analysis.PreconditionFailure;
 import edu.cuny.hunter.log.core.refactorings.LogRefactoringProcessor;
 import edu.cuny.hunter.log.core.utils.LoggerNames;
 import edu.hunter.log.evalution.utils.Util;
 
 import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.ltk.core.refactoring.RefactoringStatusEntry;
 import org.eclipse.ltk.core.refactoring.participants.ProcessorBasedRefactoring;
 
 /**
@@ -73,12 +77,17 @@ public class EvaluationHandler extends AbstractHandler {
 
 					try {
 
-						CSVPrinter resultPrinter = createCSVPrinter("result.csv",
-								new String[] { "subject raw", "log expression", "start pos", "logging level",
-										"type FQN", "enclosing method", "DOI" });
+						CSVPrinter resultPrinter = createCSVPrinter("result.csv", new String[] { "subject raw",
+								"log invocations before", "candidate log invocations", "failed preconditions" });
 						CSVPrinter actionPrinter = createCSVPrinter("log_actions.csv",
 								new String[] { "subject raw", "log expression", "start pos", "logging level",
 										"type FQN", "enclosing method", "action" });
+						CSVPrinter candidatePrinter = createCSVPrinter("candidate_log_invocations.csv",
+								new String[] { "subject raw", "log expression", "start pos", "logging level",
+										"type FQN", "enclosing method", "DOI" });
+						CSVPrinter failedPreConsPrinter = createCSVPrinter("failed_preconditions.csv",
+								new String[] { "subject raw", "log expression", "start pos", "logging level",
+										"type FQN", "enclosing method", "code", "name", "message" });
 
 						// for each selected java project
 						for (IJavaProject project : javaProjectList) {
@@ -92,25 +101,66 @@ public class EvaluationHandler extends AbstractHandler {
 							Iterator<LogInvocation> logInvocationIterator = logRefactoringProcessor
 									.getLogInvocationSet().iterator();
 
+							int numberOfCandidate = 0;
+							int numberOfLogInvs = 0;
+							int numberOfPreCons = 0;
+
 							// for each logInvocation
 							while (logInvocationIterator.hasNext()) {
 								LogInvocation logInvocation = logInvocationIterator.next();
-								resultPrinter.printRecord(project.getElementName(), logInvocation.getExpression(),
-										logInvocation.getStartPosition(), logInvocation.getLogLevel(),
-										logInvocation.getEnclosingType().getFullyQualifiedName(),
-										Util.getMethodIdentifier(logInvocation.getEnclosingEclipseMethod()),
-										logInvocation.getDegreeOfInterestValue());
+								numberOfLogInvs++;
 
-								actionPrinter.printRecord(project.getElementName(), logInvocation.getExpression(),
-										logInvocation.getStartPosition(), logInvocation.getLogLevel(),
-										logInvocation.getEnclosingType().getFullyQualifiedName(),
-										Util.getMethodIdentifier(logInvocation.getEnclosingEclipseMethod()),
-										logInvocation.getAction());
+								String pluginId = FrameworkUtil.getBundle(LogInvocation.class).getSymbolicName();
+
+								RefactoringStatusEntry notHandledError = logInvocation.getStatus().getEntryMatchingCode(
+										pluginId, PreconditionFailure.CURRENTLY_NOT_HANDLED.getCode());
+								RefactoringStatusEntry noEnoughDataError = logInvocation.getStatus()
+										.getEntryMatchingCode(pluginId, PreconditionFailure.NOT_ENOUGH_DATA.getCode());
+								if (notHandledError == null && noEnoughDataError == null) {
+									candidatePrinter.printRecord(project.getElementName(),
+											logInvocation.getExpression(), logInvocation.getStartPosition(),
+											logInvocation.getLogLevel(),
+											logInvocation.getEnclosingType().getFullyQualifiedName(),
+											Util.getMethodIdentifier(logInvocation.getEnclosingEclipseMethod()),
+											logInvocation.getDegreeOfInterestValue());
+									numberOfCandidate++;
+
+									// print actions
+									actionPrinter.printRecord(project.getElementName(), logInvocation.getExpression(),
+											logInvocation.getStartPosition(), logInvocation.getLogLevel(),
+											logInvocation.getEnclosingType().getFullyQualifiedName(),
+											Util.getMethodIdentifier(logInvocation.getEnclosingEclipseMethod()),
+											logInvocation.getAction());
+								} else {
+									numberOfPreCons++;
+									int code = notHandledError == null ? noEnoughDataError.getCode()
+											: notHandledError.getCode();
+									PreconditionFailure name = notHandledError == null
+											? PreconditionFailure.NOT_ENOUGH_DATA
+											: PreconditionFailure.CURRENTLY_NOT_HANDLED;
+									String message = notHandledError == null ? noEnoughDataError.getMessage()
+											: notHandledError.getMessage();
+
+									failedPreConsPrinter.printRecord(project.getElementName(),
+											logInvocation.getExpression(), logInvocation.getStartPosition(),
+											logInvocation.getLogLevel(),
+											logInvocation.getEnclosingType().getFullyQualifiedName(),
+											Util.getMethodIdentifier(logInvocation.getEnclosingEclipseMethod()), code,
+											name, message);
+								}
+
 							}
+
+							resultPrinter.printRecord(project.getElementName(), numberOfLogInvs, numberOfCandidate,
+									numberOfPreCons);
+							;
+
 						}
 
 						resultPrinter.close();
 						actionPrinter.close();
+						candidatePrinter.close();
+						failedPreConsPrinter.close();
 					} catch (IOException e) {
 						LOGGER.severe("Cannot create printer.");
 					} catch (OperationCanceledException | CoreException e) {

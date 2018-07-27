@@ -62,8 +62,7 @@ public class LogAnalyzer extends ASTVisitor {
 
 	private boolean doAction(LogInvocation logInvocation, boolean useLogCategory) {
 		Level currentLogLevel = logInvocation.getLogLevel();
-		Level suggestedLogLevel = getSuggestedLogLevel(boundary, logInvocation.getDegreeOfInterestValue(),
-				useLogCategory);
+		Level suggestedLogLevel = getSuggestedLogLevel(boundary, logInvocation, useLogCategory);
 
 		if (currentLogLevel == suggestedLogLevel)
 			return false;
@@ -101,10 +100,14 @@ public class LogAnalyzer extends ASTVisitor {
 	 * @param DOI
 	 * @return the suggested log level
 	 */
-	private static Level getSuggestedLogLevel(LinkedList<Float> boundary, float DOI, boolean useLogCategory) {
+	private static Level getSuggestedLogLevel(LinkedList<Float> boundary, LogInvocation logInvocation,
+			boolean useLogCategory) {
+		float DOI = logInvocation.getDegreeOfInterestValue();
 		if (boundary == null)
 			return null;
 		if (Float.compare(boundary.getFirst(), boundary.getLast()) == 0) {
+			logInvocation.addStatusEntry(PreconditionFailure.NOT_ENOUGH_DATA,
+					"The DOI values are all same. Cannot get valid results.");
 			LOGGER.info("The DOI values are all same. Cannot get valid results.");
 			return null;
 		}
