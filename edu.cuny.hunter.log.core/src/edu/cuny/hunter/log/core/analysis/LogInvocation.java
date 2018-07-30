@@ -54,8 +54,8 @@ public class LogInvocation {
 		this.logLevel = loggingLevel;
 
 		if (loggingLevel == null) {
-			this.addStatusEntry(PreconditionFailure.CURRENTLY_NOT_HANDLED,
-					this.getExpression() + "has argument LogRecord which cannot be handled yet.");
+			this.addStatusEntry(PreconditionFailure.CURRENTLY_NOT_HANDLED, this.getExpression()
+					+ " has argument LogRecord or log level variable which cannot be handled yet.");
 		}
 
 		degreeOfInterest = getDegreeOfInterest();
