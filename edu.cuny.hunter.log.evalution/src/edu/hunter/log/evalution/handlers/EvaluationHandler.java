@@ -115,7 +115,7 @@ public class EvaluationHandler extends AbstractHandler {
 								RefactoringStatusEntry notHandledError = logInvocation.getStatus().getEntryMatchingCode(
 										pluginId, PreconditionFailure.CURRENTLY_NOT_HANDLED.getCode());
 								RefactoringStatusEntry noEnoughDataError = logInvocation.getStatus()
-										.getEntryMatchingCode(pluginId, PreconditionFailure.NOT_ENOUGH_DATA.getCode());
+										.getEntryMatchingCode(pluginId, PreconditionFailure.NO_ENOUGH_DATA.getCode());
 								if (notHandledError == null && noEnoughDataError == null) {
 									candidatePrinter.printRecord(project.getElementName(),
 											logInvocation.getExpression(), logInvocation.getStartPosition(),
@@ -136,7 +136,7 @@ public class EvaluationHandler extends AbstractHandler {
 									int code = notHandledError == null ? noEnoughDataError.getCode()
 											: notHandledError.getCode();
 									PreconditionFailure name = notHandledError == null
-											? PreconditionFailure.NOT_ENOUGH_DATA
+											? PreconditionFailure.NO_ENOUGH_DATA
 											: PreconditionFailure.CURRENTLY_NOT_HANDLED;
 									String message = notHandledError == null ? noEnoughDataError.getMessage()
 											: notHandledError.getMessage();
