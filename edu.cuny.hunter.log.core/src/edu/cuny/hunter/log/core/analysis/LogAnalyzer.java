@@ -106,7 +106,7 @@ public class LogAnalyzer extends ASTVisitor {
 		if (boundary == null)
 			return null;
 		if (Float.compare(boundary.getFirst(), boundary.getLast()) == 0) {
-			logInvocation.addStatusEntry(PreconditionFailure.NOT_ENOUGH_DATA,
+			logInvocation.addStatusEntry(PreconditionFailure.NO_ENOUGH_DATA,
 					"The DOI values are all same. Cannot get valid results.");
 			LOGGER.info("The DOI values are all same. Cannot get valid results.");
 			return null;
