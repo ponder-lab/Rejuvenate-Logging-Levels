@@ -4,6 +4,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.eclipse.jdt.core.ICompilationUnit;
+import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IMethod;
 import org.eclipse.jdt.core.IType;
@@ -27,6 +28,7 @@ import org.osgi.framework.FrameworkUtil;
 import org.eclipse.mylyn.context.core.ContextCore;
 import org.eclipse.mylyn.context.core.IDegreeOfInterest;
 import org.eclipse.mylyn.context.core.IInteractionElement;
+import org.eclipse.mylyn.internal.context.core.ContextCorePlugin;
 import org.eclipse.mylyn.internal.tasks.core.TaskList;
 import org.eclipse.mylyn.internal.tasks.ui.TasksUiPlugin;
 import edu.cuny.hunter.log.core.utils.LoggerNames;
@@ -44,6 +46,8 @@ public class LogInvocation {
 	private IDegreeOfInterest degreeOfInterest;
 
 	private float degreeOfInterestValue;
+
+	private float degreeOfInterestValueForFile;
 
 	private static final Logger LOGGER = Logger.getLogger(LoggerNames.LOGGER_NAME);
 
@@ -96,6 +100,23 @@ public class LogInvocation {
 		IMethod enclosingMethod = this.getEnclosingEclipseMethod();
 		IInteractionElement interactionElement = ContextCore.getContextManager()
 				.getElement(enclosingMethod.getHandleIdentifier());
+
+		System.out.println(
+				"DOI for enclosing method before manipulating file: " + interactionElement.getInterest().getValue());
+
+		IJavaElement cu = this.getEnclosingEclipseMethod().getCompilationUnit();
+		IInteractionElement interactionElementForFile = ContextCore.getContextManager()
+				.getElement(cu.getHandleIdentifier());
+		System.out.println(
+				"DOI for file before manipulating file: " + interactionElementForFile.getInterest().getValue());
+		ContextCorePlugin.getContextManager().manipulateInterestForElement(interactionElementForFile, false, false,
+				true, "", true);
+
+		System.out
+				.println("DOI for file after manipulating file: " + interactionElementForFile.getInterest().getValue());
+		System.out.println(
+				"DOI for enclosing method after manipulating file: " + interactionElement.getInterest().getValue());
+
 		if (interactionElement == null)
 			return null;
 		return interactionElement.getInterest();
