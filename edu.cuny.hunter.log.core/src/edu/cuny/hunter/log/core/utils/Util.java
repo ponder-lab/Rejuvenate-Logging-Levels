@@ -7,6 +7,7 @@ import java.util.Set;
 import java.util.logging.Level;
 
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.core.dom.Expression;
@@ -16,6 +17,7 @@ import org.eclipse.jdt.core.dom.MethodInvocation;
 import org.eclipse.jdt.internal.corext.codemanipulation.CodeGenerationSettings;
 import org.eclipse.jdt.internal.ui.preferences.JavaPreferencesSettings;
 import org.eclipse.ltk.core.refactoring.participants.ProcessorBasedRefactoring;
+
 import edu.cuny.hunter.log.core.refactorings.LogRefactoringProcessor;
 
 @SuppressWarnings("restriction")
@@ -144,6 +146,10 @@ public final class Util {
 		if (argument.equals("Level.OFF"))
 			return Level.OFF;
 		return null;
+	}
+
+	public static boolean isGeneratedCode(IJavaElement element) throws JavaModelException {
+		return element.getCorrespondingResource().isDerived();
 	}
 
 }

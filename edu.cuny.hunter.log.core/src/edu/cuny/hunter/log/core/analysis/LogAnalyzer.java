@@ -9,8 +9,12 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IJavaProject;
+import org.eclipse.jdt.core.IMethod;
+import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.core.dom.ASTVisitor;
+import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.MethodInvocation;
 import edu.cuny.hunter.log.core.utils.LoggerNames;
 import edu.cuny.hunter.log.core.utils.Util;
@@ -216,8 +220,35 @@ public class LogAnalyzer extends ASTVisitor {
 		return super.visit(node);
 	}
 
+	/**
+	 * Whether the code is read-only, generated code and in a .class file.
+	 */
+	private void canModifyCode(LogInvocation logInvocation) {
+		CompilationUnit cu = logInvocation.getEnclosingCompilationUnit();
+		if (cu != null) {
+			IJavaElement element = cu.getJavaElement();
+			if (element.isReadOnly())
+				logInvocation.addStatusEntry(PreconditionFailure.READ_ONLY_ELEMENT,
+						"We've hit a jar or other Model Element where we can't make relevant changes.");
+
+			IMethod method = logInvocation.getEnclosingEclipseMethod();
+			if (method != null && method.isBinary())
+				logInvocation.addStatusEntry(PreconditionFailure.BINARY_ELEMENT, "Element is in a .class file.");
+
+			try {
+				if (Util.isGeneratedCode(element))
+					logInvocation.addStatusEntry(PreconditionFailure.GENERATED_ELEMENT,
+							"We can't refactoring anything because of generated code.");
+			} catch (JavaModelException e) {
+				logInvocation.addStatusEntry(PreconditionFailure.MISSING_JAVA_ELEMENT,
+						" we are resolving this element from the JavaModel using JDT internal API, and it's missing.");
+			}
+		}
+	}
+
 	private void createLogInvocation(MethodInvocation node, Level logLevel) {
 		LogInvocation logInvocation = new LogInvocation(node, logLevel);
+		canModifyCode(logInvocation);
 		this.getLogInvocationSet().add(logInvocation);
 	}
 
