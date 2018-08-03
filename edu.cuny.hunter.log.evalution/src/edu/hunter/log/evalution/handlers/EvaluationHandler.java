@@ -2,6 +2,7 @@ package edu.hunter.log.evalution.handlers;
 
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -112,48 +113,57 @@ public class EvaluationHandler extends AbstractHandler {
 
 								String pluginId = FrameworkUtil.getBundle(LogInvocation.class).getSymbolicName();
 
-								RefactoringStatusEntry notHandledError = logInvocation.getStatus().getEntryMatchingCode(
-										pluginId, PreconditionFailure.CURRENTLY_NOT_HANDLED.getCode());
-								RefactoringStatusEntry noEnoughDataError = logInvocation.getStatus()
-										.getEntryMatchingCode(pluginId, PreconditionFailure.NO_ENOUGH_DATA.getCode());
-								if (notHandledError == null && noEnoughDataError == null) {
-									candidatePrinter.printRecord(project.getElementName(),
-											logInvocation.getExpression(), logInvocation.getStartPosition(),
-											logInvocation.getLogLevel(),
-											logInvocation.getEnclosingType().getFullyQualifiedName(),
-											Util.getMethodIdentifier(logInvocation.getEnclosingEclipseMethod()),
-											logInvocation.getDegreeOfInterestValue());
-									numberOfCandidate++;
+								// print candidates
+								candidatePrinter.printRecord(project.getElementName(), logInvocation.getExpression(),
+										logInvocation.getStartPosition(), logInvocation.getLogLevel(),
+										logInvocation.getEnclosingType().getFullyQualifiedName(),
+										Util.getMethodIdentifier(logInvocation.getEnclosingEclipseMethod()),
+										logInvocation.getDegreeOfInterestValue());
+								numberOfCandidate++;
 
-									// print actions
-									actionPrinter.printRecord(project.getElementName(), logInvocation.getExpression(),
-											logInvocation.getStartPosition(), logInvocation.getLogLevel(),
-											logInvocation.getEnclosingType().getFullyQualifiedName(),
-											Util.getMethodIdentifier(logInvocation.getEnclosingEclipseMethod()),
-											logInvocation.getAction());
-								} else {
+								// print actions
+								actionPrinter.printRecord(project.getElementName(), logInvocation.getExpression(),
+										logInvocation.getStartPosition(), logInvocation.getLogLevel(),
+										logInvocation.getEnclosingType().getFullyQualifiedName(),
+										Util.getMethodIdentifier(logInvocation.getEnclosingEclipseMethod()),
+										logInvocation.getAction());
+
+								// check all precondition failures
+								HashSet<RefactoringStatusEntry> statusEntries = new HashSet<>();
+								statusEntries.add(logInvocation.getStatus().getEntryMatchingCode(pluginId,
+										PreconditionFailure.CURRENTLY_NOT_HANDLED.getCode()));
+								statusEntries.add(logInvocation.getStatus().getEntryMatchingCode(pluginId,
+										PreconditionFailure.NO_ENOUGH_DATA.getCode()));
+								statusEntries.add(logInvocation.getStatus().getEntryMatchingCode(pluginId,
+										PreconditionFailure.MISSING_JAVA_ELEMENT.getCode()));
+								statusEntries.add(logInvocation.getStatus().getEntryMatchingCode(pluginId,
+										PreconditionFailure.BINARY_ELEMENT.getCode()));
+								statusEntries.add(logInvocation.getStatus().getEntryMatchingCode(pluginId,
+										PreconditionFailure.READ_ONLY_ELEMENT.getCode()));
+								statusEntries.add(logInvocation.getStatus().getEntryMatchingCode(pluginId,
+										PreconditionFailure.MISSING_JAVA_ELEMENT.getCode()));
+								RefactoringStatusEntry entry = null;
+								for (RefactoringStatusEntry statusEntry : statusEntries) {
+									if (statusEntry != null) {
+										entry = statusEntry;
+										break;
+									}
+								}
+								// print precondition failures
+								if (entry != null) {
 									numberOfPreCons++;
-									int code = notHandledError == null ? noEnoughDataError.getCode()
-											: notHandledError.getCode();
-									PreconditionFailure name = notHandledError == null
-											? PreconditionFailure.NO_ENOUGH_DATA
-											: PreconditionFailure.CURRENTLY_NOT_HANDLED;
-									String message = notHandledError == null ? noEnoughDataError.getMessage()
-											: notHandledError.getMessage();
-
 									failedPreConsPrinter.printRecord(project.getElementName(),
 											logInvocation.getExpression(), logInvocation.getStartPosition(),
 											logInvocation.getLogLevel(),
 											logInvocation.getEnclosingType().getFullyQualifiedName(),
-											Util.getMethodIdentifier(logInvocation.getEnclosingEclipseMethod()), code,
-											name, message);
+											Util.getMethodIdentifier(logInvocation.getEnclosingEclipseMethod()),
+											entry.getCode(), entry, entry.getMessage());
 								}
 
 							}
 
 							resultPrinter.printRecord(project.getElementName(), numberOfLogInvs, numberOfCandidate,
 									numberOfPreCons);
-							;
 
 						}
 
