@@ -107,6 +107,10 @@ public class LogInvocation {
 
 		return interactionElement.getInterest();
 	}
+	
+	public void setDegreeOfInterestValue(float degreeOfInterestValue) {
+		this.degreeOfInterestValue = degreeOfInterestValue;
+	}
 
 	public float manipulateDOIForFile() {
 

@@ -69,6 +69,8 @@ public class LogAnalyzer extends ASTVisitor {
 				LOGGER.info("DOI for file before manipulating file:" + interactionElement.getInterest().getValue());
 				LOGGER.info("DOI for file after manipulating file: " + inv.manipulateDOIForFile());
 				for (LogInvocation logInvocation : this.logInvocationSet) {
+					// update DOI value for each methods
+					logInvocation.setDegreeOfInterestValue(logInvocation.getDegreeOfInterest().getValue());
 					LOGGER.info("DOI for enclosing method after manipulating file: "
 							+ logInvocation.getDegreeOfInterestValue());
 				}
