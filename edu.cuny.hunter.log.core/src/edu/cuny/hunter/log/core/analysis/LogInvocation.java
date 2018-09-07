@@ -29,8 +29,11 @@ import org.eclipse.mylyn.context.core.ContextCore;
 import org.eclipse.mylyn.context.core.IDegreeOfInterest;
 import org.eclipse.mylyn.context.core.IInteractionElement;
 import org.eclipse.mylyn.internal.context.core.ContextCorePlugin;
+import org.eclipse.mylyn.internal.java.ui.JavaStructureBridge;
 import org.eclipse.mylyn.internal.tasks.core.TaskList;
 import org.eclipse.mylyn.internal.tasks.ui.TasksUiPlugin;
+import org.eclipse.mylyn.monitor.core.InteractionEvent;
+
 import edu.cuny.hunter.log.core.utils.LoggerNames;
 
 @SuppressWarnings("restriction")
@@ -101,24 +104,25 @@ public class LogInvocation {
 		IInteractionElement interactionElement = ContextCore.getContextManager()
 				.getElement(enclosingMethod.getHandleIdentifier());
 
-		System.out.println(
+		if (interactionElement == null)
+			return null;
+
+		LOGGER.info(
 				"DOI for enclosing method before manipulating file: " + interactionElement.getInterest().getValue());
 
 		IJavaElement cu = this.getEnclosingEclipseMethod().getCompilationUnit();
 		IInteractionElement interactionElementForFile = ContextCore.getContextManager()
 				.getElement(cu.getHandleIdentifier());
-		System.out.println(
-				"DOI for file before manipulating file: " + interactionElementForFile.getInterest().getValue());
-		ContextCorePlugin.getContextManager().manipulateInterestForElement(interactionElementForFile, false, false,
-				true, "", true);
 
-		System.out
-				.println("DOI for file after manipulating file: " + interactionElementForFile.getInterest().getValue());
-		System.out.println(
-				"DOI for enclosing method after manipulating file: " + interactionElement.getInterest().getValue());
+		LOGGER.info("DOI for file before manipulating file: " + interactionElementForFile.getInterest().getValue());
 
-		if (interactionElement == null)
-			return null;
+		InteractionEvent event = new InteractionEvent(InteractionEvent.Kind.MANIPULATION,
+				new JavaStructureBridge().getContentType(), interactionElementForFile.getHandleIdentifier(), "source");
+		ContextCorePlugin.getContextManager().processInteractionEvent(event, true);
+
+		LOGGER.info("DOI for file after manipulating file: " + interactionElementForFile.getInterest().getValue());
+		LOGGER.info("DOI for enclosing method after manipulating file: " + interactionElement.getInterest().getValue());
+
 		return interactionElement.getInterest();
 	}
 
