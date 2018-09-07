@@ -12,7 +12,7 @@ import java.util.logging.Logger;
 
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jdt.core.ICompilationUnit;
-import org.eclipse.jdt.core.IMethod;
+import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.core.dom.AST;
@@ -40,11 +40,6 @@ public class LogEvolutionRefactoringTest extends RefactoringTest {
 	@Override
 	public String getRefactoringPath() {
 		return REFACTORING_PATH;
-	}
-
-	@Override
-	protected Refactoring getRefactoring(IMethod... methods) throws JavaModelException {
-		return null;
 	}
 
 	public LogEvolutionRefactoringTest(String name) {
@@ -130,7 +125,8 @@ public class LogEvolutionRefactoringTest extends RefactoringTest {
 	}
 
 	@Override
-	public void testPlainMethod() throws Exception {
+	protected Refactoring getRefactoring(IJavaElement... elements) throws JavaModelException {
+		return null;
 	}
 
 }

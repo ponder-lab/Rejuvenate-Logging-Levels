@@ -72,7 +72,7 @@
                         ifEmpty="false"
                         operator="or">
                      <instanceof
-                           value="org.eclipse.jdt.core.IMethod">
+                           value="org.eclipse.jdt.core.IJavaProject">
                      </instanceof>
                   </iterate>
                </with>
