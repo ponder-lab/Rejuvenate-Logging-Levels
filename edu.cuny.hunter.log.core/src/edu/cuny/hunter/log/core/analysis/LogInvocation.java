@@ -50,8 +50,6 @@ public class LogInvocation {
 
 	private float degreeOfInterestValue;
 
-	private float degreeOfInterestValueForFile;
-
 	private static final Logger LOGGER = Logger.getLogger(LoggerNames.LOGGER_NAME);
 
 	private Action action = Action.NONE;
