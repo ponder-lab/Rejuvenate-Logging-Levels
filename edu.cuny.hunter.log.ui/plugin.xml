@@ -6,25 +6,25 @@
          point="org.eclipse.ui.commands">
       <category
             name="Sample Category"
-            id="edu.cuny.hunter.logging.ui.commands.category">
+            id="edu.cuny.hunter.log.ui.commands.category">
       </category>
       <command
             name="Suggest a log level."
-            categoryId="edu.cuny.hunter.logging.ui.commands.category"
-            id="edu.cuny.hunter.logging.ui.commands.sampleCommand">
+            categoryId="edu.cuny.hunter.log.ui.commands.category"
+            id="edu.cuny.hunter.log.ui.commands.sampleCommand">
       </command>
    </extension>
    <extension
          point="org.eclipse.ui.handlers">
       <handler
-            commandId="edu.cuny.hunter.logging.ui.commands.sampleCommand"
+            commandId="edu.cuny.hunter.log.ui.commands.sampleCommand"
             class="edu.cuny.hunter.log.ui.handlers.LogHandler">
       </handler>
    </extension>
    <extension
          point="org.eclipse.ui.bindings">
       <key
-            commandId="edu.cuny.hunter.logging.ui.commands.sampleCommand"
+            commandId="edu.cuny.hunter.log.ui.commands.sampleCommand"
             contextId="org.eclipse.ui.contexts.window"
             sequence="M1+6"
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration">
@@ -37,23 +37,23 @@
          <menu
                label="Sample Menu"
                mnemonic="M"
-               id="edu.cuny.hunter.logging.ui.menus.sampleMenu">
+               id="edu.cuny.hunter.log.ui.menus.sampleMenu">
             <command
-                  commandId="edu.cuny.hunter.logging.ui.commands.sampleCommand"
+                  commandId="edu.cuny.hunter.log.ui.commands.sampleCommand"
                   mnemonic="S"
-                  id="edu.cuny.hunter.logging.ui.menus.sampleCommand">
+                  id="edu.cuny.hunter.log.ui.menus.sampleCommand">
             </command>
          </menu>
       </menuContribution>
       <menuContribution
             locationURI="toolbar:org.eclipse.ui.main.toolbar?after=additions">
          <toolbar
-               id="edu.cuny.hunter.logging.ui.toolbars.sampleToolbar">
+               id="edu.cuny.hunter.log.ui.toolbars.sampleToolbar">
             <command
-                  commandId="edu.cuny.hunter.logging.ui.commands.sampleCommand"
+                  commandId="edu.cuny.hunter.log.ui.commands.sampleCommand"
                   icon="icons/sample.png"
                   tooltip="Say hello world"
-                  id="edu.cuny.hunter.logging.ui.toolbars.sampleCommand">
+                  id="edu.cuny.hunter.log.ui.toolbars.sampleCommand">
             </command>
          </toolbar>
       </menuContribution>
@@ -61,7 +61,7 @@
             allPopups="false"
             locationURI="popup:org.eclipse.jdt.ui.refactoring.menu?after=additions">
          <command
-               commandId="edu.cuny.hunter.logging.ui.commands.sampleCommand"
+               commandId="edu.cuny.hunter.log.ui.commands.sampleCommand"
                label="Suggest log level."
                style="push">
             <visibleWhen
@@ -72,7 +72,7 @@
                         ifEmpty="false"
                         operator="or">
                      <instanceof
-                           value="org.eclipse.jdt.core.IMethod">
+                           value="org.eclipse.jdt.core.IJavaProject">
                      </instanceof>
                   </iterate>
                </with>
