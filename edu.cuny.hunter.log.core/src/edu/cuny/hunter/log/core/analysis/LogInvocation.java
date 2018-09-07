@@ -105,23 +105,25 @@ public class LogInvocation {
 		if (interactionElement == null)
 			return null;
 
-		LOGGER.info(
-				"DOI for enclosing method before manipulating file: " + interactionElement.getInterest().getValue());
+		return interactionElement.getInterest();
+	}
 
-		IJavaElement cu = this.getEnclosingEclipseMethod().getCompilationUnit();
-		IInteractionElement interactionElementForFile = ContextCore.getContextManager()
-				.getElement(cu.getHandleIdentifier());
+	public float manipulateDOIForFile() {
 
-		LOGGER.info("DOI for file before manipulating file: " + interactionElementForFile.getInterest().getValue());
+		IInteractionElement interactionElementForFile = getInteractionElementForFile();
 
 		InteractionEvent event = new InteractionEvent(InteractionEvent.Kind.MANIPULATION,
 				new JavaStructureBridge().getContentType(), interactionElementForFile.getHandleIdentifier(), "source");
 		ContextCorePlugin.getContextManager().processInteractionEvent(event, true);
+		return interactionElementForFile.getInterest().getValue();
+	}
 
-		LOGGER.info("DOI for file after manipulating file: " + interactionElementForFile.getInterest().getValue());
-		LOGGER.info("DOI for enclosing method after manipulating file: " + interactionElement.getInterest().getValue());
+	public IInteractionElement getInteractionElementForFile() {
+		IJavaElement cu = this.getEnclosingEclipseMethod().getCompilationUnit();
+		IInteractionElement interactionElementForFile = ContextCore.getContextManager()
+				.getElement(cu.getHandleIdentifier());
 
-		return interactionElement.getInterest();
+		return interactionElementForFile;
 	}
 
 	public MethodInvocation getExpression() {

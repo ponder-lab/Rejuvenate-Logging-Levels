@@ -16,6 +16,8 @@ import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.core.dom.ASTVisitor;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.MethodInvocation;
+import org.eclipse.mylyn.context.core.IInteractionElement;
+
 import edu.cuny.hunter.log.core.utils.LoggerNames;
 import edu.cuny.hunter.log.core.utils.Util;
 
@@ -49,10 +51,31 @@ public class LogAnalyzer extends ASTVisitor {
 				.collect(Collectors.groupingBy(LogInvocation::getExpressionJavaProject, Collectors.toSet()));
 
 		HashSet<Float> degreeOfInterests = new HashSet<>();
+
+		LOGGER.info("------------------------------------------------------------------");
+		LogInvocation inv = null;
 		for (LogInvocation logInvocation : this.logInvocationSet) {
 			logInvocation.logInfo();
+			if (logInvocation != null)
+				inv = logInvocation;
 			degreeOfInterests.add(logInvocation.getDegreeOfInterestValue());
+			LOGGER.info(
+					"DOI for enclosing method before manipulating file: " + logInvocation.getDegreeOfInterestValue());
 		}
+
+		if (inv != null) {
+			IInteractionElement interactionElement = inv.getInteractionElementForFile();
+			if (interactionElement != null) {
+				LOGGER.info("DOI for file before manipulating file:" + interactionElement.getInterest().getValue());
+				LOGGER.info("DOI for file after manipulating file: " + inv.manipulateDOIForFile());
+				for (LogInvocation logInvocation : this.logInvocationSet) {
+					LOGGER.info("DOI for enclosing method after manipulating file: "
+							+ logInvocation.getDegreeOfInterestValue());
+				}
+			}
+
+		}
+		LOGGER.info("------------------------------------------------------------------");
 
 		// build boundary
 		boundary = buildBoundary(degreeOfInterests, useLogCategory);
