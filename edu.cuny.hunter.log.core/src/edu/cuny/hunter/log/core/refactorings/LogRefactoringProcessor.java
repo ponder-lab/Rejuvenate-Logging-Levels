@@ -141,7 +141,7 @@ public class LogRefactoringProcessor extends RefactoringProcessor {
 	/**
 	 * get a set of optimizable log set
 	 */
-	private Set<LogInvocation> getOptimizableLogSet() {
+	public Set<LogInvocation> getOptimizableLogSet() {
 		HashSet<LogInvocation> optimizableSet = new HashSet<>();
 		for (LogInvocation logInvocation : this.logInvocationSet) {
 			if (!logInvocation.getAction().equals(Action.NONE))
