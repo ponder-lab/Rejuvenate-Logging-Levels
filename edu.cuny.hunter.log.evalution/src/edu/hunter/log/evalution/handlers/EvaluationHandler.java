@@ -86,6 +86,9 @@ public class EvaluationHandler extends AbstractHandler {
 						CSVPrinter candidatePrinter = createCSVPrinter("candidate_log_invocations.csv",
 								new String[] { "subject raw", "log expression", "start pos", "logging level",
 										"type FQN", "enclosing method", "DOI" });
+						CSVPrinter refactoredPrinter = createCSVPrinter("refactored_log_invocations.csv",
+								new String[] { "subject raw", "log expression", "start pos", "logging level",
+										"type FQN", "enclosing method", "DOI" });
 						CSVPrinter failedPreConsPrinter = createCSVPrinter("failed_preconditions.csv",
 								new String[] { "subject raw", "log expression", "start pos", "logging level",
 										"type FQN", "enclosing method", "code", "name", "message" });
@@ -171,6 +174,7 @@ public class EvaluationHandler extends AbstractHandler {
 						actionPrinter.close();
 						candidatePrinter.close();
 						failedPreConsPrinter.close();
+						refactoredPrinter.close();
 					} catch (IOException e) {
 						LOGGER.severe("Cannot create printer.");
 					} catch (OperationCanceledException | CoreException e) {
