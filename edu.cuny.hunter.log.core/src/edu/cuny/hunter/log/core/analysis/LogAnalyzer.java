@@ -16,6 +16,8 @@ import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.core.dom.ASTVisitor;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.MethodInvocation;
+
+import edu.cuny.hunter.log.core.messages.Messages;
 import edu.cuny.hunter.log.core.utils.LoggerNames;
 import edu.cuny.hunter.log.core.utils.Util;
 
@@ -223,32 +225,30 @@ public class LogAnalyzer extends ASTVisitor {
 	/**
 	 * Whether the code is read-only, generated code and in a .class file.
 	 */
-	private void canModifyCode(LogInvocation logInvocation) {
-		CompilationUnit cu = logInvocation.getEnclosingCompilationUnit();
-		if (cu != null) {
-			IJavaElement element = cu.getJavaElement();
-			if (element.isReadOnly())
-				logInvocation.addStatusEntry(PreconditionFailure.READ_ONLY_ELEMENT,
-						"We've hit a jar or other Model Element where we can't make relevant changes.");
+	public void checkCodeModification() {
+		for (LogInvocation logInvocation : this.getLogInvocationSet()) {
+			CompilationUnit cu = logInvocation.getEnclosingCompilationUnit();
+			if (cu != null) {
+				IJavaElement element = cu.getJavaElement();
+				if (element.isReadOnly())
+					logInvocation.addStatusEntry(PreconditionFailure.READ_ONLY_ELEMENT, Messages.ReadOnlyElement);
 
-			IMethod method = logInvocation.getEnclosingEclipseMethod();
-			if (method != null && method.isBinary())
-				logInvocation.addStatusEntry(PreconditionFailure.BINARY_ELEMENT, "Element is in a .class file.");
+				IMethod method = logInvocation.getEnclosingEclipseMethod();
+				if (method != null && method.isBinary())
+					logInvocation.addStatusEntry(PreconditionFailure.BINARY_ELEMENT, Messages.BinaryElement);
 
-			try {
-				if (Util.isGeneratedCode(element))
-					logInvocation.addStatusEntry(PreconditionFailure.GENERATED_ELEMENT,
-							"We can't refactoring anything because of generated code.");
-			} catch (JavaModelException e) {
-				logInvocation.addStatusEntry(PreconditionFailure.MISSING_JAVA_ELEMENT,
-						" we are resolving this element from the JavaModel using JDT internal API, and it's missing.");
+				try {
+					if (Util.isGeneratedCode(element))
+						logInvocation.addStatusEntry(PreconditionFailure.GENERATED_ELEMENT, Messages.GeneratedElement);
+				} catch (JavaModelException e) {
+					logInvocation.addStatusEntry(PreconditionFailure.MISSING_JAVA_ELEMENT, Messages.MissingJavaElement);
+				}
 			}
 		}
 	}
 
 	private void createLogInvocation(MethodInvocation node, Level logLevel) {
 		LogInvocation logInvocation = new LogInvocation(node, logLevel);
-		canModifyCode(logInvocation);
 		this.getLogInvocationSet().add(logInvocation);
 	}
 
