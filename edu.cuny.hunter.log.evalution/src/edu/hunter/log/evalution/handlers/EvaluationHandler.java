@@ -2,12 +2,15 @@ package edu.hunter.log.evalution.handlers;
 
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.HashSet;
-import java.util.Iterator;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
@@ -86,6 +89,9 @@ public class EvaluationHandler extends AbstractHandler {
 						CSVPrinter candidatePrinter = createCSVPrinter("candidate_log_invocations.csv",
 								new String[] { "subject raw", "log expression", "start pos", "logging level",
 										"type FQN", "enclosing method", "DOI" });
+						CSVPrinter optimizablePrinter = createCSVPrinter("optimizable_log_invocations.csv",
+								new String[] { "subject raw", "log expression", "start pos", "logging level",
+										"type FQN", "enclosing method", "DOI" });
 						CSVPrinter failedPreConsPrinter = createCSVPrinter("failed_preconditions.csv",
 								new String[] { "subject raw", "log expression", "start pos", "logging level",
 										"type FQN", "enclosing method", "code", "name", "message" });
@@ -99,71 +105,92 @@ public class EvaluationHandler extends AbstractHandler {
 							new ProcessorBasedRefactoring((RefactoringProcessor) logRefactoringProcessor)
 									.checkAllConditions(new NullProgressMonitor());
 
-							Iterator<LogInvocation> logInvocationIterator = logRefactoringProcessor
-									.getLogInvocationSet().iterator();
+							Set<LogInvocation> logInvocationSet = logRefactoringProcessor.getLogInvocationSet();
 
-							int numberOfCandidate = 0;
-							int numberOfLogInvs = 0;
-							int numberOfPreCons = 0;
+							// get candidate log invocations
+							Set<LogInvocation> candidates = logInvocationSet == null ? Collections.emptySet()
+									: logInvocationSet.parallelStream().filter(logInvocation -> {
+										String pluginId = FrameworkUtil.getBundle(LogInvocation.class)
+												.getSymbolicName();
 
-							// for each logInvocation
-							while (logInvocationIterator.hasNext()) {
-								LogInvocation logInvocation = logInvocationIterator.next();
-								numberOfLogInvs++;
+										// check all precondition failures
+										RefactoringStatusEntry missingJavaElementError = logInvocation.getStatus()
+												.getEntryMatchingCode(pluginId,
+														PreconditionFailure.MISSING_JAVA_ELEMENT.getCode());
+										RefactoringStatusEntry binaryElementError = logInvocation.getStatus()
+												.getEntryMatchingCode(pluginId,
+														PreconditionFailure.BINARY_ELEMENT.getCode());
+										RefactoringStatusEntry readOnlyElementError = logInvocation.getStatus()
+												.getEntryMatchingCode(pluginId,
+														PreconditionFailure.READ_ONLY_ELEMENT.getCode());
+										RefactoringStatusEntry generatedElementError = logInvocation.getStatus()
+												.getEntryMatchingCode(pluginId,
+														PreconditionFailure.GENERATED_ELEMENT.getCode());
+										return missingJavaElementError == null && binaryElementError == null
+												&& readOnlyElementError == null && generatedElementError == null;
+									}).collect(Collectors.toSet());
 
-								String pluginId = FrameworkUtil.getBundle(LogInvocation.class).getSymbolicName();
-
+							// print candidate log invocations
+							for (LogInvocation logInvocation : candidates) {
 								// print candidates
 								candidatePrinter.printRecord(project.getElementName(), logInvocation.getExpression(),
 										logInvocation.getStartPosition(), logInvocation.getLogLevel(),
 										logInvocation.getEnclosingType().getFullyQualifiedName(),
 										Util.getMethodIdentifier(logInvocation.getEnclosingEclipseMethod()),
 										logInvocation.getDegreeOfInterestValue());
-								numberOfCandidate++;
+							}
 
+							Set<LogInvocation> optimizableLogInvocationSet = logRefactoringProcessor
+									.getOptimizableLogSet();
+							// get the difference of candidates and optimizable log invocations
+							Set<LogInvocation> failures = candidates;
+							failures.removeAll(optimizableLogInvocationSet);
+
+							// failed preconditions.
+							Collection<RefactoringStatusEntry> errorEntries = failures.parallelStream()
+									.map(LogInvocation::getStatus).flatMap(s -> Arrays.stream(s.getEntries()))
+									.filter(RefactoringStatusEntry::isError).collect(Collectors.toSet());
+
+							// print failed preconditions
+							for (RefactoringStatusEntry entry : errorEntries)
+								if (!entry.isFatalError()) {
+									Object correspondingElement = entry.getData();
+
+									if (!(correspondingElement instanceof LogInvocation))
+										throw new IllegalStateException("The element: " + correspondingElement
+												+ " corresponding to a failed precondition is not a Stream. Instead, it is a: "
+												+ correspondingElement.getClass());
+
+									LogInvocation failedLogInvocation = (LogInvocation) correspondingElement;
+
+									failedPreConsPrinter.printRecord(project.getElementName(),
+											failedLogInvocation.getExpression(), failedLogInvocation.getStartPosition(),
+											failedLogInvocation.getLogLevel(),
+											failedLogInvocation.getEnclosingType().getFullyQualifiedName(),
+											Util.getMethodIdentifier(failedLogInvocation.getEnclosingEclipseMethod()),
+											entry.getCode(), entry, entry.getMessage());
+								}
+
+							for (LogInvocation logInvocation : optimizableLogInvocationSet) {
+								// print candidates
+								optimizablePrinter.printRecord(project.getElementName(), logInvocation.getExpression(),
+										logInvocation.getStartPosition(), logInvocation.getLogLevel(),
+										logInvocation.getEnclosingType().getFullyQualifiedName(),
+										Util.getMethodIdentifier(logInvocation.getEnclosingEclipseMethod()),
+										logInvocation.getDegreeOfInterestValue());
+							}
+
+							for (LogInvocation logInvocation : logInvocationSet) {
 								// print actions
 								actionPrinter.printRecord(project.getElementName(), logInvocation.getExpression(),
 										logInvocation.getStartPosition(), logInvocation.getLogLevel(),
 										logInvocation.getEnclosingType().getFullyQualifiedName(),
 										Util.getMethodIdentifier(logInvocation.getEnclosingEclipseMethod()),
 										logInvocation.getAction());
-
-								// check all precondition failures
-								HashSet<RefactoringStatusEntry> statusEntries = new HashSet<>();
-								statusEntries.add(logInvocation.getStatus().getEntryMatchingCode(pluginId,
-										PreconditionFailure.CURRENTLY_NOT_HANDLED.getCode()));
-								statusEntries.add(logInvocation.getStatus().getEntryMatchingCode(pluginId,
-										PreconditionFailure.NO_ENOUGH_DATA.getCode()));
-								statusEntries.add(logInvocation.getStatus().getEntryMatchingCode(pluginId,
-										PreconditionFailure.MISSING_JAVA_ELEMENT.getCode()));
-								statusEntries.add(logInvocation.getStatus().getEntryMatchingCode(pluginId,
-										PreconditionFailure.BINARY_ELEMENT.getCode()));
-								statusEntries.add(logInvocation.getStatus().getEntryMatchingCode(pluginId,
-										PreconditionFailure.READ_ONLY_ELEMENT.getCode()));
-								statusEntries.add(logInvocation.getStatus().getEntryMatchingCode(pluginId,
-										PreconditionFailure.MISSING_JAVA_ELEMENT.getCode()));
-								RefactoringStatusEntry entry = null;
-								for (RefactoringStatusEntry statusEntry : statusEntries) {
-									if (statusEntry != null) {
-										entry = statusEntry;
-										break;
-									}
-								}
-								// print precondition failures
-								if (entry != null) {
-									numberOfPreCons++;
-									failedPreConsPrinter.printRecord(project.getElementName(),
-											logInvocation.getExpression(), logInvocation.getStartPosition(),
-											logInvocation.getLogLevel(),
-											logInvocation.getEnclosingType().getFullyQualifiedName(),
-											Util.getMethodIdentifier(logInvocation.getEnclosingEclipseMethod()),
-											entry.getCode(), entry, entry.getMessage());
-								}
-
 							}
 
-							resultPrinter.printRecord(project.getElementName(), numberOfLogInvs, numberOfCandidate,
-									numberOfPreCons);
+							resultPrinter.printRecord(project.getElementName(), logInvocationSet.size(),
+									candidates.size(), errorEntries.size());
 
 						}
 
@@ -171,6 +198,7 @@ public class EvaluationHandler extends AbstractHandler {
 						actionPrinter.close();
 						candidatePrinter.close();
 						failedPreConsPrinter.close();
+						optimizablePrinter.close();
 					} catch (IOException e) {
 						LOGGER.severe("Cannot create printer.");
 					} catch (OperationCanceledException | CoreException e) {
