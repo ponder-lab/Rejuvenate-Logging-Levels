@@ -112,10 +112,11 @@ public class LogRefactoringProcessor extends RefactoringProcessor {
 				}
 			}
 
-			// analyze and set entry points.
-			analyzer.analyze();
 			// check failed preconditions.
 			analyzer.checkCodeModification();
+			
+			// analyze and set entry points.
+			analyzer.analyze();
 
 			this.setLogInvocationSet(analyzer.getLogInvocationSet());
 
