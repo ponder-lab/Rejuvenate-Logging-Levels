@@ -45,11 +45,9 @@ public class LogAnalyzer extends ASTVisitor {
 	}
 
 	public void analyze() {
-
-		// collect the projects to be analyzed.
-		Map<IJavaProject, Set<LogInvocation>> projectToLoggings = this.getLogInvocationSet().stream()
-				.collect(Collectors.groupingBy(LogInvocation::getExpressionJavaProject, Collectors.toSet()));
-
+		// check failed preconditions.
+		this.checkCodeModification();
+		
 		HashSet<Float> degreeOfInterests = new HashSet<>();
 		for (LogInvocation logInvocation : this.logInvocationSet) {
 			logInvocation.logInfo();
@@ -243,7 +241,8 @@ public class LogAnalyzer extends ASTVisitor {
 				} catch (JavaModelException e) {
 					logInvocation.addStatusEntry(PreconditionFailure.MISSING_JAVA_ELEMENT, Messages.MissingJavaElement);
 				}
-			}
+			} else
+				LOGGER.warning("Can't find enclosing compilation unit for: " + logInvocation + ".");
 		}
 	}
 
