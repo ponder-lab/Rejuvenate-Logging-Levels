@@ -95,7 +95,6 @@ public class LogRefactoringProcessor extends RefactoringProcessor {
 		try {
 			final RefactoringStatus status = new RefactoringStatus();
 			LogAnalyzer analyzer = new LogAnalyzer(this.useLogCategory);
-			this.setLogInvocationSet(analyzer.getLogInvocationSet());
 
 			for (IJavaProject jproj : this.getJavaProjects()) {
 				IPackageFragmentRoot[] roots = jproj.getPackageFragmentRoots();
@@ -112,9 +111,11 @@ public class LogRefactoringProcessor extends RefactoringProcessor {
 						}
 				}
 			}
-
-			// analyze and set entry points.
+			
+			// analyze.
 			analyzer.analyze();
+
+			this.setLogInvocationSet(analyzer.getLogInvocationSet());
 
 			// get the status of each log invocation.
 			RefactoringStatus collectedStatus = this.getLogInvocationSet().stream().map(LogInvocation::getStatus)

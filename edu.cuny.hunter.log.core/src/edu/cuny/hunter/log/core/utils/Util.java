@@ -6,6 +6,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.logging.Level;
 
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IJavaProject;
@@ -149,7 +150,7 @@ public final class Util {
 	}
 
 	public static boolean isGeneratedCode(IJavaElement element) throws JavaModelException {
-		return element.getCorrespondingResource().isDerived();
+		return element.getResource().isDerived(IResource.CHECK_ANCESTORS);
 	}
 
 }
