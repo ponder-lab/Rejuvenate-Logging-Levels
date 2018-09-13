@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
@@ -143,7 +144,8 @@ public class EvaluationHandler extends AbstractHandler {
 							Set<LogInvocation> optimizableLogInvocationSet = logRefactoringProcessor
 									.getOptimizableLogSet();
 							// get the difference of candidates and optimizable log invocations
-							Set<LogInvocation> failures = candidates;
+							Set<LogInvocation> failures = new HashSet<LogInvocation>();
+							failures.addAll(candidates);
 							failures.removeAll(optimizableLogInvocationSet);
 
 							// failed preconditions.
