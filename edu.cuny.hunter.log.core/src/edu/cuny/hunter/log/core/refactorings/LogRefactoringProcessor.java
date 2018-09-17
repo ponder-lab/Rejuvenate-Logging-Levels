@@ -123,13 +123,12 @@ public class LogRefactoringProcessor extends RefactoringProcessor {
 			status.merge(collectedStatus);
 
 			if (!status.hasFatalError()) {
-				// those log invocations whose logging level can be optimized
-				Set<LogInvocation> optimizableLogSet = this.getOptimizableLogSet();
-				if (optimizableLogSet.isEmpty()) {
-					status.addFatalError(Messages.NoOptimizableLog);
+				// those log invocations whose logging level can be refactored
+				Set<LogInvocation> possibleRejuvenatedLogSet = this.getPossibleRejuvenatedLog();
+				if (possibleRejuvenatedLogSet.isEmpty()) {
+					status.addFatalError(Messages.NoPossibleRejuvenatedLog);
 				}
 			}
-
 			return status;
 		} catch (Exception e) {
 			LOGGER.info("Cannot accpet the visitors. ");
@@ -142,7 +141,7 @@ public class LogRefactoringProcessor extends RefactoringProcessor {
 	/**
 	 * get a set of optimizable log set
 	 */
-	public Set<LogInvocation> getOptimizableLogSet() {
+	public Set<LogInvocation> getPossibleRejuvenatedLog() {
 		HashSet<LogInvocation> optimizableSet = new HashSet<>();
 		for (LogInvocation logInvocation : this.logInvocationSet) {
 			if (!logInvocation.getAction().equals(Action.NONE))
@@ -163,7 +162,7 @@ public class LogRefactoringProcessor extends RefactoringProcessor {
 			Set<LogInvocation> optimizableLogs = this.getLogInvocationSet();
 
 			if (optimizableLogs.isEmpty())
-				return new NullChange(Messages.NoOptimizableLog);
+				return new NullChange(Messages.NoPossibleRejuvenatedLog);
 
 			pm.beginTask("Transforming logging levels ...", optimizableLogs.size());
 			for (LogInvocation logInvocation : optimizableLogs) {
