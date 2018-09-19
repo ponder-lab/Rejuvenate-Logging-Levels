@@ -23,7 +23,7 @@ import edu.cuny.hunter.log.core.refactorings.LogRejuvenatingProcessor;
 
 @SuppressWarnings("restriction")
 public final class Util {
-	public static ProcessorBasedRefactoring createRefactoring(IJavaProject[] projects,
+	public static ProcessorBasedRefactoring createRejuvenating(IJavaProject[] projects,
 			Optional<IProgressMonitor> monitor) throws JavaModelException {
 		LogRejuvenatingProcessor processor = createLoggingProcessor(projects, monitor);
 		return new ProcessorBasedRefactoring(processor);

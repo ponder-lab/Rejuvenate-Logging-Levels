@@ -60,7 +60,7 @@ public class LogHandler extends AbstractHandler {
 							shell, Optional.empty());
 			} catch (JavaModelException e) {
 				JavaPlugin.log(e);
-				throw new ExecutionException("Failed to start refactoring", e);
+				throw new ExecutionException("Failed to start rejuvenating", e);
 			}
 		return null;
 

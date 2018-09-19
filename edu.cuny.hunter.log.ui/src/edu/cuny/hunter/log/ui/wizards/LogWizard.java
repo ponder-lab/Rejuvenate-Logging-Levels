@@ -116,7 +116,7 @@ public class LogWizard extends RefactoringWizard {
 
 	public static void startRefactoring(IJavaProject[] javaProjects, Shell shell, Optional<IProgressMonitor> monitor)
 			throws JavaModelException {
-		Refactoring refactoring = Util.createRefactoring(javaProjects, monitor);
+		Refactoring refactoring = Util.createRejuvenating(javaProjects, monitor);
 		RefactoringWizard wizard = new LogWizard(refactoring);
 
 		new RefactoringStarter().activate(wizard, shell, RefactoringMessages.OpenRefactoringWizardAction_refactoring,

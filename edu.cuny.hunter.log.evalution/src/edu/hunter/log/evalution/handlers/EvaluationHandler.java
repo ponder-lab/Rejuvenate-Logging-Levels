@@ -100,13 +100,13 @@ public class EvaluationHandler extends AbstractHandler {
 						// for each selected java project
 						for (IJavaProject project : javaProjectList) {
 
-							LogRejuvenatingProcessor logRefactoringProcessor = new LogRejuvenatingProcessor(
+							LogRejuvenatingProcessor logRejuvenatingProcessor = new LogRejuvenatingProcessor(
 									new IJavaProject[] { project }, this.useLogCategory(), settings, monitor);
 
-							new ProcessorBasedRefactoring((RefactoringProcessor) logRefactoringProcessor)
+							new ProcessorBasedRefactoring((RefactoringProcessor) logRejuvenatingProcessor)
 									.checkAllConditions(new NullProgressMonitor());
 
-							Set<LogInvocation> logInvocationSet = logRefactoringProcessor.getLogInvocationSet();
+							Set<LogInvocation> logInvocationSet = logRejuvenatingProcessor.getLogInvocationSet();
 
 							// get candidate log invocations
 							Set<LogInvocation> candidates = logInvocationSet == null ? Collections.emptySet()
@@ -141,7 +141,7 @@ public class EvaluationHandler extends AbstractHandler {
 										logInvocation.getDegreeOfInterestValue());
 							}
 
-							Set<LogInvocation> optimizableLogInvocationSet = logRefactoringProcessor
+							Set<LogInvocation> optimizableLogInvocationSet = logRejuvenatingProcessor
 									.getPossibleRejuvenatedLog();
 							// get the difference of candidates and optimizable log invocations
 							Set<LogInvocation> failures = new HashSet<LogInvocation>();
