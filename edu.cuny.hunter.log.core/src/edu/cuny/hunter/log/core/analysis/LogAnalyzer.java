@@ -68,45 +68,45 @@ public class LogAnalyzer extends ASTVisitor {
 
 	private boolean doAction(LogInvocation logInvocation, boolean useLogCategory) {
 		Level currentLogLevel = logInvocation.getLogLevel();
-		Level rejuvenatedLogLevel = getRejuvenatedLogLevel(boundary, logInvocation, useLogCategory);
+		Level suggestedLogLevel = getSuggestedLogLevel(boundary, logInvocation, useLogCategory);
 
-		if (currentLogLevel == rejuvenatedLogLevel)
+		if (currentLogLevel == suggestedLogLevel)
 			return false;
-		if (rejuvenatedLogLevel == null || currentLogLevel == null)
+		if (suggestedLogLevel == null || currentLogLevel == null)
 			return false;
 		if (useLogCategory && (currentLogLevel == Level.CONFIG || currentLogLevel == Level.WARNING
 				|| currentLogLevel == Level.SEVERE))
 			return false;
 
-		if (rejuvenatedLogLevel == Level.ALL)
+		if (suggestedLogLevel == Level.ALL)
 			logInvocation.setAction(Action.CONVERT_TO_ALL);
-		if (rejuvenatedLogLevel == Level.FINEST)
+		if (suggestedLogLevel == Level.FINEST)
 			logInvocation.setAction(Action.CONVERT_TO_FINEST);
-		if (rejuvenatedLogLevel == Level.FINER)
+		if (suggestedLogLevel == Level.FINER)
 			logInvocation.setAction(Action.CONVERT_TO_FINER);
-		if (rejuvenatedLogLevel == Level.FINE)
+		if (suggestedLogLevel == Level.FINE)
 			logInvocation.setAction(Action.CONVERT_TO_FINE);
-		if (rejuvenatedLogLevel == Level.CONFIG)
+		if (suggestedLogLevel == Level.CONFIG)
 			logInvocation.setAction(Action.CONVERT_TO_CONFIG);
-		if (rejuvenatedLogLevel == Level.INFO)
+		if (suggestedLogLevel == Level.INFO)
 			logInvocation.setAction(Action.CONVERT_TO_INFO);
-		if (rejuvenatedLogLevel == Level.WARNING)
+		if (suggestedLogLevel == Level.WARNING)
 			logInvocation.setAction(Action.CONVERT_TO_WARNING);
-		if (rejuvenatedLogLevel == Level.SEVERE)
+		if (suggestedLogLevel == Level.SEVERE)
 			logInvocation.setAction(Action.CONVERT_TO_SEVERE);
-		if (rejuvenatedLogLevel == Level.OFF)
+		if (suggestedLogLevel == Level.OFF)
 			logInvocation.setAction(Action.CONVERT_TO_OFF);
 		return true;
 	}
 
 	/**
-	 * Get the rejuvenated log level based on boundary.
+	 * Get the suggested log level based on boundary.
 	 * 
 	 * @param boundary
 	 * @param DOI
-	 * @return the rejuvenated log level
+	 * @return the suggested log level
 	 */
-	private static Level getRejuvenatedLogLevel(LinkedList<Float> boundary, LogInvocation logInvocation,
+	private static Level getSuggestedLogLevel(LinkedList<Float> boundary, LogInvocation logInvocation,
 			boolean useLogCategory) {
 		float DOI = logInvocation.getDegreeOfInterestValue();
 		if (boundary == null)

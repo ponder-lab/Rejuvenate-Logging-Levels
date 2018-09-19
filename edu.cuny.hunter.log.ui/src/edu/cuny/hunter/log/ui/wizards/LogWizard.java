@@ -36,7 +36,7 @@ public class LogWizard extends RefactoringWizard {
 
 		private static final String DESCRIPTION = Messages.Name;
 
-		private static final String DIALOG_SETTING_SECTION = "RejuvenateLoggingLevel"; //$NON-NLS-1$
+		private static final String DIALOG_SETTING_SECTION = "OptimizeLoggingLevel"; //$NON-NLS-1$
 
 		public static final String PAGE_NAME = "LogInputPage"; //$NON-NLS-1$
 
@@ -89,7 +89,7 @@ public class LogWizard extends RefactoringWizard {
 			this.updateStatus();
 			Dialog.applyDialogFont(result);
 			PlatformUI.getWorkbench().getHelpSystem().setHelp(this.getControl(),
-					"rejuvenate_logging_level_wizard_page_context");
+					"optimize_logging_level_wizard_page_context");
 		}
 
 		private LogRejuvenatingProcessor getProcessor() {

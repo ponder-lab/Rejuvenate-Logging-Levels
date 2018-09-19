@@ -142,7 +142,7 @@ public class EvaluationHandler extends AbstractHandler {
 							}
 
 							Set<LogInvocation> optimizableLogInvocationSet = logRefactoringProcessor
-									.getPossibleRejuvenatedLog();
+									.getOptimizableLogSet();
 							// get the difference of candidates and optimizable log invocations
 							Set<LogInvocation> failures = new HashSet<LogInvocation>();
 							failures.addAll(candidates);
