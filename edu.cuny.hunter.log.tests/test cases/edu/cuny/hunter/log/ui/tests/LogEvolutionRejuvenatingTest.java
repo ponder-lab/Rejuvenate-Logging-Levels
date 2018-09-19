@@ -28,7 +28,7 @@ import edu.cuny.hunter.log.core.utils.LoggerNames;
 import edu.cuny.hunter.log.core.analysis.PreconditionFailure;
 
 @SuppressWarnings("restriction")
-public class LogEvolutionRefactoringTest extends RefactoringTest {
+public class LogEvolutionRejuvenatingTest extends RefactoringTest {
 
 	private static final String REFACTORING_PATH = "LogEvolution/";
 
@@ -42,7 +42,7 @@ public class LogEvolutionRefactoringTest extends RefactoringTest {
 		return REFACTORING_PATH;
 	}
 
-	public LogEvolutionRefactoringTest(String name) {
+	public LogEvolutionRejuvenatingTest(String name) {
 		super(name);
 	}
 
@@ -51,7 +51,7 @@ public class LogEvolutionRefactoringTest extends RefactoringTest {
 	}
 
 	public static Test suite() {
-		return setUpTest(new TestSuite(LogEvolutionRefactoringTest.class));
+		return setUpTest(new TestSuite(LogEvolutionRejuvenatingTest.class));
 	}
 
 	public static Test setUpTest(Test test) {

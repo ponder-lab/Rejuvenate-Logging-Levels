@@ -33,7 +33,7 @@ import org.osgi.framework.FrameworkUtil;
 import edu.cuny.citytech.refactoring.common.core.RefactoringProcessor;
 import edu.cuny.hunter.log.core.analysis.LogInvocation;
 import edu.cuny.hunter.log.core.analysis.PreconditionFailure;
-import edu.cuny.hunter.log.core.refactorings.LogRefactoringProcessor;
+import edu.cuny.hunter.log.core.refactorings.LogRejuvenatingProcessor;
 import edu.cuny.hunter.log.core.utils.LoggerNames;
 import edu.hunter.log.evalution.utils.Util;
 
@@ -100,7 +100,7 @@ public class EvaluationHandler extends AbstractHandler {
 						// for each selected java project
 						for (IJavaProject project : javaProjectList) {
 
-							LogRefactoringProcessor logRefactoringProcessor = new LogRefactoringProcessor(
+							LogRejuvenatingProcessor logRefactoringProcessor = new LogRejuvenatingProcessor(
 									new IJavaProject[] { project }, this.useLogCategory(), settings, monitor);
 
 							new ProcessorBasedRefactoring((RefactoringProcessor) logRefactoringProcessor)

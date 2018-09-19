@@ -36,7 +36,7 @@ import edu.cuny.hunter.log.core.messages.Messages;
 import edu.cuny.hunter.log.core.utils.LoggerNames;
 
 @SuppressWarnings({ "restriction", "deprecation" })
-public class LogRefactoringProcessor extends RefactoringProcessor {
+public class LogRejuvenatingProcessor extends RefactoringProcessor {
 
 	private IJavaProject[] javaProjects;
 
@@ -46,7 +46,7 @@ public class LogRefactoringProcessor extends RefactoringProcessor {
 
 	private boolean useLogCategory = false;
 
-	public LogRefactoringProcessor(final CodeGenerationSettings settings) {
+	public LogRejuvenatingProcessor(final CodeGenerationSettings settings) {
 		super(settings);
 	}
 	
@@ -58,7 +58,7 @@ public class LogRefactoringProcessor extends RefactoringProcessor {
 		return this.useLogCategory;
 	}
 
-	public LogRefactoringProcessor(IJavaProject[] javaProjects, final CodeGenerationSettings settings,
+	public LogRejuvenatingProcessor(IJavaProject[] javaProjects, final CodeGenerationSettings settings,
 			Optional<IProgressMonitor> monitor) {
 		super(settings);
 		try {
@@ -68,7 +68,7 @@ public class LogRefactoringProcessor extends RefactoringProcessor {
 		}
 	}
 
-	public LogRefactoringProcessor(IJavaProject[] javaProjects, boolean useConfigLogLevel,
+	public LogRejuvenatingProcessor(IJavaProject[] javaProjects, boolean useConfigLogLevel,
 			final CodeGenerationSettings settings, Optional<IProgressMonitor> monitor) {
 		super(settings);
 		try {
