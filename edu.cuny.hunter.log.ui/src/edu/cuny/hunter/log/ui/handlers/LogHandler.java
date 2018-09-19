@@ -8,7 +8,6 @@ import java.util.Set;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
-import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaModelException;
@@ -33,7 +32,6 @@ public class LogHandler extends AbstractHandler {
 
 	@Override
 	public Object execute(ExecutionEvent event) throws ExecutionException {
-		Optional<IProgressMonitor> monitor = Optional.empty();
 		ISelection currentSelection = HandlerUtil.getCurrentSelectionChecked(event);
 		List<?> list = SelectionUtil.toList(currentSelection);
 
