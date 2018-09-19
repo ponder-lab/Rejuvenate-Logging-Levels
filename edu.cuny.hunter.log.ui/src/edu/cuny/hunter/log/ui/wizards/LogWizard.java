@@ -26,7 +26,7 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.PlatformUI;
 import edu.cuny.hunter.log.core.messages.Messages;
-import edu.cuny.hunter.log.core.refactorings.LogRefactoringProcessor;
+import edu.cuny.hunter.log.core.refactorings.LogRejuvenatingProcessor;
 import edu.cuny.hunter.log.core.utils.Util;
 
 @SuppressWarnings("restriction")
@@ -36,13 +36,13 @@ public class LogWizard extends RefactoringWizard {
 
 		private static final String DESCRIPTION = Messages.Name;
 
-		private static final String DIALOG_SETTING_SECTION = "OptimizeLoggingLevel"; //$NON-NLS-1$
+		private static final String DIALOG_SETTING_SECTION = "RejuvenateLoggingLevel"; //$NON-NLS-1$
 
 		public static final String PAGE_NAME = "LogInputPage"; //$NON-NLS-1$
 
 		private static final String USE_LOG_CATEGORY = "useLogCategory";
 
-		private LogRefactoringProcessor processor;
+		private LogRejuvenatingProcessor processor;
 
 		IDialogSettings settings;
 
@@ -73,7 +73,7 @@ public class LogWizard extends RefactoringWizard {
 			ProcessorBasedRefactoring processorBasedRefactoring = (ProcessorBasedRefactoring) this.getRefactoring();
 			org.eclipse.ltk.core.refactoring.participants.RefactoringProcessor refactoringProcessor = processorBasedRefactoring
 					.getProcessor();
-			this.setProcessor((LogRefactoringProcessor) refactoringProcessor);
+			this.setProcessor((LogRejuvenatingProcessor) refactoringProcessor);
 			this.loadSettings();
 
 			Composite result = new Composite(parent, SWT.NONE);
@@ -89,10 +89,10 @@ public class LogWizard extends RefactoringWizard {
 			this.updateStatus();
 			Dialog.applyDialogFont(result);
 			PlatformUI.getWorkbench().getHelpSystem().setHelp(this.getControl(),
-					"optimize_logging_level_wizard_page_context");
+					"rejuvenate_logging_level_wizard_page_context");
 		}
 
-		private LogRefactoringProcessor getProcessor() {
+		private LogRejuvenatingProcessor getProcessor() {
 			return this.processor;
 		}
 
@@ -105,7 +105,7 @@ public class LogWizard extends RefactoringWizard {
 			this.processor.setParticularConfigLogLevel(this.settings.getBoolean(USE_LOG_CATEGORY));
 		}
 
-		private void setProcessor(LogRefactoringProcessor processor) {
+		private void setProcessor(LogRejuvenatingProcessor processor) {
 			this.processor = processor;
 		}
 
@@ -116,7 +116,7 @@ public class LogWizard extends RefactoringWizard {
 
 	public static void startRefactoring(IJavaProject[] javaProjects, Shell shell, Optional<IProgressMonitor> monitor)
 			throws JavaModelException {
-		Refactoring refactoring = Util.createRefactoring(javaProjects, monitor);
+		Refactoring refactoring = Util.createRejuvenating(javaProjects, monitor);
 		RefactoringWizard wizard = new LogWizard(refactoring);
 
 		new RefactoringStarter().activate(wizard, shell, RefactoringMessages.OpenRefactoringWizardAction_refactoring,

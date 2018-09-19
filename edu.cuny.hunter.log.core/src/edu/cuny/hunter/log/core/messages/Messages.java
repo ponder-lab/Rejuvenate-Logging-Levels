@@ -5,7 +5,7 @@ import org.eclipse.osgi.util.NLS;
 public class Messages extends NLS {
 	private static final String BUNDLE_NAME = "edu.cuny.hunter.log.core.messages.Messages"; //$NON-NLS-1$
 	public static String Name;
-	public static String NoOptimizableLog;
+	public static String NoPossibleRejuvenatedLog;
 	public static String ReadOnlyElement;
 	public static String BinaryElement;
 	public static String GeneratedElement;

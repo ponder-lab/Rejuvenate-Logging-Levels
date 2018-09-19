@@ -19,23 +19,23 @@ import org.eclipse.jdt.internal.corext.codemanipulation.CodeGenerationSettings;
 import org.eclipse.jdt.internal.ui.preferences.JavaPreferencesSettings;
 import org.eclipse.ltk.core.refactoring.participants.ProcessorBasedRefactoring;
 
-import edu.cuny.hunter.log.core.refactorings.LogRefactoringProcessor;
+import edu.cuny.hunter.log.core.refactorings.LogRejuvenatingProcessor;
 
 @SuppressWarnings("restriction")
 public final class Util {
-	public static ProcessorBasedRefactoring createRefactoring(IJavaProject[] projects,
+	public static ProcessorBasedRefactoring createRejuvenating(IJavaProject[] projects,
 			Optional<IProgressMonitor> monitor) throws JavaModelException {
-		LogRefactoringProcessor processor = createLoggingProcessor(projects, monitor);
+		LogRejuvenatingProcessor processor = createLoggingProcessor(projects, monitor);
 		return new ProcessorBasedRefactoring(processor);
 	}
 
-	public static LogRefactoringProcessor createLoggingProcessor(IJavaProject[] projects,
+	public static LogRejuvenatingProcessor createLoggingProcessor(IJavaProject[] projects,
 			Optional<IProgressMonitor> monitor) throws JavaModelException {
 		if (projects.length < 1)
 			throw new IllegalArgumentException("No projects.");
 
 		CodeGenerationSettings settings = JavaPreferencesSettings.getCodeGenerationSettings(projects[0]);
-		LogRefactoringProcessor processor = new LogRefactoringProcessor(projects, settings, monitor);
+		LogRejuvenatingProcessor processor = new LogRejuvenatingProcessor(projects, settings, monitor);
 		return processor;
 	}
 

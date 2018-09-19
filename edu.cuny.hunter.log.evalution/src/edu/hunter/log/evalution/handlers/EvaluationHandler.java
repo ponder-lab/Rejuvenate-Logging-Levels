@@ -33,7 +33,7 @@ import org.osgi.framework.FrameworkUtil;
 import edu.cuny.citytech.refactoring.common.core.RefactoringProcessor;
 import edu.cuny.hunter.log.core.analysis.LogInvocation;
 import edu.cuny.hunter.log.core.analysis.PreconditionFailure;
-import edu.cuny.hunter.log.core.refactorings.LogRefactoringProcessor;
+import edu.cuny.hunter.log.core.refactorings.LogRejuvenatingProcessor;
 import edu.cuny.hunter.log.core.utils.LoggerNames;
 import edu.hunter.log.evalution.utils.Util;
 
@@ -100,13 +100,13 @@ public class EvaluationHandler extends AbstractHandler {
 						// for each selected java project
 						for (IJavaProject project : javaProjectList) {
 
-							LogRefactoringProcessor logRefactoringProcessor = new LogRefactoringProcessor(
+							LogRejuvenatingProcessor logRejuvenatingProcessor = new LogRejuvenatingProcessor(
 									new IJavaProject[] { project }, this.useLogCategory(), settings, monitor);
 
-							new ProcessorBasedRefactoring((RefactoringProcessor) logRefactoringProcessor)
+							new ProcessorBasedRefactoring((RefactoringProcessor) logRejuvenatingProcessor)
 									.checkAllConditions(new NullProgressMonitor());
 
-							Set<LogInvocation> logInvocationSet = logRefactoringProcessor.getLogInvocationSet();
+							Set<LogInvocation> logInvocationSet = logRejuvenatingProcessor.getLogInvocationSet();
 
 							// get candidate log invocations
 							Set<LogInvocation> candidates = logInvocationSet == null ? Collections.emptySet()
@@ -141,8 +141,8 @@ public class EvaluationHandler extends AbstractHandler {
 										logInvocation.getDegreeOfInterestValue());
 							}
 
-							Set<LogInvocation> optimizableLogInvocationSet = logRefactoringProcessor
-									.getOptimizableLogSet();
+							Set<LogInvocation> optimizableLogInvocationSet = logRejuvenatingProcessor
+									.getPossibleRejuvenatedLog();
 							// get the difference of candidates and optimizable log invocations
 							Set<LogInvocation> failures = new HashSet<LogInvocation>();
 							failures.addAll(candidates);
