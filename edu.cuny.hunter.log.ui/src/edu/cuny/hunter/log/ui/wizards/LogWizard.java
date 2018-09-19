@@ -26,7 +26,7 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.PlatformUI;
 import edu.cuny.hunter.log.core.messages.Messages;
-import edu.cuny.hunter.log.core.refactorings.LogRefactoringProcessor;
+import edu.cuny.hunter.log.core.refactorings.LogRejuvenatingProcessor;
 import edu.cuny.hunter.log.core.utils.Util;
 
 @SuppressWarnings("restriction")
@@ -42,7 +42,7 @@ public class LogWizard extends RefactoringWizard {
 
 		private static final String USE_LOG_CATEGORY = "useLogCategory";
 
-		private LogRefactoringProcessor processor;
+		private LogRejuvenatingProcessor processor;
 
 		IDialogSettings settings;
 
@@ -73,7 +73,7 @@ public class LogWizard extends RefactoringWizard {
 			ProcessorBasedRefactoring processorBasedRefactoring = (ProcessorBasedRefactoring) this.getRefactoring();
 			org.eclipse.ltk.core.refactoring.participants.RefactoringProcessor refactoringProcessor = processorBasedRefactoring
 					.getProcessor();
-			this.setProcessor((LogRefactoringProcessor) refactoringProcessor);
+			this.setProcessor((LogRejuvenatingProcessor) refactoringProcessor);
 			this.loadSettings();
 
 			Composite result = new Composite(parent, SWT.NONE);
@@ -92,7 +92,7 @@ public class LogWizard extends RefactoringWizard {
 					"rejuvenate_logging_level_wizard_page_context");
 		}
 
-		private LogRefactoringProcessor getProcessor() {
+		private LogRejuvenatingProcessor getProcessor() {
 			return this.processor;
 		}
 
@@ -105,7 +105,7 @@ public class LogWizard extends RefactoringWizard {
 			this.processor.setParticularConfigLogLevel(this.settings.getBoolean(USE_LOG_CATEGORY));
 		}
 
-		private void setProcessor(LogRefactoringProcessor processor) {
+		private void setProcessor(LogRejuvenatingProcessor processor) {
 			this.processor = processor;
 		}
 
