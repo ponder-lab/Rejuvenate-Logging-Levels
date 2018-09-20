@@ -44,17 +44,27 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 
 	private static final Logger LOGGER = Logger.getLogger(LoggerNames.LOGGER_NAME);
 
+	private boolean useLogCategoryWithConfig = false;
+
 	private boolean useLogCategory = false;
 
 	public LogRejuvenatingProcessor(final CodeGenerationSettings settings) {
 		super(settings);
 	}
-	
-	public void setParticularConfigLogLevel(boolean configLogLevel) {
-		this.useLogCategory = configLogLevel;
+
+	public void setParticularConfigLogLevel(boolean useConfigLogLevelCategory) {
+		this.useLogCategoryWithConfig = useConfigLogLevelCategory;
 	}
-	
+
+	public void setParticularLogLevel(boolean useLogLevelCategory) {
+		this.useLogCategory = useLogLevelCategory;
+	}
+
 	public boolean getParticularConfigLogLevel() {
+		return this.useLogCategoryWithConfig;
+	}
+
+	public boolean getParticularLogLevel() {
 		return this.useLogCategory;
 	}
 
@@ -68,12 +78,14 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 		}
 	}
 
-	public LogRejuvenatingProcessor(IJavaProject[] javaProjects, boolean useConfigLogLevel,
-			final CodeGenerationSettings settings, Optional<IProgressMonitor> monitor) {
+	public LogRejuvenatingProcessor(IJavaProject[] javaProjects, boolean useLogLevelCategory,
+			boolean useConfigLogLevelCategory, final CodeGenerationSettings settings,
+			Optional<IProgressMonitor> monitor) {
 		super(settings);
 		try {
 			this.javaProjects = javaProjects;
-			this.useLogCategory = useConfigLogLevel;
+			this.useLogCategoryWithConfig = useConfigLogLevelCategory;
+			this.useLogCategory = useLogLevelCategory;
 		} finally {
 			monitor.ifPresent(IProgressMonitor::done);
 		}
@@ -94,7 +106,7 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 			throws CoreException, OperationCanceledException {
 		try {
 			final RefactoringStatus status = new RefactoringStatus();
-			LogAnalyzer analyzer = new LogAnalyzer(this.useLogCategory);
+			LogAnalyzer analyzer = new LogAnalyzer(this.useLogCategoryWithConfig, this.useLogCategory);
 
 			for (IJavaProject jproj : this.getJavaProjects()) {
 				IPackageFragmentRoot[] roots = jproj.getPackageFragmentRoots();
@@ -111,7 +123,7 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 						}
 				}
 			}
-			
+
 			// analyze.
 			analyzer.analyze();
 

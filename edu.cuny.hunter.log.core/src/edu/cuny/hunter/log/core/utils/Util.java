@@ -76,10 +76,7 @@ public final class Util {
 
 		String methodName = node.getName().toString();
 
-		if (methodName.equals("all"))
-			return Level.ALL;
-		if (methodName.equals("off"))
-			return Level.OFF;
+		// Get rid of all and off here.
 		if (methodName.equals("config"))
 			return Level.CONFIG;
 		if (methodName.equals("fine"))
@@ -107,14 +104,15 @@ public final class Util {
 			if (loggingLevel == null) {
 				throw new IllegalStateException("The log level cannot be detected.");
 			}
+			if (loggingLevel == Level.ALL || loggingLevel == Level.OFF)
+				return null;
 			return loggingLevel;
 		}
-		if (methodName.equals("logp")) {
+
+		if (methodName.equals("logp") || methodName.equals("logrb")) {
 			Level loggingLevel = getLogLevel(firstArgument);
-			return loggingLevel;
-		}
-		if (methodName.equals("logrb")) {
-			Level loggingLevel = getLogLevel(firstArgument);
+			if (loggingLevel == Level.ALL || loggingLevel == Level.OFF)
+				return null;
 			return loggingLevel;
 		}
 

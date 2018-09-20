@@ -165,7 +165,6 @@ public class LogInvocation {
 	/**
 	 * Basic method to do transformation.
 	 */
-	@SuppressWarnings("unchecked")
 	private void convert(String target, String targetLogLevel, CompilationUnitRewrite rewrite) {
 
 		MethodInvocation expression = this.getExpression();
@@ -180,25 +179,9 @@ public class LogInvocation {
 
 				// The methods (e.g., warning() -> critical()).
 				if (isLoggingLevelMethod(identifier)) {
+
 					SimpleName newMethodName = ast.newSimpleName(target);
-
-					// there are no off() and all()
-					if (target.equals("off") || target.equals("all")) {
-
-						// change method name
-						MethodInvocation newMethodInvocation = (MethodInvocation) ASTNode.copySubtree(ast, expression);
-						newMethodInvocation.setName(ast.newSimpleName("log"));
-
-						// change parameter name
-						QualifiedName newParaName = ast.newQualifiedName(ast.newSimpleName("Level"),
-								ast.newSimpleName(targetLogLevel));
-						newMethodInvocation.arguments().add(0, newParaName);
-
-						astRewrite.replace(expression, newMethodInvocation, null);
-
-					} else {
-						astRewrite.replace(expression.getName(), newMethodName, null);
-					}
+					astRewrite.replace(expression.getName(), newMethodName, null);
 
 				} else // The parameters (e.g., log(Level.WARNING) -> log(Level.CRITICAL).
 				if (isLogMethod(identifier)) {
@@ -236,9 +219,6 @@ public class LogInvocation {
 	 */
 	public void transform(CompilationUnitRewrite rewrite) {
 		switch (this.getAction()) {
-		case CONVERT_TO_ALL:
-			this.convertToALL(rewrite);
-			break;
 		case CONVERT_TO_FINEST:
 			this.convertToFinest(rewrite);
 			break;
@@ -260,19 +240,11 @@ public class LogInvocation {
 		case CONVERT_TO_SEVERE:
 			this.convertToSevere(rewrite);
 			break;
-		case CONVERT_TO_OFF:
-			this.convertToOff(rewrite);
-			break;
 		}
 	}
 
 	private void convertToFinest(CompilationUnitRewrite rewrite) {
 		convert("finest", "FINEST", rewrite);
-	}
-
-	private void convertToOff(CompilationUnitRewrite rewrite) {
-		convert("off", "OFF", rewrite);
-
 	}
 
 	private void convertToSevere(CompilationUnitRewrite rewrite) {
@@ -301,11 +273,6 @@ public class LogInvocation {
 
 	private void convertToFiner(CompilationUnitRewrite rewrite) {
 		convert("finer", "FINER", rewrite);
-
-	}
-
-	private void convertToALL(CompilationUnitRewrite rewrite) {
-		convert("all", "ALL", rewrite);
 
 	}
 

@@ -52,7 +52,9 @@ public class EvaluationHandler extends AbstractHandler {
 
 	private static final Logger LOGGER = Logger.getLogger(LoggerNames.LOGGER_NAME);
 	private static final String USE_LOG_CATEGORY_KEY = "edu.hunter.log.evalution.useLogCategory";
+	private static final String USE_LOG_CATEGORY_CONFIG_KEY = "edu.hunter.log.evalution.useLogCategoryWithConfig";
 	private static final boolean USE_LOG_CATEGORY_DEFAULT = false;
+	private static final boolean USE_LOG_CATEGORY_CONFIG_DEFAULT = false;
 
 	public static CSVPrinter createCSVPrinter(String fileName, String[] header) throws IOException {
 		return new CSVPrinter(new FileWriter(fileName, true), CSVFormat.EXCEL.withHeader(header));
@@ -101,7 +103,8 @@ public class EvaluationHandler extends AbstractHandler {
 						for (IJavaProject project : javaProjectList) {
 
 							LogRejuvenatingProcessor logRejuvenatingProcessor = new LogRejuvenatingProcessor(
-									new IJavaProject[] { project }, this.useLogCategory(), settings, monitor);
+									new IJavaProject[] { project }, this.useLogCategory(),
+									this.useLogCategoryWithConfig(), settings, monitor);
 
 							new ProcessorBasedRefactoring((RefactoringProcessor) logRejuvenatingProcessor)
 									.checkAllConditions(new NullProgressMonitor());
@@ -216,6 +219,15 @@ public class EvaluationHandler extends AbstractHandler {
 
 		if (useConfigLogLevels == null)
 			return USE_LOG_CATEGORY_DEFAULT;
+		else
+			return Boolean.valueOf(useConfigLogLevels);
+	}
+
+	private boolean useLogCategoryWithConfig() {
+		String useConfigLogLevels = System.getenv(USE_LOG_CATEGORY_CONFIG_KEY);
+
+		if (useConfigLogLevels == null)
+			return USE_LOG_CATEGORY_CONFIG_DEFAULT;
 		else
 			return Boolean.valueOf(useConfigLogLevels);
 	}
