@@ -18,11 +18,9 @@ import org.eclipse.ltk.ui.refactoring.UserInputWizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.PlatformUI;
 import edu.cuny.hunter.log.core.messages.Messages;
@@ -41,6 +39,8 @@ public class LogWizard extends RefactoringWizard {
 		public static final String PAGE_NAME = "LogInputPage"; //$NON-NLS-1$
 
 		private static final String USE_LOG_CATEGORY = "useLogCategory";
+
+		private static final String USE_LOG_CATEGORY_CONFIG = "useLogCategoryWithConfig";
 
 		private LogRejuvenatingProcessor processor;
 
@@ -83,8 +83,12 @@ public class LogWizard extends RefactoringWizard {
 			result.setLayout(layout);
 
 			// set up buttons.
+			this.addBooleanButton("Treat CONFIG logging level as a category and not a traditional level.",
+					USE_LOG_CATEGORY_CONFIG, this.getProcessor()::setParticularConfigLogLevel, result);
+
+			// set up buttons.
 			this.addBooleanButton("Treat CONFIG/WARNING/SEVERE logging levels as category and not traditional levels.",
-					USE_LOG_CATEGORY, this.getProcessor()::setParticularConfigLogLevel, result);
+					USE_LOG_CATEGORY, this.getProcessor()::setParticularLogLevel, result);
 
 			this.updateStatus();
 			Dialog.applyDialogFont(result);
@@ -100,7 +104,8 @@ public class LogWizard extends RefactoringWizard {
 			this.settings = this.getDialogSettings().getSection(DIALOG_SETTING_SECTION);
 			if (this.settings == null) {
 				this.settings = this.getDialogSettings().addNewSection(DIALOG_SETTING_SECTION);
-				this.settings.put(USE_LOG_CATEGORY, this.getProcessor().getParticularConfigLogLevel());
+				this.settings.put(USE_LOG_CATEGORY_CONFIG, this.getProcessor().getParticularConfigLogLevel());
+				this.settings.put(USE_LOG_CATEGORY, this.getProcessor().getParticularLogLevel());
 			}
 			this.processor.setParticularConfigLogLevel(this.settings.getBoolean(USE_LOG_CATEGORY));
 		}

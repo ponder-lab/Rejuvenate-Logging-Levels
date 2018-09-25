@@ -26,6 +26,8 @@ public class LogAnalyzer extends ASTVisitor {
 
 	private static LinkedList<Float> boundary;
 
+	private static boolean useLogCategoryWithConfig = false;
+
 	private static boolean useLogCategory = false;
 
 	private int test;
@@ -34,8 +36,9 @@ public class LogAnalyzer extends ASTVisitor {
 		this.test = isTest;
 	}
 
-	public LogAnalyzer(boolean configLogLevel) {
-		useLogCategory = configLogLevel;
+	public LogAnalyzer(boolean useConfigLogLevelCategory, boolean useLogLevelCategory) {
+		useLogCategoryWithConfig = useConfigLogLevelCategory;
+		useLogCategory = useLogLevelCategory;
 	}
 
 	public LogAnalyzer() {
@@ -44,37 +47,50 @@ public class LogAnalyzer extends ASTVisitor {
 	public void analyze() {
 		// check failed preconditions.
 		this.checkCodeModification();
-		
+
+		if (useLogCategory && useLogCategoryWithConfig) {
+			throw new IllegalStateException("You cannot check two options at the same time.");
+		}
+
 		HashSet<Float> degreeOfInterests = new HashSet<>();
 		for (LogInvocation logInvocation : this.logInvocationSet) {
 			logInvocation.logInfo();
-			degreeOfInterests.add(logInvocation.getDegreeOfInterestValue());
+			if (logInvocation.getDegreeOfInterest() != null) {
+				if ((useLogCategory && (logInvocation.getLogLevel() != Level.CONFIG
+						&& logInvocation.getLogLevel() != Level.SEVERE && logInvocation.getLogLevel() != Level.WARNING))
+						|| (useLogCategoryWithConfig && logInvocation.getLogLevel() != Level.CONFIG)
+						|| (!useLogCategory && !useLogCategoryWithConfig))
+					degreeOfInterests.add(logInvocation.getDegreeOfInterestValue());
+			}
 		}
 
 		// build boundary
-		boundary = buildBoundary(degreeOfInterests, useLogCategory);
+		boundary = buildBoundary(degreeOfInterests);
 		// check whether action is needed
 		for (LogInvocation logInvocation : this.logInvocationSet)
-			if (this.doAction(logInvocation, useLogCategory))
+			if (this.doAction(logInvocation))
 				LOGGER.info("Do action: " + logInvocation.getAction() + "! The changed log expression is "
 						+ logInvocation.getExpression());
 
 	}
 
-	private boolean doAction(LogInvocation logInvocation, boolean useLogCategory) {
+	private boolean doAction(LogInvocation logInvocation) {
 		Level currentLogLevel = logInvocation.getLogLevel();
-		Level rejuvenatedLogLevel = getRejuvenatedLogLevel(boundary, logInvocation, useLogCategory);
+		Level rejuvenatedLogLevel = getRejuvenatedLogLevel(boundary, logInvocation);
 
 		if (currentLogLevel == rejuvenatedLogLevel)
 			return false;
 		if (rejuvenatedLogLevel == null || currentLogLevel == null)
 			return false;
+		// get rid of log level ALL and OFF
+		if (currentLogLevel == Level.ALL || currentLogLevel == Level.OFF)
+			return false;
 		if (useLogCategory && (currentLogLevel == Level.CONFIG || currentLogLevel == Level.WARNING
 				|| currentLogLevel == Level.SEVERE))
 			return false;
+		if (useLogCategoryWithConfig && (currentLogLevel == Level.CONFIG))
+			return false;
 
-		if (rejuvenatedLogLevel == Level.ALL)
-			logInvocation.setAction(Action.CONVERT_TO_ALL);
 		if (rejuvenatedLogLevel == Level.FINEST)
 			logInvocation.setAction(Action.CONVERT_TO_FINEST);
 		if (rejuvenatedLogLevel == Level.FINER)
@@ -89,8 +105,7 @@ public class LogAnalyzer extends ASTVisitor {
 			logInvocation.setAction(Action.CONVERT_TO_WARNING);
 		if (rejuvenatedLogLevel == Level.SEVERE)
 			logInvocation.setAction(Action.CONVERT_TO_SEVERE);
-		if (rejuvenatedLogLevel == Level.OFF)
-			logInvocation.setAction(Action.CONVERT_TO_OFF);
+
 		return true;
 	}
 
@@ -101,8 +116,7 @@ public class LogAnalyzer extends ASTVisitor {
 	 * @param DOI
 	 * @return the rejuvenated log level
 	 */
-	private static Level getRejuvenatedLogLevel(LinkedList<Float> boundary, LogInvocation logInvocation,
-			boolean useLogCategory) {
+	private static Level getRejuvenatedLogLevel(LinkedList<Float> boundary, LogInvocation logInvocation) {
 		float DOI = logInvocation.getDegreeOfInterestValue();
 		if (boundary == null)
 			return null;
@@ -112,32 +126,47 @@ public class LogAnalyzer extends ASTVisitor {
 			LOGGER.info("The DOI values are all same or no DOI values. Cannot get valid results.");
 			return null;
 		}
-		if (DOI >= boundary.get(0) && DOI < boundary.get(1))
-			return Level.ALL;
-		if (DOI < boundary.get(2))
-			return Level.FINEST;
-		if (DOI < boundary.get(3))
-			return Level.FINER;
-		if (DOI < boundary.get(4))
-			return Level.FINE;
-		if (!useLogCategory) {
-			LOGGER.info("CONFIG logging level could be refactored.");
-			if (DOI < boundary.get(5))
-				return Level.CONFIG;
-			if (DOI < boundary.get(6))
+
+		if (useLogCategory) {
+			LOGGER.info("Use log category: config/warning/severe.");
+			if (DOI >= boundary.get(0) && DOI < boundary.get(1))
+				return Level.FINEST;
+			if (DOI < boundary.get(2))
+				return Level.FINER;
+			if (DOI < boundary.get(3))
+				return Level.FINE;
+			if (DOI <= boundary.get(4))
 				return Level.INFO;
-			if (DOI < boundary.get(7))
+		} else if (useLogCategoryWithConfig) {
+			LOGGER.info("Use log category: config.");
+			if (DOI >= boundary.get(0) && DOI < boundary.get(1))
+				return Level.FINEST;
+			if (DOI < boundary.get(2))
+				return Level.FINER;
+			if (DOI < boundary.get(3))
+				return Level.FINE;
+			if (DOI < boundary.get(4))
+				return Level.INFO;
+			if (DOI < boundary.get(5))
 				return Level.WARNING;
-			if (DOI < boundary.get(8))
+			if (DOI <= boundary.get(6))
 				return Level.SEVERE;
-			if (DOI <= boundary.get(9))
-				return Level.OFF;
 		} else {
-			LOGGER.info("CONFIG/WARNING/SEVERE logging level could not be refactored.");
+			LOGGER.info("Default log category.");
+			if (DOI >= boundary.get(0) && DOI < boundary.get(1))
+				return Level.FINEST;
+			if (DOI < boundary.get(2))
+				return Level.FINER;
+			if (DOI < boundary.get(3))
+				return Level.FINE;
+			if (DOI < boundary.get(4))
+				return Level.CONFIG;
 			if (DOI < boundary.get(5))
 				return Level.INFO;
-			if (DOI <= boundary.get(6))
-				return Level.OFF;
+			if (DOI < boundary.get(6))
+				return Level.WARNING;
+			if (DOI <= boundary.get(7))
+				return Level.SEVERE;
 		}
 		return null;
 	}
@@ -149,17 +178,20 @@ public class LogAnalyzer extends ASTVisitor {
 	 * @param degreeOfInterests
 	 * @return a list of boundary
 	 */
-	private LinkedList<Float> buildBoundary(HashSet<Float> degreeOfInterests, boolean useLogCategory) {
+	private LinkedList<Float> buildBoundary(HashSet<Float> degreeOfInterests) {
 		float min = getMinDOI(degreeOfInterests);
 		float max = getMaxDOI(degreeOfInterests);
 		LinkedList<Float> boundary = new LinkedList<>();
 		if (min <= max) {
-			if (!useLogCategory) {
-				float interval = (max - min) / 9;
-				IntStream.range(0, 10).forEach(i -> boundary.add(min + i * interval));
-			} else {
+			if (useLogCategory) {
+				float interval = (max - min) / 4;
+				IntStream.range(0, 5).forEach(i -> boundary.add(min + i * interval));
+			} else if (useLogCategoryWithConfig) {
 				float interval = (max - min) / 6;
 				IntStream.range(0, 7).forEach(i -> boundary.add(min + i * interval));
+			} else {
+				float interval = (max - min) / 7;
+				IntStream.range(0, 8).forEach(i -> boundary.add(min + i * interval));
 			}
 
 			return boundary;
