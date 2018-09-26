@@ -5,3 +5,5 @@
 It's an eclipse plugin which researches logging level.
 ## Dependencies
 Mylyn: http://download.eclipse.org/mylyn/releases/3.23
+JGit: http://download.eclipse.org/egit/updates-nightly
+Xtext: http://download.eclipse.org/modeling/tmf/xtext/updates/composite/releases/

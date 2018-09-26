@@ -4,3 +4,6 @@ Bundle-Name: Core
 Bundle-SymbolicName: edu.cuny.hunter.github.core;singleton:=true
 Bundle-Version: 1.0.0.qualifier
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Require-Bundle: org.eclipse.jgit;bundle-version="5.2.0",
+ org.apache.log4j;bundle-version="1.2.15",
+ slf4j.api;bundle-version="1.6.4"
