@@ -48,10 +48,6 @@ public class LogAnalyzer extends ASTVisitor {
 		// check failed preconditions.
 		this.checkCodeModification();
 
-		if (useLogCategory && useLogCategoryWithConfig) {
-			throw new IllegalStateException("You cannot check two options at the same time.");
-		}
-
 		HashSet<Float> degreeOfInterests = new HashSet<>();
 		for (LogInvocation logInvocation : this.logInvocationSet) {
 			logInvocation.logInfo();
