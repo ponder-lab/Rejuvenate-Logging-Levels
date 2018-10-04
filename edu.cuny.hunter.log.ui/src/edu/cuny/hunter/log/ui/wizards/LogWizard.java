@@ -52,7 +52,7 @@ public class LogWizard extends RefactoringWizard {
 		}
 
 		private void addBooleanButton(String text, String key, Consumer<Boolean> valueConsumer, Composite result) {
-			Button button = new Button(result, SWT.CHECK);
+			Button button = new Button(result, SWT.RADIO);
 			button.setText(text);
 			boolean value = this.settings.getBoolean(key);
 			valueConsumer.accept(value);
