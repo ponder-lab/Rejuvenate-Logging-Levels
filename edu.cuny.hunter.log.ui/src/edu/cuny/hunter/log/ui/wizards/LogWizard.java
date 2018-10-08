@@ -83,6 +83,10 @@ public class LogWizard extends RefactoringWizard {
 			result.setLayout(layout);
 
 			// set up buttons.
+			Button button = new Button(result, SWT.RADIO);
+			button.setText("Defalut： traditional levels.");
+
+			// set up buttons.
 			this.addBooleanButton("Treat CONFIG logging level as a category and not a traditional level.",
 					USE_LOG_CATEGORY_CONFIG, this.getProcessor()::setParticularConfigLogLevel, result);
 
