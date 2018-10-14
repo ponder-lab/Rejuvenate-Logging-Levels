@@ -1,6 +1,8 @@
 package edu.cuny.hunter.github.core.analysis;
 
+import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.List;
@@ -45,37 +47,55 @@ public class Test {
 
 				final List<DiffEntry> diffs = git.diff().setOldTree(oldTreeIterator).setNewTree(newTreeIterator).call();
 
-				for (DiffEntry diffEntry : diffs) {
-					if (diffEntry.getChangeType().name().equals("ADD")
-							|| diffEntry.getChangeType().name().equals("DELETE")) {
-						System.out.println(diffEntry);
-						System.out.println();
-					} else if (diffEntry.getChangeType().name().equals("MODIFY")) {
-						System.out.println(diffEntry);
+				OutputStream outputStream = new ByteArrayOutputStream();
+				try (DiffFormatter formatter = new DiffFormatter(outputStream)) {
+					formatter.setRepository(repo);
+					formatter.scan(oldTreeIterator, newTreeIterator);
 
-						OutputStream outputStream = new ByteArrayOutputStream();
-						try (DiffFormatter formatter = new DiffFormatter(outputStream)) {
-							formatter.setRepository(repo);
-							formatter.scan(oldTreeIterator, newTreeIterator);
-							FileHeader fileHeader = formatter.toFileHeader(diffEntry);
+					for (DiffEntry diffEntry : diffs) {
+						FileHeader fileHeader = formatter.toFileHeader(diffEntry);;
+
+						if (diffEntry.getChangeType().name().equals("ADD")) {
+							System.out.println("ADD: " + diffEntry.getNewPath());
+							System.out.println();
+						} else if (diffEntry.getChangeType().name().equals("DELETE")) {
+							System.out.println("DELETE: ");
+							System.out.println(diffEntry.getOldPath());
+							System.out.println();
+						}
+						if (diffEntry.getChangeType().name().equals("MODIFY")) {
+							System.out.println("----------------------------------");
+							System.out.println("MODIFY: " + diffEntry.getNewPath());
 							List<? extends HunkHeader> hunks = fileHeader.getHunks();
 							for (HunkHeader hunk : hunks) {
-								System.out.println("Start: " + hunk.getNewStartLine() + ", " + "#lines: "
-										+ hunk.getNewLineCount());
-							}
+								System.out.println(
+										"Start: " + hunk.getNewStartLine() + ", " + "#lines: " + hunk.getNewLineCount());
+							}	
+							System.out.println("----------------------------------");
+							formatter.flush();
+							formatter.format(diffEntry);
+							System.out.println(outputStream);
+							System.out.println("----------------------------------");
 							System.out.println();
-
 						}
 
 					}
 				}
 
 			}
-			System.out.println("------------------------------------------------");
+			System.out.println("#######################################");
 			previousCommit = commit;
 		}
 
 		git.close();
+	}
+	
+	private static void printFileContent(String path) throws IOException {
+		 BufferedReader br = new BufferedReader(new FileReader(path));
+		 String line = null;
+		 while ((line = br.readLine()) != null) {
+		   System.out.println(line);
+		 }
 	}
 
 	private static AbstractTreeIterator getCanonicalTreeParser(ObjectId commitId, Git git) throws IOException {
