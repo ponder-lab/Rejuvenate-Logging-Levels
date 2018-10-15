@@ -50,7 +50,8 @@ public class Test {
 		RevCommit currentCommit = null;
 
 		int count = 0;
-		for (RevCommit commit : log) {
+		// from the latest commit to the old commit
+		for (RevCommit previousCommit : log) {
 			count++;
 			if (currentCommit != null) {
 
@@ -58,8 +59,8 @@ public class Test {
 				System.out.println("Current log messages: " + currentCommit.getFullMessage());
 				System.out.println("------------------------------------------");
 
-				AbstractTreeIterator oldTreeIterator = getCanonicalTreeParser(currentCommit, repo);
-				AbstractTreeIterator newTreeIterator = getCanonicalTreeParser(commit, repo);
+				AbstractTreeIterator oldTreeIterator = getCanonicalTreeParser(previousCommit, repo);
+				AbstractTreeIterator newTreeIterator = getCanonicalTreeParser(currentCommit, repo);
 
 				// each diff entry is corresponding to a file
 				final List<DiffEntry> diffs = git.diff().setOldTree(oldTreeIterator).setNewTree(newTreeIterator).call();
@@ -73,19 +74,18 @@ public class Test {
 
 						FileHeader fileHeader = formatter.toFileHeader(diffEntry);
 
-						// add a file
+						// delete a file
 						if (diffEntry.getChangeType().name().equals("ADD")) {
-							System.out.println("DELETE: " + diffEntry.getNewPath());
+							System.out.println("ADD: " + diffEntry.getNewPath());
 							System.out.println();
-						} else // delete a file
+						} else // add a file
 						if (diffEntry.getChangeType().name().equals("DELETE")) {
-							System.out.print("ADD: ");
+							System.out.print("DELETE: ");
 							System.out.println(diffEntry.getOldPath());
 							System.out.println();
 
-						} // modify a file
+						} else // modify a file
 						if (diffEntry.getChangeType().name().equals("MODIFY")) {
-							System.out.println("----------------------------------");
 							System.out.println("MODIFY: " + diffEntry.getNewPath());
 							List<? extends HunkHeader> hunks = fileHeader.getHunks();
 							for (HunkHeader hunk : hunks) {
@@ -102,7 +102,16 @@ public class Test {
 							}
 							// Get the file for revision A
 							getHistoricalFile(currentCommit, repo, diffEntry.getOldPath());
-
+							System.out.println();
+						} else if (diffEntry.getChangeType().name().equals("RENAME")) {
+							System.out.println("RENAME: ");
+							System.out.println("Oldpath: " + diffEntry.getOldPath());
+							System.out.println("Newpath: " + diffEntry.getNewPath());
+							System.out.println();
+						} else if (diffEntry.getChangeType().name().equals("COPY")) {
+							System.out.println("COPY: ");
+							System.out.println("Oldpath: " + diffEntry.getOldPath());
+							System.out.println("Newpath: " + diffEntry.getNewPath());
 							System.out.println();
 						}
 
@@ -111,8 +120,9 @@ public class Test {
 
 			}
 			System.out.println("#######################################");
-			currentCommit = commit;
+			currentCommit = previousCommit;
 
+			// For testing here!!!
 			if (count == 2)
 				break;
 		}
