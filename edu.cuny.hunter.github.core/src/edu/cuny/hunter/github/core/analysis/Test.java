@@ -101,8 +101,7 @@ public class Test {
 
 							}
 							// Get the file for revision A
-							getHistoricalFile(currentCommit, repo, diffEntry.getOldPath(), true);
-							getHistoricalFile(commit, repo, diffEntry.getNewPath(), false);
+							getHistoricalFile(currentCommit, repo, diffEntry.getOldPath());
 
 							System.out.println();
 						}
@@ -134,7 +133,7 @@ public class Test {
 	/**
 	 * Given the commit, repository and the path of the file, get the file.
 	 */
-	private static void getHistoricalFile(RevCommit commit, Repository repo, String path, boolean revisionA)
+	private static void getHistoricalFile(RevCommit commit, Repository repo, String path)
 			throws MissingObjectException, IncorrectObjectTypeException, CorruptObjectException, IOException {
 		RevTree tree = commit.getTree();
 		@SuppressWarnings("resource")
@@ -148,20 +147,17 @@ public class Test {
 		ObjectId objectId = treeWalk.getObjectId(0);
 		ObjectLoader loader = repo.open(objectId);
 
-		copyToFile(loader, path, revisionA);
+		copyToFile(loader, path);
 	}
 
-	private static void copyToFile(ObjectLoader loader, String path, boolean revisionA) throws IOException {
+	private static void copyToFile(ObjectLoader loader, String path) throws IOException {
 		String fileName = getJavaFileName(path);
 		if (fileName == null)
 			return;
 		try {
 			// ALL files are moved into a new directory
 			File file;
-			if (revisionA)
-				file = new File("revision_A/" + fileName);
-			else
-				file = new File("revision_B/" + fileName);
+			file = new File("revision_A/" + fileName);
 
 			if (!file.exists()) {
 				if (!file.getParentFile().exists())
