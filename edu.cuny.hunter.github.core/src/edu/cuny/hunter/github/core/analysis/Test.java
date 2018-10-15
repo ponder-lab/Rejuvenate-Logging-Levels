@@ -39,6 +39,8 @@ import org.eclipse.jgit.treewalk.filter.PathFilter;
 
 @SuppressWarnings("restriction")
 public class Test {
+	// the file index
+	private static int index = 0;
 
 	public static void main(String[] args) throws IOException, GitAPIException {
 
@@ -101,7 +103,10 @@ public class Test {
 
 							}
 							// Get the file for revision A
-							getHistoricalFile(currentCommit, repo, diffEntry.getOldPath());
+							getHistoricalFile(currentCommit.getParent(0), repo, diffEntry.getNewPath(), true);
+							// Get the file for revision B
+							getHistoricalFile(currentCommit, repo, diffEntry.getOldPath(), false);
+							index++;
 							System.out.println();
 						} else if (diffEntry.getChangeType().name().equals("RENAME")) {
 							System.out.println("RENAME: ");
@@ -123,7 +128,7 @@ public class Test {
 			currentCommit = previousCommit;
 
 			// For testing here!!!
-			if (count == 2)
+			if (count == 10)
 				break;
 		}
 
@@ -143,10 +148,10 @@ public class Test {
 	/**
 	 * Given the commit, repository and the path of the file, get the file.
 	 */
-	private static void getHistoricalFile(RevCommit commit, Repository repo, String path)
+	@SuppressWarnings("resource")
+	private static void getHistoricalFile(RevCommit commit, Repository repo, String path, boolean isRevisionA)
 			throws MissingObjectException, IncorrectObjectTypeException, CorruptObjectException, IOException {
 		RevTree tree = commit.getTree();
-		@SuppressWarnings("resource")
 		TreeWalk treeWalk = new TreeWalk(repo);
 		treeWalk.addTree(tree);
 		treeWalk.setRecursive(true);
@@ -156,18 +161,20 @@ public class Test {
 		}
 		ObjectId objectId = treeWalk.getObjectId(0);
 		ObjectLoader loader = repo.open(objectId);
-
-		copyToFile(loader, path);
+		copyToFile(loader, path, isRevisionA);
 	}
 
-	private static void copyToFile(ObjectLoader loader, String path) throws IOException {
+	private static void copyToFile(ObjectLoader loader, String path, boolean isRevisionA) throws IOException {
 		String fileName = getJavaFileName(path);
 		if (fileName == null)
 			return;
 		try {
 			// ALL files are moved into a new directory
 			File file;
-			file = new File("revision_A/" + fileName);
+			if (isRevisionA)
+				file = new File("tmp_A_" + index + "/" + fileName);
+			else
+				file = new File("tmp_B_" + index + "/" + fileName);
 
 			if (!file.exists()) {
 				if (!file.getParentFile().exists())
@@ -221,6 +228,7 @@ public class Test {
 
 		final CompilationUnit cu = (CompilationUnit) parser.createAST(new NullProgressMonitor());
 		System.out.println("Parse a Java file! " + cu.getNodeType());
+
 	}
 
 }
