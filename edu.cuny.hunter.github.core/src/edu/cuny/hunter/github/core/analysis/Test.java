@@ -1,6 +1,8 @@
 package edu.cuny.hunter.github.core.analysis;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.List;
@@ -90,8 +92,8 @@ public class Test {
 								}
 
 							}
-
-							getHistoricalFile(commit, repo, diffEntry.getNewPath());
+							// Get the file for revision A
+							getHistoricalFile(commit, repo, diffEntry.getOldPath());
 
 							System.out.println();
 						}
@@ -134,7 +136,39 @@ public class Test {
 		ObjectId objectId = treeWalk.getObjectId(0);
 		ObjectLoader loader = repo.open(objectId);
 
-		loader.copyTo(System.out);
+		copyToFile(loader, path);
+	}
+
+	private static void copyToFile(ObjectLoader loader, String path) throws IOException {
+		// Only need to consider java files here.
+		if (!path.contains(".java"))
+			return;
+
+		// I would like to move the files but the file name should keep
+		int index = path.lastIndexOf("/");
+		String fileName;
+		if (index != -1)
+			fileName = path.substring(index + 1);
+		else
+			fileName = path;
+
+		try {
+			// ALL files are moved into a new directory
+			File file = new File("Git/" + fileName);
+			if (!file.exists()) {
+				if (!file.getParentFile().exists())
+					file.getParentFile().mkdir();
+
+				file.createNewFile();
+			} else {
+				System.out.println("New file path: " + file.getAbsolutePath());
+				FileOutputStream fileOutputStream = new FileOutputStream(file.getAbsolutePath(), false);
+				loader.copyTo(fileOutputStream);
+				fileOutputStream.close();
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 
 }
