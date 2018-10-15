@@ -1,12 +1,19 @@
 package edu.cuny.hunter.github.core.analysis;
 
+import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.util.List;
+import java.util.stream.Collectors;
 
+import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.jdt.core.dom.AST;
+import org.eclipse.jdt.core.dom.ASTParser;
+import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.diff.DiffEntry;
@@ -165,10 +172,29 @@ public class Test {
 				FileOutputStream fileOutputStream = new FileOutputStream(file.getAbsolutePath(), false);
 				loader.copyTo(fileOutputStream);
 				fileOutputStream.close();
+
+				// parse the java file
+				String fileContent = new BufferedReader(new InputStreamReader(loader.openStream())).lines()
+						.collect(Collectors.joining("\n"));
+				if (!fileContent.isEmpty())
+					parseJavaFile(file, fileContent);
 			}
+
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+	}
+
+	/**
+	 * Parse a Java file
+	 */
+	private static void parseJavaFile(File file, String fileContent) throws IOException {
+		ASTParser parser = ASTParser.newParser(AST.JLS8);
+		parser.setResolveBindings(true);
+		parser.setSource(fileContent.toCharArray());
+
+		final CompilationUnit cu = (CompilationUnit) parser.createAST(new NullProgressMonitor());
+		System.out.println("Parse a Java file! " + cu.getNodeType());
 	}
 
 }
