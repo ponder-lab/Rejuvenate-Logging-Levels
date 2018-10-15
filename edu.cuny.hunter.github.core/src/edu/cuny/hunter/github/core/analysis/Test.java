@@ -47,17 +47,18 @@ public class Test {
 		Git git = new Git(repo);
 
 		Iterable<RevCommit> log = git.log().call();
-		RevCommit previousCommit = null;
+		RevCommit currentCommit = null;
 
+		int count = 0;
 		for (RevCommit commit : log) {
+			count++;
+			if (currentCommit != null) {
 
-			if (previousCommit != null) {
+				System.out.println("Current commit: " + currentCommit);
+				System.out.println("Current log messages: " + currentCommit.getFullMessage());
+				System.out.println("------------------------------------------");
 
-				System.out.println("LogCommit: " + commit);
-				String logMessage = commit.getFullMessage();
-				System.out.println("LogMessage: " + logMessage);
-
-				AbstractTreeIterator oldTreeIterator = getCanonicalTreeParser(previousCommit, repo);
+				AbstractTreeIterator oldTreeIterator = getCanonicalTreeParser(currentCommit, repo);
 				AbstractTreeIterator newTreeIterator = getCanonicalTreeParser(commit, repo);
 
 				// each diff entry is corresponding to a file
@@ -74,11 +75,11 @@ public class Test {
 
 						// add a file
 						if (diffEntry.getChangeType().name().equals("ADD")) {
-							System.out.println("ADD: " + diffEntry.getNewPath());
+							System.out.println("DELETE: " + diffEntry.getNewPath());
 							System.out.println();
 						} else // delete a file
 						if (diffEntry.getChangeType().name().equals("DELETE")) {
-							System.out.println("DELETE: ");
+							System.out.print("ADD: ");
 							System.out.println(diffEntry.getOldPath());
 							System.out.println();
 
@@ -100,7 +101,8 @@ public class Test {
 
 							}
 							// Get the file for revision A
-							getHistoricalFile(commit, repo, diffEntry.getOldPath());
+							getHistoricalFile(currentCommit, repo, diffEntry.getOldPath(), true);
+							getHistoricalFile(commit, repo, diffEntry.getNewPath(), false);
 
 							System.out.println();
 						}
@@ -110,7 +112,10 @@ public class Test {
 
 			}
 			System.out.println("#######################################");
-			previousCommit = commit;
+			currentCommit = commit;
+
+			if (count == 2)
+				break;
 		}
 
 		git.close();
@@ -129,7 +134,7 @@ public class Test {
 	/**
 	 * Given the commit, repository and the path of the file, get the file.
 	 */
-	private static void getHistoricalFile(RevCommit commit, Repository repo, String path)
+	private static void getHistoricalFile(RevCommit commit, Repository repo, String path, boolean revisionA)
 			throws MissingObjectException, IncorrectObjectTypeException, CorruptObjectException, IOException {
 		RevTree tree = commit.getTree();
 		@SuppressWarnings("resource")
@@ -143,15 +148,53 @@ public class Test {
 		ObjectId objectId = treeWalk.getObjectId(0);
 		ObjectLoader loader = repo.open(objectId);
 
-		copyToFile(loader, path);
+		copyToFile(loader, path, revisionA);
 	}
 
-	private static void copyToFile(ObjectLoader loader, String path) throws IOException {
+	private static void copyToFile(ObjectLoader loader, String path, boolean revisionA) throws IOException {
+		String fileName = getJavaFileName(path);
+		if (fileName == null)
+			return;
+		try {
+			// ALL files are moved into a new directory
+			File file;
+			if (revisionA)
+				file = new File("revision_A/" + fileName);
+			else
+				file = new File("revision_B/" + fileName);
+
+			if (!file.exists()) {
+				if (!file.getParentFile().exists())
+					file.getParentFile().mkdir();
+
+				file.createNewFile();
+			}
+
+			System.out.println("New file path: " + file.getAbsolutePath());
+			FileOutputStream fileOutputStream = new FileOutputStream(file.getAbsolutePath(), false);
+			loader.copyTo(fileOutputStream);
+			fileOutputStream.close();
+
+			// Parse the java file
+			String fileContent = new BufferedReader(new InputStreamReader(loader.openStream())).lines()
+					.collect(Collectors.joining("\n"));
+			if (!fileContent.isEmpty())
+				parseJavaFile(file, fileContent);
+
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	/**
+	 * Get a java file name. If it returns null, the file is not a Java file.
+	 */
+	private static String getJavaFileName(String path) {
 		// Only need to consider java files here.
 		if (!path.contains(".java"))
-			return;
+			return null;
 
-		// I would like to move the files but the file name should keep
+		// I would like to move the files using the same file name
 		int index = path.lastIndexOf("/");
 		String fileName;
 		if (index != -1)
@@ -159,30 +202,7 @@ public class Test {
 		else
 			fileName = path;
 
-		try {
-			// ALL files are moved into a new directory
-			File file = new File("Git/" + fileName);
-			if (!file.exists()) {
-				if (!file.getParentFile().exists())
-					file.getParentFile().mkdir();
-
-				file.createNewFile();
-			} else {
-				System.out.println("New file path: " + file.getAbsolutePath());
-				FileOutputStream fileOutputStream = new FileOutputStream(file.getAbsolutePath(), false);
-				loader.copyTo(fileOutputStream);
-				fileOutputStream.close();
-
-				// parse the java file
-				String fileContent = new BufferedReader(new InputStreamReader(loader.openStream())).lines()
-						.collect(Collectors.joining("\n"));
-				if (!fileContent.isEmpty())
-					parseJavaFile(file, fileContent);
-			}
-
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+		return fileName;
 	}
 
 	/**
