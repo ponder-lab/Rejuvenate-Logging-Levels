@@ -7,13 +7,16 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jdt.core.dom.AST;
 import org.eclipse.jdt.core.dom.ASTParser;
+import org.eclipse.jdt.core.dom.ASTVisitor;
 import org.eclipse.jdt.core.dom.CompilationUnit;
+import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.diff.DiffEntry;
@@ -41,6 +44,11 @@ import org.eclipse.jgit.treewalk.filter.PathFilter;
 public class Test {
 	// the file index
 	private static int index = 0;
+
+	// Set of method declarations
+	// Should we consider the ordering of the methods?
+	private static HashSet<MethodDeclaration> methodDeclarationsForA = new HashSet<MethodDeclaration>();
+	private static HashSet<MethodDeclaration> methodDeclarationsForB = new HashSet<MethodDeclaration>();
 
 	public static void main(String[] args) throws IOException, GitAPIException {
 
@@ -103,11 +111,18 @@ public class Test {
 
 							}
 							// Get the file for revision A
-							getHistoricalFile(currentCommit.getParent(0), repo, diffEntry.getNewPath(), true);
+							copyHistoricalFile(currentCommit.getParent(0), repo, diffEntry.getNewPath(), "tmp_A_");
 							// Get the file for revision B
-							getHistoricalFile(currentCommit, repo, diffEntry.getOldPath(), false);
+							copyHistoricalFile(currentCommit, repo, diffEntry.getOldPath(), "tmp_B_");
+
+							// Should compare AST here.
+							extractMethodChanges();
+							// Should clear the sets of method declarations.
+							clearSetOfMethodDeclarations();
+
 							index++;
 							System.out.println();
+
 						} else if (diffEntry.getChangeType().name().equals("RENAME")) {
 							System.out.println("RENAME: ");
 							System.out.println("Oldpath: " + diffEntry.getOldPath());
@@ -135,6 +150,25 @@ public class Test {
 		git.close();
 	}
 
+	private static void extractMethodChanges() {
+		System.out.println("**********************************");
+		methodDeclarationsForA.forEach(m -> {
+			System.out.println(m);
+			System.out.println("**********************************");
+		});
+		methodDeclarationsForB.forEach(m -> {
+			System.out.println(m);
+			System.out.println("**********************************");
+		});
+
+		// TODO: match AST here
+	}
+
+	private static void clearSetOfMethodDeclarations() {
+		methodDeclarationsForA.clear();
+		methodDeclarationsForB.clear();
+	}
+
 	private static AbstractTreeIterator getCanonicalTreeParser(ObjectId commitId, Repository repo) throws IOException {
 		try (RevWalk walk = new RevWalk(repo)) {
 			RevCommit commit = walk.parseCommit(commitId);
@@ -146,10 +180,11 @@ public class Test {
 	}
 
 	/**
-	 * Given the commit, repository and the path of the file, get the file.
+	 * Given the commit, repository and the path of the file, get the file, and copy
+	 * it into a new file.
 	 */
 	@SuppressWarnings("resource")
-	private static void getHistoricalFile(RevCommit commit, Repository repo, String path, boolean isRevisionA)
+	private static void copyHistoricalFile(RevCommit commit, Repository repo, String path, String newDirectory)
 			throws MissingObjectException, IncorrectObjectTypeException, CorruptObjectException, IOException {
 		RevTree tree = commit.getTree();
 		TreeWalk treeWalk = new TreeWalk(repo);
@@ -161,42 +196,45 @@ public class Test {
 		}
 		ObjectId objectId = treeWalk.getObjectId(0);
 		ObjectLoader loader = repo.open(objectId);
-		copyToFile(loader, path, isRevisionA);
+		copyToFile(loader, path, newDirectory);
 	}
 
-	private static void copyToFile(ObjectLoader loader, String path, boolean isRevisionA) throws IOException {
+	private static void copyToFile(ObjectLoader loader, String path, String newDirectory) throws IOException {
+		// Get the empty or existing file in the new directory.
+		File file = getFile(path, newDirectory);
+		if (file == null)
+			return;
+		System.out.println("New file path: " + file.getAbsolutePath());
+
+		// Copy the file content into the new file.
+		FileOutputStream fileOutputStream = new FileOutputStream(file.getAbsolutePath(), false);
+		loader.copyTo(fileOutputStream);
+		fileOutputStream.close();
+
+		// Parse the java file.
+		String fileContent = new BufferedReader(new InputStreamReader(loader.openStream())).lines()
+				.collect(Collectors.joining("\n"));
+		if (!fileContent.isEmpty())
+			parseJavaFile(file, fileContent, newDirectory);
+	}
+
+	/**
+	 * Get the file in the new directory.
+	 */
+	private static File getFile(String path, String newDirectory) throws IOException {
 		String fileName = getJavaFileName(path);
 		if (fileName == null)
-			return;
-		try {
-			// ALL files are moved into a new directory
-			File file;
-			if (isRevisionA)
-				file = new File("tmp_A_" + index + "/" + fileName);
-			else
-				file = new File("tmp_B_" + index + "/" + fileName);
+			return null;
+		// ALL files are moved into a new directory
+		File file = new File(newDirectory + index + "/" + fileName);
 
-			if (!file.exists()) {
-				if (!file.getParentFile().exists())
-					file.getParentFile().mkdir();
+		if (!file.exists()) {
+			if (!file.getParentFile().exists())
+				file.getParentFile().mkdir();
 
-				file.createNewFile();
-			}
-
-			System.out.println("New file path: " + file.getAbsolutePath());
-			FileOutputStream fileOutputStream = new FileOutputStream(file.getAbsolutePath(), false);
-			loader.copyTo(fileOutputStream);
-			fileOutputStream.close();
-
-			// Parse the java file
-			String fileContent = new BufferedReader(new InputStreamReader(loader.openStream())).lines()
-					.collect(Collectors.joining("\n"));
-			if (!fileContent.isEmpty())
-				parseJavaFile(file, fileContent);
-
-		} catch (IOException e) {
-			e.printStackTrace();
+			file.createNewFile();
 		}
+		return file;
 	}
 
 	/**
@@ -219,9 +257,9 @@ public class Test {
 	}
 
 	/**
-	 * Parse a Java file
+	 * Parse a Java file, and let visitor to visit declaring methods.
 	 */
-	private static void parseJavaFile(File file, String fileContent) throws IOException {
+	private static void parseJavaFile(File file, String fileContent, String newDirectory) throws IOException {
 		ASTParser parser = ASTParser.newParser(AST.JLS8);
 		parser.setResolveBindings(true);
 		parser.setSource(fileContent.toCharArray());
@@ -229,6 +267,16 @@ public class Test {
 		final CompilationUnit cu = (CompilationUnit) parser.createAST(new NullProgressMonitor());
 		System.out.println("Parse a Java file! " + cu.getNodeType());
 
+		cu.accept(new ASTVisitor() {
+			@Override
+			public boolean visit(MethodDeclaration methodDeclaration) {
+				if (newDirectory.equals("tmp_A_"))
+					methodDeclarationsForA.add(methodDeclaration);
+				else
+					methodDeclarationsForB.add(methodDeclaration);
+				return true;
+			}
+		});
 	}
 
 }
