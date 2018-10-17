@@ -19,7 +19,7 @@ import org.eclipse.jdt.core.dom.ASTVisitor;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.SimpleName;
-import org.eclipse.jdt.core.dom.TypeParameter;
+import org.eclipse.jdt.core.dom.SingleVariableDeclaration;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.diff.DiffEntry;
@@ -154,32 +154,31 @@ public class Test {
 	}
 
 	private static void extractMethodChanges() {
-		// System.out.println("**********************************");
-		// methodDeclarationsForA.forEach(m -> {
-		// System.out.println(m);
-		// System.out.println("**********************************");
-		// });
-		// methodDeclarationsForB.forEach(m -> {
-		// System.out.println(m);
-		// System.out.println("**********************************");
-		// });
 
-		methodDeclarationsForA.forEach(m -> {
-			SimpleName methodNameInA = m.getName();
-			List<TypeParameter> parameterTypesInA = m.typeParameters();
+		for (MethodDeclaration methodDeclarationForA : methodDeclarationsForA) {
+			SimpleName methodNameInA = methodDeclarationForA.getName();
+			List<SingleVariableDeclaration> parametersInA = methodDeclarationForA.parameters();
 
 			// Get the corresponding method declarations in B
 			// Currently, we only consider the method changes in the method body. i.e., we
 			// do not consider rename etc.
-			for (MethodDeclaration methodDeclarationInB : methodDeclarationsForB) {
-				if (isSameMethod(methodNameInA, parameterTypesInA, methodDeclarationInB)) {
-					if (!(new ASTMatcher()).match(m, methodDeclarationInB)) {
-						System.out.println(methodNameInA + "(" + m.parameters() + ") has changes!");
+			for (MethodDeclaration methodDeclarationForB : methodDeclarationsForB) {
+
+				if (isSameMethod(methodNameInA, parametersInA, methodDeclarationForB)) {
+
+					if (!(new ASTMatcher()).match(methodDeclarationForA, methodDeclarationForB)) {
+						System.out.println("***************************************************");
+						System.out.print(methodNameInA + "(");
+						parametersInA.forEach(p -> {
+							System.out.print(p);
+						});
+						System.out.println(") has changes!");
+						System.out.println("***************************************************");
 						// TODO: extract changes
 					}
 				}
 			}
-		});
+		}
 
 		// TODO: match AST here
 	}
@@ -187,22 +186,22 @@ public class Test {
 	/**
 	 * Check whether method A and method B are same method.
 	 */
-	private static boolean isSameMethod(SimpleName methodNameInA, List<TypeParameter> parameterTypesInA,
+	private static boolean isSameMethod(SimpleName methodNameInA, List<SingleVariableDeclaration> parametersInA,
 			MethodDeclaration methodDeclarationInB) {
 		SimpleName methodNameInB = methodDeclarationInB.getName();
-		List<TypeParameter> parameterTypesInB = methodDeclarationInB.typeParameters();
+		List<SingleVariableDeclaration> parametersInB = methodDeclarationInB.parameters();
 
 		// If they have the same method name.
 		if (methodNameInA.getIdentifier().equals(methodNameInB.getIdentifier())) {
 
 			// If they have the same number of parameters.
-			if (parameterTypesInA.size() != parameterTypesInB.size())
+			if (parametersInA.size() != parametersInB.size())
 				return false;
 
-			// If they have the same ordered parameter types.
+			// If they have the same method signatures.
 			int index = 0;
-			for (TypeParameter parameter : parameterTypesInA) {
-				if (!parameter.equals(parameterTypesInB.get(index)))
+			for (SingleVariableDeclaration parameter : parametersInA) {
+				if (!parameter.getType().toString().equals(parametersInB.get(index).getType().toString()))
 					return false;
 			}
 			return true;
@@ -312,7 +311,7 @@ public class Test {
 		parser.setSource(fileContent.toCharArray());
 
 		final CompilationUnit cu = (CompilationUnit) parser.createAST(new NullProgressMonitor());
-		System.out.println("Parse a Java file! " + cu.getNodeType());
+		System.out.println("Parse a Java file! ");
 
 		cu.accept(new ASTVisitor() {
 			@Override
