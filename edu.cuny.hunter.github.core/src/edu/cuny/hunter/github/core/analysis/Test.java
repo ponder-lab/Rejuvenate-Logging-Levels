@@ -13,10 +13,13 @@ import java.util.stream.Collectors;
 
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jdt.core.dom.AST;
+import org.eclipse.jdt.core.dom.ASTMatcher;
 import org.eclipse.jdt.core.dom.ASTParser;
 import org.eclipse.jdt.core.dom.ASTVisitor;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
+import org.eclipse.jdt.core.dom.SimpleName;
+import org.eclipse.jdt.core.dom.TypeParameter;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.diff.DiffEntry;
@@ -151,17 +154,61 @@ public class Test {
 	}
 
 	private static void extractMethodChanges() {
-		System.out.println("**********************************");
+		// System.out.println("**********************************");
+		// methodDeclarationsForA.forEach(m -> {
+		// System.out.println(m);
+		// System.out.println("**********************************");
+		// });
+		// methodDeclarationsForB.forEach(m -> {
+		// System.out.println(m);
+		// System.out.println("**********************************");
+		// });
+
 		methodDeclarationsForA.forEach(m -> {
-			System.out.println(m);
-			System.out.println("**********************************");
-		});
-		methodDeclarationsForB.forEach(m -> {
-			System.out.println(m);
-			System.out.println("**********************************");
+			SimpleName methodNameInA = m.getName();
+			List<TypeParameter> parameterTypesInA = m.typeParameters();
+
+			// Get the corresponding method declarations in B
+			// Currently, we only consider the method changes in the method body. i.e., we
+			// do not consider rename etc.
+			for (MethodDeclaration methodDeclarationInB : methodDeclarationsForB) {
+				if (isSameMethod(methodNameInA, parameterTypesInA, methodDeclarationInB)) {
+					if (!(new ASTMatcher()).match(m, methodDeclarationInB)) {
+						System.out.println(methodNameInA + "(" + m.parameters() + ") has changes!");
+						// TODO: extract changes
+					}
+				}
+			}
 		});
 
 		// TODO: match AST here
+	}
+
+	/**
+	 * Check whether method A and method B are same method.
+	 */
+	private static boolean isSameMethod(SimpleName methodNameInA, List<TypeParameter> parameterTypesInA,
+			MethodDeclaration methodDeclarationInB) {
+		SimpleName methodNameInB = methodDeclarationInB.getName();
+		List<TypeParameter> parameterTypesInB = methodDeclarationInB.typeParameters();
+
+		// If they have the same method name.
+		if (methodNameInA.getIdentifier().equals(methodNameInB.getIdentifier())) {
+
+			// If they have the same number of parameters.
+			if (parameterTypesInA.size() != parameterTypesInB.size())
+				return false;
+
+			// If they have the same ordered parameter types.
+			int index = 0;
+			for (TypeParameter parameter : parameterTypesInA) {
+				if (!parameter.equals(parameterTypesInB.get(index)))
+					return false;
+			}
+			return true;
+		} else
+			return false;
+
 	}
 
 	private static void clearSetOfMethodDeclarations() {
