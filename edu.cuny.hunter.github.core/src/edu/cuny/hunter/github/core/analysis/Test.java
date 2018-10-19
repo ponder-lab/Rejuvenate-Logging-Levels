@@ -7,23 +7,24 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jdt.core.dom.AST;
-import org.eclipse.jdt.core.dom.ASTMatcher;
 import org.eclipse.jdt.core.dom.ASTParser;
 import org.eclipse.jdt.core.dom.ASTVisitor;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
-import org.eclipse.jdt.core.dom.SimpleName;
-import org.eclipse.jdt.core.dom.SingleVariableDeclaration;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.diff.DiffEntry;
 import org.eclipse.jgit.diff.DiffFormatter;
+import org.eclipse.jgit.diff.Edit;
 import org.eclipse.jgit.diff.EditList;
 import org.eclipse.jgit.errors.CorruptObjectException;
 import org.eclipse.jgit.errors.IncorrectObjectTypeException;
@@ -52,6 +53,16 @@ public class Test {
 	// Should we consider the ordering of the methods?
 	private static HashSet<MethodDeclaration> methodDeclarationsForA = new HashSet<MethodDeclaration>();
 	private static HashSet<MethodDeclaration> methodDeclarationsForB = new HashSet<MethodDeclaration>();
+
+	// Map line number to hunk id.
+	private static HashMap<Integer, Integer> oldLineNumberToHunk = new HashMap<Integer, Integer>();
+	private static HashMap<Integer, Integer> newLineNumberToHunk = new HashMap<Integer, Integer>();
+
+	private static HashMap<Integer, MethodDeclaration> lineToMethodDeclarationForA = new HashMap<>();
+	private static HashMap<Integer, MethodDeclaration> lineToMethodDeclarationForB = new HashMap<>();
+
+	private static HashMap<MethodDeclaration, Map<Integer, Integer>> methodPositionsForA = new HashMap<>();
+	private static HashMap<MethodDeclaration, Map<Integer, Integer>> methodPositionsForB = new HashMap<>();
 
 	public static void main(String[] args) throws IOException, GitAPIException {
 
@@ -99,17 +110,26 @@ public class Test {
 
 						} else // modify a file
 						if (diffEntry.getChangeType().name().equals("MODIFY")) {
+
 							System.out.println("MODIFY: " + diffEntry.getNewPath());
 							List<? extends HunkHeader> hunks = fileHeader.getHunks();
+							int hunkId = 0;
 							for (HunkHeader hunk : hunks) {
 								EditList editList = hunk.toEditList();
 								if (!editList.isEmpty()) {
-									editList.forEach(edit -> {
-										System.out.println("Revision A: start at " + edit.getBeginA() + ", end at "
+									hunkId++;
+									for (Edit edit : editList) {
+										mapLineNumberToHunk(hunkId, edit.getBeginA(), edit.getEndA(),
+												oldLineNumberToHunk);
+										System.out.println("Old hunk: start at " + edit.getBeginA() + ", end at "
 												+ edit.getEndA());
-										System.out.println("Revision B: start at " + edit.getBeginB() + ", end at "
+										mapLineNumberToHunk(hunkId, edit.getBeginB(), edit.getEndB(),
+												newLineNumberToHunk);
+										System.out.println("New hunk: start at " + edit.getBeginB() + ", end at "
 												+ edit.getEndB());
-									});
+
+									}
+									;
 								}
 
 							}
@@ -118,10 +138,19 @@ public class Test {
 							// Get the file for revision B
 							copyHistoricalFile(currentCommit, repo, diffEntry.getOldPath(), "tmp_B_");
 
-							// Should compare AST here.
-							extractMethodChanges();
-							// Should clear the sets of method declarations.
-							clearSetOfMethodDeclarations();
+							// For deleting, get the differences
+							System.out.println("----------Process old hunk------------------");
+							computeMethodPositions(methodDeclarationsForA, methodPositionsForA);
+							mapLineToMethod(methodPositionsForA, oldLineNumberToHunk, lineToMethodDeclarationForA);
+							System.out.println("----------End of processing old hunk---------");
+
+							// For adding, get the differences
+							System.out.println("+++++++++++Process new hunk+++++++++++++++++");
+							computeMethodPositions(methodDeclarationsForB, methodPositionsForB);
+							mapLineToMethod(methodPositionsForB, oldLineNumberToHunk, lineToMethodDeclarationForB);
+							System.out.println("+++++++++++End of processing new hunk++++++++");
+
+							clear();
 
 							index++;
 							System.out.println();
@@ -153,66 +182,75 @@ public class Test {
 		git.close();
 	}
 
-	private static void extractMethodChanges() {
-
-		for (MethodDeclaration methodDeclarationForA : methodDeclarationsForA) {
-			SimpleName methodNameInA = methodDeclarationForA.getName();
-			List<SingleVariableDeclaration> parametersInA = methodDeclarationForA.parameters();
-
-			// Get the corresponding method declarations in B
-			// Currently, we only consider the method changes in the method body. i.e., we
-			// do not consider rename etc.
-			for (MethodDeclaration methodDeclarationForB : methodDeclarationsForB) {
-
-				if (isSameMethod(methodNameInA, parametersInA, methodDeclarationForB)) {
-
-					if (!(new ASTMatcher()).match(methodDeclarationForA, methodDeclarationForB)) {
-						System.out.println("***************************************************");
-						System.out.print(methodNameInA + "(");
-						parametersInA.forEach(p -> {
-							System.out.print(p);
-						});
-						System.out.println(") has changes!");
-						System.out.println("***************************************************");
-						// TODO: extract changes
-					}
-				}
-			}
+	/**
+	 * Return a map: line number to hunk id.
+	 */
+	private static HashMap<Integer, Integer> mapLineNumberToHunk(int hunkId, int start, int end,
+			HashMap<Integer, Integer> lineToHunk) {
+		for (int i = start; i <= end; ++i) {
+			lineToHunk.put(i, hunkId);
 		}
-
-		// TODO: match AST here
+		return lineToHunk;
 	}
 
 	/**
-	 * Check whether method A and method B are same method.
+	 * Clear all sets and maps.
 	 */
-	private static boolean isSameMethod(SimpleName methodNameInA, List<SingleVariableDeclaration> parametersInA,
-			MethodDeclaration methodDeclarationInB) {
-		SimpleName methodNameInB = methodDeclarationInB.getName();
-		List<SingleVariableDeclaration> parametersInB = methodDeclarationInB.parameters();
-
-		// If they have the same method name.
-		if (methodNameInA.getIdentifier().equals(methodNameInB.getIdentifier())) {
-
-			// If they have the same number of parameters.
-			if (parametersInA.size() != parametersInB.size())
-				return false;
-
-			// If they have the same method signatures.
-			int index = 0;
-			for (SingleVariableDeclaration parameter : parametersInA) {
-				if (!parameter.getType().toString().equals(parametersInB.get(index).getType().toString()))
-					return false;
-			}
-			return true;
-		} else
-			return false;
-
-	}
-
-	private static void clearSetOfMethodDeclarations() {
+	private static void clear() {
+		newLineNumberToHunk.clear();
+		oldLineNumberToHunk.clear();
 		methodDeclarationsForA.clear();
 		methodDeclarationsForB.clear();
+		lineToMethodDeclarationForA.clear();
+		lineToMethodDeclarationForB.clear();
+	}
+
+	/**
+	 * Compute the start position and end postion of a method.
+	 */
+	private static void computeMethodPositions(HashSet<MethodDeclaration> methodDeclarations,
+			HashMap<MethodDeclaration, Map<Integer, Integer>> methodPositions) {
+
+		for (MethodDeclaration methodDeclaration : methodDeclarations) {
+			int start = getStartingLineNumber(methodDeclaration);
+			int end = getEndingLineNumber(methodDeclaration);
+			methodPositions.put(methodDeclaration, Collections.singletonMap(start, end));
+		}
+	}
+
+	/**
+	 * Map line number to method
+	 */
+	private static void mapLineToMethod(HashMap<MethodDeclaration, Map<Integer, Integer>> methodPositions,
+			HashMap<Integer, Integer> lineToHunk, HashMap<Integer, MethodDeclaration> lineToMethodDeclaration) {
+		lineToHunk.forEach((line, hunkId) -> {
+			methodPositions.forEach((methodDeclaration, positions) -> {
+				int start = positions.keySet().iterator().next();
+				int end = positions.keySet().iterator().next();
+				if (line >= start && line <= end) {
+					System.out.println("******************************");
+					System.out.print("Line number: " + line + ".");
+					System.out.println("The method: " + methodDeclaration.getName() + "(");
+					methodDeclaration.parameters().forEach(p -> {
+						System.out.print(p + ", ");
+					});
+					System.out.println(");");
+					System.out.println("Hunk id: " + hunkId);
+					System.out.println("******************************");
+					lineToMethodDeclaration.put(line, methodDeclaration);
+				}
+			});
+		});
+	}
+
+	// We also should consider comments?
+	public static int getStartingLineNumber(MethodDeclaration methodDeclaration) {
+		return (((CompilationUnit) methodDeclaration.getRoot()).getLineNumber(methodDeclaration.getStartPosition()));
+	}
+
+	public static int getEndingLineNumber(MethodDeclaration methodDeclaration) {
+		return (((CompilationUnit) methodDeclaration.getRoot())
+				.getLineNumber(methodDeclaration.getStartPosition() + methodDeclaration.getLength()));
 	}
 
 	private static AbstractTreeIterator getCanonicalTreeParser(ObjectId commitId, Repository repo) throws IOException {
