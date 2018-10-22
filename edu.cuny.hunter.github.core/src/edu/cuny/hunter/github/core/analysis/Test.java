@@ -10,6 +10,7 @@ import java.io.OutputStream;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -54,9 +55,9 @@ public class Test {
 	private static HashSet<MethodDeclaration> methodDeclarationsForA = new HashSet<MethodDeclaration>();
 	private static HashSet<MethodDeclaration> methodDeclarationsForB = new HashSet<MethodDeclaration>();
 
-	// Map line number to hunk id.
-	private static HashMap<Integer, Integer> oldLineNumberToHunk = new HashMap<Integer, Integer>();
-	private static HashMap<Integer, Integer> newLineNumberToHunk = new HashMap<Integer, Integer>();
+	// Map line number to edit id.
+	private static HashMap<Integer, Integer> oldLineNumberToEdit = new HashMap<Integer, Integer>();
+	private static HashMap<Integer, Integer> newLineNumberToEdit = new HashMap<Integer, Integer>();
 
 	private static HashMap<Integer, MethodDeclaration> lineToMethodDeclarationForA = new HashMap<>();
 	private static HashMap<Integer, MethodDeclaration> lineToMethodDeclarationForB = new HashMap<>();
@@ -113,19 +114,20 @@ public class Test {
 
 							System.out.println("MODIFY: " + diffEntry.getNewPath());
 							List<? extends HunkHeader> hunks = fileHeader.getHunks();
-							int hunkId = 0;
+							int editId = 0;
 							for (HunkHeader hunk : hunks) {
 								EditList editList = hunk.toEditList();
 								if (!editList.isEmpty()) {
-									hunkId++;
+									// For each pair of edit
 									for (Edit edit : editList) {
-										mapLineNumberToHunk(hunkId, edit.getBeginA(), edit.getEndA(),
-												oldLineNumberToHunk);
-										System.out.println("Old hunk: start at " + edit.getBeginA() + ", end at "
+										editId++;
+										mapLineNumberToEdit(editId, edit.getBeginA(), edit.getEndA(),
+												oldLineNumberToEdit);
+										System.out.println("Old edit: start at " + edit.getBeginA() + ", end at "
 												+ edit.getEndA());
-										mapLineNumberToHunk(hunkId, edit.getBeginB(), edit.getEndB(),
-												newLineNumberToHunk);
-										System.out.println("New hunk: start at " + edit.getBeginB() + ", end at "
+										mapLineNumberToEdit(editId, edit.getBeginB(), edit.getEndB(),
+												newLineNumberToEdit);
+										System.out.println("New edit: start at " + edit.getBeginB() + ", end at "
 												+ edit.getEndB());
 
 									}
@@ -139,16 +141,16 @@ public class Test {
 							copyHistoricalFile(currentCommit, repo, diffEntry.getOldPath(), "tmp_B_");
 
 							// For deleting, get the differences
-							System.out.println("----------Process old hunk------------------");
+							System.out.println("----------Process the old file: revision A------------------");
 							computeMethodPositions(methodDeclarationsForA, methodPositionsForA);
-							mapLineToMethod(methodPositionsForA, oldLineNumberToHunk, lineToMethodDeclarationForA);
-							System.out.println("----------End of processing old hunk---------");
+							mapLineToMethod(methodPositionsForA, oldLineNumberToEdit, lineToMethodDeclarationForA);
+							System.out.println("----------End of processing the old file: revision A---------");
 
 							// For adding, get the differences
-							System.out.println("+++++++++++Process new hunk+++++++++++++++++");
+							System.out.println("+++++++++++Process the new file: revision B+++++++++++++++++");
 							computeMethodPositions(methodDeclarationsForB, methodPositionsForB);
-							mapLineToMethod(methodPositionsForB, oldLineNumberToHunk, lineToMethodDeclarationForB);
-							System.out.println("+++++++++++End of processing new hunk++++++++");
+							mapLineToMethod(methodPositionsForB, newLineNumberToEdit, lineToMethodDeclarationForB);
+							System.out.println("+++++++++++End of processing the new file: revision B++++++++");
 
 							clear();
 
@@ -183,12 +185,12 @@ public class Test {
 	}
 
 	/**
-	 * Return a map: line number to hunk id.
+	 * Return a map: line number to edit id.
 	 */
-	private static HashMap<Integer, Integer> mapLineNumberToHunk(int hunkId, int start, int end,
+	private static HashMap<Integer, Integer> mapLineNumberToEdit(int editId, int start, int end,
 			HashMap<Integer, Integer> lineToHunk) {
 		for (int i = start; i <= end; ++i) {
-			lineToHunk.put(i, hunkId);
+			lineToHunk.put(i, editId);
 		}
 		return lineToHunk;
 	}
@@ -197,16 +199,18 @@ public class Test {
 	 * Clear all sets and maps.
 	 */
 	private static void clear() {
-		newLineNumberToHunk.clear();
-		oldLineNumberToHunk.clear();
+		newLineNumberToEdit.clear();
+		oldLineNumberToEdit.clear();
 		methodDeclarationsForA.clear();
 		methodDeclarationsForB.clear();
+		methodPositionsForA.clear();
+		methodPositionsForB.clear();
 		lineToMethodDeclarationForA.clear();
 		lineToMethodDeclarationForB.clear();
 	}
 
 	/**
-	 * Compute the start position and end postion of a method.
+	 * Compute the start position and end position of a method.
 	 */
 	private static void computeMethodPositions(HashSet<MethodDeclaration> methodDeclarations,
 			HashMap<MethodDeclaration, Map<Integer, Integer>> methodPositions) {
@@ -223,19 +227,23 @@ public class Test {
 	 */
 	private static void mapLineToMethod(HashMap<MethodDeclaration, Map<Integer, Integer>> methodPositions,
 			HashMap<Integer, Integer> lineToHunk, HashMap<Integer, MethodDeclaration> lineToMethodDeclaration) {
-		lineToHunk.forEach((line, hunkId) -> {
+		lineToHunk.forEach((line, editId) -> {
 			methodPositions.forEach((methodDeclaration, positions) -> {
 				int start = positions.keySet().iterator().next();
-				int end = positions.keySet().iterator().next();
+				int end = positions.values().iterator().next();
+
 				if (line >= start && line <= end) {
 					System.out.println("******************************");
-					System.out.print("Line number: " + line + ".");
-					System.out.println("The method: " + methodDeclaration.getName() + "(");
-					methodDeclaration.parameters().forEach(p -> {
-						System.out.print(p + ", ");
-					});
+					System.out.println("Line number: " + line + ".");
+					System.out.print("The method: " + methodDeclaration.getName() + "(");
+					Iterator<?> parameterIterator = methodDeclaration.parameters().iterator();
+					if (parameterIterator.hasNext())
+						System.out.print(parameterIterator.next());
+					while (parameterIterator.hasNext()) {
+						System.out.print(", " + parameterIterator.next());
+					}
 					System.out.println(");");
-					System.out.println("Hunk id: " + hunkId);
+					System.out.println("Edit id: " + editId);
 					System.out.println("******************************");
 					lineToMethodDeclaration.put(line, methodDeclaration);
 				}
