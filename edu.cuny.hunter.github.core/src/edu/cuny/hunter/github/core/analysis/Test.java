@@ -188,11 +188,11 @@ public class Test {
 	 * Return a map: line number to edit id.
 	 */
 	private static HashMap<Integer, Integer> mapLineNumberToEdit(int editId, int start, int end,
-			HashMap<Integer, Integer> lineToHunk) {
+			HashMap<Integer, Integer> lineToEdit) {
 		for (int i = start + 1; i <= end; ++i) {
-			lineToHunk.put(i, editId);
+			lineToEdit.put(i, editId);
 		}
-		return lineToHunk;
+		return lineToEdit;
 	}
 
 	/**
