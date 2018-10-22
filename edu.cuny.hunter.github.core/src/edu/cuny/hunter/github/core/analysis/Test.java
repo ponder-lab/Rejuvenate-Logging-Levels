@@ -189,7 +189,7 @@ public class Test {
 	 */
 	private static HashMap<Integer, Integer> mapLineNumberToEdit(int editId, int start, int end,
 			HashMap<Integer, Integer> lineToHunk) {
-		for (int i = start; i <= end; ++i) {
+		for (int i = start + 1; i <= end; ++i) {
 			lineToHunk.put(i, editId);
 		}
 		return lineToHunk;
@@ -226,8 +226,8 @@ public class Test {
 	 * Map line number to method
 	 */
 	private static void mapLineToMethod(HashMap<MethodDeclaration, Map<Integer, Integer>> methodPositions,
-			HashMap<Integer, Integer> lineToHunk, HashMap<Integer, MethodDeclaration> lineToMethodDeclaration) {
-		lineToHunk.forEach((line, editId) -> {
+			HashMap<Integer, Integer> lineToEdit, HashMap<Integer, MethodDeclaration> lineToMethodDeclaration) {
+		lineToEdit.forEach((line, editId) -> {
 			methodPositions.forEach((methodDeclaration, positions) -> {
 				int start = positions.keySet().iterator().next();
 				int end = positions.values().iterator().next();
