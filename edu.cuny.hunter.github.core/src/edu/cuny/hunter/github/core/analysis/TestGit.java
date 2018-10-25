@@ -46,7 +46,7 @@ import org.eclipse.jgit.treewalk.TreeWalk;
 import org.eclipse.jgit.treewalk.filter.PathFilter;
 
 @SuppressWarnings("restriction")
-public class Test {
+public class TestGit {
 	// the file index
 	private static int index = 0;
 
@@ -64,6 +64,14 @@ public class Test {
 
 	private static HashMap<MethodDeclaration, Map<Integer, Integer>> methodPositionsForA = new HashMap<>();
 	private static HashMap<MethodDeclaration, Map<Integer, Integer>> methodPositionsForB = new HashMap<>();
+
+	public static HashMap<Integer, MethodDeclaration> getLineToMethodDeclarationForA() {
+		return lineToMethodDeclarationForA;
+	}
+
+	public static HashMap<Integer, MethodDeclaration> getLineToMethodDeclarationForB() {
+		return lineToMethodDeclarationForB;
+	}
 
 	public static void main(String[] args) throws IOException, GitAPIException {
 
@@ -136,7 +144,7 @@ public class Test {
 
 							}
 							// Get the file for revision A
-							copyHistoricalFile(currentCommit.getParent(0), repo, diffEntry.getNewPath(), "tmp_A_");
+							copyHistoricalFile(previousCommit, repo, diffEntry.getNewPath(), "tmp_A_");
 							// Get the file for revision B
 							copyHistoricalFile(currentCommit, repo, diffEntry.getOldPath(), "tmp_B_");
 
@@ -183,6 +191,83 @@ public class Test {
 
 		git.close();
 	}
+	
+	
+
+	public static void testMethods(String sha) throws IOException, GitAPIException {
+
+		Repository repo = new FileRepository("C:\\Users\\tangy\\logging-workspace\\Log-Git-Test\\.git");
+
+		Git git = new Git(repo);
+
+		ObjectId currentCommitId = ObjectId.fromString(sha);
+		RevWalk revWalk = new RevWalk(repo);
+		RevCommit currentCommit = revWalk.parseCommit(currentCommitId);
+		RevTree tree = currentCommit.getTree();
+		RevCommit previousCommit = currentCommit.getParent(0);
+		revWalk.close();
+
+		System.out.println("Current commit: " + currentCommit);
+		System.out.println("Current log messages: " + currentCommit.getFullMessage());
+		System.out.println("------------------------------------------");
+
+		AbstractTreeIterator oldTreeIterator = getCanonicalTreeParser(previousCommit, repo);
+		AbstractTreeIterator newTreeIterator = getCanonicalTreeParser(currentCommit, repo);
+
+		// each diff entry is corresponding to a file
+		final List<DiffEntry> diffs = git.diff().setOldTree(oldTreeIterator).setNewTree(newTreeIterator).call();
+
+		OutputStream outputStream = new ByteArrayOutputStream();
+		try (DiffFormatter formatter = new DiffFormatter(outputStream)) {
+			formatter.setRepository(repo);
+			formatter.scan(oldTreeIterator, newTreeIterator);
+
+			// only get the first file.
+			DiffEntry diffEntry = diffs.get(0);
+
+			FileHeader fileHeader = formatter.toFileHeader(diffEntry);
+
+			System.out.println("MODIFY: " + diffEntry.getNewPath());
+			List<? extends HunkHeader> hunks = fileHeader.getHunks();
+			int editId = 0;
+			for (HunkHeader hunk : hunks) {
+				EditList editList = hunk.toEditList();
+				if (!editList.isEmpty()) {
+					// For each pair of edit
+					for (Edit edit : editList) {
+						editId++;
+						mapLineNumberToEdit(editId, edit.getBeginA(), edit.getEndA(), oldLineNumberToEdit);
+						System.out.println("Old edit: start at " + edit.getBeginA() + ", end at " + edit.getEndA());
+						mapLineNumberToEdit(editId, edit.getBeginB(), edit.getEndB(), newLineNumberToEdit);
+						System.out.println("New edit: start at " + edit.getBeginB() + ", end at " + edit.getEndB());
+
+					}
+					;
+				}
+
+			}
+			// Get the file for revision A
+			copyHistoricalFile(previousCommit, repo, diffEntry.getNewPath(), "tmp_A_", tree);
+			// Get the file for revision B
+			copyHistoricalFile(currentCommit, repo, diffEntry.getOldPath(), "tmp_B_", tree);
+
+			// For deleting, get the differences
+			System.out.println("----------Process the old file: revision A------------------");
+			computeMethodPositions(methodDeclarationsForA, methodPositionsForA);
+			mapLineToMethod(methodPositionsForA, oldLineNumberToEdit, lineToMethodDeclarationForA);
+			System.out.println("----------End of processing the old file: revision A---------");
+
+			// For adding, get the differences
+			System.out.println("+++++++++++Process the new file: revision B+++++++++++++++++");
+			computeMethodPositions(methodDeclarationsForB, methodPositionsForB);
+			mapLineToMethod(methodPositionsForB, newLineNumberToEdit, lineToMethodDeclarationForB);
+			System.out.println("+++++++++++End of processing the new file: revision B++++++++");
+			System.out.println();
+
+		}
+
+		git.close();
+	}
 
 	/**
 	 * Return a map: line number to edit id.
@@ -198,7 +283,7 @@ public class Test {
 	/**
 	 * Clear all sets and maps.
 	 */
-	private static void clear() {
+	public static void clear() {
 		newLineNumberToEdit.clear();
 		oldLineNumberToEdit.clear();
 		methodDeclarationsForA.clear();
@@ -235,20 +320,27 @@ public class Test {
 				if (line >= start && line <= end) {
 					System.out.println("******************************");
 					System.out.println("Line number: " + line + ".");
-					System.out.print("The method: " + methodDeclaration.getName() + "(");
-					Iterator<?> parameterIterator = methodDeclaration.parameters().iterator();
-					if (parameterIterator.hasNext())
-						System.out.print(parameterIterator.next());
-					while (parameterIterator.hasNext()) {
-						System.out.print(", " + parameterIterator.next());
-					}
-					System.out.println(");");
+					System.out.println("The method: " + getMethodSignature(methodDeclaration) + ";");
 					System.out.println("Edit id: " + editId);
 					System.out.println("******************************");
 					lineToMethodDeclaration.put(line, methodDeclaration);
 				}
 			});
 		});
+	}
+
+	public static String getMethodSignature(MethodDeclaration methodDeclaration) {
+		String signature = "";
+		signature += methodDeclaration.getName() + "(";
+
+		Iterator<?> parameterIterator = methodDeclaration.parameters().iterator();
+		if (parameterIterator.hasNext())
+			signature += parameterIterator.next();
+		while (parameterIterator.hasNext()) {
+			signature += ", " + parameterIterator.next();
+		}
+		signature += ")";
+		return signature;
 	}
 
 	// We also should consider comments?
@@ -279,6 +371,26 @@ public class Test {
 	private static void copyHistoricalFile(RevCommit commit, Repository repo, String path, String newDirectory)
 			throws MissingObjectException, IncorrectObjectTypeException, CorruptObjectException, IOException {
 		RevTree tree = commit.getTree();
+		TreeWalk treeWalk = new TreeWalk(repo);
+		treeWalk.addTree(tree);
+		treeWalk.setRecursive(true);
+		treeWalk.setFilter(PathFilter.create(path));
+		if (!treeWalk.next()) {
+			return;
+		}
+		ObjectId objectId = treeWalk.getObjectId(0);
+		ObjectLoader loader = repo.open(objectId);
+		copyToFile(loader, path, newDirectory);
+	}
+
+	/**
+	 * Given the commit, repository and the path of the file, get the file, and copy
+	 * it into a new file.
+	 */
+	@SuppressWarnings("resource")
+	private static void copyHistoricalFile(RevCommit commit, Repository repo, String path, String newDirectory,
+			RevTree tree)
+			throws MissingObjectException, IncorrectObjectTypeException, CorruptObjectException, IOException {
 		TreeWalk treeWalk = new TreeWalk(repo);
 		treeWalk.addTree(tree);
 		treeWalk.setRecursive(true);
