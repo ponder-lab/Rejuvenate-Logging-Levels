@@ -59,19 +59,13 @@ public class TestGit {
 	private static HashMap<Integer, Integer> oldLineNumberToEdit = new HashMap<Integer, Integer>();
 	private static HashMap<Integer, Integer> newLineNumberToEdit = new HashMap<Integer, Integer>();
 
-	private static HashMap<Integer, MethodDeclaration> lineToMethodDeclarationForA = new HashMap<>();
-	private static HashMap<Integer, MethodDeclaration> lineToMethodDeclarationForB = new HashMap<>();
-
 	private static HashMap<MethodDeclaration, Map<Integer, Integer>> methodPositionsForA = new HashMap<>();
 	private static HashMap<MethodDeclaration, Map<Integer, Integer>> methodPositionsForB = new HashMap<>();
 
-	public static HashMap<Integer, MethodDeclaration> getLineToMethodDeclarationForA() {
-		return lineToMethodDeclarationForA;
-	}
+	private static HashMap<Integer, HashSet<MethodDeclaration>> editToMethodDeclarationForA = new HashMap<>();
+	private static HashMap<Integer, HashSet<MethodDeclaration>> editToMethodDeclarationForB = new HashMap<>();
 
-	public static HashMap<Integer, MethodDeclaration> getLineToMethodDeclarationForB() {
-		return lineToMethodDeclarationForB;
-	}
+	private static HashSet<String> methodSignatures = new HashSet<String>();
 
 	public static void main(String[] args) throws IOException, GitAPIException {
 
@@ -151,13 +145,13 @@ public class TestGit {
 							// For deleting, get the differences
 							System.out.println("----------Process the old file: revision A------------------");
 							computeMethodPositions(methodDeclarationsForA, methodPositionsForA);
-							mapLineToMethod(methodPositionsForA, oldLineNumberToEdit, lineToMethodDeclarationForA);
+							mapEditToMethod(methodPositionsForA, oldLineNumberToEdit, editToMethodDeclarationForA);
 							System.out.println("----------End of processing the old file: revision A---------");
 
 							// For adding, get the differences
 							System.out.println("+++++++++++Process the new file: revision B+++++++++++++++++");
 							computeMethodPositions(methodDeclarationsForB, methodPositionsForB);
-							mapLineToMethod(methodPositionsForB, newLineNumberToEdit, lineToMethodDeclarationForB);
+							mapEditToMethod(methodPositionsForB, newLineNumberToEdit, editToMethodDeclarationForB);
 							System.out.println("+++++++++++End of processing the new file: revision B++++++++");
 
 							clear();
@@ -191,8 +185,6 @@ public class TestGit {
 
 		git.close();
 	}
-	
-	
 
 	public static void testMethods(String sha) throws IOException, GitAPIException {
 
@@ -254,13 +246,13 @@ public class TestGit {
 			// For deleting, get the differences
 			System.out.println("----------Process the old file: revision A------------------");
 			computeMethodPositions(methodDeclarationsForA, methodPositionsForA);
-			mapLineToMethod(methodPositionsForA, oldLineNumberToEdit, lineToMethodDeclarationForA);
+			mapEditToMethod(methodPositionsForA, oldLineNumberToEdit, editToMethodDeclarationForA);
 			System.out.println("----------End of processing the old file: revision A---------");
 
 			// For adding, get the differences
 			System.out.println("+++++++++++Process the new file: revision B+++++++++++++++++");
 			computeMethodPositions(methodDeclarationsForB, methodPositionsForB);
-			mapLineToMethod(methodPositionsForB, newLineNumberToEdit, lineToMethodDeclarationForB);
+			mapEditToMethod(methodPositionsForB, newLineNumberToEdit, editToMethodDeclarationForB);
 			System.out.println("+++++++++++End of processing the new file: revision B++++++++");
 			System.out.println();
 
@@ -290,8 +282,8 @@ public class TestGit {
 		methodDeclarationsForB.clear();
 		methodPositionsForA.clear();
 		methodPositionsForB.clear();
-		lineToMethodDeclarationForA.clear();
-		lineToMethodDeclarationForB.clear();
+		editToMethodDeclarationForA.clear();
+		editToMethodDeclarationForB.clear();
 	}
 
 	/**
@@ -310,23 +302,31 @@ public class TestGit {
 	/**
 	 * Map line number to method
 	 */
-	private static void mapLineToMethod(HashMap<MethodDeclaration, Map<Integer, Integer>> methodPositions,
-			HashMap<Integer, Integer> lineToEdit, HashMap<Integer, MethodDeclaration> lineToMethodDeclaration) {
+	private static void mapEditToMethod(HashMap<MethodDeclaration, Map<Integer, Integer>> methodPositions,
+			HashMap<Integer, Integer> lineToEdit,
+			HashMap<Integer, HashSet<MethodDeclaration>> editToMethodDeclaration) {
 		lineToEdit.forEach((line, editId) -> {
 			methodPositions.forEach((methodDeclaration, positions) -> {
 				int start = positions.keySet().iterator().next();
 				int end = positions.values().iterator().next();
 
 				if (line >= start && line <= end) {
-					System.out.println("******************************");
-					System.out.println("Line number: " + line + ".");
-					System.out.println("The method: " + getMethodSignature(methodDeclaration) + ";");
-					System.out.println("Edit id: " + editId);
-					System.out.println("******************************");
-					lineToMethodDeclaration.put(line, methodDeclaration);
+					HashSet<MethodDeclaration> methodDeclarations = new HashSet<>();
+					if (!editToMethodDeclaration.containsKey(editId)) {
+						methodDeclarations.add(methodDeclaration);
+						editToMethodDeclaration.put(editId, methodDeclarations);
+					} else {
+						methodDeclarations = editToMethodDeclaration.get(editId);
+						if (!methodDeclarations.contains(methodDeclaration)) {
+							methodDeclarations.add(methodDeclaration);
+							editToMethodDeclaration.put(editId, methodDeclarations);
+						}
+					}
 				}
 			});
 		});
+		
+		//System.out.println(editToMethodDeclaration.keySet());
 	}
 
 	public static String getMethodSignature(MethodDeclaration methodDeclaration) {
