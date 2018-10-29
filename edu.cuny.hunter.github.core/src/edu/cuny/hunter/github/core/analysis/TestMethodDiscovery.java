@@ -13,17 +13,14 @@ public class TestMethodDiscovery {
 	int index = 0;
 
 	@Test
-	public void testStreamAnalyzer() throws IOException, GitAPIException {
+	public void test() throws IOException, GitAPIException {
 		TestGit.testMethods("f9efc371e5db9dedc73a63e455a6f2764a6232eb");
 		HashMap<String, LinkedList<TypesOfMethodOperations>> methodSignaturesToOps = TestGit.getMethodSignaturesToOps();
+
+		assertEquals("n()", methodSignaturesToOps.keySet().iterator().next());
+		assertEquals(TypesOfMethodOperations.RENAME, methodSignaturesToOps.values().iterator().next().get(0));
+
 		TestGit.clear();
-
-		methodSignaturesToOps.forEach((methodSig, ops) -> {
-			assertEquals("n()", methodSig);
-			assertEquals(1, ops.size());
-			assertEquals(TypesOfMethodOperations.CHANGE, ops.get(0));
-		});
-
 	}
 
 }

@@ -115,9 +115,9 @@ public class TestGit {
 						if (diffEntry.getChangeType().name().equals("MODIFY")) {
 
 							// Get the file for revision A
-							copyHistoricalFile(previousCommit, repo, diffEntry.getNewPath(), "tmp_A_");
+							copyHistoricalFile(previousCommit, repo, diffEntry.getOldPath(), "tmp_A_");
 							// Get the file for revision B
-							copyHistoricalFile(currentCommit, repo, diffEntry.getOldPath(), "tmp_B_");
+							copyHistoricalFile(currentCommit, repo, diffEntry.getNewPath(), "tmp_B_");
 
 							// For deleting, get the differences
 							computeMethodPositions(methodDeclarationsForA, methodPositionsForA);
@@ -189,7 +189,10 @@ public class TestGit {
 		RevWalk revWalk = new RevWalk(repo);
 		RevCommit currentCommit = revWalk.parseCommit(currentCommitId);
 		RevTree tree = currentCommit.getTree();
+		
 		RevCommit previousCommit = currentCommit.getParent(0);
+		previousCommit = revWalk.parseCommit(previousCommit.getId());
+		RevTree previousTree = previousCommit.getTree();
 		revWalk.close();
 
 		System.out.println("Current commit: " + currentCommit);
@@ -213,9 +216,9 @@ public class TestGit {
 			FileHeader fileHeader = formatter.toFileHeader(diffEntry);
 
 			// Get the file for revision A
-			copyHistoricalFile(previousCommit, repo, diffEntry.getNewPath(), "tmp_A_", tree);
+			copyHistoricalFile(repo, diffEntry.getOldPath(), "tmp_A_", previousTree);
 			// Get the file for revision B
-			copyHistoricalFile(currentCommit, repo, diffEntry.getOldPath(), "tmp_B_", tree);
+			copyHistoricalFile(repo, diffEntry.getNewPath(), "tmp_B_", tree);
 
 			// For deleting, get the differences
 			computeMethodPositions(methodDeclarationsForA, methodPositionsForA);
@@ -377,7 +380,7 @@ public class TestGit {
 	 * it into a new file.
 	 */
 	@SuppressWarnings("resource")
-	private static void copyHistoricalFile(RevCommit commit, Repository repo, String path, String newDirectory,
+	private static void copyHistoricalFile(Repository repo, String path, String newDirectory,
 			RevTree tree)
 			throws MissingObjectException, IncorrectObjectTypeException, CorruptObjectException, IOException {
 		TreeWalk treeWalk = new TreeWalk(repo);
@@ -600,7 +603,7 @@ public class TestGit {
 		MethodDeclaration targetMethodDec = null;
 		float similarity = -1;
 		for (MethodDeclaration methodForB : additionalMethodDecInB) {
-			if (isSameMethodName(methodForA, methodForB)) {
+			if (isSameParameterType(methodForA, methodForB)) {
 				float currentSimilarity = computeSimilarity(methodForA, methodForB);
 				if (currentSimilarity > similarity) {
 					similarity = currentSimilarity;
