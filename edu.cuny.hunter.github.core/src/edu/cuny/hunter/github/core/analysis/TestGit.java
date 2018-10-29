@@ -104,13 +104,41 @@ public class TestGit {
 						// delete a file
 						if (diffEntry.getChangeType().name().equals("ADD")) {
 							System.out.println("ADD: " + diffEntry.getNewPath());
-							System.out.println();
+							System.out.println("------------------------------------------");
+
+							// Get the file for revision B
+							copyHistoricalFile(currentCommit, repo, diffEntry.getNewPath(), "tmp_B_");
+
+							methodDeclarationsForB.forEach(methodDec -> {
+								putIntoMethodToOps(methodSignaturesToOps, getMethodSignature(methodDec),
+										TypesOfMethodOperations.ADD);
+							});
+
+							methodSignaturesToOps.forEach((methodSig, ops) -> {
+								System.out.println("------------------------------------------");
+								System.out.println(methodSig);
+								System.out.println(ops);
+							});
+							System.out.println("------------------------------------------");
 						} else // add a file
 						if (diffEntry.getChangeType().name().equals("DELETE")) {
 							System.out.print("DELETE: ");
 							System.out.println(diffEntry.getOldPath());
-							System.out.println();
+							System.out.println("------------------------------------------");
 
+							// Get the file for revision A
+							copyHistoricalFile(previousCommit, repo, diffEntry.getOldPath(), "tmp_A_");
+
+							methodDeclarationsForA.forEach(methodDec -> {
+								putIntoMethodToOps(methodSignaturesToOps, getMethodSignature(methodDec),
+										TypesOfMethodOperations.ADD);
+							});
+							methodSignaturesToOps.forEach((methodSig, ops) -> {
+								System.out.println("------------------------------------------");
+								System.out.println(methodSig);
+								System.out.println(ops);
+							});
+							System.out.println("------------------------------------------");
 						} else // modify a file
 						if (diffEntry.getChangeType().name().equals("MODIFY")) {
 
@@ -147,8 +175,6 @@ public class TestGit {
 
 							computeMethodChanges();
 
-							clear();
-
 							commitIndex++;
 							System.out.println();
 
@@ -164,6 +190,7 @@ public class TestGit {
 							System.out.println();
 						}
 
+						clear();
 					}
 				}
 
