@@ -5,7 +5,8 @@ import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
 import java.util.HashMap;
-import org.eclipse.jdt.core.dom.MethodDeclaration;
+import java.util.LinkedList;
+
 import org.eclipse.jgit.api.errors.GitAPIException;
 
 public class TestMethodDiscovery {
@@ -13,24 +14,14 @@ public class TestMethodDiscovery {
 
 	@Test
 	public void testStreamAnalyzer() throws IOException, GitAPIException {
-		TestGit.testMethods("70d20738eed3619baeba17eb709a9c3653cc1459");
-		HashMap<Integer, MethodDeclaration> lineToMethodDeclarationForA = TestGit.getLineToMethodDeclarationForA();
-		HashMap<Integer, MethodDeclaration> lineToMethodDeclarationForB = TestGit.getLineToMethodDeclarationForB();
+		TestGit.testMethods("f9efc371e5db9dedc73a63e455a6f2764a6232eb");
+		HashMap<String, LinkedList<TypesOfMethodOperations>> methodSignaturesToOps = TestGit.getMethodSignaturesToOps();
 		TestGit.clear();
-		int[] linesForA = { 4 };
-		String[] methodsForA = { "m()" };
-		int[] linesForB = { 4, 6, 7 };
-		String[] methodsForB = { "m()", "n()", "n()" };
-		index = 0;
-		lineToMethodDeclarationForA.forEach((line, methodDeclaration) -> {
-			assertEquals(linesForA[index], line.intValue());
-			assertEquals(methodsForA[index++], TestGit.getMethodSignature(methodDeclaration));
-		});
 
-		index = 0;
-		lineToMethodDeclarationForB.forEach((line, methodDeclaration) -> {
-			assertEquals(linesForB[index], line.intValue());
-			assertEquals(methodsForB[index++], TestGit.getMethodSignature(methodDeclaration));
+		methodSignaturesToOps.forEach((methodSig, ops) -> {
+			assertEquals("n()", methodSig);
+			assertEquals(1, ops.size());
+			assertEquals(TypesOfMethodOperations.CHANGE, ops.get(0));
 		});
 
 	}

@@ -179,98 +179,79 @@ public class TestGit {
 		git.close();
 	}
 
-	// public static void testMethods(String sha) throws IOException,
-	// GitAPIException {
-	//
-	// Repository repo = new
-	// FileRepository("C:\\Users\\tangy\\logging-workspace\\Log-Git-Test\\.git");
-	//
-	// Git git = new Git(repo);
-	//
-	// ObjectId currentCommitId = ObjectId.fromString(sha);
-	// RevWalk revWalk = new RevWalk(repo);
-	// RevCommit currentCommit = revWalk.parseCommit(currentCommitId);
-	// RevTree tree = currentCommit.getTree();
-	// RevCommit previousCommit = currentCommit.getParent(0);
-	// revWalk.close();
-	//
-	// System.out.println("Current commit: " + currentCommit);
-	// System.out.println("Current log messages: " +
-	// currentCommit.getFullMessage());
-	// System.out.println("------------------------------------------");
-	//
-	// AbstractTreeIterator oldTreeIterator = getCanonicalTreeParser(previousCommit,
-	// repo);
-	// AbstractTreeIterator newTreeIterator = getCanonicalTreeParser(currentCommit,
-	// repo);
-	//
-	// // each diff entry is corresponding to a file
-	// final List<DiffEntry> diffs =
-	// git.diff().setOldTree(oldTreeIterator).setNewTree(newTreeIterator).call();
-	//
-	// OutputStream outputStream = new ByteArrayOutputStream();
-	// try (DiffFormatter formatter = new DiffFormatter(outputStream)) {
-	// formatter.setRepository(repo);
-	// formatter.scan(oldTreeIterator, newTreeIterator);
-	//
-	// // only get the first file.
-	// DiffEntry diffEntry = diffs.get(0);
-	//
-	// FileHeader fileHeader = formatter.toFileHeader(diffEntry);
-	//
-	// System.out.println("MODIFY: " + diffEntry.getNewPath());
-	// List<? extends HunkHeader> hunks = fileHeader.getHunks();
-	// int editId = 0;
-	// for (HunkHeader hunk : hunks) {
-	// EditList editList = hunk.toEditList();
-	// if (!editList.isEmpty()) {
-	// // For each pair of edit
-	// for (Edit edit : editList) {
-	// editId++;
-	// mapEditToMethod(editId, edit.getBeginA(), edit.getEndA(),
-	// oldLineNumberToEdit);
-	// System.out.println("Old edit: start at " + edit.getBeginA() + ", end at " +
-	// edit.getEndA());
-	// mapEditToMethod(editId, edit.getBeginB(), edit.getEndB(),
-	// newLineNumberToEdit);
-	// System.out.println("New edit: start at " + edit.getBeginB() + ", end at " +
-	// edit.getEndB());
-	//
-	// }
-	// ;
-	// }
-	//
-	// }
-	// // Get the file for revision A
-	// copyHistoricalFile(previousCommit, repo, diffEntry.getNewPath(), "tmp_A_",
-	// tree);
-	// // Get the file for revision B
-	// copyHistoricalFile(currentCommit, repo, diffEntry.getOldPath(), "tmp_B_",
-	// tree);
-	//
-	// // For deleting, get the differences
-	// System.out.println("----------Process the old file: revision
-	// A------------------");
-	// computeMethodPositions(methodDeclarationsForA, methodPositionsForA);
-	// mapEditToMethod(methodPositionsForA, oldLineNumberToEdit,
-	// editToMethodDeclarationForA);
-	// System.out.println("----------End of processing the old file: revision
-	// A---------");
-	//
-	// // For adding, get the differences
-	// System.out.println("+++++++++++Process the new file: revision
-	// B+++++++++++++++++");
-	// computeMethodPositions(methodDeclarationsForB, methodPositionsForB);
-	// mapEditToMethod(methodPositionsForB, newLineNumberToEdit,
-	// editToMethodDeclarationForB);
-	// System.out.println("+++++++++++End of processing the new file: revision
-	// B++++++++");
-	// System.out.println();
-	//
-	// }
-	//
-	// git.close();
-	// }
+	public static void testMethods(String sha) throws IOException, GitAPIException {
+
+		Repository repo = new FileRepository("C:\\Users\\tangy\\logging-workspace\\Log-Git-Test\\.git");
+
+		Git git = new Git(repo);
+
+		ObjectId currentCommitId = ObjectId.fromString(sha);
+		RevWalk revWalk = new RevWalk(repo);
+		RevCommit currentCommit = revWalk.parseCommit(currentCommitId);
+		RevTree tree = currentCommit.getTree();
+		RevCommit previousCommit = currentCommit.getParent(0);
+		revWalk.close();
+
+		System.out.println("Current commit: " + currentCommit);
+		System.out.println("Current log messages: " + currentCommit.getFullMessage());
+		System.out.println("------------------------------------------");
+
+		AbstractTreeIterator oldTreeIterator = getCanonicalTreeParser(previousCommit, repo);
+		AbstractTreeIterator newTreeIterator = getCanonicalTreeParser(currentCommit, repo);
+
+		// each diff entry is corresponding to a file
+		final List<DiffEntry> diffs = git.diff().setOldTree(oldTreeIterator).setNewTree(newTreeIterator).call();
+
+		OutputStream outputStream = new ByteArrayOutputStream();
+		try (DiffFormatter formatter = new DiffFormatter(outputStream)) {
+			formatter.setRepository(repo);
+			formatter.scan(oldTreeIterator, newTreeIterator);
+
+			// only get the first file.
+			DiffEntry diffEntry = diffs.get(0);
+
+			FileHeader fileHeader = formatter.toFileHeader(diffEntry);
+
+			// Get the file for revision A
+			copyHistoricalFile(previousCommit, repo, diffEntry.getNewPath(), "tmp_A_", tree);
+			// Get the file for revision B
+			copyHistoricalFile(currentCommit, repo, diffEntry.getOldPath(), "tmp_B_", tree);
+
+			// For deleting, get the differences
+			computeMethodPositions(methodDeclarationsForA, methodPositionsForA);
+
+			// For adding, get the differences
+			computeMethodPositions(methodDeclarationsForB, methodPositionsForB);
+
+			System.out.println("MODIFY: " + diffEntry.getNewPath());
+			List<? extends HunkHeader> hunks = fileHeader.getHunks();
+			int editId = 0;
+			for (HunkHeader hunk : hunks) {
+				EditList editList = hunk.toEditList();
+				if (!editList.isEmpty()) {
+					// For each pair of edit
+					for (Edit edit : editList) {
+						editId++;
+						mapEditToMethod(editId, edit.getBeginA(), edit.getEndA(), methodPositionsForA,
+								editToMethodDeclarationForA);
+						mapEditToMethod(editId, edit.getBeginB(), edit.getEndB(), methodPositionsForB,
+								editToMethodDeclarationForB);
+
+					}
+					;
+				}
+
+			}
+
+			computeMethodChanges();
+
+			index++;
+			System.out.println();
+
+		}
+
+		git.close();
+	}
 
 	/**
 	 * Clear all sets and maps.
@@ -310,7 +291,6 @@ public class TestGit {
 		if (editStart == editEnd)
 			addCorrespondingMethod(editId, methodPositions, editToMethodDeclaration, editEnd + 1);
 
-		// System.out.println(editToMethodDeclaration.keySet());
 	}
 
 	// Given a line, add its corresponding method into editToMethodDeclaration
@@ -689,6 +669,10 @@ public class TestGit {
 				return true;
 			}
 		});
+	}
+
+	public static HashMap<String, LinkedList<TypesOfMethodOperations>> getMethodSignaturesToOps() {
+		return methodSignaturesToOps;
 	}
 
 }
