@@ -7,10 +7,12 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -21,6 +23,7 @@ import org.eclipse.jdt.core.dom.ASTParser;
 import org.eclipse.jdt.core.dom.ASTVisitor;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
+import org.eclipse.jdt.core.dom.SingleVariableDeclaration;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.diff.DiffEntry;
@@ -55,17 +58,14 @@ public class TestGit {
 	private static HashSet<MethodDeclaration> methodDeclarationsForA = new HashSet<MethodDeclaration>();
 	private static HashSet<MethodDeclaration> methodDeclarationsForB = new HashSet<MethodDeclaration>();
 
-	// Map line number to edit id.
-	private static HashMap<Integer, Integer> oldLineNumberToEdit = new HashMap<Integer, Integer>();
-	private static HashMap<Integer, Integer> newLineNumberToEdit = new HashMap<Integer, Integer>();
-
 	private static HashMap<MethodDeclaration, Map<Integer, Integer>> methodPositionsForA = new HashMap<>();
 	private static HashMap<MethodDeclaration, Map<Integer, Integer>> methodPositionsForB = new HashMap<>();
 
 	private static HashMap<Integer, HashSet<MethodDeclaration>> editToMethodDeclarationForA = new HashMap<>();
 	private static HashMap<Integer, HashSet<MethodDeclaration>> editToMethodDeclarationForB = new HashMap<>();
 
-	private static HashSet<String> methodSignatures = new HashSet<String>();
+	// A mapping from the method signature to the operations
+	private static HashMap<String, LinkedList<TypesOfMethodOperations>> methodSignaturesToOps = new HashMap<>();
 
 	public static void main(String[] args) throws IOException, GitAPIException {
 
@@ -114,6 +114,17 @@ public class TestGit {
 						} else // modify a file
 						if (diffEntry.getChangeType().name().equals("MODIFY")) {
 
+							// Get the file for revision A
+							copyHistoricalFile(previousCommit, repo, diffEntry.getNewPath(), "tmp_A_");
+							// Get the file for revision B
+							copyHistoricalFile(currentCommit, repo, diffEntry.getOldPath(), "tmp_B_");
+
+							// For deleting, get the differences
+							computeMethodPositions(methodDeclarationsForA, methodPositionsForA);
+
+							// For adding, get the differences
+							computeMethodPositions(methodDeclarationsForB, methodPositionsForB);
+							
 							System.out.println("MODIFY: " + diffEntry.getNewPath());
 							List<? extends HunkHeader> hunks = fileHeader.getHunks();
 							int editId = 0;
@@ -123,12 +134,10 @@ public class TestGit {
 									// For each pair of edit
 									for (Edit edit : editList) {
 										editId++;
-										mapLineNumberToEdit(editId, edit.getBeginA(), edit.getEndA(),
-												oldLineNumberToEdit);
+										mapEditToMethod(editId, edit.getBeginA(), edit.getEndA(), methodPositionsForA, editToMethodDeclarationForA);
 										System.out.println("Old edit: start at " + edit.getBeginA() + ", end at "
 												+ edit.getEndA());
-										mapLineNumberToEdit(editId, edit.getBeginB(), edit.getEndB(),
-												newLineNumberToEdit);
+										mapEditToMethod(editId, edit.getBeginB(), edit.getEndB(), methodPositionsForB, editToMethodDeclarationForB);
 										System.out.println("New edit: start at " + edit.getBeginB() + ", end at "
 												+ edit.getEndB());
 
@@ -137,23 +146,9 @@ public class TestGit {
 								}
 
 							}
-							// Get the file for revision A
-							copyHistoricalFile(previousCommit, repo, diffEntry.getNewPath(), "tmp_A_");
-							// Get the file for revision B
-							copyHistoricalFile(currentCommit, repo, diffEntry.getOldPath(), "tmp_B_");
 
-							// For deleting, get the differences
-							System.out.println("----------Process the old file: revision A------------------");
-							computeMethodPositions(methodDeclarationsForA, methodPositionsForA);
-							mapEditToMethod(methodPositionsForA, oldLineNumberToEdit, editToMethodDeclarationForA);
-							System.out.println("----------End of processing the old file: revision A---------");
-
-							// For adding, get the differences
-							System.out.println("+++++++++++Process the new file: revision B+++++++++++++++++");
-							computeMethodPositions(methodDeclarationsForB, methodPositionsForB);
-							mapEditToMethod(methodPositionsForB, newLineNumberToEdit, editToMethodDeclarationForB);
-							System.out.println("+++++++++++End of processing the new file: revision B++++++++");
-
+							computeMethodChanges();
+							
 							clear();
 
 							index++;
@@ -186,104 +181,93 @@ public class TestGit {
 		git.close();
 	}
 
-	public static void testMethods(String sha) throws IOException, GitAPIException {
+//	public static void testMethods(String sha) throws IOException, GitAPIException {
+//
+//		Repository repo = new FileRepository("C:\\Users\\tangy\\logging-workspace\\Log-Git-Test\\.git");
+//
+//		Git git = new Git(repo);
+//
+//		ObjectId currentCommitId = ObjectId.fromString(sha);
+//		RevWalk revWalk = new RevWalk(repo);
+//		RevCommit currentCommit = revWalk.parseCommit(currentCommitId);
+//		RevTree tree = currentCommit.getTree();
+//		RevCommit previousCommit = currentCommit.getParent(0);
+//		revWalk.close();
+//
+//		System.out.println("Current commit: " + currentCommit);
+//		System.out.println("Current log messages: " + currentCommit.getFullMessage());
+//		System.out.println("------------------------------------------");
+//
+//		AbstractTreeIterator oldTreeIterator = getCanonicalTreeParser(previousCommit, repo);
+//		AbstractTreeIterator newTreeIterator = getCanonicalTreeParser(currentCommit, repo);
+//
+//		// each diff entry is corresponding to a file
+//		final List<DiffEntry> diffs = git.diff().setOldTree(oldTreeIterator).setNewTree(newTreeIterator).call();
+//
+//		OutputStream outputStream = new ByteArrayOutputStream();
+//		try (DiffFormatter formatter = new DiffFormatter(outputStream)) {
+//			formatter.setRepository(repo);
+//			formatter.scan(oldTreeIterator, newTreeIterator);
+//
+//			// only get the first file.
+//			DiffEntry diffEntry = diffs.get(0);
+//
+//			FileHeader fileHeader = formatter.toFileHeader(diffEntry);
+//
+//			System.out.println("MODIFY: " + diffEntry.getNewPath());
+//			List<? extends HunkHeader> hunks = fileHeader.getHunks();
+//			int editId = 0;
+//			for (HunkHeader hunk : hunks) {
+//				EditList editList = hunk.toEditList();
+//				if (!editList.isEmpty()) {
+//					// For each pair of edit
+//					for (Edit edit : editList) {
+//						editId++;
+//						mapEditToMethod(editId, edit.getBeginA(), edit.getEndA(), oldLineNumberToEdit);
+//						System.out.println("Old edit: start at " + edit.getBeginA() + ", end at " + edit.getEndA());
+//						mapEditToMethod(editId, edit.getBeginB(), edit.getEndB(), newLineNumberToEdit);
+//						System.out.println("New edit: start at " + edit.getBeginB() + ", end at " + edit.getEndB());
+//
+//					}
+//					;
+//				}
+//
+//			}
+//			// Get the file for revision A
+//			copyHistoricalFile(previousCommit, repo, diffEntry.getNewPath(), "tmp_A_", tree);
+//			// Get the file for revision B
+//			copyHistoricalFile(currentCommit, repo, diffEntry.getOldPath(), "tmp_B_", tree);
+//
+//			// For deleting, get the differences
+//			System.out.println("----------Process the old file: revision A------------------");
+//			computeMethodPositions(methodDeclarationsForA, methodPositionsForA);
+//			mapEditToMethod(methodPositionsForA, oldLineNumberToEdit, editToMethodDeclarationForA);
+//			System.out.println("----------End of processing the old file: revision A---------");
+//
+//			// For adding, get the differences
+//			System.out.println("+++++++++++Process the new file: revision B+++++++++++++++++");
+//			computeMethodPositions(methodDeclarationsForB, methodPositionsForB);
+//			mapEditToMethod(methodPositionsForB, newLineNumberToEdit, editToMethodDeclarationForB);
+//			System.out.println("+++++++++++End of processing the new file: revision B++++++++");
+//			System.out.println();
+//
+//		}
+//
+//		git.close();
+//	}
 
-		Repository repo = new FileRepository("C:\\Users\\tangy\\logging-workspace\\Log-Git-Test\\.git");
-
-		Git git = new Git(repo);
-
-		ObjectId currentCommitId = ObjectId.fromString(sha);
-		RevWalk revWalk = new RevWalk(repo);
-		RevCommit currentCommit = revWalk.parseCommit(currentCommitId);
-		RevTree tree = currentCommit.getTree();
-		RevCommit previousCommit = currentCommit.getParent(0);
-		revWalk.close();
-
-		System.out.println("Current commit: " + currentCommit);
-		System.out.println("Current log messages: " + currentCommit.getFullMessage());
-		System.out.println("------------------------------------------");
-
-		AbstractTreeIterator oldTreeIterator = getCanonicalTreeParser(previousCommit, repo);
-		AbstractTreeIterator newTreeIterator = getCanonicalTreeParser(currentCommit, repo);
-
-		// each diff entry is corresponding to a file
-		final List<DiffEntry> diffs = git.diff().setOldTree(oldTreeIterator).setNewTree(newTreeIterator).call();
-
-		OutputStream outputStream = new ByteArrayOutputStream();
-		try (DiffFormatter formatter = new DiffFormatter(outputStream)) {
-			formatter.setRepository(repo);
-			formatter.scan(oldTreeIterator, newTreeIterator);
-
-			// only get the first file.
-			DiffEntry diffEntry = diffs.get(0);
-
-			FileHeader fileHeader = formatter.toFileHeader(diffEntry);
-
-			System.out.println("MODIFY: " + diffEntry.getNewPath());
-			List<? extends HunkHeader> hunks = fileHeader.getHunks();
-			int editId = 0;
-			for (HunkHeader hunk : hunks) {
-				EditList editList = hunk.toEditList();
-				if (!editList.isEmpty()) {
-					// For each pair of edit
-					for (Edit edit : editList) {
-						editId++;
-						mapLineNumberToEdit(editId, edit.getBeginA(), edit.getEndA(), oldLineNumberToEdit);
-						System.out.println("Old edit: start at " + edit.getBeginA() + ", end at " + edit.getEndA());
-						mapLineNumberToEdit(editId, edit.getBeginB(), edit.getEndB(), newLineNumberToEdit);
-						System.out.println("New edit: start at " + edit.getBeginB() + ", end at " + edit.getEndB());
-
-					}
-					;
-				}
-
-			}
-			// Get the file for revision A
-			copyHistoricalFile(previousCommit, repo, diffEntry.getNewPath(), "tmp_A_", tree);
-			// Get the file for revision B
-			copyHistoricalFile(currentCommit, repo, diffEntry.getOldPath(), "tmp_B_", tree);
-
-			// For deleting, get the differences
-			System.out.println("----------Process the old file: revision A------------------");
-			computeMethodPositions(methodDeclarationsForA, methodPositionsForA);
-			mapEditToMethod(methodPositionsForA, oldLineNumberToEdit, editToMethodDeclarationForA);
-			System.out.println("----------End of processing the old file: revision A---------");
-
-			// For adding, get the differences
-			System.out.println("+++++++++++Process the new file: revision B+++++++++++++++++");
-			computeMethodPositions(methodDeclarationsForB, methodPositionsForB);
-			mapEditToMethod(methodPositionsForB, newLineNumberToEdit, editToMethodDeclarationForB);
-			System.out.println("+++++++++++End of processing the new file: revision B++++++++");
-			System.out.println();
-
-		}
-
-		git.close();
-	}
-
-	/**
-	 * Return a map: line number to edit id.
-	 */
-	private static HashMap<Integer, Integer> mapLineNumberToEdit(int editId, int start, int end,
-			HashMap<Integer, Integer> lineToEdit) {
-		for (int i = start + 1; i <= end; ++i) {
-			lineToEdit.put(i, editId);
-		}
-		return lineToEdit;
-	}
 
 	/**
 	 * Clear all sets and maps.
 	 */
 	public static void clear() {
-		newLineNumberToEdit.clear();
-		oldLineNumberToEdit.clear();
 		methodDeclarationsForA.clear();
 		methodDeclarationsForB.clear();
 		methodPositionsForA.clear();
 		methodPositionsForB.clear();
 		editToMethodDeclarationForA.clear();
 		editToMethodDeclarationForB.clear();
+		methodSignaturesToOps.clear();
 	}
 
 	/**
@@ -302,42 +286,52 @@ public class TestGit {
 	/**
 	 * Map line number to method
 	 */
-	private static void mapEditToMethod(HashMap<MethodDeclaration, Map<Integer, Integer>> methodPositions,
-			HashMap<Integer, Integer> lineToEdit,
+	private static void mapEditToMethod(int editId, int editStart, int editEnd,
+			HashMap<MethodDeclaration, Map<Integer, Integer>> methodPositions,
 			HashMap<Integer, HashSet<MethodDeclaration>> editToMethodDeclaration) {
-		lineToEdit.forEach((line, editId) -> {
-			methodPositions.forEach((methodDeclaration, positions) -> {
-				int start = positions.keySet().iterator().next();
-				int end = positions.values().iterator().next();
+		for (int line = editStart + 1; line <= editEnd; ++line) {
+			addCorrespondingMethod(editId, methodPositions, editToMethodDeclaration, line);
+		}
+		if (editStart == editEnd)
+			addCorrespondingMethod(editId, methodPositions, editToMethodDeclaration, editEnd + 1);
 
-				if (line >= start && line <= end) {
-					HashSet<MethodDeclaration> methodDeclarations = new HashSet<>();
-					if (!editToMethodDeclaration.containsKey(editId)) {
-						methodDeclarations.add(methodDeclaration);
-						editToMethodDeclaration.put(editId, methodDeclarations);
-					} else {
-						methodDeclarations = editToMethodDeclaration.get(editId);
-						if (!methodDeclarations.contains(methodDeclaration)) {
-							methodDeclarations.add(methodDeclaration);
-							editToMethodDeclaration.put(editId, methodDeclarations);
-						}
-					}
-				}
-			});
-		});
-		
 		//System.out.println(editToMethodDeclaration.keySet());
 	}
 
+	// Given a line, add its corresponding method into editToMethodDeclaration
+	private static void addCorrespondingMethod(int editId,
+			HashMap<MethodDeclaration, Map<Integer, Integer>> methodPositions,
+			HashMap<Integer, HashSet<MethodDeclaration>> editToMethodDeclaration, int line) {
+		methodPositions.forEach((methodDeclaration, positions) -> {
+			int start = positions.keySet().iterator().next();
+			int end = positions.values().iterator().next();
+
+			if (line >= start && line <= end) {
+				HashSet<MethodDeclaration> methodDeclarations = new HashSet<>();
+				if (!editToMethodDeclaration.containsKey(editId)) {
+					methodDeclarations.add(methodDeclaration);
+					editToMethodDeclaration.put(editId, methodDeclarations);
+				} else {
+					methodDeclarations = editToMethodDeclaration.get(editId);
+					if (!methodDeclarations.contains(methodDeclaration)) {
+						methodDeclarations.add(methodDeclaration);
+						editToMethodDeclaration.put(editId, methodDeclarations);
+					}
+				}
+			}
+		});
+	}
+
+	// Return a method signature
 	public static String getMethodSignature(MethodDeclaration methodDeclaration) {
 		String signature = "";
 		signature += methodDeclaration.getName() + "(";
 
-		Iterator<?> parameterIterator = methodDeclaration.parameters().iterator();
+		Iterator<SingleVariableDeclaration> parameterIterator = methodDeclaration.parameters().iterator();
 		if (parameterIterator.hasNext())
-			signature += parameterIterator.next();
+			signature += parameterIterator.next().getType();
 		while (parameterIterator.hasNext()) {
-			signature += ", " + parameterIterator.next();
+			signature += ", " + parameterIterator.next().getType();
 		}
 		signature += ")";
 		return signature;
@@ -458,6 +452,209 @@ public class TestGit {
 			fileName = path;
 
 		return fileName;
+	}
+
+	/**
+	 * Check whether two methods have the same method name.
+	 */
+	private static boolean isSameMethodName(MethodDeclaration methodA, MethodDeclaration methodB) {
+		if (methodA.getName().toString().equals(methodB.getName().toString()))
+			return true;
+		else
+			return false;
+	}
+
+	/**
+	 * Check whether two methods are same.
+	 */
+	private static boolean isSameMethod(MethodDeclaration methodA, MethodDeclaration methodB) {
+		if (isSameMethodName(methodA, methodB)) {
+			List<SingleVariableDeclaration> parametersForA = methodA.parameters();
+			List<SingleVariableDeclaration> parametersForB = methodB.parameters();
+			index = 0;
+			for (SingleVariableDeclaration parameter : parametersForA) {
+				if (!parameter.getType().toString().equals(parametersForB.get(index++).getType().toString()))
+					return false;
+			}
+			return true;
+		}
+		return false;
+	}
+
+	// Return a set of A-B
+	private static HashSet<String> getAdditionalMethods(HashSet<String> methodSignaturesSetA,
+			HashSet<String> methodSignaturesSetB) {
+		HashSet<String> additionalMethods = new HashSet<>();
+		additionalMethods.addAll(methodSignaturesSetA);
+		additionalMethods.removeAll(methodSignaturesSetB);
+		return additionalMethods;
+	}
+
+	// Given a set of method signatures, get its corresponding set of method
+	// declarations
+	private static HashSet<MethodDeclaration> getSetOfMethodDeclaration(HashSet<MethodDeclaration> methodsDecs,
+			HashSet<String> methodSigs) {
+		HashSet<MethodDeclaration> methodDeclarations = new HashSet<>();
+		methodsDecs.forEach(method -> {
+			String methodSig = getMethodSignature(method);
+			if (methodSigs.contains(methodSig))
+				methodDeclarations.add(method);
+		});
+		return methodDeclarations;
+	}
+
+	private static void computeMethodChanges() {
+		HashSet<String> methodSignaturesForEditsA = getMethodSignatures(editToMethodDeclarationForA.values());
+		HashSet<String> methodSignaturesForEditsB = getMethodSignatures(editToMethodDeclarationForB.values());
+
+		HashSet<String> additionalMethodInB = getAdditionalMethods(methodSignaturesForEditsB, methodSignaturesForEditsA);
+
+		HashSet<MethodDeclaration> additionalMethodDecInB = getSetOfMethodDeclaration(methodDeclarationsForB,
+				additionalMethodInB);
+
+		// Iterate over edits. Each edit should be counted as an event
+		editToMethodDeclarationForA.forEach((editIdForA, methodsInOneEditA) -> {
+			
+			for (MethodDeclaration methodForA : methodsInOneEditA) {
+				String methodSig = getMethodSignature(methodForA);
+				
+				System.out.println(methodSig + ",    " + editIdForA);
+				System.out.println("$$$$$$$$$$");
+
+				// Method body is modified or rename parameters
+				if (methodSignaturesForEditsB.contains(methodSig)) {
+					putIntoMethodToOps(methodSignaturesToOps, methodSig, TypesOfMethodOperations.CHANGE);
+				} else {
+
+					// Keep the method name same, but add/delete the parameter or change the type of
+					// the parameter
+					MethodDeclaration targetMethodDec = getMethodWithParameterChanged(methodForA,
+							additionalMethodDecInB);
+					if (targetMethodDec != null) {
+						process(targetMethodDec, additionalMethodDecInB, additionalMethodInB,
+								TypesOfMethodOperations.CHANGEPARAMETER);
+						break;
+					}
+
+					// If the method is renamed
+					targetMethodDec = getMethodWithMethodNameChanged(methodForA, additionalMethodDecInB);
+					if (targetMethodDec != null) {
+						process(targetMethodDec, additionalMethodDecInB, additionalMethodInB,
+								TypesOfMethodOperations.RENAME);
+						break;
+					}
+
+					putIntoMethodToOps(methodSignaturesToOps, methodSig, TypesOfMethodOperations.DELETE);
+				}
+
+			}
+			// edits
+		});
+
+		additionalMethodDecInB.forEach(methodDec -> {
+			putIntoMethodToOps(methodSignaturesToOps, getMethodSignature(methodDec), TypesOfMethodOperations.ADD);
+		});
+		
+		methodSignaturesToOps.forEach((methodSig, ops) -> {
+			System.out.println("#########################################");
+			System.out.println(methodSig);
+			System.out.println(ops);
+		});
+
+	}
+
+	// If the taget is found, store it and remove it in the difference set.
+	private static void process(MethodDeclaration targetMethodDec, HashSet<MethodDeclaration> additionalMethodDecInB,
+			HashSet<String> additionalMethodInB, TypesOfMethodOperations op) {
+		putIntoMethodToOps(methodSignaturesToOps, getMethodSignature(targetMethodDec), op);
+		String tagetMethodSig = getMethodSignature(targetMethodDec);
+		additionalMethodDecInB.remove(targetMethodDec);
+		additionalMethodInB.remove(tagetMethodSig);
+	}
+
+	// Check whether the method has the same parameter types
+	private static boolean isSameParameterType(MethodDeclaration methodA, MethodDeclaration methodB) {
+		List<SingleVariableDeclaration> parametersA = methodA.parameters();
+		List<SingleVariableDeclaration> parametersB = methodB.parameters();
+		int index = 0;
+		for (SingleVariableDeclaration parameterA : parametersA) {
+			SingleVariableDeclaration parameterB = parametersB.get(index++);
+			if (!parameterA.getType().toString().equals(parameterB.getType().toString()))
+				return false;
+		}
+		return true;
+	}
+
+	private static MethodDeclaration getMethodWithParameterChanged(MethodDeclaration methodForA,
+			HashSet<MethodDeclaration> additionalMethodDecInB) {
+		// Parameters are modified
+		MethodDeclaration targetMethodDec = null;
+		float similarity = -1;
+		for (MethodDeclaration methodForB : additionalMethodDecInB) {
+			if (isSameMethodName(methodForA, methodForB)) {
+				float currentSimilarity = computeSimilarity(methodForA, methodForB);
+				if (currentSimilarity > similarity) {
+					similarity = currentSimilarity;
+					targetMethodDec = methodForB;
+				}
+			}
+		}
+		return targetMethodDec;
+	}
+
+	private static MethodDeclaration getMethodWithMethodNameChanged(MethodDeclaration methodForA,
+			HashSet<MethodDeclaration> additionalMethodDecInB) {
+		// Parameters are modified
+		MethodDeclaration targetMethodDec = null;
+		float similarity = -1;
+		for (MethodDeclaration methodForB : additionalMethodDecInB) {
+			if (isSameMethodName(methodForA, methodForB)) {
+				float currentSimilarity = computeSimilarity(methodForA, methodForB);
+				if (currentSimilarity > similarity) {
+					similarity = currentSimilarity;
+					targetMethodDec = methodForB;
+				}
+			}
+		}
+		return targetMethodDec;
+	}
+
+	/**
+	 * Compute the degree that two methods are similar.
+	 */
+	private static float computeSimilarity(MethodDeclaration methodA, MethodDeclaration methodB) {
+		int methodLengthA = getEndingLineNumber(methodA) - getStartingLineNumber(methodA);
+		int methodLengthB = getEndingLineNumber(methodB) - getStartingLineNumber(methodB);
+
+		if (methodLengthA == 0 || methodLengthB == 0)
+			return -1;
+
+		if (methodLengthA >= methodLengthB)
+			return methodLengthB / methodLengthA;
+		else
+			return methodLengthA / methodLengthB;
+	}
+
+	// Add an element into the map methodSignaturesToOps
+	private static void putIntoMethodToOps(HashMap<String, LinkedList<TypesOfMethodOperations>> map, String key,
+			TypesOfMethodOperations element) {
+		LinkedList<TypesOfMethodOperations> list = new LinkedList<>();
+		if (map.containsKey(key)) {
+			list = map.get(key);
+		}
+		list.add(element);
+		map.put(key, list);
+	}
+
+	// Returns all method signatures for all edits in one file.
+	private static HashSet<String> getMethodSignatures(Collection<HashSet<MethodDeclaration>> methodDeclarations) {
+		HashSet<String> methodSignatures = new HashSet<String>();
+		methodDeclarations.forEach(methodDecSet -> {
+			methodDecSet.forEach(methodDec -> {
+				methodSignatures.add(getMethodSignature(methodDec));
+			});
+		});
+		return methodSignatures;
 	}
 
 	/**
