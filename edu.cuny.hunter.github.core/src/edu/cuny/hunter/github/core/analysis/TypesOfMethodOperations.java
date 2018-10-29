@@ -1,5 +1,9 @@
 package edu.cuny.hunter.github.core.analysis;
 
 public enum TypesOfMethodOperations {
-	ADD, DELETE, RENAME, CHANGE, CHANGEPARAMETER
+	ADD, // add a method
+	DELETE, // delete a method
+	RENAME, // rename a method
+	CHANGE, // modify a method body or rename parameters
+	CHANGEPARAMETER // change parameter types
 }

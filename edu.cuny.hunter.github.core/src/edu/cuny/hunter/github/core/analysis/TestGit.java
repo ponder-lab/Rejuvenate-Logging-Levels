@@ -51,7 +51,7 @@ import org.eclipse.jgit.treewalk.filter.PathFilter;
 @SuppressWarnings("restriction")
 public class TestGit {
 	// the file index
-	private static int index = 0;
+	private static int commitIndex = 0;
 
 	// Set of method declarations
 	// Should we consider the ordering of the methods?
@@ -149,7 +149,7 @@ public class TestGit {
 
 							clear();
 
-							index++;
+							commitIndex++;
 							System.out.println();
 
 						} else if (diffEntry.getChangeType().name().equals("RENAME")) {
@@ -189,7 +189,7 @@ public class TestGit {
 		RevWalk revWalk = new RevWalk(repo);
 		RevCommit currentCommit = revWalk.parseCommit(currentCommitId);
 		RevTree tree = currentCommit.getTree();
-		
+
 		RevCommit previousCommit = currentCommit.getParent(0);
 		previousCommit = revWalk.parseCommit(previousCommit.getId());
 		RevTree previousTree = previousCommit.getTree();
@@ -248,7 +248,7 @@ public class TestGit {
 
 			computeMethodChanges();
 
-			index++;
+			commitIndex++;
 			System.out.println();
 
 		}
@@ -380,8 +380,7 @@ public class TestGit {
 	 * it into a new file.
 	 */
 	@SuppressWarnings("resource")
-	private static void copyHistoricalFile(Repository repo, String path, String newDirectory,
-			RevTree tree)
+	private static void copyHistoricalFile(Repository repo, String path, String newDirectory, RevTree tree)
 			throws MissingObjectException, IncorrectObjectTypeException, CorruptObjectException, IOException {
 		TreeWalk treeWalk = new TreeWalk(repo);
 		treeWalk.addTree(tree);
@@ -420,7 +419,7 @@ public class TestGit {
 		if (fileName == null)
 			return null;
 		// ALL files are moved into a new directory
-		File file = new File(newDirectory + index + "/" + fileName);
+		File file = new File(newDirectory + commitIndex + "/" + fileName);
 
 		if (!file.exists()) {
 			if (!file.getParentFile().exists())
@@ -461,23 +460,8 @@ public class TestGit {
 	}
 
 	/**
-	 * Check whether two methods are same.
+	 * Return a set of A-B.
 	 */
-	private static boolean isSameMethod(MethodDeclaration methodA, MethodDeclaration methodB) {
-		if (isSameMethodName(methodA, methodB)) {
-			List<SingleVariableDeclaration> parametersForA = methodA.parameters();
-			List<SingleVariableDeclaration> parametersForB = methodB.parameters();
-			index = 0;
-			for (SingleVariableDeclaration parameter : parametersForA) {
-				if (!parameter.getType().toString().equals(parametersForB.get(index++).getType().toString()))
-					return false;
-			}
-			return true;
-		}
-		return false;
-	}
-
-	// Return a set of A-B
 	private static HashSet<String> getAdditionalMethods(HashSet<String> methodSignaturesSetA,
 			HashSet<String> methodSignaturesSetB) {
 		HashSet<String> additionalMethods = new HashSet<>();
@@ -486,8 +470,10 @@ public class TestGit {
 		return additionalMethods;
 	}
 
-	// Given a set of method signatures, get its corresponding set of method
-	// declarations
+	/**
+	 * Given a set of method signatures, get its corresponding set of method
+	 * declarations.
+	 */
 	private static HashSet<MethodDeclaration> getSetOfMethodDeclaration(HashSet<MethodDeclaration> methodsDecs,
 			HashSet<String> methodSigs) {
 		HashSet<MethodDeclaration> methodDeclarations = new HashSet<>();
@@ -499,6 +485,10 @@ public class TestGit {
 		return methodDeclarations;
 	}
 
+	/**
+	 * The core method to return a list of methods and their operation types for one
+	 * file.
+	 */
 	private static void computeMethodChanges() {
 		HashSet<String> methodSignaturesForEditsA = getMethodSignatures(editToMethodDeclarationForA.values());
 		HashSet<String> methodSignaturesForEditsB = getMethodSignatures(editToMethodDeclarationForB.values());
@@ -558,7 +548,9 @@ public class TestGit {
 
 	}
 
-	// If the taget is found, store it and remove it in the difference set.
+	/**
+	 * Store target method declaration and remove it in the difference set.
+	 */
 	private static void process(MethodDeclaration targetMethodDec, HashSet<MethodDeclaration> additionalMethodDecInB,
 			HashSet<String> additionalMethodInB, TypesOfMethodOperations op) {
 		putIntoMethodToOps(methodSignaturesToOps, getMethodSignature(targetMethodDec), op);
@@ -567,7 +559,9 @@ public class TestGit {
 		additionalMethodInB.remove(tagetMethodSig);
 	}
 
-	// Check whether the method has the same parameter types
+	/**
+	 * Check whether the two methods have the same parameter types.
+	 */
 	private static boolean isSameParameterType(MethodDeclaration methodA, MethodDeclaration methodB) {
 		List<SingleVariableDeclaration> parametersA = methodA.parameters();
 		List<SingleVariableDeclaration> parametersB = methodB.parameters();
@@ -580,6 +574,10 @@ public class TestGit {
 		return true;
 	}
 
+	/**
+	 * Get the method when the number of parameter is changed or parameters' type is
+	 * changed.
+	 */
 	private static MethodDeclaration getMethodWithParameterChanged(MethodDeclaration methodForA,
 			HashSet<MethodDeclaration> additionalMethodDecInB) {
 		// Parameters are modified
@@ -597,6 +595,9 @@ public class TestGit {
 		return targetMethodDec;
 	}
 
+	/**
+	 * Get the method when the method is renamed.
+	 */
 	private static MethodDeclaration getMethodWithMethodNameChanged(MethodDeclaration methodForA,
 			HashSet<MethodDeclaration> additionalMethodDecInB) {
 		// Parameters are modified
@@ -630,7 +631,9 @@ public class TestGit {
 			return methodLengthA / methodLengthB;
 	}
 
-	// Add an element into the map methodSignaturesToOps
+	/**
+	 * Add an element into the map methodSignaturesToOps
+	 */
 	private static void putIntoMethodToOps(HashMap<String, LinkedList<TypesOfMethodOperations>> map, String key,
 			TypesOfMethodOperations element) {
 		LinkedList<TypesOfMethodOperations> list = new LinkedList<>();
@@ -641,7 +644,9 @@ public class TestGit {
 		map.put(key, list);
 	}
 
-	// Returns all method signatures for all edits in one file.
+	/**
+	 * Returns all method signatures for all edits in one file.
+	 */
 	private static HashSet<String> getMethodSignatures(Collection<HashSet<MethodDeclaration>> methodDeclarations) {
 		HashSet<String> methodSignatures = new HashSet<String>();
 		methodDeclarations.forEach(methodDecSet -> {
