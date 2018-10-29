@@ -174,9 +174,42 @@ public class TestGit {
 			// For testing here!!!
 			if (count == 10)
 				break;
+
+			clearFiles(new File("").getAbsoluteFile());
 		}
 
 		git.close();
+	}
+
+	/**
+	 * Check whether a directory is a temporary directory.
+	 */
+	private static boolean isTemporaryDirectory(File directory) {
+		if (directory.getName().length() >= 7 && directory.getName().substring(0, 4).equals("tmp_"))
+			return true;
+		else
+			return false;
+	}
+
+	/**
+	 * Remove all temporary files
+	 */
+	private static boolean clearFiles(File directory) {
+		if (directory.exists()) {
+			File[] files = directory.listFiles();
+			if (null != files) {
+				for (int i = 0; i < files.length; i++) {
+					if (files[i].isDirectory()) {
+						// Need to clear the content of the temporary directory first before remove it
+						if (isTemporaryDirectory(files[i]))
+							clearFiles(files[i]);
+					} else if (isTemporaryDirectory(directory)) {
+						files[i].delete();
+					}
+				}
+			}
+		}
+		return (directory.delete());
 	}
 
 	public static void testMethods(String sha) throws IOException, GitAPIException {
@@ -335,7 +368,6 @@ public class TestGit {
 		return signature;
 	}
 
-	// We also should consider comments?
 	public static int getStartingLineNumber(MethodDeclaration methodDeclaration) {
 		return (((CompilationUnit) methodDeclaration.getRoot()).getLineNumber(methodDeclaration.getStartPosition()));
 	}
