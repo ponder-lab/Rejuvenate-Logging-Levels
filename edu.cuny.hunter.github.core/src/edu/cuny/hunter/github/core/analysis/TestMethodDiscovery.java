@@ -14,7 +14,7 @@ public class TestMethodDiscovery {
 
 	@Test
 	public void test() throws IOException, GitAPIException {
-		TestGit.testMethods("f9efc371e5db9dedc73a63e455a6f2764a6232eb");
+		TestGit.testMethods("2b28383602304c0c6e96fdb95b02d3580203c2c9");
 		HashMap<String, LinkedList<TypesOfMethodOperations>> methodSignaturesToOps = TestGit.getMethodSignaturesToOps();
 
 		assertEquals("n()", methodSignaturesToOps.keySet().iterator().next());

@@ -564,7 +564,7 @@ public class TestGit {
 			for (MethodDeclaration methodForA : methodsInOneEditA) {
 				String methodSig = getMethodSignature(methodForA);
 
-				// Method body is modified or rename parameters
+				// Modify method body, or rename parameters
 				if (methodSignaturesForEditsB.contains(methodSig)) {
 					putIntoMethodToOps(methodSignaturesToOps, methodSig, TypesOfMethodOperations.CHANGE);
 				} else {
