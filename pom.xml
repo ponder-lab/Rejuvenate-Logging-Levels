@@ -13,6 +13,7 @@
 	<modules>
 		<module>edu.cuny.hunter.log.ui</module>
 		<module>edu.cuny.hunter.log.core</module>
+		<module>edu.cuny.hunter.log.github</module>
 		<module>edu.cuny.hunter.log.tests</module>
 		<module>edu.cuny.hunter.log.tests.report</module>
 	</modules>
@@ -85,7 +86,22 @@
 			<layout>p2</layout>
 			<url>http://download.eclipse.org/mylyn/releases/3.23</url>
 		</repository>
+		
+		<repository>
+			<id>jgit-repository</id>
+			<url>http://download.eclipse.org/jgit/maven</url>
+		</repository>
+	
 	</repositories>
+	
+	<!-- Core JGit Library -->
+	<dependencies>
+		<dependency>
+			<groupId>org.eclipse.jgit</groupId>
+			<artifactId>org.eclipse.jgit</artifactId>
+			<version>4.9.2.201712150930-r</version>
+		</dependency>
+	</dependencies>
 
 	<build>
 		<plugins>
