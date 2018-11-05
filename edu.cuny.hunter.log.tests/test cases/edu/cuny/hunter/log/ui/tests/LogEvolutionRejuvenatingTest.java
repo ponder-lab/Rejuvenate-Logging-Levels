@@ -3,6 +3,9 @@ package edu.cuny.hunter.log.ui.tests;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
@@ -122,11 +125,22 @@ public class LogEvolutionRejuvenatingTest extends RefactoringTest {
 
 	protected void tearDown() throws Exception {
 		super.tearDown();
+		tryDeletingJavaFiles(this.getPackageP());
 	}
 
 	@Override
 	protected Refactoring getRefactoring(IJavaElement... elements) throws JavaModelException {
 		return null;
+	}
+
+	private static void tryDeletingJavaFiles(IPackageFragment pack) throws JavaModelException {
+		File sourceFile = pack.getResource().getLocation().append("A.java").toFile();
+		// delete the file.
+		try {
+			Files.delete(sourceFile.toPath());
+		} catch (IOException e) {
+			throw new IllegalArgumentException("Source file does not exist.", e);
+		}
 	}
 
 }
