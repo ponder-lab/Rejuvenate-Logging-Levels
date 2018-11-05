@@ -56,7 +56,6 @@ public class GitHistoryAnalyzer {
 	private static int commitIndex = 0;
 
 	// Set of method declarations
-	// Should we consider the ordering of the methods?
 	private static HashSet<MethodDeclaration> methodDeclarationsForA = new HashSet<MethodDeclaration>();
 	private static HashSet<MethodDeclaration> methodDeclarationsForB = new HashSet<MethodDeclaration>();
 
@@ -78,13 +77,19 @@ public class GitHistoryAnalyzer {
 		Git git = new Git(repo);
 
 		Iterable<RevCommit> log = git.log().call();
-		RevCommit currentCommit = null;
+		
+		LinkedList<RevCommit> commitList = new LinkedList<>();
+		
+		for (RevCommit commit : log) {
+			commitList.addFirst(commit);
+		}
+		
+		RevCommit previousCommit = null;
 
-		int count = 0;
-		// from the latest commit to the old commit
-		for (RevCommit previousCommit : log) {
-			count++;
-			if (currentCommit != null) {
+		// from the old commit to the current commit
+		for (RevCommit currentCommit : commitList) {
+			
+			if (previousCommit != null) {
 
 				AbstractTreeIterator oldTreeIterator = getCanonicalTreeParser(previousCommit, repo);
 				AbstractTreeIterator newTreeIterator = getCanonicalTreeParser(currentCommit, repo);
@@ -109,8 +114,7 @@ public class GitHistoryAnalyzer {
 								putIntoMethodToOps(methodSignaturesToOps, getMethodSignature(methodDec),
 										TypesOfMethodOperations.ADD);
 							});
-							methodSignaturesToOps.forEach((methodSig, ops) -> {
-							});
+							
 						} else // add a file
 						if (diffEntry.getChangeType().name().equals("DELETE")) {
 
@@ -120,8 +124,7 @@ public class GitHistoryAnalyzer {
 								putIntoMethodToOps(methodSignaturesToOps, getMethodSignature(methodDec),
 										TypesOfMethodOperations.ADD);
 							});
-							methodSignaturesToOps.forEach((methodSig, ops) -> {
-							});
+
 						} else // modify a file
 						if (diffEntry.getChangeType().name().equals("MODIFY")) {
 
@@ -168,11 +171,7 @@ public class GitHistoryAnalyzer {
 				}
 
 			}
-			currentCommit = previousCommit;
-
-			// For testing here!!!
-			if (count == 10)
-				break;
+			previousCommit = currentCommit;
 
 			clearFiles(new File("").getAbsoluteFile());
 		}
