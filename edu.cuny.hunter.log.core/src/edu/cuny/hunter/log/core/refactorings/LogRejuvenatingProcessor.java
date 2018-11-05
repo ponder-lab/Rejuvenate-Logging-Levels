@@ -48,12 +48,18 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 
 	private boolean useLogCategory = false;
 
+	private boolean useGitHistory = false;
+
 	public LogRejuvenatingProcessor(final CodeGenerationSettings settings) {
 		super(settings);
 	}
 
 	public void setParticularConfigLogLevel(boolean useConfigLogLevelCategory) {
 		this.useLogCategoryWithConfig = useConfigLogLevelCategory;
+	}
+
+	public void setUseGitHistory(boolean useGitHistory) {
+		this.useGitHistory = useGitHistory;
 	}
 
 	public void setParticularLogLevel(boolean useLogLevelCategory) {
@@ -79,13 +85,14 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 	}
 
 	public LogRejuvenatingProcessor(IJavaProject[] javaProjects, boolean useLogLevelCategory,
-			boolean useConfigLogLevelCategory, final CodeGenerationSettings settings,
+			boolean useConfigLogLevelCategory, boolean useGitHistory, final CodeGenerationSettings settings,
 			Optional<IProgressMonitor> monitor) {
 		super(settings);
 		try {
 			this.javaProjects = javaProjects;
 			this.useLogCategoryWithConfig = useConfigLogLevelCategory;
 			this.useLogCategory = useLogLevelCategory;
+			this.useGitHistory = useGitHistory;
 		} finally {
 			monitor.ifPresent(IProgressMonitor::done);
 		}
@@ -106,7 +113,8 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 			throws CoreException, OperationCanceledException {
 		try {
 			final RefactoringStatus status = new RefactoringStatus();
-			LogAnalyzer analyzer = new LogAnalyzer(this.useLogCategoryWithConfig, this.useLogCategory);
+			LogAnalyzer analyzer = new LogAnalyzer(this.useLogCategoryWithConfig, this.useLogCategory,
+					this.useGitHistory);
 
 			for (IJavaProject jproj : this.getJavaProjects()) {
 				IPackageFragmentRoot[] roots = jproj.getPackageFragmentRoots();

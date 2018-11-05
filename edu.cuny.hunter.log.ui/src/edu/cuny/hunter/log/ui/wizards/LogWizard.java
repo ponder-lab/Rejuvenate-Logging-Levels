@@ -41,6 +41,8 @@ public class LogWizard extends RefactoringWizard {
 		private static final String USE_LOG_CATEGORY = "useLogCategory";
 
 		private static final String USE_LOG_CATEGORY_CONFIG = "useLogCategoryWithConfig";
+		
+		private static final String USE_GIT_HISTORY = "useGitHistory";
 
 		private LogRejuvenatingProcessor processor;
 
@@ -83,12 +85,16 @@ public class LogWizard extends RefactoringWizard {
 			result.setLayout(layout);
 
 			// set up buttons.
-			this.addBooleanButton("Treat CONFIG logging level as a category and not a traditional level.",
+			this.addBooleanButton("Treat CONFIG log level as a category and not a traditional level.",
 					USE_LOG_CATEGORY_CONFIG, this.getProcessor()::setParticularConfigLogLevel, result);
 
 			// set up buttons.
-			this.addBooleanButton("Treat CONFIG/WARNING/SEVERE logging levels as category and not traditional levels.",
+			this.addBooleanButton("Treat CONFIG/WARNING/SEVERE log levels as category and not traditional levels.",
 					USE_LOG_CATEGORY, this.getProcessor()::setParticularLogLevel, result);
+			
+			// set up buttons.
+			this.addBooleanButton("Traverse git history to rejuvenate log levels.", USE_GIT_HISTORY,
+					this.getProcessor()::setUseGitHistory, result);
 
 			this.updateStatus();
 			Dialog.applyDialogFont(result);
