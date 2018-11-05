@@ -107,14 +107,23 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 	public String getProcessorName() {
 		return Messages.Name;
 	}
+	
+	private String getGitRepoPath() {
+		return "C:\\Users\\tangy\\eclipse-workspace\\Java-8-Stream-Refactoring\\.git";
+	}
 
 	@Override
 	public RefactoringStatus checkFinalConditions(final IProgressMonitor monitor, final CheckConditionsContext context)
 			throws CoreException, OperationCanceledException {
 		try {
 			final RefactoringStatus status = new RefactoringStatus();
-			LogAnalyzer analyzer = new LogAnalyzer(this.useLogCategoryWithConfig, this.useLogCategory,
-					this.useGitHistory);
+			
+			if (this.useGitHistory) {
+				String repoPath = getGitRepoPath();
+				LogAnalyzer analyzer = new LogAnalyzer(this.useGitHistory, repoPath);
+			}
+			else
+			LogAnalyzer analyzer = new LogAnalyzer(this.useLogCategoryWithConfig, this.useLogCategory);
 
 			for (IJavaProject jproj : this.getJavaProjects()) {
 				IPackageFragmentRoot[] roots = jproj.getPackageFragmentRoots();

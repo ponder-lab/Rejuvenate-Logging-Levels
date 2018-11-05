@@ -12,6 +12,7 @@ import org.eclipse.jdt.core.IMethod;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.core.dom.ASTVisitor;
 import org.eclipse.jdt.core.dom.CompilationUnit;
+import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.MethodInvocation;
 
 import edu.cuny.hunter.log.core.messages.Messages;
@@ -29,8 +30,10 @@ public class LogAnalyzer extends ASTVisitor {
 	private static boolean useLogCategoryWithConfig = false;
 
 	private static boolean useLogCategory = false;
-	
+
 	private static boolean useGitHis = false;
+
+	private static String repoPath;
 
 	private int test;
 
@@ -38,10 +41,14 @@ public class LogAnalyzer extends ASTVisitor {
 		this.test = isTest;
 	}
 
-	public LogAnalyzer(boolean useConfigLogLevelCategory, boolean useLogLevelCategory, boolean useGitHistory) {
+	public LogAnalyzer(boolean useConfigLogLevelCategory, boolean useLogLevelCategory) {
 		useLogCategoryWithConfig = useConfigLogLevelCategory;
 		useLogCategory = useLogLevelCategory;
-		useGitHis = useGitHistory;
+	}
+
+	public LogAnalyzer(boolean useGitHistory, String repoPath) {
+		this.useGitHis = useGitHistory;
+		this.repoPath = repoPath;
 	}
 
 	public LogAnalyzer() {
@@ -54,9 +61,13 @@ public class LogAnalyzer extends ASTVisitor {
 		if (useLogCategory && useLogCategoryWithConfig) {
 			throw new IllegalStateException("You cannot check two options at the same time.");
 		}
-		
+
 		// We analyze git history
 		if (useGitHis) {
+			for (LogInvocation logInvocation : this.logInvocationSet) {
+				logInvocation.setDegreeOfInterestValue(
+						computeDegreeOfInterestValue(logInvocation.getEnclosingMethodDeclaration()));
+			}
 			return;
 		}
 
@@ -80,6 +91,11 @@ public class LogAnalyzer extends ASTVisitor {
 				LOGGER.info("Do action: " + logInvocation.getAction() + "! The changed log expression is "
 						+ logInvocation.getExpression());
 
+	}
+
+	private int computeDegreeOfInterestValue(MethodDeclaration enclosingMethodDeclaration) {
+		// TODO Auto-generated method stub
+		return 0;
 	}
 
 	private boolean doAction(LogInvocation logInvocation) {

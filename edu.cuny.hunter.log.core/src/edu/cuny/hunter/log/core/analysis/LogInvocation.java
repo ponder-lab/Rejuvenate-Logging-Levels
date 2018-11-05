@@ -72,6 +72,10 @@ public class LogInvocation {
 	public float getDegreeOfInterestValue() {
 		return degreeOfInterestValue;
 	}
+	
+	public void setDegreeOfInterestValue(int degreeOfInterestValue) {
+		this.degreeOfInterestValue = degreeOfInterestValue;
+	}
 
 	void addStatusEntry(PreconditionFailure failure, String message) {
 		MethodInvocation logExpression = this.getExpression();

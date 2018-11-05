@@ -48,8 +48,10 @@ import org.eclipse.jgit.treewalk.CanonicalTreeParser;
 import org.eclipse.jgit.treewalk.TreeWalk;
 import org.eclipse.jgit.treewalk.filter.PathFilter;
 
+import edu.cuny.hunter.github.core.utils.Graph;
+
 @SuppressWarnings("restriction")
-public class TestGit {
+public class GitHistoryAnalyzer {
 	// the file index
 	private static int commitIndex = 0;
 
@@ -66,6 +68,8 @@ public class TestGit {
 
 	// A mapping from the method signature to the operations
 	private static HashMap<String, LinkedList<TypesOfMethodOperations>> methodSignaturesToOps = new HashMap<>();
+	 
+	private static Graph methodRenames = new Graph();
 
 	public static void main(String[] args) throws IOException, GitAPIException {
 
@@ -82,10 +86,6 @@ public class TestGit {
 			count++;
 			if (currentCommit != null) {
 
-				System.out.println("Current commit: " + currentCommit);
-				System.out.println("Current log messages: " + currentCommit.getFullMessage());
-				System.out.println("#########################################");
-
 				AbstractTreeIterator oldTreeIterator = getCanonicalTreeParser(previousCommit, repo);
 				AbstractTreeIterator newTreeIterator = getCanonicalTreeParser(currentCommit, repo);
 
@@ -98,47 +98,30 @@ public class TestGit {
 					formatter.scan(oldTreeIterator, newTreeIterator);
 
 					for (DiffEntry diffEntry : diffs) {
-
 						FileHeader fileHeader = formatter.toFileHeader(diffEntry);
-						System.out.println("------------------------------------------");
+
 						// delete a file
 						if (diffEntry.getChangeType().name().equals("ADD")) {
-							System.out.println("ADD: " + diffEntry.getNewPath());
-							System.out.println("------------------------------------------");
-
+							
 							// Get the file for revision B
 							copyHistoricalFile(currentCommit, repo, diffEntry.getNewPath(), "tmp_B_");
-
 							methodDeclarationsForB.forEach(methodDec -> {
 								putIntoMethodToOps(methodSignaturesToOps, getMethodSignature(methodDec),
 										TypesOfMethodOperations.ADD);
 							});
-
 							methodSignaturesToOps.forEach((methodSig, ops) -> {
-								System.out.println("------------------------------------------");
-								System.out.println(methodSig);
-								System.out.println(ops);
 							});
-							System.out.println("------------------------------------------");
 						} else // add a file
 						if (diffEntry.getChangeType().name().equals("DELETE")) {
-							System.out.print("DELETE: ");
-							System.out.println(diffEntry.getOldPath());
-							System.out.println("------------------------------------------");
 
 							// Get the file for revision A
 							copyHistoricalFile(previousCommit, repo, diffEntry.getOldPath(), "tmp_A_");
-
 							methodDeclarationsForA.forEach(methodDec -> {
 								putIntoMethodToOps(methodSignaturesToOps, getMethodSignature(methodDec),
 										TypesOfMethodOperations.ADD);
 							});
 							methodSignaturesToOps.forEach((methodSig, ops) -> {
-								System.out.println("------------------------------------------");
-								System.out.println(methodSig);
-								System.out.println(ops);
 							});
-							System.out.println("------------------------------------------");
 						} else // modify a file
 						if (diffEntry.getChangeType().name().equals("MODIFY")) {
 
@@ -153,7 +136,6 @@ public class TestGit {
 							// For adding, get the differences
 							computeMethodPositions(methodDeclarationsForB, methodPositionsForB);
 
-							System.out.println("MODIFY: " + diffEntry.getNewPath());
 							List<? extends HunkHeader> hunks = fileHeader.getHunks();
 							int editId = 0;
 							for (HunkHeader hunk : hunks) {
@@ -176,18 +158,9 @@ public class TestGit {
 							computeMethodChanges();
 
 							commitIndex++;
-							System.out.println();
 
 						} else if (diffEntry.getChangeType().name().equals("RENAME")) {
-							System.out.println("RENAME: ");
-							System.out.println("Oldpath: " + diffEntry.getOldPath());
-							System.out.println("Newpath: " + diffEntry.getNewPath());
-							System.out.println();
 						} else if (diffEntry.getChangeType().name().equals("COPY")) {
-							System.out.println("COPY: ");
-							System.out.println("Oldpath: " + diffEntry.getOldPath());
-							System.out.println("Newpath: " + diffEntry.getNewPath());
-							System.out.println();
 						}
 
 						clear();
@@ -195,7 +168,6 @@ public class TestGit {
 				}
 
 			}
-			System.out.println("#######################################");
 			currentCommit = previousCommit;
 
 			// For testing here!!!
@@ -255,10 +227,6 @@ public class TestGit {
 		RevTree previousTree = previousCommit.getTree();
 		revWalk.close();
 
-		System.out.println("Current commit: " + currentCommit);
-		System.out.println("Current log messages: " + currentCommit.getFullMessage());
-		System.out.println("------------------------------------------");
-
 		AbstractTreeIterator oldTreeIterator = getCanonicalTreeParser(previousCommit, repo);
 		AbstractTreeIterator newTreeIterator = getCanonicalTreeParser(currentCommit, repo);
 
@@ -286,7 +254,6 @@ public class TestGit {
 			// For adding, get the differences
 			computeMethodPositions(methodDeclarationsForB, methodPositionsForB);
 
-			System.out.println("MODIFY: " + diffEntry.getNewPath());
 			List<? extends HunkHeader> hunks = fileHeader.getHunks();
 			int editId = 0;
 			for (HunkHeader hunk : hunks) {
@@ -309,7 +276,6 @@ public class TestGit {
 			computeMethodChanges();
 
 			commitIndex++;
-			System.out.println();
 
 		}
 
@@ -599,11 +565,8 @@ public class TestGit {
 		});
 
 		methodSignaturesToOps.forEach((methodSig, ops) -> {
-			System.out.println("------------------------------------------");
-			System.out.println(methodSig);
-			System.out.println(ops);
+
 		});
-		System.out.println("------------------------------------------");
 
 	}
 
