@@ -15,6 +15,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
@@ -51,9 +52,11 @@ import org.eclipse.jgit.treewalk.CanonicalTreeParser;
 import org.eclipse.jgit.treewalk.TreeWalk;
 import org.eclipse.jgit.treewalk.filter.PathFilter;
 
+import edu.cuny.hunter.github.core.utils.Edge;
 import edu.cuny.hunter.github.core.utils.Graph;
+import edu.cuny.hunter.github.core.utils.Vertex;
 import edu.cuny.hunter.log.core.utils.LoggerNames;
-import edu.hunter.log.evalution.utils.Util;
+import edu.cuny.hunter.log.evalution.utils.Util;
 
 @SuppressWarnings("restriction")
 public class GitHistoryAnalyzer {
@@ -73,7 +76,7 @@ public class GitHistoryAnalyzer {
 	// A mapping from the method signature to the operations
 	private static HashMap<String, LinkedList<TypesOfMethodOperations>> methodSignaturesToOps = new HashMap<>();
 
-	private static Graph renames = new Graph();
+	private static Graph renaming = new Graph();
 
 	static CSVPrinter methodOpsPrinter;
 
@@ -82,12 +85,19 @@ public class GitHistoryAnalyzer {
 
 	static LinkedList<RevCommit> commitList = new LinkedList<>();
 
+	/**
+	 * Given the repo path, compute all method operations (e.g., delete a method)
+	 * for all commits.
+	 * 
+	 * Example input:
+	 * "C:\\Users\\tangy\\eclipse-workspace\\Java-8-Stream-Refactoring\\.git"
+	 */
 	public static void main(String[] args) throws IOException, GitAPIException {
 
 		methodOpsPrinter = Util.createCSVPrinter("method_operations.csv",
 				new String[] { "Commit ID", "SHA-1", "files", "file ops", "methods", "method ops" });
 
-		Git git = preProcessGitHistory();
+		Git git = preProcessGitHistory("C:\\Users\\tangy\\eclipse-workspace\\Java-8-Stream-Refactoring\\.git");
 
 		RevCommit previousCommit = null;
 
@@ -140,16 +150,25 @@ public class GitHistoryAnalyzer {
 			commitIndex++;
 
 			clearFiles(new File("").getAbsoluteFile());
+
+			//// test
+			if (commitIndex >= 8)
+				break;
 		}
 
 		git.close();
+		renaming.printGraph();
+	}
+
+	private static Graph getRenaming() {
+		return renaming;
 	}
 
 	/**
 	 * Get git and git commits.
 	 */
-	private static Git preProcessGitHistory() throws IOException, NoHeadException, GitAPIException {
-		Repository repo = new FileRepository("C:\\Users\\tangy\\eclipse-workspace\\Java-8-Stream-Refactoring\\.git");
+	private static Git preProcessGitHistory(String repoPath) throws IOException, NoHeadException, GitAPIException {
+		Repository repo = new FileRepository(repoPath);
 
 		Git git = new Git(repo);
 
@@ -198,7 +217,7 @@ public class GitHistoryAnalyzer {
 
 		}
 
-		computeMethodChanges();
+		computeMethodChanges(diffEntry.getNewPath());
 
 		return diffEntry.getNewPath();
 	}
@@ -212,6 +231,7 @@ public class GitHistoryAnalyzer {
 		copyHistoricalFile(currentCommit, repo, diffEntry.getNewPath(), "tmp_B_");
 		methodDeclarationsForB.forEach(methodDec -> {
 			putIntoMethodToOps(methodSignaturesToOps, getMethodSignature(methodDec), TypesOfMethodOperations.ADD);
+			renaming.addVertex(new Vertex(commitIndex, getMethodSignature(methodDec), diffEntry.getNewPath()));
 		});
 		return diffEntry.getNewPath();
 	}
@@ -225,6 +245,7 @@ public class GitHistoryAnalyzer {
 		copyHistoricalFile(previousCommit, repo, diffEntry.getOldPath(), "tmp_A_");
 		methodDeclarationsForA.forEach(methodDec -> {
 			putIntoMethodToOps(methodSignaturesToOps, getMethodSignature(methodDec), TypesOfMethodOperations.DELETE);
+			renaming.removeVertex(new Vertex(commitIndex, getMethodSignature(methodDec), diffEntry.getOldPath()));
 		});
 		return diffEntry.getOldPath();
 	}
@@ -336,7 +357,7 @@ public class GitHistoryAnalyzer {
 
 			}
 
-			computeMethodChanges();
+			computeMethodChanges(diffEntry.getNewPath());
 
 		}
 
@@ -575,7 +596,7 @@ public class GitHistoryAnalyzer {
 	 * The core method to return a list of methods and their operation types for one
 	 * file.
 	 */
-	private static void computeMethodChanges() {
+	private static void computeMethodChanges(String file) {
 		HashSet<String> methodSignaturesForEditsA = getMethodSignatures(editToMethodDeclarationForA.values());
 		HashSet<String> methodSignaturesForEditsB = getMethodSignatures(editToMethodDeclarationForB.values());
 
@@ -611,6 +632,7 @@ public class GitHistoryAnalyzer {
 					if (targetMethodDec != null) {
 						process(targetMethodDec, additionalMethodDecInB, additionalMethodInB,
 								TypesOfMethodOperations.RENAME);
+						addVertexIntoGraph(getMethodSignature(targetMethodDec), getMethodSignature(methodForA), file);
 						break;
 					}
 
@@ -631,16 +653,22 @@ public class GitHistoryAnalyzer {
 
 	}
 
-	// Add vertex into the graph
-	// private static void addVertexIntoGraph(int commitIndex, String
-	// targetMethodSig, String renamedMethodSig,
-	// String filePath) {
-	// Graph graph = fileToMethodRenaming.get(filePath);
-	// graph.addVertex(commitIndex, targetMethodSig);
-	// if (methodToFirstPosition.containsKey(renamedMethodSig))
-	// graph.addEdge(commitIndex, targetMethodSig,
-	// methodToFirstPosition.get(renamedMethodSig), renamedMethodSig);
-	// }
+	/**
+	 * Add a vertex into the graph
+	 */
+	private static void addVertexIntoGraph(String targetMethodSig, String renamedMethodSig, String file) {
+		// add vertex
+		Vertex vertex1 = new Vertex(commitIndex, targetMethodSig, file);
+		renaming.addVertex(vertex1);
+		// add edge
+		Set<Vertex> entryVertices = renaming.getEntryVertices();
+		for (Vertex v : entryVertices) {
+			if (v.getFile().equals(file) && v.getMethod().equals(renamedMethodSig)) {
+				renaming.addEdge(new Edge(vertex1, v));
+				return;
+			}
+		}
+	}
 
 	/**
 	 * Store target method declaration and remove it in the difference set.

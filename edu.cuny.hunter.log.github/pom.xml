@@ -10,7 +10,9 @@
 		<groupId>edu.cuny.hunter.log</groupId>
 		<artifactId>parent</artifactId>
 		<version>1.0.0</version>
+		<relativePath>../pom.xml</relativePath>
 	</parent>
 	<artifactId>edu.cuny.hunter.log.github</artifactId>
 	<packaging>eclipse-plugin</packaging>
+
 </project>

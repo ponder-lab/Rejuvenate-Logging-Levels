@@ -1,4 +1,4 @@
-package edu.hunter.log.evalution.handlers;
+package edu.cuny.hunter.log.evalution.handlers;
 
 import java.io.FileWriter;
 import java.io.IOException;
@@ -35,7 +35,7 @@ import edu.cuny.hunter.log.core.analysis.LogInvocation;
 import edu.cuny.hunter.log.core.analysis.PreconditionFailure;
 import edu.cuny.hunter.log.core.refactorings.LogRejuvenatingProcessor;
 import edu.cuny.hunter.log.core.utils.LoggerNames;
-import edu.hunter.log.evalution.utils.Util;
+import edu.cuny.hunter.log.evalution.utils.Util;
 
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.ltk.core.refactoring.RefactoringStatusEntry;

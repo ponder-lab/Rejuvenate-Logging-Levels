@@ -1,6 +1,6 @@
 package edu.cuny.hunter.github.core.utils;
 
-class Vertex {
+public class Vertex {
 	private String method;
 	private String file;
 	private int commitIndex;
@@ -20,5 +20,13 @@ class Vertex {
 
 		Vertex _obj = (Vertex) obj;
 		return _obj.commitIndex == commitIndex && _obj.method == method && _obj.file == file;
+	}
+	
+	public String getFile() {
+		return this.file;
+	}
+	
+	public String getMethod() {
+		return method;
 	}
 }

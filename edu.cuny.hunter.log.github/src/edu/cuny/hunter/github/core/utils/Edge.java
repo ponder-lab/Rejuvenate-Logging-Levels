@@ -1,6 +1,6 @@
 package edu.cuny.hunter.github.core.utils;
 
-class Edge {
+public class Edge {
 
 	Vertex v1, v2;
 

@@ -1,6 +1,5 @@
 package edu.cuny.hunter.github.core.utils;
 
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -18,25 +17,28 @@ public class Graph {
 		vertices = new HashSet<>();
 		edges = new HashSet<>();
 		adjList = new HashMap<>();
+		entryVertices = new HashSet<>();
 	}
 
-	public boolean addVertex(int commitIndex, String method) {
-		return vertices.add(new Vertex(commitIndex, method));
+	public boolean addVertex(int commitIndex, String method, String file) {
+		Vertex vertex = new Vertex(commitIndex, method, file);
+		entryVertices.add(vertex);
+		return vertices.add(vertex);
 	}
 
 	public boolean addVertex(Vertex v) {
+		entryVertices.add(v);
 		return vertices.add(v);
 	}
 
-	public boolean addVertices(Collection<Vertex> vertices) {
-		return this.vertices.addAll(vertices);
-	}
-
-	public boolean removeVertex(int commitIndex, String method) {
-		return vertices.remove(new Vertex(commitIndex, method));
+	public boolean removeVertex(int commitIndex, String method, String file) {
+		Vertex vertex = new Vertex(commitIndex, method, file);
+		entryVertices.remove(vertex);
+		return vertices.remove(vertex);
 	}
 
 	public boolean removeVertex(Vertex v) {
+		entryVertices.remove(v);
 		return vertices.remove(v);
 	}
 
@@ -50,11 +52,14 @@ public class Graph {
 		adjList.get(e.v1).add(e);
 		adjList.get(e.v2).add(e);
 
+		entryVertices.remove(e.v2);
+
 		return true;
 	}
 
-	public boolean addEdge(int commitIndex1, String method1, int commitIndex2, String method2) {
-		return addEdge(new Edge(new Vertex(commitIndex1, method1), new Vertex(commitIndex2, method2)));
+	public boolean addEdge(int commitIndex1, String method1, String file1, int commitIndex2, String method2,
+			String file2) {
+		return addEdge(new Edge(new Vertex(commitIndex1, method1, file1), new Vertex(commitIndex2, method2, file2)));
 	}
 
 	public boolean removeEdge(Edge e) {
@@ -68,15 +73,22 @@ public class Graph {
 		if (edgesOfV2 != null)
 			edgesOfV2.remove(e);
 
+		entryVertices.add(e.v1);
+
 		return true;
 	}
 
-	public boolean removeEdge(int commitIndex1, String method1, int commitIndex2, String method2) {
-		return removeEdge(new Edge(new Vertex(commitIndex1, method1), new Vertex(commitIndex2, method2)));
+	public boolean removeEdge(int commitIndex1, String method1, String file1, int commitIndex2, String method2,
+			String file2) {
+		return removeEdge(new Edge(new Vertex(commitIndex1, method1, file1), new Vertex(commitIndex2, method2, file2)));
 	}
 
 	public Set<Vertex> getAdjVertices(Vertex v) {
-		return adjList.get(v).stream().map(e -> e.v1.equals(v) ? e.v2 : e.v1).collect(Collectors.toSet());
+		if (!adjList.containsKey(v)) return new HashSet<>();
+		return adjList.get(v)
+				.stream()
+				.map(e -> e.v1.equals(v) ? e.v2 : e.v1)
+				.collect(Collectors.toSet());
 	}
 
 	public Set<Vertex> getVertices() {
@@ -89,5 +101,22 @@ public class Graph {
 
 	public Map<Vertex, Set<Edge>> getAdjList() {
 		return Collections.unmodifiableMap(adjList);
+	}
+	
+	public Set<Vertex> getEntryVertices() {
+		return this.entryVertices;
+	}
+	
+	public void printGraph() {
+		entryVertices.forEach(v -> {
+			System.out.print("v (m: " + v.getMethod() +")");
+			Set<Vertex> adjVertexs = this.getAdjVertices(v);
+			while(!adjVertexs.isEmpty()) {
+				Vertex adjVertex = adjVertexs.iterator().next();
+				System.out.print("-> v (m: " + adjVertex.getMethod() +")");
+				adjVertexs = this.getAdjVertices(adjVertex);
+			}
+			System.out.println();
+		});
 	}
 }
