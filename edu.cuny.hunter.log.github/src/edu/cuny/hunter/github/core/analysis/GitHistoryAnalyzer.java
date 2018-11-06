@@ -28,6 +28,7 @@ import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.SingleVariableDeclaration;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
+import org.eclipse.jgit.api.errors.NoHeadException;
 import org.eclipse.jgit.diff.DiffEntry;
 import org.eclipse.jgit.diff.DiffFormatter;
 import org.eclipse.jgit.diff.Edit;
@@ -79,22 +80,14 @@ public class GitHistoryAnalyzer {
 	// the file index
 	static int commitIndex = 0;
 
+	static LinkedList<RevCommit> commitList = new LinkedList<>();
+
 	public static void main(String[] args) throws IOException, GitAPIException {
 
 		methodOpsPrinter = Util.createCSVPrinter("method_operations.csv",
 				new String[] { "Commit ID", "SHA-1", "files", "file ops", "methods", "method ops" });
 
-		Repository repo = new FileRepository("C:\\Users\\tangy\\eclipse-workspace\\Java-8-Stream-Refactoring\\.git");
-
-		Git git = new Git(repo);
-
-		Iterable<RevCommit> log = git.log().call();
-
-		LinkedList<RevCommit> commitList = new LinkedList<>();
-
-		for (RevCommit commit : log) {
-			commitList.addFirst(commit);
-		}
+		Git git = preProcessGitHistory();
 
 		RevCommit previousCommit = null;
 
@@ -105,28 +98,29 @@ public class GitHistoryAnalyzer {
 
 			if (previousCommit != null) {
 
-				AbstractTreeIterator oldTreeIterator = getCanonicalTreeParser(previousCommit, repo);
-				AbstractTreeIterator newTreeIterator = getCanonicalTreeParser(currentCommit, repo);
+				AbstractTreeIterator oldTreeIterator = getCanonicalTreeParser(previousCommit, git.getRepository());
+				AbstractTreeIterator newTreeIterator = getCanonicalTreeParser(currentCommit, git.getRepository());
 
 				// each diff entry is corresponding to a file
 				final List<DiffEntry> diffs = git.diff().setOldTree(oldTreeIterator).setNewTree(newTreeIterator).call();
 
 				OutputStream outputStream = new ByteArrayOutputStream();
 				try (DiffFormatter formatter = new DiffFormatter(outputStream)) {
-					formatter.setRepository(repo);
+					formatter.setRepository(git.getRepository());
 					formatter.scan(oldTreeIterator, newTreeIterator);
 
 					for (DiffEntry diffEntry : diffs) {
 
 						switch (diffEntry.getChangeType().name()) {
 						case "ADD":
-							filePath = addFile(currentCommit, repo, diffEntry);
+							filePath = addFile(currentCommit, git.getRepository(), diffEntry);
 							break;
 						case "DELETE":
-							filePath = deleteFile(previousCommit, repo, diffEntry);
+							filePath = deleteFile(previousCommit, git.getRepository(), diffEntry);
 							break;
 						case "MODIFY":
-							filePath = modifyFile(currentCommit, previousCommit, repo, diffEntry, formatter);
+							filePath = modifyFile(currentCommit, previousCommit, git.getRepository(), diffEntry,
+									formatter);
 							break;
 						case "RENAME":
 						case "COPY":
@@ -149,6 +143,23 @@ public class GitHistoryAnalyzer {
 		}
 
 		git.close();
+	}
+
+	/**
+	 * Get git and git commits.
+	 */
+	private static Git preProcessGitHistory() throws IOException, NoHeadException, GitAPIException {
+		Repository repo = new FileRepository("C:\\Users\\tangy\\eclipse-workspace\\Java-8-Stream-Refactoring\\.git");
+
+		Git git = new Git(repo);
+
+		Iterable<RevCommit> log = git.log().call();
+
+		for (RevCommit commit : log) {
+			commitList.addFirst(commit);
+		}
+
+		return git;
 	}
 
 	private static String modifyFile(RevCommit currentCommit, RevCommit previousCommit, Repository repo,
