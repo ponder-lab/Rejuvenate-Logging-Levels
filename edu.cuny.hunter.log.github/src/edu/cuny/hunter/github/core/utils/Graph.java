@@ -108,12 +108,17 @@ public class Graph {
 	}
 	
 	public void printGraph() {
+		HashSet<Vertex> visitedVertex = new HashSet<>();
 		entryVertices.forEach(v -> {
-			System.out.print("v (m: " + v.getMethod() +")");
+			System.out.print("v (m: " + v.getMethod() + ")");
+			visitedVertex.add(v);
 			Set<Vertex> adjVertexs = this.getAdjVertices(v);
-			while(!adjVertexs.isEmpty()) {
+			while (!adjVertexs.isEmpty()) {
 				Vertex adjVertex = adjVertexs.iterator().next();
-				System.out.print("-> v (m: " + adjVertex.getMethod() +")");
+				if (visitedVertex.contains(adjVertex))
+					break;
+				System.out.print("-> v (m: " + adjVertex.getMethod() + ")");
+				visitedVertex.addAll(adjVertexs);
 				adjVertexs = this.getAdjVertices(adjVertex);
 			}
 			System.out.println();
