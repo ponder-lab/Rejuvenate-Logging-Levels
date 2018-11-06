@@ -15,8 +15,10 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
+import org.apache.commons.csv.CSVPrinter;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jdt.core.dom.AST;
 import org.eclipse.jdt.core.dom.ASTParser;
@@ -49,11 +51,13 @@ import org.eclipse.jgit.treewalk.TreeWalk;
 import org.eclipse.jgit.treewalk.filter.PathFilter;
 
 import edu.cuny.hunter.github.core.utils.Graph;
+import edu.cuny.hunter.log.core.utils.LoggerNames;
+import edu.hunter.log.evalution.utils.Util;
 
 @SuppressWarnings("restriction")
 public class GitHistoryAnalyzer {
-	// the file index
-	private static int commitIndex = 0;
+
+	private static final Logger LOGGER = Logger.getLogger(LoggerNames.LOGGER_NAME);
 
 	// Set of method declarations
 	private static HashSet<MethodDeclaration> methodDeclarationsForA = new HashSet<MethodDeclaration>();
@@ -67,28 +71,38 @@ public class GitHistoryAnalyzer {
 
 	// A mapping from the method signature to the operations
 	private static HashMap<String, LinkedList<TypesOfMethodOperations>> methodSignaturesToOps = new HashMap<>();
-	 
-	private static Graph methodRenames = new Graph();
+
+	private static Graph renames = new Graph();
+
+	static CSVPrinter methodOpsPrinter;
+
+	// the file index
+	static int commitIndex = 0;
 
 	public static void main(String[] args) throws IOException, GitAPIException {
+
+		methodOpsPrinter = Util.createCSVPrinter("method_operations.csv",
+				new String[] { "Commit ID", "SHA-1", "files", "file ops", "methods", "method ops" });
 
 		Repository repo = new FileRepository("C:\\Users\\tangy\\eclipse-workspace\\Java-8-Stream-Refactoring\\.git");
 
 		Git git = new Git(repo);
 
 		Iterable<RevCommit> log = git.log().call();
-		
+
 		LinkedList<RevCommit> commitList = new LinkedList<>();
-		
+
 		for (RevCommit commit : log) {
 			commitList.addFirst(commit);
 		}
-		
+
 		RevCommit previousCommit = null;
+
+		String filePath = null;
 
 		// from the old commit to the current commit
 		for (RevCommit currentCommit : commitList) {
-			
+
 			if (previousCommit != null) {
 
 				AbstractTreeIterator oldTreeIterator = getCanonicalTreeParser(previousCommit, repo);
@@ -103,80 +117,119 @@ public class GitHistoryAnalyzer {
 					formatter.scan(oldTreeIterator, newTreeIterator);
 
 					for (DiffEntry diffEntry : diffs) {
-						FileHeader fileHeader = formatter.toFileHeader(diffEntry);
 
-						// delete a file
-						if (diffEntry.getChangeType().name().equals("ADD")) {
-							
-							// Get the file for revision B
-							copyHistoricalFile(currentCommit, repo, diffEntry.getNewPath(), "tmp_B_");
-							methodDeclarationsForB.forEach(methodDec -> {
-								putIntoMethodToOps(methodSignaturesToOps, getMethodSignature(methodDec),
-										TypesOfMethodOperations.ADD);
-							});
-							
-						} else // add a file
-						if (diffEntry.getChangeType().name().equals("DELETE")) {
-
-							// Get the file for revision A
-							copyHistoricalFile(previousCommit, repo, diffEntry.getOldPath(), "tmp_A_");
-							methodDeclarationsForA.forEach(methodDec -> {
-								putIntoMethodToOps(methodSignaturesToOps, getMethodSignature(methodDec),
-										TypesOfMethodOperations.ADD);
-							});
-
-						} else // modify a file
-						if (diffEntry.getChangeType().name().equals("MODIFY")) {
-
-							// Get the file for revision A
-							copyHistoricalFile(previousCommit, repo, diffEntry.getOldPath(), "tmp_A_");
-							// Get the file for revision B
-							copyHistoricalFile(currentCommit, repo, diffEntry.getNewPath(), "tmp_B_");
-
-							// For deleting, get the differences
-							computeMethodPositions(methodDeclarationsForA, methodPositionsForA);
-
-							// For adding, get the differences
-							computeMethodPositions(methodDeclarationsForB, methodPositionsForB);
-
-							List<? extends HunkHeader> hunks = fileHeader.getHunks();
-							int editId = 0;
-							for (HunkHeader hunk : hunks) {
-								EditList editList = hunk.toEditList();
-								if (!editList.isEmpty()) {
-									// For each pair of edit
-									for (Edit edit : editList) {
-										editId++;
-										mapEditToMethod(editId, edit.getBeginA(), edit.getEndA(), methodPositionsForA,
-												editToMethodDeclarationForA);
-										mapEditToMethod(editId, edit.getBeginB(), edit.getEndB(), methodPositionsForB,
-												editToMethodDeclarationForB);
-
-									}
-									;
-								}
-
-							}
-
-							computeMethodChanges();
-
-							commitIndex++;
-
-						} else if (diffEntry.getChangeType().name().equals("RENAME")) {
-						} else if (diffEntry.getChangeType().name().equals("COPY")) {
+						switch (diffEntry.getChangeType().name()) {
+						case "ADD":
+							filePath = addFile(currentCommit, repo, diffEntry);
+							break;
+						case "DELETE":
+							filePath = deleteFile(previousCommit, repo, diffEntry);
+							break;
+						case "MODIFY":
+							filePath = modifyFile(currentCommit, previousCommit, repo, diffEntry, formatter);
+							break;
+						case "RENAME":
+						case "COPY":
+							filePath = diffEntry.getNewPath();
+							break;
+						default:
+							break;
 						}
 
+						printAllMethodOps(currentCommit, filePath, diffEntry.getChangeType().name());
 						clear();
 					}
 				}
 
 			}
 			previousCommit = currentCommit;
+			commitIndex++;
 
 			clearFiles(new File("").getAbsoluteFile());
 		}
 
 		git.close();
+	}
+
+	private static String modifyFile(RevCommit currentCommit, RevCommit previousCommit, Repository repo,
+			DiffEntry diffEntry, DiffFormatter formatter)
+			throws MissingObjectException, IncorrectObjectTypeException, CorruptObjectException, IOException {
+
+		FileHeader fileHeader = formatter.toFileHeader(diffEntry);
+
+		// Get the file for revision A
+		copyHistoricalFile(previousCommit, repo, diffEntry.getOldPath(), "tmp_A_");
+		// Get the file for revision B
+		copyHistoricalFile(currentCommit, repo, diffEntry.getNewPath(), "tmp_B_");
+
+		// For deleting, get the differences
+		computeMethodPositions(methodDeclarationsForA, methodPositionsForA);
+
+		// For adding, get the differences
+		computeMethodPositions(methodDeclarationsForB, methodPositionsForB);
+
+		List<? extends HunkHeader> hunks = fileHeader.getHunks();
+		int editId = 0;
+		for (HunkHeader hunk : hunks) {
+			EditList editList = hunk.toEditList();
+			if (!editList.isEmpty()) {
+				// For each pair of edit
+				for (Edit edit : editList) {
+					editId++;
+					mapEditToMethod(editId, edit.getBeginA(), edit.getEndA(), methodPositionsForA,
+							editToMethodDeclarationForA);
+					mapEditToMethod(editId, edit.getBeginB(), edit.getEndB(), methodPositionsForB,
+							editToMethodDeclarationForB);
+
+				}
+				;
+			}
+
+		}
+
+		computeMethodChanges();
+
+		return diffEntry.getNewPath();
+	}
+
+	/**
+	 * Add a file in a commit.
+	 */
+	private static String addFile(RevCommit currentCommit, Repository repo, DiffEntry diffEntry)
+			throws MissingObjectException, IncorrectObjectTypeException, CorruptObjectException, IOException {
+		// Get the file for revision B
+		copyHistoricalFile(currentCommit, repo, diffEntry.getNewPath(), "tmp_B_");
+		methodDeclarationsForB.forEach(methodDec -> {
+			putIntoMethodToOps(methodSignaturesToOps, getMethodSignature(methodDec), TypesOfMethodOperations.ADD);
+		});
+		return diffEntry.getNewPath();
+	}
+
+	/**
+	 * Delete a file in a commit;
+	 */
+	private static String deleteFile(RevCommit previousCommit, Repository repo, DiffEntry diffEntry)
+			throws MissingObjectException, IncorrectObjectTypeException, CorruptObjectException, IOException {
+		// Get the file for revision A
+		copyHistoricalFile(previousCommit, repo, diffEntry.getOldPath(), "tmp_A_");
+		methodDeclarationsForA.forEach(methodDec -> {
+			putIntoMethodToOps(methodSignaturesToOps, getMethodSignature(methodDec), TypesOfMethodOperations.DELETE);
+		});
+		return diffEntry.getOldPath();
+	}
+
+	/**
+	 * Print all method operations into CSV file
+	 */
+	private static void printAllMethodOps(RevCommit commit, String path, String fileOp) {
+		methodSignaturesToOps.forEach((methodSig, ops) -> {
+			for (TypesOfMethodOperations op : ops)
+				try {
+					methodOpsPrinter.printRecord(commitIndex, commit.name(), path, fileOp, methodSig, op);
+				} catch (IOException e) {
+					LOGGER.severe("Cannot create printer.");
+				}
+		});
 	}
 
 	/**
@@ -273,8 +326,6 @@ public class GitHistoryAnalyzer {
 			}
 
 			computeMethodChanges();
-
-			commitIndex++;
 
 		}
 
@@ -564,10 +615,21 @@ public class GitHistoryAnalyzer {
 		});
 
 		methodSignaturesToOps.forEach((methodSig, ops) -> {
-
+			System.out.println(methodSig + ": " + ops);
 		});
 
 	}
+
+	// Add vertex into the graph
+	// private static void addVertexIntoGraph(int commitIndex, String
+	// targetMethodSig, String renamedMethodSig,
+	// String filePath) {
+	// Graph graph = fileToMethodRenaming.get(filePath);
+	// graph.addVertex(commitIndex, targetMethodSig);
+	// if (methodToFirstPosition.containsKey(renamedMethodSig))
+	// graph.addEdge(commitIndex, targetMethodSig,
+	// methodToFirstPosition.get(renamedMethodSig), renamedMethodSig);
+	// }
 
 	/**
 	 * Store target method declaration and remove it in the difference set.
@@ -587,6 +649,8 @@ public class GitHistoryAnalyzer {
 		List<SingleVariableDeclaration> parametersA = methodA.parameters();
 		List<SingleVariableDeclaration> parametersB = methodB.parameters();
 		int index = 0;
+		if (parametersA.size() != parametersB.size())
+			return false;
 		for (SingleVariableDeclaration parameterA : parametersA) {
 			SingleVariableDeclaration parameterB = parametersB.get(index++);
 			if (!parameterA.getType().toString().equals(parameterB.getType().toString()))

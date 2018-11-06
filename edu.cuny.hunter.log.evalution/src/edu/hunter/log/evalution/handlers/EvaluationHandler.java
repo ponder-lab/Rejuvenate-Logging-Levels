@@ -56,10 +56,6 @@ public class EvaluationHandler extends AbstractHandler {
 	private static final boolean USE_LOG_CATEGORY_DEFAULT = false;
 	private static final boolean USE_LOG_CATEGORY_CONFIG_DEFAULT = false;
 
-	public static CSVPrinter createCSVPrinter(String fileName, String[] header) throws IOException {
-		return new CSVPrinter(new FileWriter(fileName, true), CSVFormat.EXCEL.withHeader(header));
-	}
-
 	@Override
 	public Object execute(ExecutionEvent event) throws ExecutionException {
 		Optional<IProgressMonitor> monitor = Optional.empty();
@@ -84,18 +80,18 @@ public class EvaluationHandler extends AbstractHandler {
 
 					try {
 
-						CSVPrinter resultPrinter = createCSVPrinter("result.csv", new String[] { "subject raw",
+						CSVPrinter resultPrinter = Util.createCSVPrinter("result.csv", new String[] { "subject raw",
 								"log invocations before", "candidate log invocations", "failed preconditions" });
-						CSVPrinter actionPrinter = createCSVPrinter("log_actions.csv",
+						CSVPrinter actionPrinter = Util.createCSVPrinter("log_actions.csv",
 								new String[] { "subject raw", "log expression", "start pos", "logging level",
 										"type FQN", "enclosing method", "action" });
-						CSVPrinter candidatePrinter = createCSVPrinter("candidate_log_invocations.csv",
+						CSVPrinter candidatePrinter = Util.createCSVPrinter("candidate_log_invocations.csv",
 								new String[] { "subject raw", "log expression", "start pos", "logging level",
 										"type FQN", "enclosing method", "DOI" });
-						CSVPrinter optimizablePrinter = createCSVPrinter("optimizable_log_invocations.csv",
+						CSVPrinter optimizablePrinter = Util.createCSVPrinter("optimizable_log_invocations.csv",
 								new String[] { "subject raw", "log expression", "start pos", "logging level",
 										"type FQN", "enclosing method", "DOI" });
-						CSVPrinter failedPreConsPrinter = createCSVPrinter("failed_preconditions.csv",
+						CSVPrinter failedPreConsPrinter = Util.createCSVPrinter("failed_preconditions.csv",
 								new String[] { "subject raw", "log expression", "start pos", "logging level",
 										"type FQN", "enclosing method", "code", "name", "message" });
 

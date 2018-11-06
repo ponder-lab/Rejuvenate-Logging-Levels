@@ -8,12 +8,11 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.eclipse.jgit.revwalk.RevCommit;
-
 public class Graph {
 	private Set<Vertex> vertices;
 	private Set<Edge> edges;
 	private Map<Vertex, Set<Edge>> adjList;
+	private Set<Vertex> entryVertices;
 
 	public Graph() {
 		vertices = new HashSet<>();
@@ -21,8 +20,8 @@ public class Graph {
 		adjList = new HashMap<>();
 	}
 
-	public boolean addVertex(RevCommit commit, String method) {
-		return vertices.add(new Vertex(commit, method));
+	public boolean addVertex(int commitIndex, String method) {
+		return vertices.add(new Vertex(commitIndex, method));
 	}
 
 	public boolean addVertex(Vertex v) {
@@ -33,8 +32,8 @@ public class Graph {
 		return this.vertices.addAll(vertices);
 	}
 
-	public boolean removeVertex(RevCommit commit, String method) {
-		return vertices.remove(new Vertex(commit, method));
+	public boolean removeVertex(int commitIndex, String method) {
+		return vertices.remove(new Vertex(commitIndex, method));
 	}
 
 	public boolean removeVertex(Vertex v) {
@@ -54,8 +53,8 @@ public class Graph {
 		return true;
 	}
 
-	public boolean addEdge(RevCommit commit1, RevCommit commit2, String method1, String method2) {
-		return addEdge(new Edge(new Vertex(commit1, method1), new Vertex(commit2, method2)));
+	public boolean addEdge(int commitIndex1, String method1, int commitIndex2, String method2) {
+		return addEdge(new Edge(new Vertex(commitIndex1, method1), new Vertex(commitIndex2, method2)));
 	}
 
 	public boolean removeEdge(Edge e) {
@@ -72,8 +71,8 @@ public class Graph {
 		return true;
 	}
 
-	public boolean removeEdge(RevCommit commit1, RevCommit commit2, String method1, String method2) {
-		return removeEdge(new Edge(new Vertex(commit1, method1), new Vertex(commit2, method2)));
+	public boolean removeEdge(int commitIndex1, String method1, int commitIndex2, String method2) {
+		return removeEdge(new Edge(new Vertex(commitIndex1, method1), new Vertex(commitIndex2, method2)));
 	}
 
 	public Set<Vertex> getAdjVertices(Vertex v) {

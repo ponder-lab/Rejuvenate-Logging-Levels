@@ -1,14 +1,14 @@
 package edu.cuny.hunter.github.core.utils;
 
-import org.eclipse.jgit.revwalk.RevCommit;
-
 class Vertex {
-	private RevCommit commit;
 	private String method;
+	private String file;
+	private int commitIndex;
 
-	public Vertex(RevCommit commit, String method) {
-		this.commit = commit;
+	public Vertex(int commitIndex, String method, String file) {
 		this.method = method;
+		this.commitIndex = commitIndex;
+		this.file = file;
 	}
 
 	@Override
@@ -19,6 +19,6 @@ class Vertex {
 			return false;
 
 		Vertex _obj = (Vertex) obj;
-		return _obj.commit == commit && _obj.method == method;
+		return _obj.commitIndex == commitIndex && _obj.method == method && _obj.file == file;
 	}
 }
