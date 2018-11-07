@@ -4,11 +4,21 @@ public class Vertex {
 	private String method;
 	private String file;
 	private int commitIndex;
+	private Vertex next;
 
 	public Vertex(int commitIndex, String method, String file) {
 		this.method = method;
 		this.commitIndex = commitIndex;
 		this.file = file;
+		this.next = null;
+	}
+	
+	public void setNextVertex(Vertex next) {
+		this.next = next;
+	}
+	
+	public Vertex getNextVertex() {
+		return this.next;
 	}
 
 	@Override

@@ -661,15 +661,15 @@ public class GitHistoryAnalyzer {
 	/**
 	 * Add a vertex into the graph
 	 */
-	private static void addVertexIntoGraph(String targetMethodSig, String renamedMethodSig, String file) {
+	private static void addVertexIntoGraph(String targetMethodSig, String oldMethodSig, String file) {
 		// add vertex
 		Vertex vertex1 = new Vertex(commitIndex, targetMethodSig, file);
 		renaming.addVertex(vertex1);
 		// add edge
-		Set<Vertex> entryVertices = renaming.getEntryVertices();
-		for (Vertex v : entryVertices) {
-			if (v.getFile().equals(file) && v.getMethod().equals(renamedMethodSig)) {
-				renaming.addEdge(new Edge(vertex1, v));
+		Set<Vertex> vertices = renaming.getExitVertices();
+		for (Vertex v : vertices) {
+			if (v.getFile().equals(file) && v.getMethod().equals(oldMethodSig)) {
+				renaming.addEdge(new Edge(v, vertex1));
 				return;
 			}
 		}
