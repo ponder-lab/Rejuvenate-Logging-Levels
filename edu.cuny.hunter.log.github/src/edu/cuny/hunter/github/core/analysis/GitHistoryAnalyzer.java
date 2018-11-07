@@ -49,6 +49,7 @@ import org.eclipse.jgit.revwalk.RevTree;
 import org.eclipse.jgit.revwalk.RevWalk;
 import org.eclipse.jgit.treewalk.AbstractTreeIterator;
 import org.eclipse.jgit.treewalk.CanonicalTreeParser;
+import org.eclipse.jgit.treewalk.EmptyTreeIterator;
 import org.eclipse.jgit.treewalk.TreeWalk;
 import org.eclipse.jgit.treewalk.filter.PathFilter;
 
@@ -106,49 +107,49 @@ public class GitHistoryAnalyzer {
 
 		String filePath = null;
 
-		// from the old commit to the current commit
+		// from the earliest commit to the current commit
 		for (RevCommit currentCommit : commitList) {
-
+			AbstractTreeIterator oldTreeIterator;
 			if (previousCommit != null) {
-
-				AbstractTreeIterator oldTreeIterator = getCanonicalTreeParser(previousCommit, git.getRepository());
-				AbstractTreeIterator newTreeIterator = getCanonicalTreeParser(currentCommit, git.getRepository());
-
-				// each diff entry is corresponding to a file
-				final List<DiffEntry> diffs = git.diff().setOldTree(oldTreeIterator).setNewTree(newTreeIterator).call();
-
-				OutputStream outputStream = new ByteArrayOutputStream();
-				try (DiffFormatter formatter = new DiffFormatter(outputStream)) {
-					formatter.setRepository(git.getRepository());
-					formatter.scan(oldTreeIterator, newTreeIterator);
-
-					for (DiffEntry diffEntry : diffs) {
-
-						switch (diffEntry.getChangeType().name()) {
-						case "ADD":
-							filePath = addFile(currentCommit, git.getRepository(), diffEntry);
-							break;
-						case "DELETE":
-							filePath = deleteFile(previousCommit, git.getRepository(), diffEntry);
-							break;
-						case "MODIFY":
-							filePath = modifyFile(currentCommit, previousCommit, git.getRepository(), diffEntry,
-									formatter);
-							break;
-						case "RENAME":
-						case "COPY":
-							filePath = diffEntry.getNewPath();
-							break;
-						default:
-							break;
-						}
-
-						printAllMethodOps(currentCommit, filePath, diffEntry.getChangeType().name());
-						clear();
-					}
-				}
-
+				oldTreeIterator = getCanonicalTreeParser(previousCommit, git.getRepository());
+			} else {
+				oldTreeIterator = new EmptyTreeIterator();
 			}
+			AbstractTreeIterator newTreeIterator = getCanonicalTreeParser(currentCommit, git.getRepository());
+
+			// each diff entry is corresponding to a file
+			final List<DiffEntry> diffs = git.diff().setOldTree(oldTreeIterator).setNewTree(newTreeIterator).call();
+
+			OutputStream outputStream = new ByteArrayOutputStream();
+			try (DiffFormatter formatter = new DiffFormatter(outputStream)) {
+				formatter.setRepository(git.getRepository());
+				formatter.scan(oldTreeIterator, newTreeIterator);
+
+				for (DiffEntry diffEntry : diffs) {
+
+					switch (diffEntry.getChangeType().name()) {
+					case "ADD":
+						filePath = addFile(currentCommit, git.getRepository(), diffEntry);
+						break;
+					case "DELETE":
+						filePath = deleteFile(previousCommit, git.getRepository(), diffEntry);
+						break;
+					case "MODIFY":
+						filePath = modifyFile(currentCommit, previousCommit, git.getRepository(), diffEntry, formatter);
+						break;
+					case "RENAME":
+					case "COPY":
+						filePath = renameOrCopyFile(currentCommit, git.getRepository(), diffEntry);
+						break;
+					default:
+						break;
+					}
+
+					printAllMethodOps(currentCommit, filePath, diffEntry.getChangeType().name());
+					clear();
+				}
+			}
+
 			previousCommit = currentCommit;
 			commitIndex++;
 
@@ -163,7 +164,24 @@ public class GitHistoryAnalyzer {
 		renaming.printGraph();
 	}
 
-	private static Graph getRenaming() {
+	/**
+	 * Rename or copy a file in a commit.
+	 */
+	public static String renameOrCopyFile(RevCommit currentCommit, Repository repo, DiffEntry diffEntry)
+			throws MissingObjectException, IncorrectObjectTypeException, CorruptObjectException, IOException {
+		copyHistoricalFile(currentCommit, repo, diffEntry.getNewPath(), "tmp_B_");
+		methodDeclarationsForB.forEach(methodDec -> {
+			Set<Vertex> vertices = renaming.getExitVertices();
+			vertices.forEach(v -> {
+				if (v.getFile().equals(diffEntry.getOldPath()) && v.getMethod().equals(getMethodSignature(methodDec))) {
+					v.setFile(diffEntry.getNewPath());
+				}
+			});
+		});
+		return diffEntry.getNewPath();
+	}
+
+	public static Graph getRenaming() {
 		return renaming;
 	}
 

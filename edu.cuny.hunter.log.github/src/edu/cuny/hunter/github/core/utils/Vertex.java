@@ -20,6 +20,10 @@ public class Vertex {
 	public Vertex getNextVertex() {
 		return this.next;
 	}
+	
+	public void setFile(String file) {
+		this.file = file;
+	}
 
 	@Override
 	public boolean equals(Object obj) {
