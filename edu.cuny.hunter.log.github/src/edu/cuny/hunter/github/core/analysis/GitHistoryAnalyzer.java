@@ -75,7 +75,7 @@ public class GitHistoryAnalyzer {
 
 	// A mapping from the method signature to the operations
 	private static HashMap<String, LinkedList<TypesOfMethodOperations>> methodSignaturesToOps = new HashMap<>();
-	
+
 	// The old method in the revision A and the new method in the revision B
 	private static HashMap<String, String> methodToMethod = new HashMap<>();
 
@@ -616,8 +616,11 @@ public class GitHistoryAnalyzer {
 				String methodSig = getMethodSignature(methodForA);
 
 				// Modify method body, or rename parameters
-				if (methodSignaturesForEditsB.contains(methodSig) || methodToMethod.keySet().contains(methodSig)) {
+				if (methodSignaturesForEditsB.contains(methodSig)) {
 					putIntoMethodToOps(methodSignaturesToOps, methodSig, TypesOfMethodOperations.CHANGE);
+				} else if (methodToMethod.keySet().contains(methodSig)) {
+					putIntoMethodToOps(methodSignaturesToOps, methodToMethod.get(methodSig),
+							TypesOfMethodOperations.CHANGE);
 				} else {
 
 					// Keep the method name same, but add/delete the parameter or change the type of

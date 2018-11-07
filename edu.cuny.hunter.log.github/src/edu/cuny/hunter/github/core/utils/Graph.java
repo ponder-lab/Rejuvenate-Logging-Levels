@@ -14,6 +14,7 @@ public class Graph {
 		vertices = new HashSet<>();
 		edges = new HashSet<>();
 		entryVertices = new HashSet<>();
+		exitVertices = new HashSet<>();
 	}
 
 	public boolean addVertex(int commitIndex, String method, String file) {
@@ -37,7 +38,7 @@ public class Graph {
 	public boolean addEdge(Edge e) {
 		if (!edges.add(e))
 			return false;
-		
+
 		e.v1.setNextVertex(e.v2);
 		return true;
 	}
@@ -61,7 +62,6 @@ public class Graph {
 		return removeEdge(new Edge(new Vertex(commitIndex1, method1, file1), new Vertex(commitIndex2, method2, file2)));
 	}
 
-
 	public Set<Vertex> getVertices() {
 		return Collections.unmodifiableSet(vertices);
 	}
@@ -70,15 +70,15 @@ public class Graph {
 		return Collections.unmodifiableSet(edges);
 	}
 
-
 	public Set<Vertex> getExitVertices() {
 		this.exitVertices.clear();
 		vertices.forEach(v -> {
-			if (v.getNextVertex() == null) this.exitVertices.add(v);
+			if (v.getNextVertex() == null)
+				this.exitVertices.add(v);
 		});
 		return this.exitVertices;
 	}
-	
+
 	public Set<Vertex> getEntryVertices() {
 		this.entryVertices.clear();
 		this.entryVertices.addAll(vertices);
@@ -89,7 +89,7 @@ public class Graph {
 		this.entryVertices.removeAll(nonEntryVertices);
 		return this.entryVertices;
 	}
-	
+
 	public void printGraph() {
 		this.getEntryVertices();
 		this.entryVertices.forEach(v -> {
