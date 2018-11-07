@@ -75,6 +75,9 @@ public class GitHistoryAnalyzer {
 
 	// A mapping from the method signature to the operations
 	private static HashMap<String, LinkedList<TypesOfMethodOperations>> methodSignaturesToOps = new HashMap<>();
+	
+	// The old method in the revision A and the new method in the revision B
+	private static HashMap<String, String> methodToMethod = new HashMap<>();
 
 	private static Graph renaming = new Graph();
 
@@ -152,7 +155,7 @@ public class GitHistoryAnalyzer {
 			clearFiles(new File("").getAbsoluteFile());
 
 			//// test
-			if (commitIndex >= 8)
+			if (commitIndex >= 20)
 				break;
 		}
 
@@ -613,7 +616,7 @@ public class GitHistoryAnalyzer {
 				String methodSig = getMethodSignature(methodForA);
 
 				// Modify method body, or rename parameters
-				if (methodSignaturesForEditsB.contains(methodSig)) {
+				if (methodSignaturesForEditsB.contains(methodSig) || methodToMethod.keySet().contains(methodSig)) {
 					putIntoMethodToOps(methodSignaturesToOps, methodSig, TypesOfMethodOperations.CHANGE);
 				} else {
 
@@ -624,6 +627,7 @@ public class GitHistoryAnalyzer {
 					if (targetMethodDec != null) {
 						process(targetMethodDec, additionalMethodDecInB, additionalMethodInB,
 								TypesOfMethodOperations.CHANGEPARAMETER);
+						methodToMethod.put(methodSig, getMethodSignature(targetMethodDec));
 						break;
 					}
 
@@ -632,7 +636,8 @@ public class GitHistoryAnalyzer {
 					if (targetMethodDec != null) {
 						process(targetMethodDec, additionalMethodDecInB, additionalMethodInB,
 								TypesOfMethodOperations.RENAME);
-						addVertexIntoGraph(getMethodSignature(targetMethodDec), getMethodSignature(methodForA), file);
+						addVertexIntoGraph(getMethodSignature(targetMethodDec), methodSig, file);
+						methodToMethod.put(methodSig, getMethodSignature(targetMethodDec));
 						break;
 					}
 
