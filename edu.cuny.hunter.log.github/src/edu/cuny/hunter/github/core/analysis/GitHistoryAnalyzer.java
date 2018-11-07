@@ -82,7 +82,7 @@ public class GitHistoryAnalyzer {
 
 	private static Graph renaming = new Graph();
 
-	static CSVPrinter methodOpsPrinter;
+	private static CSVPrinter methodOpsPrinter;
 
 	// the file index
 	static int commitIndex = 0;
@@ -161,6 +161,7 @@ public class GitHistoryAnalyzer {
 		}
 
 		git.close();
+
 		renaming.printGraph();
 	}
 
@@ -171,12 +172,14 @@ public class GitHistoryAnalyzer {
 			throws MissingObjectException, IncorrectObjectTypeException, CorruptObjectException, IOException {
 		copyHistoricalFile(currentCommit, repo, diffEntry.getNewPath(), "tmp_B_");
 		methodDeclarationsForB.forEach(methodDec -> {
-			Set<Vertex> vertices = renaming.getExitVertices();
-			vertices.forEach(v -> {
-				if (v.getFile().equals(diffEntry.getOldPath()) && v.getMethod().equals(getMethodSignature(methodDec))) {
-					v.setFile(diffEntry.getNewPath());
-				}
-			});
+			// add vertex
+			Vertex vertex1 = new Vertex(getMethodSignature(methodDec), diffEntry.getOldPath());
+			renaming.addVertex(vertex1);
+			// add vertex
+			Vertex vertex2 = new Vertex(getMethodSignature(methodDec), diffEntry.getNewPath());
+			renaming.addVertex(vertex2);
+			// add edge
+			renaming.addEdge(new Edge(vertex1, vertex2));
 		});
 		return diffEntry.getNewPath();
 	}
@@ -252,7 +255,6 @@ public class GitHistoryAnalyzer {
 		copyHistoricalFile(currentCommit, repo, diffEntry.getNewPath(), "tmp_B_");
 		methodDeclarationsForB.forEach(methodDec -> {
 			putIntoMethodToOps(methodSignaturesToOps, getMethodSignature(methodDec), TypesOfMethodOperations.ADD);
-			renaming.addVertex(new Vertex(commitIndex, getMethodSignature(methodDec), diffEntry.getNewPath()));
 		});
 		return diffEntry.getNewPath();
 	}
@@ -266,7 +268,20 @@ public class GitHistoryAnalyzer {
 		copyHistoricalFile(previousCommit, repo, diffEntry.getOldPath(), "tmp_A_");
 		methodDeclarationsForA.forEach(methodDec -> {
 			putIntoMethodToOps(methodSignaturesToOps, getMethodSignature(methodDec), TypesOfMethodOperations.DELETE);
-			renaming.removeVertex(new Vertex(commitIndex, getMethodSignature(methodDec), diffEntry.getOldPath()));
+
+			Set<Vertex> exitVertices = renaming.getExitVertices();
+			Vertex entry = null;
+			for (Vertex v : exitVertices) {
+				if (v.getFile().equals(diffEntry.getOldPath()) && v.getMethod().equals(getMethodSignature(methodDec))) {
+					entry = v.getHead();
+					break;
+				}
+			}
+			while (entry != null) {
+				Vertex tmp = entry;
+				entry = entry.getNextVertex();
+				renaming.removeVertex(tmp);
+			}
 		});
 		return diffEntry.getOldPath();
 	}
@@ -684,16 +699,13 @@ public class GitHistoryAnalyzer {
 	 */
 	private static void addVertexIntoGraph(String targetMethodSig, String oldMethodSig, String file) {
 		// add vertex
-		Vertex vertex1 = new Vertex(commitIndex, targetMethodSig, file);
+		Vertex vertex1 = new Vertex(targetMethodSig, file);
 		renaming.addVertex(vertex1);
+		// add vertex
+		Vertex vertex2 = new Vertex(oldMethodSig, file);
+		renaming.addVertex(vertex2);
 		// add edge
-		Set<Vertex> vertices = renaming.getExitVertices();
-		for (Vertex v : vertices) {
-			if (v.getFile().equals(file) && v.getMethod().equals(oldMethodSig)) {
-				renaming.addEdge(new Edge(v, vertex1));
-				return;
-			}
-		}
+		renaming.addEdge(new Edge(vertex1, vertex2));
 	}
 
 	/**

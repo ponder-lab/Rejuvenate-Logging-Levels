@@ -3,24 +3,33 @@ package edu.cuny.hunter.github.core.utils;
 public class Vertex {
 	private String method;
 	private String file;
-	private int commitIndex;
 	private Vertex next;
+	private Vertex head;
 
-	public Vertex(int commitIndex, String method, String file) {
+	public Vertex(String method, String file) {
 		this.method = method;
-		this.commitIndex = commitIndex;
 		this.file = file;
 		this.next = null;
+		this.head = null;
 	}
-	
+
+	public void setNextVertex(Vertex next, Vertex head) {
+		this.next = next;
+		this.head = head;
+	}
+
 	public void setNextVertex(Vertex next) {
 		this.next = next;
 	}
-	
+
+	public Vertex getHead() {
+		return this.head;
+	}
+
 	public Vertex getNextVertex() {
 		return this.next;
 	}
-	
+
 	public void setFile(String file) {
 		this.file = file;
 	}
@@ -33,13 +42,13 @@ public class Vertex {
 			return false;
 
 		Vertex _obj = (Vertex) obj;
-		return _obj.commitIndex == commitIndex && _obj.method == method && _obj.file == file;
+		return _obj.method == method && _obj.file == file;
 	}
-	
+
 	public String getFile() {
 		return this.file;
 	}
-	
+
 	public String getMethod() {
 		return method;
 	}

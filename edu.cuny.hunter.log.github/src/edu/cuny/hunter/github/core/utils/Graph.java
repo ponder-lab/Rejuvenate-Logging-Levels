@@ -17,8 +17,8 @@ public class Graph {
 		exitVertices = new HashSet<>();
 	}
 
-	public boolean addVertex(int commitIndex, String method, String file) {
-		Vertex vertex = new Vertex(commitIndex, method, file);
+	public boolean addVertex(String method, String file) {
+		Vertex vertex = new Vertex(method, file);
 		return vertices.add(vertex);
 	}
 
@@ -26,8 +26,8 @@ public class Graph {
 		return vertices.add(v);
 	}
 
-	public boolean removeVertex(int commitIndex, String method, String file) {
-		Vertex vertex = new Vertex(commitIndex, method, file);
+	public boolean removeVertex(String method, String file) {
+		Vertex vertex = new Vertex(method, file);
 		return vertices.remove(vertex);
 	}
 
@@ -39,13 +39,12 @@ public class Graph {
 		if (!edges.add(e))
 			return false;
 
-		e.v1.setNextVertex(e.v2);
+		e.v1.setNextVertex(e.v2, e.v1.getHead());
 		return true;
 	}
 
-	public boolean addEdge(int commitIndex1, String method1, String file1, int commitIndex2, String method2,
-			String file2) {
-		return addEdge(new Edge(new Vertex(commitIndex1, method1, file1), new Vertex(commitIndex2, method2, file2)));
+	public boolean addEdge(String method1, String file1, String method2, String file2) {
+		return addEdge(new Edge(new Vertex(method1, file1), new Vertex(method2, file2)));
 	}
 
 	public boolean removeEdge(Edge e) {
@@ -57,9 +56,8 @@ public class Graph {
 		return true;
 	}
 
-	public boolean removeEdge(int commitIndex1, String method1, String file1, int commitIndex2, String method2,
-			String file2) {
-		return removeEdge(new Edge(new Vertex(commitIndex1, method1, file1), new Vertex(commitIndex2, method2, file2)));
+	public boolean removeEdge(String method1, String file1, String method2, String file2) {
+		return this.removeEdge(new Edge(new Vertex(method1, file1), new Vertex(method2, file2)));
 	}
 
 	public Set<Vertex> getVertices() {
