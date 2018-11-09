@@ -11,7 +11,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -53,11 +52,11 @@ import org.eclipse.jgit.treewalk.EmptyTreeIterator;
 import org.eclipse.jgit.treewalk.TreeWalk;
 import org.eclipse.jgit.treewalk.filter.PathFilter;
 
+import edu.cuny.hunter.github.core.utils.Util;
 import edu.cuny.hunter.github.core.utils.Edge;
 import edu.cuny.hunter.github.core.utils.Graph;
 import edu.cuny.hunter.github.core.utils.Vertex;
 import edu.cuny.hunter.log.core.utils.LoggerNames;
-import edu.cuny.hunter.log.evalution.utils.Util;
 
 @SuppressWarnings("restriction")
 public class GitHistoryAnalyzer {
@@ -76,6 +75,9 @@ public class GitHistoryAnalyzer {
 
 	// A mapping from the method signature to the operations
 	private static HashMap<String, LinkedList<TypesOfMethodOperations>> methodSignaturesToOps = new HashMap<>();
+	
+	private static LinkedList<String> methods = new LinkedList<>();
+	private static LinkedList<String> files = new LinkedList<>();
 
 	// The old method in the revision A and the new method in the revision B
 	private static HashMap<String, String> methodToMethod = new HashMap<>();
@@ -96,9 +98,9 @@ public class GitHistoryAnalyzer {
 	 * Example input:
 	 * "C:\\Users\\tangy\\eclipse-workspace\\Java-8-Stream-Refactoring\\.git"
 	 */
-	public static void main(String[] args) throws IOException, GitAPIException {
+	public static void processGitHistory() throws IOException, GitAPIException {
 
-		methodOpsPrinter = Util.createCSVPrinter("method_operations.csv",
+		methodOpsPrinter = edu.cuny.hunter.log.evalution.utils.Util.createCSVPrinter("method_operations.csv",
 				new String[] { "Commit ID", "SHA-1", "files", "file ops", "methods", "method ops" });
 
 		Git git = preProcessGitHistory("C:\\Users\\tangy\\eclipse-workspace\\Java-8-Stream-Refactoring\\.git");
@@ -173,10 +175,10 @@ public class GitHistoryAnalyzer {
 		copyHistoricalFile(currentCommit, repo, diffEntry.getNewPath(), "tmp_B_");
 		methodDeclarationsForB.forEach(methodDec -> {
 			// add vertex
-			Vertex vertex1 = new Vertex(getMethodSignature(methodDec), diffEntry.getOldPath());
+			Vertex vertex1 = new Vertex(Util.getMethodSignature(methodDec), diffEntry.getOldPath());
 			renaming.addVertex(vertex1);
 			// add vertex
-			Vertex vertex2 = new Vertex(getMethodSignature(methodDec), diffEntry.getNewPath());
+			Vertex vertex2 = new Vertex(Util.getMethodSignature(methodDec), diffEntry.getNewPath());
 			renaming.addVertex(vertex2);
 			// add edge
 			renaming.addEdge(new Edge(vertex1, vertex2));
@@ -254,7 +256,7 @@ public class GitHistoryAnalyzer {
 		// Get the file for revision B
 		copyHistoricalFile(currentCommit, repo, diffEntry.getNewPath(), "tmp_B_");
 		methodDeclarationsForB.forEach(methodDec -> {
-			putIntoMethodToOps(methodSignaturesToOps, getMethodSignature(methodDec), TypesOfMethodOperations.ADD);
+			putIntoMethodToOps(methodSignaturesToOps, Util.getMethodSignature(methodDec), TypesOfMethodOperations.ADD);
 		});
 		return diffEntry.getNewPath();
 	}
@@ -267,12 +269,14 @@ public class GitHistoryAnalyzer {
 		// Get the file for revision A
 		copyHistoricalFile(previousCommit, repo, diffEntry.getOldPath(), "tmp_A_");
 		methodDeclarationsForA.forEach(methodDec -> {
-			putIntoMethodToOps(methodSignaturesToOps, getMethodSignature(methodDec), TypesOfMethodOperations.DELETE);
+			putIntoMethodToOps(methodSignaturesToOps, Util.getMethodSignature(methodDec),
+					TypesOfMethodOperations.DELETE);
 
 			Set<Vertex> exitVertices = renaming.getExitVertices();
 			Vertex entry = null;
 			for (Vertex v : exitVertices) {
-				if (v.getFile().equals(diffEntry.getOldPath()) && v.getMethod().equals(getMethodSignature(methodDec))) {
+				if (v.getFile().equals(diffEntry.getOldPath())
+						&& v.getMethod().equals(Util.getMethodSignature(methodDec))) {
 					entry = v.getHead();
 					break;
 				}
@@ -294,6 +298,8 @@ public class GitHistoryAnalyzer {
 			for (TypesOfMethodOperations op : ops)
 				try {
 					methodOpsPrinter.printRecord(commitIndex, commit.name(), path, fileOp, methodSig, op);
+					methods.add(methodSig);
+					files.add(path);
 				} catch (IOException e) {
 					LOGGER.severe("Cannot create printer.");
 				}
@@ -464,21 +470,6 @@ public class GitHistoryAnalyzer {
 		});
 	}
 
-	// Return a method signature
-	public static String getMethodSignature(MethodDeclaration methodDeclaration) {
-		String signature = "";
-		signature += methodDeclaration.getName() + "(";
-
-		Iterator<SingleVariableDeclaration> parameterIterator = methodDeclaration.parameters().iterator();
-		if (parameterIterator.hasNext())
-			signature += parameterIterator.next().getType();
-		while (parameterIterator.hasNext()) {
-			signature += ", " + parameterIterator.next().getType();
-		}
-		signature += ")";
-		return signature;
-	}
-
 	public static int getStartingLineNumber(MethodDeclaration methodDeclaration) {
 		return (((CompilationUnit) methodDeclaration.getRoot()).getLineNumber(methodDeclaration.getStartPosition()));
 	}
@@ -621,7 +612,7 @@ public class GitHistoryAnalyzer {
 			HashSet<String> methodSigs) {
 		HashSet<MethodDeclaration> methodDeclarations = new HashSet<>();
 		methodsDecs.forEach(method -> {
-			String methodSig = getMethodSignature(method);
+			String methodSig = Util.getMethodSignature(method);
 			if (methodSigs.contains(methodSig))
 				methodDeclarations.add(method);
 		});
@@ -646,7 +637,7 @@ public class GitHistoryAnalyzer {
 		editToMethodDeclarationForA.forEach((editIdForA, methodsInOneEditA) -> {
 
 			for (MethodDeclaration methodForA : methodsInOneEditA) {
-				String methodSig = getMethodSignature(methodForA);
+				String methodSig = Util.getMethodSignature(methodForA);
 
 				// Modify method body, or rename parameters
 				if (methodSignaturesForEditsB.contains(methodSig)) {
@@ -663,7 +654,7 @@ public class GitHistoryAnalyzer {
 					if (targetMethodDec != null) {
 						process(targetMethodDec, additionalMethodDecInB, additionalMethodInB,
 								TypesOfMethodOperations.CHANGEPARAMETER);
-						methodToMethod.put(methodSig, getMethodSignature(targetMethodDec));
+						methodToMethod.put(methodSig, Util.getMethodSignature(targetMethodDec));
 						break;
 					}
 
@@ -672,8 +663,8 @@ public class GitHistoryAnalyzer {
 					if (targetMethodDec != null) {
 						process(targetMethodDec, additionalMethodDecInB, additionalMethodInB,
 								TypesOfMethodOperations.RENAME);
-						addVertexIntoGraph(getMethodSignature(targetMethodDec), methodSig, file);
-						methodToMethod.put(methodSig, getMethodSignature(targetMethodDec));
+						addVertexIntoGraph(Util.getMethodSignature(targetMethodDec), methodSig, file);
+						methodToMethod.put(methodSig, Util.getMethodSignature(targetMethodDec));
 						break;
 					}
 
@@ -685,7 +676,7 @@ public class GitHistoryAnalyzer {
 		});
 
 		additionalMethodDecInB.forEach(methodDec -> {
-			putIntoMethodToOps(methodSignaturesToOps, getMethodSignature(methodDec), TypesOfMethodOperations.ADD);
+			putIntoMethodToOps(methodSignaturesToOps, Util.getMethodSignature(methodDec), TypesOfMethodOperations.ADD);
 		});
 
 		methodSignaturesToOps.forEach((methodSig, ops) -> {
@@ -713,8 +704,8 @@ public class GitHistoryAnalyzer {
 	 */
 	private static void process(MethodDeclaration targetMethodDec, HashSet<MethodDeclaration> additionalMethodDecInB,
 			HashSet<String> additionalMethodInB, TypesOfMethodOperations op) {
-		putIntoMethodToOps(methodSignaturesToOps, getMethodSignature(targetMethodDec), op);
-		String tagetMethodSig = getMethodSignature(targetMethodDec);
+		putIntoMethodToOps(methodSignaturesToOps, Util.getMethodSignature(targetMethodDec), op);
+		String tagetMethodSig = Util.getMethodSignature(targetMethodDec);
 		additionalMethodDecInB.remove(targetMethodDec);
 		additionalMethodInB.remove(tagetMethodSig);
 	}
@@ -813,7 +804,7 @@ public class GitHistoryAnalyzer {
 		HashSet<String> methodSignatures = new HashSet<String>();
 		methodDeclarations.forEach(methodDecSet -> {
 			methodDecSet.forEach(methodDec -> {
-				methodSignatures.add(getMethodSignature(methodDec));
+				methodSignatures.add(Util.getMethodSignature(methodDec));
 			});
 		});
 		return methodSignatures;

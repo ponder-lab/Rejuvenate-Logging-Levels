@@ -117,13 +117,13 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 			throws CoreException, OperationCanceledException {
 		try {
 			final RefactoringStatus status = new RefactoringStatus();
-			
+
+			LogAnalyzer analyzer;
 			if (this.useGitHistory) {
 				String repoPath = getGitRepoPath();
-				LogAnalyzer analyzer = new LogAnalyzer(this.useGitHistory, repoPath);
-			}
-			else
-			LogAnalyzer analyzer = new LogAnalyzer(this.useLogCategoryWithConfig, this.useLogCategory);
+				analyzer = new LogAnalyzer(this.useGitHistory, repoPath);
+			} else
+				analyzer = new LogAnalyzer(this.useLogCategoryWithConfig, this.useLogCategory);
 
 			for (IJavaProject jproj : this.getJavaProjects()) {
 				IPackageFragmentRoot[] roots = jproj.getPackageFragmentRoots();

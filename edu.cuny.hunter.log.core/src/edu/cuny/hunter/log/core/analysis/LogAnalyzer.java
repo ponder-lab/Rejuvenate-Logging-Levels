@@ -14,7 +14,9 @@ import org.eclipse.jdt.core.dom.ASTVisitor;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.MethodInvocation;
-
+import edu.cuny.hunter.github.core.analysis.GitHistoryAnalyzer;
+import edu.cuny.hunter.github.core.utils.Graph;
+import edu.cuny.hunter.github.core.utils.Vertex;
 import edu.cuny.hunter.log.core.messages.Messages;
 import edu.cuny.hunter.log.core.utils.LoggerNames;
 import edu.cuny.hunter.log.core.utils.Util;
@@ -41,14 +43,30 @@ public class LogAnalyzer extends ASTVisitor {
 		this.test = isTest;
 	}
 
+	private Set<Vertex> getMethodSet() {
+		Set<Vertex> methodSet = new HashSet<>();
+		logInvocationSet.forEach(logInvocation -> {
+			methodSet.add(new Vertex(edu.cuny.hunter.github.core.utils.Util
+					.getMethodSignature(logInvocation.getEnclosingMethodDeclaration()), logInvocation.getFilePath()));
+			System.out.println(logInvocation.getFilePath());
+		});
+		return methodSet;
+	}
+
+	private void processHistoricalMehthods() {
+		Set<Vertex> methodSet = getMethodSet();
+		Graph renaming = GitHistoryAnalyzer.getRenaming();
+	}
+	
+
 	public LogAnalyzer(boolean useConfigLogLevelCategory, boolean useLogLevelCategory) {
 		useLogCategoryWithConfig = useConfigLogLevelCategory;
 		useLogCategory = useLogLevelCategory;
 	}
 
-	public LogAnalyzer(boolean useGitHistory, String repoPath) {
-		this.useGitHis = useGitHistory;
-		this.repoPath = repoPath;
+	public LogAnalyzer(boolean useGitHistory, String repo) {
+		useGitHis = useGitHistory;
+		repoPath = repo;
 	}
 
 	public LogAnalyzer() {

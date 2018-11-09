@@ -48,7 +48,7 @@ public class LogInvocation {
 	private static final Logger LOGGER = Logger.getLogger(LoggerNames.LOGGER_NAME);
 
 	private Action action = Action.NONE;
-
+	
 	public LogInvocation(MethodInvocation logExpression, Level loggingLevel) {
 		this.logExpression = logExpression;
 		this.logLevel = loggingLevel;
@@ -117,6 +117,10 @@ public class LogInvocation {
 		return (MethodDeclaration) ASTNodes.getParent(this.getExpression(), ASTNode.METHOD_DECLARATION);
 	}
 
+	public String getFilePath() {
+		return getEnclosingCompilationUnit().getJavaElement().getPath().makeAbsolute().toString();
+	}
+	
 	/**
 	 * Through the enclosing type, I can type FQN
 	 */
