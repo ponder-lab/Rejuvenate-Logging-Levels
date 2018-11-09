@@ -78,6 +78,7 @@ public class GitHistoryAnalyzer {
 	
 	private static LinkedList<String> methods = new LinkedList<>();
 	private static LinkedList<String> files = new LinkedList<>();
+	private static LinkedList<TypesOfMethodOperations> methodOperations = new LinkedList<>();
 
 	// The old method in the revision A and the new method in the revision B
 	private static HashMap<String, String> methodToMethod = new HashMap<>();
@@ -166,6 +167,19 @@ public class GitHistoryAnalyzer {
 
 		renaming.printGraph();
 	}
+	
+	public static LinkedList<String> getMethods(){
+		return methods;
+	}
+	
+	public static LinkedList<String> getFiles(){
+		return files;
+	}
+	
+	public static LinkedList<TypesOfMethodOperations> getMethodOps(){
+		return methodOperations;
+	}
+	
 
 	/**
 	 * Rename or copy a file in a commit.
@@ -300,6 +314,7 @@ public class GitHistoryAnalyzer {
 					methodOpsPrinter.printRecord(commitIndex, commit.name(), path, fileOp, methodSig, op);
 					methods.add(methodSig);
 					files.add(path);
+					methodOperations.add(op);
 				} catch (IOException e) {
 					LOGGER.severe("Cannot create printer.");
 				}
