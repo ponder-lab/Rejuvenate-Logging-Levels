@@ -27,8 +27,11 @@ import org.osgi.framework.FrameworkUtil;
 import org.eclipse.mylyn.context.core.ContextCore;
 import org.eclipse.mylyn.context.core.IDegreeOfInterest;
 import org.eclipse.mylyn.context.core.IInteractionElement;
+import org.eclipse.mylyn.internal.context.core.ContextCorePlugin;
 import org.eclipse.mylyn.internal.tasks.core.TaskList;
 import org.eclipse.mylyn.internal.tasks.ui.TasksUiPlugin;
+
+import edu.cuny.hunter.github.core.analysis.TypesOfMethodOperations;
 import edu.cuny.hunter.log.core.utils.LoggerNames;
 
 @SuppressWarnings("restriction")
@@ -48,7 +51,7 @@ public class LogInvocation {
 	private static final Logger LOGGER = Logger.getLogger(LoggerNames.LOGGER_NAME);
 
 	private Action action = Action.NONE;
-	
+
 	public LogInvocation(MethodInvocation logExpression, Level loggingLevel) {
 		this.logExpression = logExpression;
 		this.logLevel = loggingLevel;
@@ -72,7 +75,7 @@ public class LogInvocation {
 	public float getDegreeOfInterestValue() {
 		return degreeOfInterestValue;
 	}
-	
+
 	public void setDegreeOfInterestValue(int degreeOfInterestValue) {
 		this.degreeOfInterestValue = degreeOfInterestValue;
 	}
@@ -93,13 +96,17 @@ public class LogInvocation {
 		return TasksUiPlugin.getTaskList();
 	}
 
+	// The element in Mylyn
+	private IInteractionElement getInteractionElement() {
+		IMethod enclosingMethod = this.getEnclosingEclipseMethod();
+		return ContextCore.getContextManager().getElement(enclosingMethod.getHandleIdentifier());
+	}
+
 	/**
 	 * Get DOI
 	 */
 	public IDegreeOfInterest getDegreeOfInterest() {
-		IMethod enclosingMethod = this.getEnclosingEclipseMethod();
-		IInteractionElement interactionElement = ContextCore.getContextManager()
-				.getElement(enclosingMethod.getHandleIdentifier());
+		IInteractionElement interactionElement = getInteractionElement();
 		if (interactionElement == null)
 			return null;
 		return interactionElement.getInterest();
@@ -120,7 +127,7 @@ public class LogInvocation {
 	public String getFilePath() {
 		return getEnclosingCompilationUnit().getJavaElement().getPath().makeAbsolute().toString();
 	}
-	
+
 	/**
 	 * Through the enclosing type, I can type FQN
 	 */
@@ -282,6 +289,11 @@ public class LogInvocation {
 	private void convertToFiner(CompilationUnitRewrite rewrite) {
 		convert("finer", "FINER", rewrite);
 
+	}
+
+	public void bumpDOI() {
+		ContextCorePlugin.getContextManager().manipulateInterestForElement(getInteractionElement(), false, false, true,
+				"", true);
 	}
 
 }

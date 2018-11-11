@@ -90,6 +90,7 @@ public class LogAnalyzer extends ASTVisitor {
 				while (head != null) {
 					if (head.equals(vertex)) {
 						bumpDOIByVertex(vertex, methodOp);
+						break;
 					}
 					head = head.getNextVertex();
 				}
@@ -99,8 +100,20 @@ public class LogAnalyzer extends ASTVisitor {
 
 	private void bumpDOIByVertex(Vertex vertex, TypesOfMethodOperations methodOp) {
 		LogInvocation logInvocation = methodToLogInvocation.get(vertex);
-		// switch???
-		logInvocation.bumpDOI(methodOp);
+		switch (methodOp) {
+		case ADD:
+			logInvocation.setDegreeOfInterestValue(0);
+			logInvocation.bumpDOI();
+			break;
+		case DELETE:
+			logInvocation.setDegreeOfInterestValue(0);
+			break;
+		case RENAME:
+		case CHANGE:
+		case CHANGEPARAMETER:
+			logInvocation.bumpDOI();
+			break;
+		}
 	}
 
 	public LogAnalyzer(boolean useConfigLogLevelCategory, boolean useLogLevelCategory) {
@@ -120,17 +133,13 @@ public class LogAnalyzer extends ASTVisitor {
 		// check failed preconditions.
 		this.checkCodeModification();
 
-		if (useLogCategory && useLogCategoryWithConfig) {
-			throw new IllegalStateException("You cannot check two options at the same time.");
-		}
-
 		// We analyze git history
 		if (useGitHis) {
 			for (LogInvocation logInvocation : this.logInvocationSet) {
 				logInvocation.setDegreeOfInterestValue(
 						computeDegreeOfInterestValue(logInvocation.getEnclosingMethodDeclaration()));
 			}
-			return;
+			this.processHistoricalMehthods();
 		}
 
 		HashSet<Float> degreeOfInterests = new HashSet<>();
