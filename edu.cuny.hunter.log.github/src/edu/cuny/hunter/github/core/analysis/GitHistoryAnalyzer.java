@@ -56,12 +56,11 @@ import edu.cuny.hunter.github.core.utils.Util;
 import edu.cuny.hunter.github.core.utils.Edge;
 import edu.cuny.hunter.github.core.utils.Graph;
 import edu.cuny.hunter.github.core.utils.Vertex;
-import edu.cuny.hunter.log.core.utils.LoggerNames;
 
 @SuppressWarnings("restriction")
 public class GitHistoryAnalyzer {
 
-	private static final Logger LOGGER = Logger.getLogger(LoggerNames.LOGGER_NAME);
+	private static final Logger LOGGER = Logger.getLogger(Util.LOGGER_NAME);
 
 	// Set of method declarations
 	private static HashSet<MethodDeclaration> methodDeclarationsForA = new HashSet<MethodDeclaration>();
@@ -101,7 +100,7 @@ public class GitHistoryAnalyzer {
 	 */
 	public static void processGitHistory() throws IOException, GitAPIException {
 
-		methodOpsPrinter = edu.cuny.hunter.log.evalution.utils.Util.createCSVPrinter("method_operations.csv",
+		methodOpsPrinter = Util.createCSVPrinter("method_operations.csv",
 				new String[] { "Commit ID", "SHA-1", "files", "file ops", "methods", "method ops" });
 
 		Git git = preProcessGitHistory("C:\\Users\\tangy\\eclipse-workspace\\Java-8-Stream-Refactoring\\.git");

@@ -1,6 +1,5 @@
 package edu.cuny.hunter.log.evalution.handlers;
 
-import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
@@ -13,7 +12,6 @@ import java.util.Set;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
-import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
@@ -51,10 +49,12 @@ import org.eclipse.ltk.core.refactoring.participants.ProcessorBasedRefactoring;
 public class EvaluationHandler extends AbstractHandler {
 
 	private static final Logger LOGGER = Logger.getLogger(LoggerNames.LOGGER_NAME);
-	private static final String USE_LOG_CATEGORY_KEY = "edu.hunter.log.evalution.useLogCategory";
-	private static final String USE_LOG_CATEGORY_CONFIG_KEY = "edu.hunter.log.evalution.useLogCategoryWithConfig";
+	private static final String USE_LOG_CATEGORY_KEY = "edu.cuny.hunter.log.evalution.useLogCategory";
+	private static final String USE_LOG_CATEGORY_CONFIG_KEY = "edu.cuny.hunter.log.evalution.useLogCategoryWithConfig";
+	private static final String USE_GIT_HISTORY_KEY = "edu.cuny.hunter.log.evalution.useGitHistory";
 	private static final boolean USE_LOG_CATEGORY_DEFAULT = false;
 	private static final boolean USE_LOG_CATEGORY_CONFIG_DEFAULT = false;
+	private static final boolean USE_GIT_HISTORY = false;
 
 	@Override
 	public Object execute(ExecutionEvent event) throws ExecutionException {
@@ -100,7 +100,7 @@ public class EvaluationHandler extends AbstractHandler {
 
 							LogRejuvenatingProcessor logRejuvenatingProcessor = new LogRejuvenatingProcessor(
 									new IJavaProject[] { project }, this.useLogCategory(),
-									this.useLogCategoryWithConfig(), settings, monitor);
+									this.useLogCategoryWithConfig(), this.useGitHistory(), settings, monitor);
 
 							new ProcessorBasedRefactoring((RefactoringProcessor) logRejuvenatingProcessor)
 									.checkAllConditions(new NullProgressMonitor());
@@ -226,6 +226,15 @@ public class EvaluationHandler extends AbstractHandler {
 			return USE_LOG_CATEGORY_CONFIG_DEFAULT;
 		else
 			return Boolean.valueOf(useConfigLogLevels);
+	}
+
+	private boolean useGitHistory() {
+		String useGitHistory = System.getenv(USE_GIT_HISTORY_KEY);
+
+		if (useGitHistory == null)
+			return USE_GIT_HISTORY;
+		else
+			return Boolean.valueOf(useGitHistory);
 	}
 
 }
