@@ -29,6 +29,7 @@ import org.eclipse.ui.handlers.HandlerUtil;
 import org.osgi.framework.FrameworkUtil;
 
 import edu.cuny.citytech.refactoring.common.core.RefactoringProcessor;
+import edu.cuny.hunter.github.core.utils.GitMethod;
 import edu.cuny.hunter.log.core.analysis.LogInvocation;
 import edu.cuny.hunter.log.core.analysis.PreconditionFailure;
 import edu.cuny.hunter.log.core.refactorings.LogRejuvenatingProcessor;
@@ -94,6 +95,8 @@ public class EvaluationHandler extends AbstractHandler {
 						CSVPrinter failedPreConsPrinter = Util.createCSVPrinter("failed_preconditions.csv",
 								new String[] { "subject raw", "log expression", "start pos", "logging level",
 										"type FQN", "enclosing method", "code", "name", "message" });
+						CSVPrinter methodOpsPrinter = Util.createCSVPrinter("method_operations.csv",
+								new String[] { "Commit ID", "SHA-1", "files", "file ops", "methods", "method ops" });
 
 						// for each selected java project
 						for (IJavaProject project : javaProjectList) {
@@ -106,6 +109,15 @@ public class EvaluationHandler extends AbstractHandler {
 									.checkAllConditions(new NullProgressMonitor());
 
 							Set<LogInvocation> logInvocationSet = logRejuvenatingProcessor.getLogInvocationSet();
+
+							if (this.useGitHistory()) {
+								LinkedList<GitMethod> gitMethods = logRejuvenatingProcessor.getGitMethods();
+								for (GitMethod gitMethod : gitMethods) {
+									methodOpsPrinter.printRecord(gitMethod.getCommitIndex(), gitMethod.getCommitName(),
+											gitMethod.getFilePath(), gitMethod.getFileOp(),
+											gitMethod.getMethodSignature(), gitMethod.getMethodOp());
+								}
+							}
 
 							// get candidate log invocations
 							Set<LogInvocation> candidates = logInvocationSet == null ? Collections.emptySet()

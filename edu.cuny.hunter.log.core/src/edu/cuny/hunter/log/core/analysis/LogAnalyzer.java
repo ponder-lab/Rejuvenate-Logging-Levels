@@ -17,6 +17,7 @@ import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.MethodInvocation;
 import edu.cuny.hunter.github.core.analysis.GitHistoryAnalyzer;
 import edu.cuny.hunter.github.core.analysis.TypesOfMethodOperations;
+import edu.cuny.hunter.github.core.utils.GitMethod;
 import edu.cuny.hunter.github.core.utils.Graph;
 import edu.cuny.hunter.github.core.utils.Vertex;
 import edu.cuny.hunter.log.core.messages.Messages;
@@ -48,7 +49,6 @@ public class LogAnalyzer extends ASTVisitor {
 	}
 
 	private void computeMethodToLogInvocation() {
-		Set<Vertex> methodSet = new HashSet<>();
 		logInvocationSet.forEach(logInvocation -> {
 			System.out.println(logInvocation.getFilePath());
 			methodToLogInvocation.put(
@@ -58,21 +58,27 @@ public class LogAnalyzer extends ASTVisitor {
 		});
 	}
 
+	// Should be called after analyze()
+	private LinkedList<GitMethod> getGitMethods() {
+		return GitHistoryAnalyzer.getGitMethods();
+	}
+
+	@SuppressWarnings("restriction")
 	private void processHistoricalMehthods() {
 		this.computeMethodToLogInvocation();
 		Set<Vertex> currentMethodSet = methodToLogInvocation.keySet();
+
+		GitHistoryAnalyzer.processGitHistory(repoPath);
 		Graph renaming = GitHistoryAnalyzer.getRenaming();
 
-		LinkedList<String> methods = GitHistoryAnalyzer.getMethods();
-		LinkedList<String> files = GitHistoryAnalyzer.getFiles();
-		LinkedList<TypesOfMethodOperations> methodOperations = GitHistoryAnalyzer.getMethodOps();
+		LinkedList<GitMethod> gitMethods = GitHistoryAnalyzer.getGitMethods();
 
-		for (int i = 0; i < methods.size(); i++) {
+		for (GitMethod gitMethod : gitMethods) {
 			// Get methods, files, and method change operations
-			String method = methods.get(i);
-			String file = files.get(i);
-			TypesOfMethodOperations methodOp = methodOperations.get(i);
-			
+			String method = gitMethod.getMethodSignature();
+			String file = gitMethod.getFilePath();
+			TypesOfMethodOperations methodOp = gitMethod.getMethodOp();
+
 			Vertex vertex = new Vertex(method, file);
 			// The method exists now
 			if (currentMethodSet.contains(vertex)) {

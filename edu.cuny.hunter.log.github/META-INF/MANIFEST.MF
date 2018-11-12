@@ -14,3 +14,5 @@ Import-Package: org.eclipse.core.runtime;version="3.5.0",
  org.eclipse.jdt.core.dom
 Export-Package: edu.cuny.hunter.github.core.analysis,
  edu.cuny.hunter.github.core.utils
+Automatic-Module-Name: edu.cuny.hunter.log.github
+Bundle-ClassPath: .

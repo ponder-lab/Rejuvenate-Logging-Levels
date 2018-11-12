@@ -18,7 +18,6 @@ import java.util.Set;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
-import org.apache.commons.csv.CSVPrinter;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jdt.core.dom.AST;
 import org.eclipse.jdt.core.dom.ASTParser;
@@ -54,6 +53,7 @@ import org.eclipse.jgit.treewalk.filter.PathFilter;
 
 import edu.cuny.hunter.github.core.utils.Util;
 import edu.cuny.hunter.github.core.utils.Edge;
+import edu.cuny.hunter.github.core.utils.GitMethod;
 import edu.cuny.hunter.github.core.utils.Graph;
 import edu.cuny.hunter.github.core.utils.Vertex;
 
@@ -74,17 +74,13 @@ public class GitHistoryAnalyzer {
 
 	// A mapping from the method signature to the operations
 	private static HashMap<String, LinkedList<TypesOfMethodOperations>> methodSignaturesToOps = new HashMap<>();
-	
-	private static LinkedList<String> methods = new LinkedList<>();
-	private static LinkedList<String> files = new LinkedList<>();
-	private static LinkedList<TypesOfMethodOperations> methodOperations = new LinkedList<>();
+
+	private static LinkedList<GitMethod> gitMethods = new LinkedList<>();
 
 	// The old method in the revision A and the new method in the revision B
 	private static HashMap<String, String> methodToMethod = new HashMap<>();
 
 	private static Graph renaming = new Graph();
-
-	private static CSVPrinter methodOpsPrinter;
 
 	// the file index
 	static int commitIndex = 0;
@@ -98,87 +94,90 @@ public class GitHistoryAnalyzer {
 	 * Example input:
 	 * "C:\\Users\\tangy\\eclipse-workspace\\Java-8-Stream-Refactoring\\.git"
 	 */
-	public static void processGitHistory() throws IOException, GitAPIException {
+	public static void processGitHistory(String repoPath) {
 
-		methodOpsPrinter = Util.createCSVPrinter("method_operations.csv",
-				new String[] { "Commit ID", "SHA-1", "files", "file ops", "methods", "method ops" });
+		Git git;
+		try {
+			git = preProcessGitHistory(repoPath);
+			RevCommit previousCommit = null;
+			String filePath = null;
 
-		Git git = preProcessGitHistory("C:\\Users\\tangy\\eclipse-workspace\\Java-8-Stream-Refactoring\\.git");
+			// from the earliest commit to the current commit
+			for (RevCommit currentCommit : commitList) {
 
-		RevCommit previousCommit = null;
+				processOneCommit(currentCommit, previousCommit, git, filePath);
+				previousCommit = currentCommit;
 
-		String filePath = null;
+				commitIndex++;
 
-		// from the earliest commit to the current commit
-		for (RevCommit currentCommit : commitList) {
-			AbstractTreeIterator oldTreeIterator;
-			if (previousCommit != null) {
-				oldTreeIterator = getCanonicalTreeParser(previousCommit, git.getRepository());
-			} else {
-				oldTreeIterator = new EmptyTreeIterator();
-			}
-			AbstractTreeIterator newTreeIterator = getCanonicalTreeParser(currentCommit, git.getRepository());
+				clearFiles(new File("").getAbsoluteFile());
 
-			// each diff entry is corresponding to a file
-			final List<DiffEntry> diffs = git.diff().setOldTree(oldTreeIterator).setNewTree(newTreeIterator).call();
-
-			OutputStream outputStream = new ByteArrayOutputStream();
-			try (DiffFormatter formatter = new DiffFormatter(outputStream)) {
-				formatter.setRepository(git.getRepository());
-				formatter.scan(oldTreeIterator, newTreeIterator);
-
-				for (DiffEntry diffEntry : diffs) {
-
-					switch (diffEntry.getChangeType().name()) {
-					case "ADD":
-						filePath = addFile(currentCommit, git.getRepository(), diffEntry);
-						break;
-					case "DELETE":
-						filePath = deleteFile(previousCommit, git.getRepository(), diffEntry);
-						break;
-					case "MODIFY":
-						filePath = modifyFile(currentCommit, previousCommit, git.getRepository(), diffEntry, formatter);
-						break;
-					case "RENAME":
-					case "COPY":
-						filePath = renameOrCopyFile(currentCommit, git.getRepository(), diffEntry);
-						break;
-					default:
-						break;
-					}
-
-					printAllMethodOps(currentCommit, filePath, diffEntry.getChangeType().name());
-					clear();
-				}
+				//// test
+				if (commitIndex >= 20)
+					break;
 			}
 
-			previousCommit = currentCommit;
-			commitIndex++;
-
-			clearFiles(new File("").getAbsoluteFile());
-
-			//// test
-			if (commitIndex >= 20)
-				break;
+			git.close();
+		} catch (IOException | GitAPIException e) {
+			LOGGER.warning("Cannot process git commits!");
 		}
-
-		git.close();
 
 		renaming.printGraph();
 	}
-	
-	public static LinkedList<String> getMethods(){
-		return methods;
+
+	/**
+	 * Process one git commit
+	 * 
+	 * @throws IOException
+	 * @throws GitAPIException
+	 */
+	public static void processOneCommit(RevCommit currentCommit, RevCommit previousCommit, Git git, String filePath)
+			throws IOException, GitAPIException {
+		AbstractTreeIterator oldTreeIterator;
+		if (previousCommit != null) {
+			oldTreeIterator = getCanonicalTreeParser(previousCommit, git.getRepository());
+		} else {
+			oldTreeIterator = new EmptyTreeIterator();
+		}
+		AbstractTreeIterator newTreeIterator = getCanonicalTreeParser(currentCommit, git.getRepository());
+
+		// Each diff entry is corresponding to a file
+		final List<DiffEntry> diffs = git.diff().setOldTree(oldTreeIterator).setNewTree(newTreeIterator).call();
+
+		OutputStream outputStream = new ByteArrayOutputStream();
+		try (DiffFormatter formatter = new DiffFormatter(outputStream)) {
+			formatter.setRepository(git.getRepository());
+			formatter.scan(oldTreeIterator, newTreeIterator);
+
+			for (DiffEntry diffEntry : diffs) {
+
+				switch (diffEntry.getChangeType().name()) {
+				case "ADD":
+					filePath = addFile(currentCommit, git.getRepository(), diffEntry);
+					break;
+				case "DELETE":
+					filePath = deleteFile(previousCommit, git.getRepository(), diffEntry);
+					break;
+				case "MODIFY":
+					filePath = modifyFile(currentCommit, previousCommit, git.getRepository(), diffEntry, formatter);
+					break;
+				case "RENAME":
+				case "COPY":
+					filePath = renameOrCopyFile(currentCommit, git.getRepository(), diffEntry);
+					break;
+				default:
+					break;
+				}
+
+				storeAllMethodOps(currentCommit, filePath, diffEntry.getChangeType().name());
+				clear();
+			}
+		}
 	}
-	
-	public static LinkedList<String> getFiles(){
-		return files;
+
+	public static LinkedList<GitMethod> getGitMethods() {
+		return gitMethods;
 	}
-	
-	public static LinkedList<TypesOfMethodOperations> getMethodOps(){
-		return methodOperations;
-	}
-	
 
 	/**
 	 * Rename or copy a file in a commit.
@@ -306,17 +305,10 @@ public class GitHistoryAnalyzer {
 	/**
 	 * Print all method operations into CSV file
 	 */
-	private static void printAllMethodOps(RevCommit commit, String path, String fileOp) {
+	private static void storeAllMethodOps(RevCommit commit, String path, String fileOp) {
 		methodSignaturesToOps.forEach((methodSig, ops) -> {
 			for (TypesOfMethodOperations op : ops)
-				try {
-					methodOpsPrinter.printRecord(commitIndex, commit.name(), path, fileOp, methodSig, op);
-					methods.add(methodSig);
-					files.add(path);
-					methodOperations.add(op);
-				} catch (IOException e) {
-					LOGGER.severe("Cannot create printer.");
-				}
+				gitMethods.add(new GitMethod(methodSig, op, path, fileOp, commitIndex, commit.name()));
 		});
 	}
 

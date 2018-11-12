@@ -20,3 +20,4 @@ Import-Package: edu.cuny.hunter.log.ui.wizards,
  org.eclipse.jdt.internal.ui.util
 Export-Package: edu.cuny.hunter.log.ui.messages,
  edu.cuny.hunter.log.ui.wizards
+Automatic-Module-Name: edu.cuny.hunter.log.ui
