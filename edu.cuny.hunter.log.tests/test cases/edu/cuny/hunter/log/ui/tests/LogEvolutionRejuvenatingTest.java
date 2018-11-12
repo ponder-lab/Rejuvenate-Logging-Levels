@@ -125,7 +125,6 @@ public class LogEvolutionRejuvenatingTest extends RefactoringTest {
 
 	protected void tearDown() throws Exception {
 		super.tearDown();
-		tryDeletingJavaFiles(this.getPackageP());
 	}
 
 	@Override
@@ -133,14 +132,5 @@ public class LogEvolutionRejuvenatingTest extends RefactoringTest {
 		return null;
 	}
 
-	private static void tryDeletingJavaFiles(IPackageFragment pack) throws JavaModelException {
-		File sourceFile = pack.getResource().getLocation().append("A.java").toFile();
-		// delete the file.
-		try {
-			Files.delete(sourceFile.toPath());
-		} catch (IOException e) {
-			throw new IllegalArgumentException("Source file does not exist.", e);
-		}
-	}
 
 }
