@@ -352,62 +352,14 @@ public class GitHistoryAnalyzer {
 		ObjectId currentCommitId = ObjectId.fromString(sha);
 		RevWalk revWalk = new RevWalk(repo);
 		RevCommit currentCommit = revWalk.parseCommit(currentCommitId);
-		RevTree tree = currentCommit.getTree();
 
 		RevCommit previousCommit = currentCommit.getParent(0);
 		previousCommit = revWalk.parseCommit(previousCommit.getId());
-		RevTree previousTree = previousCommit.getTree();
 		revWalk.close();
-
-		AbstractTreeIterator oldTreeIterator = getCanonicalTreeParser(previousCommit, repo);
-		AbstractTreeIterator newTreeIterator = getCanonicalTreeParser(currentCommit, repo);
-
-		// each diff entry is corresponding to a file
-		final List<DiffEntry> diffs = git.diff().setOldTree(oldTreeIterator).setNewTree(newTreeIterator).call();
-
-		OutputStream outputStream = new ByteArrayOutputStream();
-		try (DiffFormatter formatter = new DiffFormatter(outputStream)) {
-			formatter.setRepository(repo);
-			formatter.scan(oldTreeIterator, newTreeIterator);
-
-			// only get the first file.
-			DiffEntry diffEntry = diffs.get(0);
-
-			FileHeader fileHeader = formatter.toFileHeader(diffEntry);
-
-			// Get the file for revision A
-			copyHistoricalFile(repo, diffEntry.getOldPath(), "tmp_A_", previousTree);
-			// Get the file for revision B
-			copyHistoricalFile(repo, diffEntry.getNewPath(), "tmp_B_", tree);
-
-			// For deleting, get the differences
-			computeMethodPositions(methodDeclarationsForA, methodPositionsForA);
-
-			// For adding, get the differences
-			computeMethodPositions(methodDeclarationsForB, methodPositionsForB);
-
-			List<? extends HunkHeader> hunks = fileHeader.getHunks();
-			int editId = 0;
-			for (HunkHeader hunk : hunks) {
-				EditList editList = hunk.toEditList();
-				if (!editList.isEmpty()) {
-					// For each pair of edit
-					for (Edit edit : editList) {
-						editId++;
-						mapEditToMethod(editId, edit.getBeginA(), edit.getEndA(), methodPositionsForA,
-								editToMethodDeclarationForA);
-						mapEditToMethod(editId, edit.getBeginB(), edit.getEndB(), methodPositionsForB,
-								editToMethodDeclarationForB);
-
-					}
-					;
-				}
-
-			}
-
-			computeMethodChanges(diffEntry.getNewPath());
-
-		}
+		
+		String filePath = null;
+		
+		processOneCommit(currentCommit, previousCommit, git, filePath);
 
 		git.close();
 	}
@@ -503,25 +455,6 @@ public class GitHistoryAnalyzer {
 	private static void copyHistoricalFile(RevCommit commit, Repository repo, String path, String newDirectory)
 			throws MissingObjectException, IncorrectObjectTypeException, CorruptObjectException, IOException {
 		RevTree tree = commit.getTree();
-		TreeWalk treeWalk = new TreeWalk(repo);
-		treeWalk.addTree(tree);
-		treeWalk.setRecursive(true);
-		treeWalk.setFilter(PathFilter.create(path));
-		if (!treeWalk.next()) {
-			return;
-		}
-		ObjectId objectId = treeWalk.getObjectId(0);
-		ObjectLoader loader = repo.open(objectId);
-		copyToFile(loader, path, newDirectory);
-	}
-
-	/**
-	 * Given the commit, repository and the path of the file, get the file, and copy
-	 * it into a new file.
-	 */
-	@SuppressWarnings("resource")
-	private static void copyHistoricalFile(Repository repo, String path, String newDirectory, RevTree tree)
-			throws MissingObjectException, IncorrectObjectTypeException, CorruptObjectException, IOException {
 		TreeWalk treeWalk = new TreeWalk(repo);
 		treeWalk.addTree(tree);
 		treeWalk.setRecursive(true);
