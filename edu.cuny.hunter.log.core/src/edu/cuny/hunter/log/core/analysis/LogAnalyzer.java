@@ -1,5 +1,6 @@
 package edu.cuny.hunter.log.core.analysis;
 
+import java.io.File;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -40,7 +41,7 @@ public class LogAnalyzer extends ASTVisitor {
 
 	private static boolean useGitHis = false;
 
-	private static String repoPath;
+	private static File repoFile;
 
 	private int test;
 
@@ -63,12 +64,11 @@ public class LogAnalyzer extends ASTVisitor {
 		return GitHistoryAnalyzer.getGitMethods();
 	}
 
-	@SuppressWarnings("restriction")
 	private void processHistoricalMehthods() {
 		this.computeMethodToLogInvocation();
 		Set<Vertex> currentMethodSet = methodToLogInvocation.keySet();
 
-		GitHistoryAnalyzer.processGitHistory(repoPath);
+		GitHistoryAnalyzer.processGitHistory(repoFile);
 		Graph renaming = GitHistoryAnalyzer.getRenaming();
 
 		LinkedList<GitMethod> gitMethods = GitHistoryAnalyzer.getGitMethods();
@@ -127,9 +127,9 @@ public class LogAnalyzer extends ASTVisitor {
 		useLogCategory = useLogLevelCategory;
 	}
 
-	public LogAnalyzer(boolean useGitHistory, String repo) {
+	public LogAnalyzer(boolean useGitHistory, File repo) {
 		useGitHis = useGitHistory;
-		repoPath = repo;
+		repoFile = repo;
 	}
 
 	public LogAnalyzer() {

@@ -3,6 +3,7 @@ package edu.cuny.hunter.log.core.refactorings;
 import java.util.Optional;
 import java.util.Set;
 import java.util.logging.Logger;
+import java.io.File;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -77,6 +78,10 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 	public boolean getParticularLogLevel() {
 		return this.useLogCategory;
 	}
+	
+	public boolean getGitHistory() {
+		return this.useGitHistory;
+	}
 
 	public LogRejuvenatingProcessor(IJavaProject[] javaProjects, final CodeGenerationSettings settings,
 			Optional<IProgressMonitor> monitor) {
@@ -112,8 +117,14 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 		return Messages.Name;
 	}
 
-	private String getGitRepoPath() {
-		return "C:\\Users\\tangy\\eclipse-workspace\\Java-8-Stream-Refactoring\\.git";
+	/**
+	 * After the user checks the option to analyze the git history, the tool should
+	 * get a repository file.
+	 */
+	private File getRepoFile() {
+		IJavaProject javaProject = this.getJavaProjects()[0];
+		File projectFile = javaProject.getResource().getFullPath().toFile();
+		return projectFile.getParentFile();
 	}
 
 	@Override
@@ -124,8 +135,8 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 
 			LogAnalyzer analyzer;
 			if (this.useGitHistory) {
-				String repoPath = getGitRepoPath();
-				analyzer = new LogAnalyzer(this.useGitHistory, repoPath);
+				File repoFile = getRepoFile();
+				analyzer = new LogAnalyzer(this.useGitHistory, repoFile);
 			} else
 				analyzer = new LogAnalyzer(this.useLogCategoryWithConfig, this.useLogCategory);
 

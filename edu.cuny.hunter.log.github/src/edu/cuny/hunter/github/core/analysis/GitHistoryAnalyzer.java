@@ -94,11 +94,11 @@ public class GitHistoryAnalyzer {
 	 * Example input:
 	 * "C:\\Users\\tangy\\eclipse-workspace\\Java-8-Stream-Refactoring\\.git"
 	 */
-	public static void processGitHistory(String repoPath) {
+	public static void processGitHistory(File repoFile) {
 
 		Git git;
 		try {
-			git = preProcessGitHistory(repoPath);
+			git = preProcessGitHistory(repoFile);
 			RevCommit previousCommit = null;
 			String filePath = null;
 
@@ -205,10 +205,9 @@ public class GitHistoryAnalyzer {
 	/**
 	 * Get git and git commits.
 	 */
-	private static Git preProcessGitHistory(String repoPath) throws IOException, NoHeadException, GitAPIException {
-		Repository repo = new FileRepository(repoPath);
+	private static Git preProcessGitHistory(File repoFile) throws IOException, NoHeadException, GitAPIException {
 
-		Git git = new Git(repo);
+		Git git = Git.init().setDirectory(repoFile).call();
 
 		Iterable<RevCommit> log = git.log().call();
 
@@ -216,6 +215,9 @@ public class GitHistoryAnalyzer {
 			commitList.addFirst(commit);
 		}
 
+		if (commitList.isEmpty())
+			throw new IllegalArgumentException(
+					"The selected file is not a repository file or the repository dose not have and commit.");
 		return git;
 	}
 
@@ -356,9 +358,9 @@ public class GitHistoryAnalyzer {
 		RevCommit previousCommit = currentCommit.getParent(0);
 		previousCommit = revWalk.parseCommit(previousCommit.getId());
 		revWalk.close();
-		
+
 		String filePath = null;
-		
+
 		processOneCommit(currentCommit, previousCommit, git, filePath);
 
 		git.close();
