@@ -214,10 +214,7 @@ public class GitHistoryAnalyzer {
 		for (RevCommit commit : log) {
 			commitList.addFirst(commit);
 		}
-
-		if (commitList.isEmpty())
-			throw new IllegalArgumentException(
-					"The selected file is not a repository file or the repository dose not have and commit.");
+		
 		return git;
 	}
 

@@ -88,6 +88,9 @@ public class LogWizard extends RefactoringWizard {
 			layout.numColumns = 1;
 			result.setLayout(layout);
 
+			Label logLable = new Label(result, SWT.NONE);
+			logLable.setText("Choose the log level style:");
+
 			// set up buttons.
 			this.addBooleanButton("Treat CONFIG log level as a category and not a traditional level.",
 					USE_LOG_CATEGORY_CONFIG, this.getProcessor()::setParticularConfigLogLevel, result, SWT.RADIO);
@@ -99,8 +102,8 @@ public class LogWizard extends RefactoringWizard {
 			Label separator = new Label(result, SWT.SEPARATOR | SWT.SHADOW_OUT | SWT.HORIZONTAL);
 			separator.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
 
-			Label gitLabel = new Label(result, SWT.BORDER);
-			gitLabel.setText("Check you option below if you would like to use git history to"
+			Label gitLabel = new Label(result, SWT.NONE);
+			gitLabel.setText("Check the option below if you would like to use git history to "
 					+ "rejuvenate log levels for the whole repository.");
 
 			// set up buttons.

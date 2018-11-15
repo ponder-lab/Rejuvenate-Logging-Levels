@@ -78,7 +78,7 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 	public boolean getParticularLogLevel() {
 		return this.useLogCategory;
 	}
-	
+
 	public boolean getGitHistory() {
 		return this.useGitHistory;
 	}
@@ -136,7 +136,8 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 			LogAnalyzer analyzer;
 			if (this.useGitHistory) {
 				File repoFile = getRepoFile();
-				analyzer = new LogAnalyzer(this.useGitHistory, repoFile);
+				analyzer = new LogAnalyzer(this.useLogCategoryWithConfig, this.useLogCategory, this.useGitHistory,
+						repoFile);
 			} else
 				analyzer = new LogAnalyzer(this.useLogCategoryWithConfig, this.useLogCategory);
 

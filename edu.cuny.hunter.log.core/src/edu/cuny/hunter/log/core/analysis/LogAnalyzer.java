@@ -127,7 +127,9 @@ public class LogAnalyzer extends ASTVisitor {
 		useLogCategory = useLogLevelCategory;
 	}
 
-	public LogAnalyzer(boolean useGitHistory, File repo) {
+	public LogAnalyzer(boolean useConfigLogLevelCate, boolean useLogLevelCate, boolean useGitHistory, File repo) {
+		useLogCategoryWithConfig = useConfigLogLevelCate;
+		useLogCategory = useLogLevelCate;
 		useGitHis = useGitHistory;
 		repoFile = repo;
 	}
