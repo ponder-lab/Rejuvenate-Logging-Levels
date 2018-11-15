@@ -90,9 +90,6 @@ public class GitHistoryAnalyzer {
 	/**
 	 * Given the repo path, compute all method operations (e.g., delete a method)
 	 * for all commits.
-	 * 
-	 * Example input:
-	 * "C:\\Users\\tangy\\eclipse-workspace\\Java-8-Stream-Refactoring\\.git"
 	 */
 	public static void processGitHistory(File repoFile) {
 
@@ -214,7 +211,7 @@ public class GitHistoryAnalyzer {
 		for (RevCommit commit : log) {
 			commitList.addFirst(commit);
 		}
-		
+
 		return git;
 	}
 

@@ -49,9 +49,11 @@ public class LogAnalyzer extends ASTVisitor {
 		this.test = isTest;
 	}
 
+	/**
+	 * Compute a map: a vertex of method to invocation
+	 */
 	private void computeMethodToLogInvocation() {
 		logInvocationSet.forEach(logInvocation -> {
-			System.out.println(logInvocation.getFilePath());
 			methodToLogInvocation.put(
 					new Vertex(edu.cuny.hunter.github.core.utils.Util.getMethodSignature(
 							logInvocation.getEnclosingMethodDeclaration()), logInvocation.getFilePath()),
@@ -64,6 +66,9 @@ public class LogAnalyzer extends ASTVisitor {
 		return GitHistoryAnalyzer.getGitMethods();
 	}
 
+	/**
+	 * Analyze git history, and bump the DOI.
+	 */
 	private void processHistoricalMehthods() {
 		this.computeMethodToLogInvocation();
 		Set<Vertex> currentMethodSet = methodToLogInvocation.keySet();

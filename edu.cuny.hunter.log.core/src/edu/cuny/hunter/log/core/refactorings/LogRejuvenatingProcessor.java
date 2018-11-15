@@ -123,8 +123,7 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 	 */
 	private File getRepoFile() {
 		IJavaProject javaProject = this.getJavaProjects()[0];
-		File projectFile = javaProject.getResource().getFullPath().toFile();
-		return projectFile.getParentFile();
+		return javaProject.getResource().getLocation().toFile();
 	}
 
 	@Override
