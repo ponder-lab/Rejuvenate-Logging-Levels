@@ -67,9 +67,9 @@
 	</properties>
 	<repositories>
 		<repository>
-			<id>eclipse-oxygen</id>
+			<id>eclipse-2018-09</id>
 			<layout>p2</layout>
-			<url>http://download.eclipse.org/releases/oxygen</url>
+			<url>http://download.eclipse.org/releases/2018-09</url>
 		</repository>
 		<repository>
 			<id>common-refactoring</id>
@@ -79,7 +79,7 @@
 		<repository>
 			<id>oxygen-update</id>
 			<layout>p2</layout>
-			<url>http://download.eclipse.org/eclipse/updates/4.7</url>
+			<url>http://download.eclipse.org/eclipse/updates/4.9</url>
 		</repository>
 		<repository>
 			<id>mylyn</id>
