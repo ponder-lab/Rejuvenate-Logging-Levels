@@ -42,7 +42,7 @@ public class Vertex {
 			return false;
 
 		Vertex _obj = (Vertex) obj;
-		return _obj.method == method && _obj.file == file;
+		return _obj.method.equals(method) && _obj.file.equals(file);
 	}
 
 	public String getFile() {

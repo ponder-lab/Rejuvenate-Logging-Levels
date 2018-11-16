@@ -1,7 +1,6 @@
 package edu.cuny.hunter.log.ui.wizards;
 
 import java.util.Optional;
-import java.util.Set;
 import java.util.function.Consumer;
 
 import org.eclipse.core.runtime.IProgressMonitor;

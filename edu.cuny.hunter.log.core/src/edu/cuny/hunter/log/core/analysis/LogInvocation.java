@@ -23,13 +23,14 @@ import org.eclipse.jdt.internal.corext.refactoring.structure.CompilationUnitRewr
 import org.eclipse.ltk.core.refactoring.RefactoringStatus;
 import org.eclipse.ltk.core.refactoring.RefactoringStatusContext;
 import org.osgi.framework.FrameworkUtil;
-
+import org.eclipse.mylyn.context.core.AbstractContextStructureBridge;
 import org.eclipse.mylyn.context.core.ContextCore;
 import org.eclipse.mylyn.context.core.IDegreeOfInterest;
 import org.eclipse.mylyn.context.core.IInteractionElement;
 import org.eclipse.mylyn.internal.context.core.ContextCorePlugin;
 import org.eclipse.mylyn.internal.tasks.core.TaskList;
 import org.eclipse.mylyn.internal.tasks.ui.TasksUiPlugin;
+import org.eclipse.mylyn.monitor.core.InteractionEvent;
 
 import edu.cuny.hunter.github.core.analysis.TypesOfMethodOperations;
 import edu.cuny.hunter.log.core.utils.LoggerNames;
@@ -125,7 +126,9 @@ public class LogInvocation {
 	}
 
 	public String getFilePath() {
-		return getEnclosingCompilationUnit().getJavaElement().getPath().makeAbsolute().toString();
+		String path = getEnclosingCompilationUnit().getJavaElement().getPath().makeAbsolute().toString();
+		path = path.substring(path.indexOf("/", 1) + 1);
+		return path;
 	}
 
 	/**
@@ -292,8 +295,12 @@ public class LogInvocation {
 	}
 
 	public void bumpDOI() {
-		ContextCorePlugin.getContextManager().manipulateInterestForElement(getInteractionElement(), false, false, true,
-				"", true);
+		AbstractContextStructureBridge adapter = ContextCore.getStructureBridge(getInteractionElement());
+		InteractionEvent event = new InteractionEvent(InteractionEvent.Kind.MANIPULATION, 
+				adapter.getContentType(), this.getEnclosingEclipseMethod().getHandleIdentifier(), "");
+		ContextCore.getContextManager().processInteractionEvent(event);
+		// Update doi value
+		this.degreeOfInterestValue = this.degreeOfInterest == null ? 0 : this.degreeOfInterest.getValue();
 	}
 
 }

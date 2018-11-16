@@ -85,11 +85,13 @@ public class LogAnalyzer extends ASTVisitor {
 			TypesOfMethodOperations methodOp = gitMethod.getMethodOp();
 
 			Vertex vertex = new Vertex(method, file);
-			// The method exists now
-			if (currentMethodSet.contains(vertex)) {
-				bumpDOIByVertex(vertex, methodOp);
+			LogInvocation inv = checkInCurrentMethodSet(currentMethodSet, vertex);
+
+			if (inv != null) {
+				bumpDOIByVertex(inv, methodOp);
 			} else {
 				Vertex head = null;
+				// Get the head of vertex
 				for (Vertex v : renaming.getVertices()) {
 					if (v.equals(vertex)) {
 						head = v.getHead();
@@ -99,8 +101,9 @@ public class LogAnalyzer extends ASTVisitor {
 
 				// The method exists in the graph
 				while (head != null) {
-					if (head.equals(vertex)) {
-						bumpDOIByVertex(vertex, methodOp);
+					inv = checkInCurrentMethodSet(currentMethodSet, head);
+					if (inv != null) {
+						bumpDOIByVertex(inv, methodOp);
 						break;
 					}
 					head = head.getNextVertex();
@@ -108,9 +111,18 @@ public class LogAnalyzer extends ASTVisitor {
 			}
 		}
 	}
+	
+	private LogInvocation checkInCurrentMethodSet(Set<Vertex> currentMethodSet, Vertex v) {
+		LogInvocation inv;
+		for (Vertex currentMethod : currentMethodSet)
+			if (currentMethod.equals(v)) {
+				inv = methodToLogInvocation.get(currentMethod);
+				return inv;
+			}
+		return null;
+	}
 
-	private void bumpDOIByVertex(Vertex vertex, TypesOfMethodOperations methodOp) {
-		LogInvocation logInvocation = methodToLogInvocation.get(vertex);
+	private void bumpDOIByVertex(LogInvocation logInvocation, TypesOfMethodOperations methodOp) {
 		switch (methodOp) {
 		case ADD:
 			logInvocation.setDegreeOfInterestValue(0);

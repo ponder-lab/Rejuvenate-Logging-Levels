@@ -83,16 +83,16 @@ public class GitHistoryAnalyzer {
 	private static Graph renaming = new Graph();
 
 	// the file index
-	static int commitIndex = 0;
+	private static int commitIndex = 0;
 
-	static LinkedList<RevCommit> commitList = new LinkedList<>();
+	private static LinkedList<RevCommit> commitList = new LinkedList<>();
 
 	/**
 	 * Given the repo path, compute all method operations (e.g., delete a method)
 	 * for all commits.
 	 */
 	public static void processGitHistory(File repoFile) {
-
+		initalizeLogAnalyzer();
 		Git git;
 		try {
 			git = preProcessGitHistory(repoFile);
@@ -109,17 +109,28 @@ public class GitHistoryAnalyzer {
 
 				clearFiles(new File("").getAbsoluteFile());
 
-				//// test
-				if (commitIndex >= 20)
-					break;
 			}
-
 			git.close();
 		} catch (IOException | GitAPIException e) {
 			LOGGER.warning("Cannot process git commits!");
 		}
 
 		renaming.printGraph();
+	}
+
+	/**
+	 * Clear all values.
+	 */
+	private static void initalizeLogAnalyzer() {
+
+		clear();
+		gitMethods.clear();
+		methodToMethod.clear();
+		renaming = new Graph();
+		commitIndex = 0;
+
+		commitList.clear();
+		;
 	}
 
 	/**
