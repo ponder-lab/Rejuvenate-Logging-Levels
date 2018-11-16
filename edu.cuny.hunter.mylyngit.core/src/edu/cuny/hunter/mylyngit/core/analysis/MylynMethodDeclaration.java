@@ -58,7 +58,19 @@ public class MylynMethodDeclaration {
 		return ContextCore.getContextManager().getElement(enclosingMethod.getHandleIdentifier());
 	}
 	
-
+	/**
+	 * Get DOI
+	 */
+	public IDegreeOfInterest getDegreeOfInterest() {
+		IInteractionElement interactionElement = getInteractionElement();
+		if (interactionElement == null)
+			return null;
+		return interactionElement.getInterest();
+	}
+	
+	/**
+	 * Bump DOI when there is a method change.
+	 */
 	public void bumpDOI() {
 		AbstractContextStructureBridge adapter = ContextCore.getStructureBridge(getInteractionElement());
 		InteractionEvent event = new InteractionEvent(InteractionEvent.Kind.MANIPULATION, 

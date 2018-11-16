@@ -6,7 +6,6 @@ import java.util.logging.Logger;
 import java.io.File;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.Map;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -114,15 +113,6 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 		return Messages.Name;
 	}
 
-	/**
-	 * After the user checks the option to analyze the git history, the tool should
-	 * get a repository file.
-	 */
-	private File getRepoFile() {
-		IJavaProject javaProject = this.getJavaProjects()[0];
-		return javaProject.getResource().getLocation().toFile();
-	}
-
 	@Override
 	public RefactoringStatus checkFinalConditions(final IProgressMonitor monitor, final CheckConditionsContext context)
 			throws CoreException, OperationCanceledException {
@@ -131,9 +121,7 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 
 			LogAnalyzer analyzer;
 			if (this.useGitHistory) {
-				File repoFile = getRepoFile();
-				analyzer = new LogAnalyzer(this.useLogCategoryWithConfig, this.useLogCategory, this.useGitHistory,
-						repoFile);
+				analyzer = new LogAnalyzer(this.useLogCategoryWithConfig, this.useLogCategory, this.useGitHistory);
 			} else
 				analyzer = new LogAnalyzer(this.useLogCategoryWithConfig, this.useLogCategory);
 

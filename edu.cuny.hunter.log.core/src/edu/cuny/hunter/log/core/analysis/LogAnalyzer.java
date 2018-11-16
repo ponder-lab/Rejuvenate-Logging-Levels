@@ -1,7 +1,5 @@
 package edu.cuny.hunter.log.core.analysis;
 
-import java.io.File;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Set;
@@ -14,7 +12,6 @@ import org.eclipse.jdt.core.IMethod;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.core.dom.ASTVisitor;
 import org.eclipse.jdt.core.dom.CompilationUnit;
-import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.MethodInvocation;
 import edu.cuny.hunter.log.core.messages.Messages;
 import edu.cuny.hunter.log.core.utils.LoggerNames;
@@ -34,8 +31,6 @@ public class LogAnalyzer extends ASTVisitor {
 
 	private static boolean useGitHis = false;
 
-	private static File repoFile;
-
 	private int test;
 
 	public LogAnalyzer(int isTest) {
@@ -47,11 +42,10 @@ public class LogAnalyzer extends ASTVisitor {
 		useLogCategory = useLogLevelCategory;
 	}
 
-	public LogAnalyzer(boolean useConfigLogLevelCate, boolean useLogLevelCate, boolean useGitHistory, File repo) {
+	public LogAnalyzer(boolean useConfigLogLevelCate, boolean useLogLevelCate, boolean useGitHistory) {
 		useLogCategoryWithConfig = useConfigLogLevelCate;
 		useLogCategory = useLogLevelCate;
 		useGitHis = useGitHistory;
-		repoFile = repo;
 	}
 
 	public LogAnalyzer() {
