@@ -10,5 +10,5 @@ It is developed on Eclipse for RCP and RAP, and its version is 2018-09. The down
 
 Tycho: right click on the compliation error, then click on "discover m2e connectors". You need to install all four tycho plugins.
 
-Mylyn: http://download.eclipse.org/mylyn/releases/3.23
-JGit: http://download.eclipse.org/egit/updates-nightly
+Mylyn: http://download.eclipse.org/mylyn/releases/3.23 <br/>
+JGit: http://download.eclipse.org/egit/updates-nightly <br/>
