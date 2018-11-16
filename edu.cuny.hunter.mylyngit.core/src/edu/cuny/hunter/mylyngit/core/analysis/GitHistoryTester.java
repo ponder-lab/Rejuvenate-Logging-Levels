@@ -1,4 +1,4 @@
-package edu.cuny.hunter.github.core.analysis;
+package edu.cuny.hunter.mylyngit.core.analysis;
 
 import org.junit.Test;
 

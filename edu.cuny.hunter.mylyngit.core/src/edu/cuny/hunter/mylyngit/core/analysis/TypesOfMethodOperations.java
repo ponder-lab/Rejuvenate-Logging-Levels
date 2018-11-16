@@ -1,4 +1,4 @@
-package edu.cuny.hunter.github.core.analysis;
+package edu.cuny.hunter.mylyngit.core.analysis;
 
 public enum TypesOfMethodOperations {
 	ADD, // add a method

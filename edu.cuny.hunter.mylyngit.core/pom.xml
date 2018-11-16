@@ -12,7 +12,7 @@
 		<version>1.0.0</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
-	<artifactId>edu.cuny.hunter.log.github</artifactId>
+	<artifactId>edu.cuny.hunter.mylyngit.core</artifactId>
 	<packaging>eclipse-plugin</packaging>
 
 </project>

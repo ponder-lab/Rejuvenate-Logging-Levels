@@ -1,6 +1,6 @@
-package edu.cuny.hunter.github.core.utils;
+package edu.cuny.hunter.mylyngit.core.utils;
 
-import edu.cuny.hunter.github.core.analysis.TypesOfMethodOperations;
+import edu.cuny.hunter.mylyngit.core.analysis.TypesOfMethodOperations;
 
 public class GitMethod {
 

@@ -1,7 +1,7 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Core
-Bundle-SymbolicName: edu.cuny.hunter.log.github;singleton:=true
+Bundle-SymbolicName: edu.cuny.hunter.mylyngit.core;singleton:=true
 Bundle-Version: 1.0.0.qualifier
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Require-Bundle: org.apache.log4j;bundle-version="1.2.15",
@@ -12,7 +12,7 @@ Require-Bundle: org.apache.log4j;bundle-version="1.2.15",
  org.eclipse.jgit;bundle-version="4.9.2"
 Import-Package: org.eclipse.core.runtime;version="3.5.0",
  org.eclipse.jdt.core.dom
-Export-Package: edu.cuny.hunter.github.core.analysis,
- edu.cuny.hunter.github.core.utils
-Automatic-Module-Name: edu.cuny.hunter.log.github
+Export-Package: edu.cuny.hunter.mylyngit.core.analysis,
+ edu.cuny.hunter.mylyngit.core.utils
+Automatic-Module-Name: edu.cuny.hunter.git
 Bundle-ClassPath: .

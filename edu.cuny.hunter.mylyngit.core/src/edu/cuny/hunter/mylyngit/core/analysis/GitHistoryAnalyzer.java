@@ -1,4 +1,4 @@
-package edu.cuny.hunter.github.core.analysis;
+package edu.cuny.hunter.mylyngit.core.analysis;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
@@ -51,11 +51,11 @@ import org.eclipse.jgit.treewalk.EmptyTreeIterator;
 import org.eclipse.jgit.treewalk.TreeWalk;
 import org.eclipse.jgit.treewalk.filter.PathFilter;
 
-import edu.cuny.hunter.github.core.utils.Util;
-import edu.cuny.hunter.github.core.utils.Edge;
-import edu.cuny.hunter.github.core.utils.GitMethod;
-import edu.cuny.hunter.github.core.utils.Graph;
-import edu.cuny.hunter.github.core.utils.Vertex;
+import edu.cuny.hunter.mylyngit.core.utils.Edge;
+import edu.cuny.hunter.mylyngit.core.utils.GitMethod;
+import edu.cuny.hunter.mylyngit.core.utils.Graph;
+import edu.cuny.hunter.mylyngit.core.utils.Util;
+import edu.cuny.hunter.mylyngit.core.utils.Vertex;
 
 @SuppressWarnings("restriction")
 public class GitHistoryAnalyzer {

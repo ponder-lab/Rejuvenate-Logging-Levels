@@ -1,4 +1,4 @@
-package edu.cuny.hunter.github.core.utils;
+package edu.cuny.hunter.mylyngit.core.utils;
 
 import java.io.FileWriter;
 import java.io.IOException;
