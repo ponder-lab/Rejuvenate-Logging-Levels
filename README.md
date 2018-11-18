@@ -12,3 +12,6 @@ Tycho: right click on the compliation error, then click on "discover m2e connect
 
 Mylyn: http://download.eclipse.org/mylyn/releases/3.23 <br/>
 JGit: http://download.eclipse.org/egit/updates-nightly <br/>
+
+The Common Refactoring Framework that the current tool uses requires Eclipse SDK, Eclipse SDK Tests, and Eclipse testing framework. Input 
+"<b>The Eclipse Project Updates - http://download.eclipse.org/eclipse/updates/4.9 </b>" in the field of "Work with" after you clicked on the "Install New Software..." menu option under "Help" in Eclipse, then please check and install the three software mentioned above.
