@@ -7,6 +7,11 @@ It's an eclipse plugin which researches logging level.
 It is developed on Eclipse for RCP and RAP, and its version is 2018-09. The download page: https://www.eclipse.org/downloads/packages/release/kepler/sr2/eclipse-rcp-and-rap-developers 
 
 ## Dependencies
-Mylyn: http://download.eclipse.org/mylyn/releases/3.23
-JGit: http://download.eclipse.org/egit/updates-nightly
-Xtext: http://download.eclipse.org/modeling/tmf/xtext/updates/composite/releases/
+
+Tycho: right click on the compliation error, then click on "discover m2e connectors". You need to install all four tycho plugins.
+
+Mylyn: http://download.eclipse.org/mylyn/releases/3.23 <br/>
+JGit: http://download.eclipse.org/egit/updates-nightly <br/>
+
+The Common Refactoring Framework that the current tool uses requires Eclipse SDK, Eclipse SDK Tests, and Eclipse testing framework. Input 
+"<b>The Eclipse Project Updates - http://download.eclipse.org/eclipse/updates/4.9 </b>" in the field of "Work with" after you clicked on the "Install New Software..." menu option under "Help" in Eclipse, then please check and install the three software mentioned above.
