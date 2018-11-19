@@ -2,6 +2,11 @@ package edu.cuny.hunter.mylyngit.core.utils;
 
 import edu.cuny.hunter.mylyngit.core.analysis.TypesOfMethodOperations;
 
+/**
+ * Each instance represents an method in the git history.
+ * @author tangy
+ *
+ */
 public class GitMethod {
 
 	String methodSignature;

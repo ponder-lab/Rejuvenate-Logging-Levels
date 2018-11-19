@@ -30,7 +30,6 @@ import org.eclipse.jdt.internal.corext.refactoring.changes.DynamicValidationRefa
 import org.eclipse.jdt.internal.corext.refactoring.structure.CompilationUnitRewrite;
 import org.eclipse.jdt.internal.corext.refactoring.util.TextEditBasedChangeManager;
 import edu.cuny.citytech.refactoring.common.core.RefactoringProcessor;
-import edu.cuny.hunter.github.core.utils.GitMethod;
 import edu.cuny.hunter.log.core.analysis.Action;
 import edu.cuny.hunter.log.core.analysis.LogAnalyzer;
 import edu.cuny.hunter.log.core.analysis.LogInvocation;
@@ -52,8 +51,6 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 	private boolean useLogCategory = false;
 
 	private boolean useGitHistory = false;
-
-	private static LinkedList<GitMethod> gitMethods = new LinkedList<>();
 
 	public LogRejuvenatingProcessor(final CodeGenerationSettings settings) {
 		super(settings);
@@ -160,7 +157,6 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 			analyzer.analyze();
 
 			this.setLogInvocationSet(analyzer.getLogInvocationSet());
-			this.setGitMethods(gitMethods);
 
 			// get the status of each log invocation.
 			RefactoringStatus collectedStatus = this.getLogInvocationSet().stream().map(LogInvocation::getStatus)
@@ -181,14 +177,6 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 		} finally {
 			monitor.done();
 		}
-	}
-
-	public void setGitMethods(LinkedList<GitMethod> gitMethods) {
-		this.gitMethods = gitMethods;
-	}
-
-	public LinkedList<GitMethod> getGitMethods() {
-		return this.gitMethods;
 	}
 
 	/**

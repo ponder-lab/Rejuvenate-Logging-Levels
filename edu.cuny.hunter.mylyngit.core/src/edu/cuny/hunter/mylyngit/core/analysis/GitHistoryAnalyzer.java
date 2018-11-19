@@ -63,35 +63,35 @@ public class GitHistoryAnalyzer {
 	private static final Logger LOGGER = Logger.getLogger(Util.LOGGER_NAME);
 
 	// Set of method declarations
-	private static HashSet<MethodDeclaration> methodDeclarationsForA = new HashSet<MethodDeclaration>();
-	private static HashSet<MethodDeclaration> methodDeclarationsForB = new HashSet<MethodDeclaration>();
+	private HashSet<MethodDeclaration> methodDeclarationsForA = new HashSet<MethodDeclaration>();
+	private HashSet<MethodDeclaration> methodDeclarationsForB = new HashSet<MethodDeclaration>();
 
-	private static HashMap<MethodDeclaration, Map<Integer, Integer>> methodPositionsForA = new HashMap<>();
-	private static HashMap<MethodDeclaration, Map<Integer, Integer>> methodPositionsForB = new HashMap<>();
+	private HashMap<MethodDeclaration, Map<Integer, Integer>> methodPositionsForA = new HashMap<>();
+	private HashMap<MethodDeclaration, Map<Integer, Integer>> methodPositionsForB = new HashMap<>();
 
-	private static HashMap<Integer, HashSet<MethodDeclaration>> editToMethodDeclarationForA = new HashMap<>();
-	private static HashMap<Integer, HashSet<MethodDeclaration>> editToMethodDeclarationForB = new HashMap<>();
+	private HashMap<Integer, HashSet<MethodDeclaration>> editToMethodDeclarationForA = new HashMap<>();
+	private HashMap<Integer, HashSet<MethodDeclaration>> editToMethodDeclarationForB = new HashMap<>();
 
 	// A mapping from the method signature to the operations
-	private static HashMap<String, LinkedList<TypesOfMethodOperations>> methodSignaturesToOps = new HashMap<>();
+	private HashMap<String, LinkedList<TypesOfMethodOperations>> methodSignaturesToOps = new HashMap<>();
 
-	private static LinkedList<GitMethod> gitMethods = new LinkedList<>();
+	private LinkedList<GitMethod> gitMethods = new LinkedList<>();
 
 	// The old method in the revision A and the new method in the revision B
-	private static HashMap<String, String> methodToMethod = new HashMap<>();
+	private HashMap<String, String> methodToMethod = new HashMap<>();
 
-	private static Graph renaming = new Graph();
+	private Graph renaming = new Graph();
 
 	// the file index
-	private static int commitIndex = 0;
+	private int commitIndex = 0;
 
-	private static LinkedList<RevCommit> commitList = new LinkedList<>();
+	private LinkedList<RevCommit> commitList = new LinkedList<>();
 
 	/**
 	 * Given the repo path, compute all method operations (e.g., delete a method)
 	 * for all commits.
 	 */
-	public static void processGitHistory(File repoFile) {
+	public void processGitHistory(File repoFile) {
 		initalizeLogAnalyzer();
 		Git git;
 		try {
@@ -100,37 +100,35 @@ public class GitHistoryAnalyzer {
 			String filePath = null;
 
 			// from the earliest commit to the current commit
-			for (RevCommit currentCommit : commitList) {
+			for (RevCommit currentCommit : this.commitList) {
 
 				processOneCommit(currentCommit, previousCommit, git, filePath);
 				previousCommit = currentCommit;
 
-				commitIndex++;
+				this.commitIndex++;
 
 				clearFiles(new File("").getAbsoluteFile());
-
 			}
 			git.close();
 		} catch (IOException | GitAPIException e) {
 			LOGGER.warning("Cannot process git commits!");
 		}
 
-		renaming.printGraph();
+		this.renaming.printGraph();
 	}
 
 	/**
 	 * Clear all values.
 	 */
-	private static void initalizeLogAnalyzer() {
+	private void initalizeLogAnalyzer() {
 
-		clear();
-		gitMethods.clear();
-		methodToMethod.clear();
-		renaming = new Graph();
-		commitIndex = 0;
+		this.clear();
+		this.gitMethods.clear();
+		this.methodToMethod.clear();
+		this.renaming = new Graph();
+		this.commitIndex = 0;
 
-		commitList.clear();
-		;
+		this.commitList.clear();
 	}
 
 	/**
@@ -139,7 +137,7 @@ public class GitHistoryAnalyzer {
 	 * @throws IOException
 	 * @throws GitAPIException
 	 */
-	public static void processOneCommit(RevCommit currentCommit, RevCommit previousCommit, Git git, String filePath)
+	public void processOneCommit(RevCommit currentCommit, RevCommit previousCommit, Git git, String filePath)
 			throws IOException, GitAPIException {
 		AbstractTreeIterator oldTreeIterator;
 		if (previousCommit != null) {
@@ -183,51 +181,51 @@ public class GitHistoryAnalyzer {
 		}
 	}
 
-	public static LinkedList<GitMethod> getGitMethods() {
-		return gitMethods;
+	public LinkedList<GitMethod> getGitMethods() {
+		return this.gitMethods;
 	}
 
 	/**
 	 * Rename or copy a file in a commit.
 	 */
-	public static String renameOrCopyFile(RevCommit currentCommit, Repository repo, DiffEntry diffEntry)
+	public String renameOrCopyFile(RevCommit currentCommit, Repository repo, DiffEntry diffEntry)
 			throws MissingObjectException, IncorrectObjectTypeException, CorruptObjectException, IOException {
 		copyHistoricalFile(currentCommit, repo, diffEntry.getNewPath(), "tmp_B_");
-		methodDeclarationsForB.forEach(methodDec -> {
+		this.methodDeclarationsForB.forEach(methodDec -> {
 			// add vertex
 			Vertex vertex1 = new Vertex(Util.getMethodSignature(methodDec), diffEntry.getOldPath());
-			renaming.addVertex(vertex1);
+			this.renaming.addVertex(vertex1);
 			// add vertex
 			Vertex vertex2 = new Vertex(Util.getMethodSignature(methodDec), diffEntry.getNewPath());
-			renaming.addVertex(vertex2);
+			this.renaming.addVertex(vertex2);
 			// add edge
-			renaming.addEdge(new Edge(vertex1, vertex2));
+			this.renaming.addEdge(new Edge(vertex1, vertex2));
 		});
 		return diffEntry.getNewPath();
 	}
 
-	public static Graph getRenaming() {
-		return renaming;
+	public Graph getRenaming() {
+		return this.renaming;
 	}
 
 	/**
 	 * Get git and git commits.
 	 */
-	private static Git preProcessGitHistory(File repoFile) throws IOException, NoHeadException, GitAPIException {
+	private Git preProcessGitHistory(File repoFile) throws IOException, NoHeadException, GitAPIException {
 
 		Git git = Git.init().setDirectory(repoFile).call();
 
 		Iterable<RevCommit> log = git.log().call();
 
 		for (RevCommit commit : log) {
-			commitList.addFirst(commit);
+			this.commitList.addFirst(commit);
 		}
 
 		return git;
 	}
 
-	private static String modifyFile(RevCommit currentCommit, RevCommit previousCommit, Repository repo,
-			DiffEntry diffEntry, DiffFormatter formatter)
+	private String modifyFile(RevCommit currentCommit, RevCommit previousCommit, Repository repo, DiffEntry diffEntry,
+			DiffFormatter formatter)
 			throws MissingObjectException, IncorrectObjectTypeException, CorruptObjectException, IOException {
 
 		FileHeader fileHeader = formatter.toFileHeader(diffEntry);
@@ -238,10 +236,10 @@ public class GitHistoryAnalyzer {
 		copyHistoricalFile(currentCommit, repo, diffEntry.getNewPath(), "tmp_B_");
 
 		// For deleting, get the differences
-		computeMethodPositions(methodDeclarationsForA, methodPositionsForA);
+		computeMethodPositions(this.methodDeclarationsForA, this.methodPositionsForA);
 
 		// For adding, get the differences
-		computeMethodPositions(methodDeclarationsForB, methodPositionsForB);
+		computeMethodPositions(this.methodDeclarationsForB, this.methodPositionsForB);
 
 		List<? extends HunkHeader> hunks = fileHeader.getHunks();
 		int editId = 0;
@@ -251,10 +249,10 @@ public class GitHistoryAnalyzer {
 				// For each pair of edit
 				for (Edit edit : editList) {
 					editId++;
-					mapEditToMethod(editId, edit.getBeginA(), edit.getEndA(), methodPositionsForA,
-							editToMethodDeclarationForA);
-					mapEditToMethod(editId, edit.getBeginB(), edit.getEndB(), methodPositionsForB,
-							editToMethodDeclarationForB);
+					mapEditToMethod(editId, edit.getBeginA(), edit.getEndA(), this.methodPositionsForA,
+							this.editToMethodDeclarationForA);
+					mapEditToMethod(editId, edit.getBeginB(), edit.getEndB(), this.methodPositionsForB,
+							this.editToMethodDeclarationForB);
 
 				}
 				;
@@ -270,12 +268,13 @@ public class GitHistoryAnalyzer {
 	/**
 	 * Add a file in a commit.
 	 */
-	private static String addFile(RevCommit currentCommit, Repository repo, DiffEntry diffEntry)
+	private String addFile(RevCommit currentCommit, Repository repo, DiffEntry diffEntry)
 			throws MissingObjectException, IncorrectObjectTypeException, CorruptObjectException, IOException {
 		// Get the file for revision B
 		copyHistoricalFile(currentCommit, repo, diffEntry.getNewPath(), "tmp_B_");
-		methodDeclarationsForB.forEach(methodDec -> {
-			putIntoMethodToOps(methodSignaturesToOps, Util.getMethodSignature(methodDec), TypesOfMethodOperations.ADD);
+		this.methodDeclarationsForB.forEach(methodDec -> {
+			putIntoMethodToOps(this.methodSignaturesToOps, Util.getMethodSignature(methodDec),
+					TypesOfMethodOperations.ADD);
 		});
 		return diffEntry.getNewPath();
 	}
@@ -283,15 +282,15 @@ public class GitHistoryAnalyzer {
 	/**
 	 * Delete a file in a commit;
 	 */
-	private static String deleteFile(RevCommit previousCommit, Repository repo, DiffEntry diffEntry)
+	private String deleteFile(RevCommit previousCommit, Repository repo, DiffEntry diffEntry)
 			throws MissingObjectException, IncorrectObjectTypeException, CorruptObjectException, IOException {
 		// Get the file for revision A
 		copyHistoricalFile(previousCommit, repo, diffEntry.getOldPath(), "tmp_A_");
-		methodDeclarationsForA.forEach(methodDec -> {
-			putIntoMethodToOps(methodSignaturesToOps, Util.getMethodSignature(methodDec),
+		this.methodDeclarationsForA.forEach(methodDec -> {
+			putIntoMethodToOps(this.methodSignaturesToOps, Util.getMethodSignature(methodDec),
 					TypesOfMethodOperations.DELETE);
 
-			Set<Vertex> exitVertices = renaming.getExitVertices();
+			Set<Vertex> exitVertices = this.renaming.getExitVertices();
 			Vertex entry = null;
 			for (Vertex v : exitVertices) {
 				if (v.getFile().equals(diffEntry.getOldPath())
@@ -303,7 +302,7 @@ public class GitHistoryAnalyzer {
 			while (entry != null) {
 				Vertex tmp = entry;
 				entry = entry.getNextVertex();
-				renaming.removeVertex(tmp);
+				this.renaming.removeVertex(tmp);
 			}
 		});
 		return diffEntry.getOldPath();
@@ -312,17 +311,17 @@ public class GitHistoryAnalyzer {
 	/**
 	 * Print all method operations into CSV file
 	 */
-	private static void storeAllMethodOps(RevCommit commit, String path, String fileOp) {
-		methodSignaturesToOps.forEach((methodSig, ops) -> {
+	private void storeAllMethodOps(RevCommit commit, String path, String fileOp) {
+		this.methodSignaturesToOps.forEach((methodSig, ops) -> {
 			for (TypesOfMethodOperations op : ops)
-				gitMethods.add(new GitMethod(methodSig, op, path, fileOp, commitIndex, commit.name()));
+				this.gitMethods.add(new GitMethod(methodSig, op, path, fileOp, commitIndex, commit.name()));
 		});
 	}
 
 	/**
 	 * Check whether a directory is a temporary directory.
 	 */
-	private static boolean isTemporaryDirectory(File directory) {
+	private boolean isTemporaryDirectory(File directory) {
 		if (directory.getName().length() >= 7 && directory.getName().substring(0, 4).equals("tmp_"))
 			return true;
 		else
@@ -332,7 +331,7 @@ public class GitHistoryAnalyzer {
 	/**
 	 * Remove all temporary files
 	 */
-	private static boolean clearFiles(File directory) {
+	private boolean clearFiles(File directory) {
 		if (directory.exists()) {
 			File[] files = directory.listFiles();
 			if (null != files) {
@@ -350,7 +349,7 @@ public class GitHistoryAnalyzer {
 		return (directory.delete());
 	}
 
-	public static void testMethods(String sha) throws IOException, GitAPIException {
+	public void testMethods(String sha) throws IOException, GitAPIException {
 
 		Repository repo = new FileRepository("C:\\Users\\tangy\\logging-workspace\\Log-Git-Test\\.git");
 
@@ -374,20 +373,20 @@ public class GitHistoryAnalyzer {
 	/**
 	 * Clear all sets and maps.
 	 */
-	public static void clear() {
-		methodDeclarationsForA.clear();
-		methodDeclarationsForB.clear();
-		methodPositionsForA.clear();
-		methodPositionsForB.clear();
-		editToMethodDeclarationForA.clear();
-		editToMethodDeclarationForB.clear();
-		methodSignaturesToOps.clear();
+	public void clear() {
+		this.methodDeclarationsForA.clear();
+		this.methodDeclarationsForB.clear();
+		this.methodPositionsForA.clear();
+		this.methodPositionsForB.clear();
+		this.editToMethodDeclarationForA.clear();
+		this.editToMethodDeclarationForB.clear();
+		this.methodSignaturesToOps.clear();
 	}
 
 	/**
 	 * Compute the start position and end position of a method.
 	 */
-	private static void computeMethodPositions(HashSet<MethodDeclaration> methodDeclarations,
+	private void computeMethodPositions(HashSet<MethodDeclaration> methodDeclarations,
 			HashMap<MethodDeclaration, Map<Integer, Integer>> methodPositions) {
 
 		for (MethodDeclaration methodDeclaration : methodDeclarations) {
@@ -400,7 +399,7 @@ public class GitHistoryAnalyzer {
 	/**
 	 * Map line number to method
 	 */
-	private static void mapEditToMethod(int editId, int editStart, int editEnd,
+	private void mapEditToMethod(int editId, int editStart, int editEnd,
 			HashMap<MethodDeclaration, Map<Integer, Integer>> methodPositions,
 			HashMap<Integer, HashSet<MethodDeclaration>> editToMethodDeclaration) {
 		for (int line = editStart + 1; line <= editEnd; ++line) {
@@ -412,8 +411,7 @@ public class GitHistoryAnalyzer {
 	}
 
 	// Given a line, add its corresponding method into editToMethodDeclaration
-	private static void addCorrespondingMethod(int editId,
-			HashMap<MethodDeclaration, Map<Integer, Integer>> methodPositions,
+	private void addCorrespondingMethod(int editId, HashMap<MethodDeclaration, Map<Integer, Integer>> methodPositions,
 			HashMap<Integer, HashSet<MethodDeclaration>> editToMethodDeclaration, int line) {
 		methodPositions.forEach((methodDeclaration, positions) -> {
 			int start = positions.keySet().iterator().next();
@@ -444,7 +442,7 @@ public class GitHistoryAnalyzer {
 				.getLineNumber(methodDeclaration.getStartPosition() + methodDeclaration.getLength()));
 	}
 
-	private static AbstractTreeIterator getCanonicalTreeParser(ObjectId commitId, Repository repo) throws IOException {
+	private AbstractTreeIterator getCanonicalTreeParser(ObjectId commitId, Repository repo) throws IOException {
 		try (RevWalk walk = new RevWalk(repo)) {
 			RevCommit commit = walk.parseCommit(commitId);
 			ObjectId treeId = commit.getTree().getId();
@@ -459,7 +457,7 @@ public class GitHistoryAnalyzer {
 	 * it into a new file.
 	 */
 	@SuppressWarnings("resource")
-	private static void copyHistoricalFile(RevCommit commit, Repository repo, String path, String newDirectory)
+	private void copyHistoricalFile(RevCommit commit, Repository repo, String path, String newDirectory)
 			throws MissingObjectException, IncorrectObjectTypeException, CorruptObjectException, IOException {
 		RevTree tree = commit.getTree();
 		TreeWalk treeWalk = new TreeWalk(repo);
@@ -474,7 +472,7 @@ public class GitHistoryAnalyzer {
 		copyToFile(loader, path, newDirectory);
 	}
 
-	private static void copyToFile(ObjectLoader loader, String path, String newDirectory) throws IOException {
+	private void copyToFile(ObjectLoader loader, String path, String newDirectory) throws IOException {
 		// Get the empty or existing file in the new directory.
 		File file = getFile(path, newDirectory);
 		if (file == null)
@@ -494,7 +492,7 @@ public class GitHistoryAnalyzer {
 	/**
 	 * Get the file in the new directory.
 	 */
-	private static File getFile(String path, String newDirectory) throws IOException {
+	private File getFile(String path, String newDirectory) throws IOException {
 		String fileName = getJavaFileName(path);
 		if (fileName == null)
 			return null;
@@ -513,7 +511,7 @@ public class GitHistoryAnalyzer {
 	/**
 	 * Get a java file name. If it returns null, the file is not a Java file.
 	 */
-	private static String getJavaFileName(String path) {
+	private String getJavaFileName(String path) {
 		// Only need to consider java files here.
 		if (!path.contains(".java"))
 			return null;
@@ -542,7 +540,7 @@ public class GitHistoryAnalyzer {
 	/**
 	 * Return a set of A-B.
 	 */
-	private static HashSet<String> getAdditionalMethods(HashSet<String> methodSignaturesSetA,
+	private HashSet<String> getAdditionalMethods(HashSet<String> methodSignaturesSetA,
 			HashSet<String> methodSignaturesSetB) {
 		HashSet<String> additionalMethods = new HashSet<>();
 		additionalMethods.addAll(methodSignaturesSetA);
@@ -554,7 +552,7 @@ public class GitHistoryAnalyzer {
 	 * Given a set of method signatures, get its corresponding set of method
 	 * declarations.
 	 */
-	private static HashSet<MethodDeclaration> getSetOfMethodDeclaration(HashSet<MethodDeclaration> methodsDecs,
+	private HashSet<MethodDeclaration> getSetOfMethodDeclaration(HashSet<MethodDeclaration> methodsDecs,
 			HashSet<String> methodSigs) {
 		HashSet<MethodDeclaration> methodDeclarations = new HashSet<>();
 		methodsDecs.forEach(method -> {
@@ -569,26 +567,26 @@ public class GitHistoryAnalyzer {
 	 * The core method to return a list of methods and their operation types for one
 	 * file.
 	 */
-	private static void computeMethodChanges(String file) {
-		HashSet<String> methodSignaturesForEditsA = getMethodSignatures(editToMethodDeclarationForA.values());
-		HashSet<String> methodSignaturesForEditsB = getMethodSignatures(editToMethodDeclarationForB.values());
+	private void computeMethodChanges(String file) {
+		HashSet<String> methodSignaturesForEditsA = getMethodSignatures(this.editToMethodDeclarationForA.values());
+		HashSet<String> methodSignaturesForEditsB = getMethodSignatures(this.editToMethodDeclarationForB.values());
 
 		HashSet<String> additionalMethodInB = getAdditionalMethods(methodSignaturesForEditsB,
 				methodSignaturesForEditsA);
 
-		HashSet<MethodDeclaration> additionalMethodDecInB = getSetOfMethodDeclaration(methodDeclarationsForB,
+		HashSet<MethodDeclaration> additionalMethodDecInB = getSetOfMethodDeclaration(this.methodDeclarationsForB,
 				additionalMethodInB);
 
 		// Iterate over edits. Each edit should be counted as an event
-		editToMethodDeclarationForA.forEach((editIdForA, methodsInOneEditA) -> {
+		this.editToMethodDeclarationForA.forEach((editIdForA, methodsInOneEditA) -> {
 
 			for (MethodDeclaration methodForA : methodsInOneEditA) {
 				String methodSig = Util.getMethodSignature(methodForA);
 
 				// Modify method body, or rename parameters
 				if (methodSignaturesForEditsB.contains(methodSig)) {
-					putIntoMethodToOps(methodSignaturesToOps, methodSig, TypesOfMethodOperations.CHANGE);
-				} else if (methodToMethod.keySet().contains(methodSig)) {
+					putIntoMethodToOps(this.methodSignaturesToOps, methodSig, TypesOfMethodOperations.CHANGE);
+				} else if (this.methodToMethod.keySet().contains(methodSig)) {
 					putIntoMethodToOps(methodSignaturesToOps, methodToMethod.get(methodSig),
 							TypesOfMethodOperations.CHANGE);
 				} else {
@@ -600,7 +598,7 @@ public class GitHistoryAnalyzer {
 					if (targetMethodDec != null) {
 						process(targetMethodDec, additionalMethodDecInB, additionalMethodInB,
 								TypesOfMethodOperations.CHANGEPARAMETER);
-						methodToMethod.put(methodSig, Util.getMethodSignature(targetMethodDec));
+						this.methodToMethod.put(methodSig, Util.getMethodSignature(targetMethodDec));
 						break;
 					}
 
@@ -610,11 +608,11 @@ public class GitHistoryAnalyzer {
 						process(targetMethodDec, additionalMethodDecInB, additionalMethodInB,
 								TypesOfMethodOperations.RENAME);
 						addVertexIntoGraph(Util.getMethodSignature(targetMethodDec), methodSig, file);
-						methodToMethod.put(methodSig, Util.getMethodSignature(targetMethodDec));
+						this.methodToMethod.put(methodSig, Util.getMethodSignature(targetMethodDec));
 						break;
 					}
 
-					putIntoMethodToOps(methodSignaturesToOps, methodSig, TypesOfMethodOperations.DELETE);
+					putIntoMethodToOps(this.methodSignaturesToOps, methodSig, TypesOfMethodOperations.DELETE);
 				}
 
 			}
@@ -622,10 +620,11 @@ public class GitHistoryAnalyzer {
 		});
 
 		additionalMethodDecInB.forEach(methodDec -> {
-			putIntoMethodToOps(methodSignaturesToOps, Util.getMethodSignature(methodDec), TypesOfMethodOperations.ADD);
+			putIntoMethodToOps(this.methodSignaturesToOps, Util.getMethodSignature(methodDec),
+					TypesOfMethodOperations.ADD);
 		});
 
-		methodSignaturesToOps.forEach((methodSig, ops) -> {
+		this.methodSignaturesToOps.forEach((methodSig, ops) -> {
 			System.out.println(methodSig + ": " + ops);
 		});
 
@@ -634,23 +633,23 @@ public class GitHistoryAnalyzer {
 	/**
 	 * Add a vertex into the graph
 	 */
-	private static void addVertexIntoGraph(String targetMethodSig, String oldMethodSig, String file) {
+	private void addVertexIntoGraph(String targetMethodSig, String oldMethodSig, String file) {
 		// add vertex
 		Vertex vertex1 = new Vertex(targetMethodSig, file);
-		renaming.addVertex(vertex1);
+		this.renaming.addVertex(vertex1);
 		// add vertex
 		Vertex vertex2 = new Vertex(oldMethodSig, file);
-		renaming.addVertex(vertex2);
+		this.renaming.addVertex(vertex2);
 		// add edge
-		renaming.addEdge(new Edge(vertex1, vertex2));
+		this.renaming.addEdge(new Edge(vertex1, vertex2));
 	}
 
 	/**
 	 * Store target method declaration and remove it in the difference set.
 	 */
-	private static void process(MethodDeclaration targetMethodDec, HashSet<MethodDeclaration> additionalMethodDecInB,
+	private void process(MethodDeclaration targetMethodDec, HashSet<MethodDeclaration> additionalMethodDecInB,
 			HashSet<String> additionalMethodInB, TypesOfMethodOperations op) {
-		putIntoMethodToOps(methodSignaturesToOps, Util.getMethodSignature(targetMethodDec), op);
+		putIntoMethodToOps(this.methodSignaturesToOps, Util.getMethodSignature(targetMethodDec), op);
 		String tagetMethodSig = Util.getMethodSignature(targetMethodDec);
 		additionalMethodDecInB.remove(targetMethodDec);
 		additionalMethodInB.remove(tagetMethodSig);
@@ -659,7 +658,7 @@ public class GitHistoryAnalyzer {
 	/**
 	 * Check whether the two methods have the same parameter types.
 	 */
-	private static boolean isSameParameterType(MethodDeclaration methodA, MethodDeclaration methodB) {
+	private boolean isSameParameterType(MethodDeclaration methodA, MethodDeclaration methodB) {
 		List<SingleVariableDeclaration> parametersA = methodA.parameters();
 		List<SingleVariableDeclaration> parametersB = methodB.parameters();
 		int index = 0;
@@ -677,7 +676,7 @@ public class GitHistoryAnalyzer {
 	 * Get the method when the number of parameter is changed or parameters' type is
 	 * changed.
 	 */
-	private static MethodDeclaration getMethodWithParameterChanged(MethodDeclaration methodForA,
+	private MethodDeclaration getMethodWithParameterChanged(MethodDeclaration methodForA,
 			HashSet<MethodDeclaration> additionalMethodDecInB) {
 		// Parameters are modified
 		MethodDeclaration targetMethodDec = null;
@@ -697,7 +696,7 @@ public class GitHistoryAnalyzer {
 	/**
 	 * Get the method when the method is renamed.
 	 */
-	private static MethodDeclaration getMethodWithMethodNameChanged(MethodDeclaration methodForA,
+	private MethodDeclaration getMethodWithMethodNameChanged(MethodDeclaration methodForA,
 			HashSet<MethodDeclaration> additionalMethodDecInB) {
 		// Parameters are modified
 		MethodDeclaration targetMethodDec = null;
@@ -733,7 +732,7 @@ public class GitHistoryAnalyzer {
 	/**
 	 * Add an element into the map methodSignaturesToOps
 	 */
-	private static void putIntoMethodToOps(HashMap<String, LinkedList<TypesOfMethodOperations>> map, String key,
+	private void putIntoMethodToOps(HashMap<String, LinkedList<TypesOfMethodOperations>> map, String key,
 			TypesOfMethodOperations element) {
 		LinkedList<TypesOfMethodOperations> list = new LinkedList<>();
 		if (map.containsKey(key)) {
@@ -746,7 +745,7 @@ public class GitHistoryAnalyzer {
 	/**
 	 * Returns all method signatures for all edits in one file.
 	 */
-	private static HashSet<String> getMethodSignatures(Collection<HashSet<MethodDeclaration>> methodDeclarations) {
+	private HashSet<String> getMethodSignatures(Collection<HashSet<MethodDeclaration>> methodDeclarations) {
 		HashSet<String> methodSignatures = new HashSet<String>();
 		methodDeclarations.forEach(methodDecSet -> {
 			methodDecSet.forEach(methodDec -> {
@@ -759,7 +758,7 @@ public class GitHistoryAnalyzer {
 	/**
 	 * Parse a Java file, and let visitor to visit declaring methods.
 	 */
-	private static void parseJavaFile(File file, String fileContent, String newDirectory) throws IOException {
+	private void parseJavaFile(File file, String fileContent, String newDirectory) throws IOException {
 		ASTParser parser = ASTParser.newParser(AST.JLS8);
 		parser.setResolveBindings(true);
 		parser.setSource(fileContent.toCharArray());
@@ -778,8 +777,8 @@ public class GitHistoryAnalyzer {
 		});
 	}
 
-	public static HashMap<String, LinkedList<TypesOfMethodOperations>> getMethodSignaturesToOps() {
-		return methodSignaturesToOps;
+	public HashMap<String, LinkedList<TypesOfMethodOperations>> getMethodSignaturesToOps() {
+		return this.methodSignaturesToOps;
 	}
 
 }

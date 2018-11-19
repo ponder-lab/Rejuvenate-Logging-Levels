@@ -29,7 +29,6 @@ import org.eclipse.ui.handlers.HandlerUtil;
 import org.osgi.framework.FrameworkUtil;
 
 import edu.cuny.citytech.refactoring.common.core.RefactoringProcessor;
-import edu.cuny.hunter.github.core.utils.GitMethod;
 import edu.cuny.hunter.log.core.analysis.LogInvocation;
 import edu.cuny.hunter.log.core.analysis.PreconditionFailure;
 import edu.cuny.hunter.log.core.refactorings.LogRejuvenatingProcessor;
@@ -111,12 +110,7 @@ public class EvaluationHandler extends AbstractHandler {
 							Set<LogInvocation> logInvocationSet = logRejuvenatingProcessor.getLogInvocationSet();
 
 							if (this.useGitHistory()) {
-								LinkedList<GitMethod> gitMethods = logRejuvenatingProcessor.getGitMethods();
-								for (GitMethod gitMethod : gitMethods) {
-									methodOpsPrinter.printRecord(gitMethod.getCommitIndex(), gitMethod.getCommitName(),
-											gitMethod.getFilePath(), gitMethod.getFileOp(),
-											gitMethod.getMethodSignature(), gitMethod.getMethodOp());
-								}
+								//TODO: print the results of using git history
 							}
 
 							// get candidate log invocations

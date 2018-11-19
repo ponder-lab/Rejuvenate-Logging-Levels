@@ -16,11 +16,6 @@ import org.eclipse.jdt.core.dom.ASTVisitor;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.MethodInvocation;
-import edu.cuny.hunter.github.core.analysis.GitHistoryAnalyzer;
-import edu.cuny.hunter.github.core.analysis.TypesOfMethodOperations;
-import edu.cuny.hunter.github.core.utils.GitMethod;
-import edu.cuny.hunter.github.core.utils.Graph;
-import edu.cuny.hunter.github.core.utils.Vertex;
 import edu.cuny.hunter.log.core.messages.Messages;
 import edu.cuny.hunter.log.core.utils.LoggerNames;
 import edu.cuny.hunter.log.core.utils.Util;
@@ -30,8 +25,6 @@ public class LogAnalyzer extends ASTVisitor {
 	private static final Logger LOGGER = Logger.getLogger(LoggerNames.LOGGER_NAME);
 
 	private Set<LogInvocation> logInvocationSet = new HashSet<>();
-
-	private HashMap<Vertex, LogInvocation> methodToLogInvocation = new HashMap<>();
 
 	private static LinkedList<Float> boundary;
 
@@ -47,96 +40,6 @@ public class LogAnalyzer extends ASTVisitor {
 
 	public LogAnalyzer(int isTest) {
 		this.test = isTest;
-	}
-
-	/**
-	 * Compute a map: a vertex of method to invocation
-	 */
-	private void computeMethodToLogInvocation() {
-		logInvocationSet.forEach(logInvocation -> {
-			methodToLogInvocation.put(
-					new Vertex(edu.cuny.hunter.github.core.utils.Util.getMethodSignature(
-							logInvocation.getEnclosingMethodDeclaration()), logInvocation.getFilePath()),
-					logInvocation);
-		});
-	}
-
-	// Should be called after analyze()
-	private LinkedList<GitMethod> getGitMethods() {
-		return GitHistoryAnalyzer.getGitMethods();
-	}
-
-	/**
-	 * Analyze git history, and bump the DOI.
-	 */
-	private void processHistoricalMehthods() {
-		this.computeMethodToLogInvocation();
-		Set<Vertex> currentMethodSet = methodToLogInvocation.keySet();
-
-		GitHistoryAnalyzer.processGitHistory(repoFile);
-		Graph renaming = GitHistoryAnalyzer.getRenaming();
-
-		LinkedList<GitMethod> gitMethods = GitHistoryAnalyzer.getGitMethods();
-
-		for (GitMethod gitMethod : gitMethods) {
-			// Get methods, files, and method change operations
-			String method = gitMethod.getMethodSignature();
-			String file = gitMethod.getFilePath();
-			TypesOfMethodOperations methodOp = gitMethod.getMethodOp();
-
-			Vertex vertex = new Vertex(method, file);
-			LogInvocation inv = checkInCurrentMethodSet(currentMethodSet, vertex);
-
-			if (inv != null) {
-				bumpDOIByVertex(inv, methodOp);
-			} else {
-				Vertex head = null;
-				// Get the head of vertex
-				for (Vertex v : renaming.getVertices()) {
-					if (v.equals(vertex)) {
-						head = v.getHead();
-						break;
-					}
-				}
-
-				// The method exists in the graph
-				while (head != null) {
-					inv = checkInCurrentMethodSet(currentMethodSet, head);
-					if (inv != null) {
-						bumpDOIByVertex(inv, methodOp);
-						break;
-					}
-					head = head.getNextVertex();
-				}
-			}
-		}
-	}
-	
-	private LogInvocation checkInCurrentMethodSet(Set<Vertex> currentMethodSet, Vertex v) {
-		LogInvocation inv;
-		for (Vertex currentMethod : currentMethodSet)
-			if (currentMethod.equals(v)) {
-				inv = methodToLogInvocation.get(currentMethod);
-				return inv;
-			}
-		return null;
-	}
-
-	private void bumpDOIByVertex(LogInvocation logInvocation, TypesOfMethodOperations methodOp) {
-		switch (methodOp) {
-		case ADD:
-			logInvocation.setDegreeOfInterestValue(0);
-			logInvocation.bumpDOI();
-			break;
-		case DELETE:
-			logInvocation.setDegreeOfInterestValue(0);
-			break;
-		case RENAME:
-		case CHANGE:
-		case CHANGEPARAMETER:
-			logInvocation.bumpDOI();
-			break;
-		}
 	}
 
 	public LogAnalyzer(boolean useConfigLogLevelCategory, boolean useLogLevelCategory) {
@@ -160,11 +63,7 @@ public class LogAnalyzer extends ASTVisitor {
 
 		// We analyze git history
 		if (useGitHis) {
-			for (LogInvocation logInvocation : this.logInvocationSet) {
-				logInvocation.setDegreeOfInterestValue(
-						computeDegreeOfInterestValue(logInvocation.getEnclosingMethodDeclaration()));
-			}
-			this.processHistoricalMehthods();
+			//TODO: use git history
 		}
 
 		HashSet<Float> degreeOfInterests = new HashSet<>();
@@ -187,11 +86,6 @@ public class LogAnalyzer extends ASTVisitor {
 				LOGGER.info("Do action: " + logInvocation.getAction() + "! The changed log expression is "
 						+ logInvocation.getExpression());
 
-	}
-
-	private int computeDegreeOfInterestValue(MethodDeclaration enclosingMethodDeclaration) {
-		// TODO Auto-generated method stub
-		return 0;
 	}
 
 	private boolean doAction(LogInvocation logInvocation) {

@@ -9,7 +9,6 @@ Require-Bundle: org.eclipse.ui,
  edu.cuny.hunter.log.ui;bundle-version="1.0.0"
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Import-Package: edu.cuny.citytech.refactoring.common.core,
- edu.cuny.hunter.github.core.utils,
  edu.cuny.hunter.log.core.analysis,
  edu.cuny.hunter.log.core.refactorings,
  edu.cuny.hunter.log.core.utils,

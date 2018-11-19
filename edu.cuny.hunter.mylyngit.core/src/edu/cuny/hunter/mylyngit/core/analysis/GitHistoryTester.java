@@ -14,8 +14,11 @@ import org.eclipse.jgit.api.errors.GitAPIException;
 public class GitHistoryTester {
 
 	public void helper(String sha, GitAnalysisExpectedResult... expectedResults) throws IOException, GitAPIException {
-		GitHistoryAnalyzer.testMethods(sha);
-		HashMap<String, LinkedList<TypesOfMethodOperations>> methodSignaturesToOps = GitHistoryAnalyzer
+
+		GitHistoryAnalyzer gitHistoryAnalyzer = new GitHistoryAnalyzer();
+
+		gitHistoryAnalyzer.testMethods(sha);
+		HashMap<String, LinkedList<TypesOfMethodOperations>> methodSignaturesToOps = gitHistoryAnalyzer
 				.getMethodSignaturesToOps();
 
 		for (GitAnalysisExpectedResult expectedResult : expectedResults) {
@@ -30,13 +33,15 @@ public class GitHistoryTester {
 
 		}
 
+		gitHistoryAnalyzer.clear();
+
 	}
 
 	@Test
 	public void test() throws IOException, GitAPIException {
 		helper("2b28383602304c0c6e96fdb95b02d3580203c2c9",
 				new GitAnalysisExpectedResult("n()", TypesOfMethodOperations.RENAME));
-		GitHistoryAnalyzer.clear();
+
 	}
 
 }
