@@ -1,7 +1,5 @@
 package edu.cuny.hunter.mylyngit.core.utils;
 
-import java.io.FileWriter;
-import java.io.IOException;
 import java.util.Iterator;
 
 import org.eclipse.jdt.core.dom.MethodDeclaration;

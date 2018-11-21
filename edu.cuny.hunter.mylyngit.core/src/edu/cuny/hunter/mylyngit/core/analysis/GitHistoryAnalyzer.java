@@ -91,18 +91,16 @@ public class GitHistoryAnalyzer {
 	 * Given the repo path, compute all method operations (e.g., delete a method)
 	 * for all commits.
 	 */
-	public void processGitHistory(File repoFile) {
-		initalizeLogAnalyzer();
+	public GitHistoryAnalyzer(File repoFile) {
 		Git git;
 		try {
 			git = preProcessGitHistory(repoFile);
 			RevCommit previousCommit = null;
-			String filePath = null;
 
 			// from the earliest commit to the current commit
 			for (RevCommit currentCommit : this.commitList) {
 
-				processOneCommit(currentCommit, previousCommit, git, filePath);
+				processOneCommit(currentCommit, previousCommit, git);
 				previousCommit = currentCommit;
 
 				this.commitIndex++;
@@ -113,22 +111,10 @@ public class GitHistoryAnalyzer {
 		} catch (IOException | GitAPIException e) {
 			LOGGER.warning("Cannot process git commits!");
 		}
-
-		this.renaming.printGraph();
 	}
 
-	/**
-	 * Clear all values.
-	 */
-	private void initalizeLogAnalyzer() {
-
-		this.clear();
-		this.gitMethods.clear();
-		this.methodToMethod.clear();
-		this.renaming = new Graph();
-		this.commitIndex = 0;
-
-		this.commitList.clear();
+	public GitHistoryAnalyzer() {
+		super();
 	}
 
 	/**
@@ -137,7 +123,7 @@ public class GitHistoryAnalyzer {
 	 * @throws IOException
 	 * @throws GitAPIException
 	 */
-	public void processOneCommit(RevCommit currentCommit, RevCommit previousCommit, Git git, String filePath)
+	public void processOneCommit(RevCommit currentCommit, RevCommit previousCommit, Git git)
 			throws IOException, GitAPIException {
 		AbstractTreeIterator oldTreeIterator;
 		if (previousCommit != null) {
@@ -155,6 +141,7 @@ public class GitHistoryAnalyzer {
 			formatter.setRepository(git.getRepository());
 			formatter.scan(oldTreeIterator, newTreeIterator);
 
+			String filePath = null;
 			for (DiffEntry diffEntry : diffs) {
 
 				switch (diffEntry.getChangeType().name()) {
@@ -181,6 +168,10 @@ public class GitHistoryAnalyzer {
 		}
 	}
 
+	/**
+	 * Returns a sequence of methods in the git history. Each instance stores method
+	 * signature, method ops, file path, file ops, commit index and commit name.
+	 */
 	public LinkedList<GitMethod> getGitMethods() {
 		return this.gitMethods;
 	}
@@ -363,9 +354,7 @@ public class GitHistoryAnalyzer {
 		previousCommit = revWalk.parseCommit(previousCommit.getId());
 		revWalk.close();
 
-		String filePath = null;
-
-		processOneCommit(currentCommit, previousCommit, git, filePath);
+		processOneCommit(currentCommit, previousCommit, git);
 
 		git.close();
 	}

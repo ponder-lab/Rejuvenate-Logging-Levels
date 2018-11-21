@@ -3,7 +3,6 @@ package edu.cuny.hunter.log.core.refactorings;
 import java.util.Optional;
 import java.util.Set;
 import java.util.logging.Logger;
-import java.io.File;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;

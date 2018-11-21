@@ -40,9 +40,9 @@ public class GitMylynProcessor {
 	}
 
 	// TODO: consider this carefully
-	private void setJavaProjectsInRepo(LinkedList<IJavaProject> javaProjectsInRepo) {
-		this.javaProjectsInRepo = javaProjectsInRepo;
-	}
+//	private void setJavaProjectsInRepo(LinkedList<IJavaProject> javaProjectsInRepo) {
+//		this.javaProjectsInRepo = javaProjectsInRepo;
+//	}
 
 //	private void setRepoFiles() {
 //		for (IJavaProject javaProject : javaProjects) {
@@ -79,6 +79,7 @@ public class GitMylynProcessor {
 	}
 
 	private void computDOIValuesFromGit() throws JavaModelException {
+		GitMylynAnalyzer gitMylynAnalyzer = new GitMylynAnalyzer();
 		for (IJavaProject jproj : this.getJavaProjectsInRepo()) {
 			IPackageFragmentRoot[] roots = jproj.getPackageFragmentRoots();
 			for (IPackageFragmentRoot root : roots) {
@@ -89,11 +90,12 @@ public class GitMylynProcessor {
 						ICompilationUnit[] units = fragment.getCompilationUnits();
 						for (ICompilationUnit unit : units) {
 							CompilationUnit compilationUnit = getCompilationUnit(unit);
-							compilationUnit.accept(new GitMylynAnalyzer());
+							compilationUnit.accept(gitMylynAnalyzer);
 						}
 					}
 			}
 		}
+		gitMylynAnalyzer.analyze(repo);
 	}
 
 	/**

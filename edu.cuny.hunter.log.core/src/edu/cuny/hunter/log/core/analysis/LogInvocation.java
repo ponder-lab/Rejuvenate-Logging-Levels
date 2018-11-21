@@ -121,12 +121,6 @@ public class LogInvocation {
 		return (MethodDeclaration) ASTNodes.getParent(this.getExpression(), ASTNode.METHOD_DECLARATION);
 	}
 
-	public String getFilePath() {
-		String path = getEnclosingCompilationUnit().getJavaElement().getPath().makeAbsolute().toString();
-		path = path.substring(path.indexOf("/", 1) + 1);
-		return path;
-	}
-
 	/**
 	 * Through the enclosing type, I can type FQN
 	 */
