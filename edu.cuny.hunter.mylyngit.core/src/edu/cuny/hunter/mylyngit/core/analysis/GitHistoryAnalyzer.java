@@ -75,10 +75,10 @@ public class GitHistoryAnalyzer {
 	// A mapping from the method signature to the operations
 	private HashMap<String, LinkedList<TypesOfMethodOperations>> methodSignaturesToOps = new HashMap<>();
 
-	private LinkedList<GitMethod> gitMethods = new LinkedList<>();
-
 	// The old method in the revision A and the new method in the revision B
 	private HashMap<String, String> methodToMethod = new HashMap<>();
+
+	private LinkedList<GitMethod> gitMethods = new LinkedList<>();
 
 	private Graph renaming = new Graph();
 
@@ -282,11 +282,11 @@ public class GitHistoryAnalyzer {
 					TypesOfMethodOperations.DELETE);
 
 			Set<Vertex> exitVertices = this.renaming.getExitVertices();
-			Vertex entry = null;
+			Set<Vertex> entry = null;
 			for (Vertex v : exitVertices) {
 				if (v.getFile().equals(diffEntry.getOldPath())
 						&& v.getMethod().equals(Util.getMethodSignature(methodDec))) {
-					entry = v.getHead();
+					entry.add(v.getHead());
 					break;
 				}
 			}
