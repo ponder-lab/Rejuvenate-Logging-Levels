@@ -144,18 +144,18 @@ public class GitHistoryAnalyzer {
 			String filePath = null;
 			for (DiffEntry diffEntry : diffs) {
 
-				switch (diffEntry.getChangeType().name()) {
-				case "ADD":
+				switch (diffEntry.getChangeType()) {
+				case ADD:
 					filePath = addFile(currentCommit, git.getRepository(), diffEntry);
 					break;
-				case "DELETE":
+				case DELETE:
 					filePath = deleteFile(previousCommit, git.getRepository(), diffEntry);
 					break;
-				case "MODIFY":
+				case MODIFY:
 					filePath = modifyFile(currentCommit, previousCommit, git.getRepository(), diffEntry, formatter);
 					break;
-				case "RENAME":
-				case "COPY":
+				case RENAME:
+				case COPY:
 					filePath = renameOrCopyFile(currentCommit, git.getRepository(), diffEntry);
 					break;
 				default:
