@@ -1,18 +1,19 @@
 package edu.cuny.hunter.mylyngit.core.utils;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 
 public class Graph {
 	private Set<Vertex> vertices;
-	private Set<Edge> edges;
 	private Set<Vertex> entryVertices;
 	private Set<Vertex> exitVertices;
+	
+	private HashMap<Vertex, Vertex> historicalMethodToCurrentMethods = new HashMap<>();
 
 	public Graph() {
 		vertices = new HashSet<>();
-		edges = new HashSet<>();
 		entryVertices = new HashSet<>();
 		exitVertices = new HashSet<>();
 	}
@@ -36,11 +37,17 @@ public class Graph {
 	}
 
 	public boolean addEdge(Edge e) {
-		if (!edges.add(e))
-			return false;
-
 		e.v1.setNextVertex(e.v2, e.v1.getHead());
 		return true;
+	}
+	
+	public void deleteOneConnectedComponent(Vertex entry) {
+		if (!entry.getNextVertex().isEmpty()) {
+			for (Vertex vertex : entry.getNextVertex()) {
+				deleteOneConnectedComponent(vertex);
+			}
+			this.removeVertex(entry);
+		}
 	}
 
 	public boolean addEdge(String method1, String file1, String method2, String file2) {
@@ -48,11 +55,7 @@ public class Graph {
 	}
 
 	public boolean removeEdge(Edge e) {
-		if (!edges.remove(e))
-			return false;
-
 		e.v1.setNextVertex(null);
-
 		return true;
 	}
 
@@ -64,10 +67,6 @@ public class Graph {
 		return Collections.unmodifiableSet(vertices);
 	}
 
-	public Set<Edge> getEdges() {
-		return Collections.unmodifiableSet(edges);
-	}
-
 	public Set<Vertex> getExitVertices() {
 		this.exitVertices.clear();
 		vertices.forEach(v -> {
@@ -77,26 +76,36 @@ public class Graph {
 		return this.exitVertices;
 	}
 
-	public Set<Vertex> getEntryVertices() {
+	private Set<Vertex> updateEntryVertices() {
 		this.entryVertices.clear();
-		this.entryVertices.addAll(vertices);
+		this.entryVertices.addAll(this.vertices);
 		HashSet<Vertex> nonEntryVertices = new HashSet<>();
 		for (Vertex v : this.vertices) {
-			nonEntryVertices.add(v.getNextVertex());
+			nonEntryVertices.addAll(v.getNextVertex());
 		}
 		this.entryVertices.removeAll(nonEntryVertices);
 		return this.entryVertices;
 	}
-
-	public void printGraph() {
-		this.getEntryVertices();
-		this.entryVertices.forEach(v -> {
-			System.out.print("v (m: " + v.getMethod() + ")");
-			while (v.getNextVertex() != null) {
-				v = v.getNextVertex();
-				System.out.print("-> v (m: " + v.getMethod() + ")");
-			}
-			System.out.println();
-		});
+	
+	private Set<Vertex> getEntryVertices(){
+		return this.entryVertices;
 	}
+
+	public HashMap<Vertex, Vertex> computeHistoricalMethodToCurrentMethod() {
+		for (Vertex v: this.entryVertices) {
+			Set<Vertex> oneConntectedComponent = new HashSet<>();
+			traverseComponent(oneConntectedComponent, v.getNextVertex());
+			
+		}
+		return this.historicalMethodToCurrentMethods;
+	}
+	
+	private void traverseComponent(Set<Vertex> oneConntectedComponent, Set<Vertex> vertices) {
+		if (vertices == null || vertices.isEmpty()) return;
+		oneConntectedComponent.addAll(vertices);
+		for (Vertex v: vertices) {
+			traverseComponent(oneConntectedComponent, v.getNextVertex());
+		}
+	}
+
 }

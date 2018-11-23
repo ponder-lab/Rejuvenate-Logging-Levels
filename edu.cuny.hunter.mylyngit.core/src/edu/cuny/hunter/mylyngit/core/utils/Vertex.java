@@ -1,9 +1,12 @@
 package edu.cuny.hunter.mylyngit.core.utils;
 
+import java.util.HashSet;
+import java.util.Set;
+
 public class Vertex {
 	private String method;
 	private String file;
-	private Vertex next;
+	private Set<Vertex> next;
 	private Vertex head;
 
 	public Vertex(String method, String file) {
@@ -14,19 +17,29 @@ public class Vertex {
 	}
 
 	public void setNextVertex(Vertex next, Vertex head) {
-		this.next = next;
+		this.setNextVertex(next);
 		this.head = head;
 	}
 
 	public void setNextVertex(Vertex next) {
-		this.next = next;
+		if (next == null) {
+			this.next = null;
+			return;
+		}
+
+		if (this.next == null) {
+			this.next = new HashSet<Vertex>();
+			this.next.add(next);
+		} else {
+			this.next.add(next);
+		}
 	}
 
 	public Vertex getHead() {
 		return this.head;
 	}
 
-	public Vertex getNextVertex() {
+	public Set<Vertex> getNextVertex() {
 		return this.next;
 	}
 
