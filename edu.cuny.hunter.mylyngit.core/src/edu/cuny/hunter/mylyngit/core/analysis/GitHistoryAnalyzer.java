@@ -475,7 +475,7 @@ public class GitHistoryAnalyzer {
 		String fileContent = new BufferedReader(new InputStreamReader(loader.openStream())).lines()
 				.collect(Collectors.joining("\n"));
 		if (!fileContent.isEmpty())
-			parseJavaFile(file, fileContent, newDirectory);
+			parseJavaFile(fileContent, newDirectory);
 	}
 
 	/**
@@ -747,7 +747,7 @@ public class GitHistoryAnalyzer {
 	/**
 	 * Parse a Java file, and let visitor to visit declaring methods.
 	 */
-	private void parseJavaFile(File file, String fileContent, String newDirectory) throws IOException {
+	private void parseJavaFile(String fileContent, String newDirectory) throws IOException {
 		ASTParser parser = ASTParser.newParser(AST.JLS8);
 		parser.setResolveBindings(true);
 		parser.setSource(fileContent.toCharArray());
@@ -763,7 +763,7 @@ public class GitHistoryAnalyzer {
 					methodDeclarationsForB.add(methodDeclaration);
 				return true;
 			}
-		});
+		});                                                                                
 	}
 
 	public HashMap<String, LinkedList<TypesOfMethodOperations>> getMethodSignaturesToOps() {
