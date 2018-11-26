@@ -47,7 +47,7 @@ public class Util {
 		ITypeParameter[] parameterTypes;
 		try {
 			parameterTypes = method.getTypeParameters();
-			if (parameterTypes.length >= 0)
+			if (parameterTypes.length > 0)
 				signature += parameterTypes[0];
 			for (int i = 1; i < parameterTypes.length; ++i) {
 				signature += ", " + parameterTypes[i];
@@ -63,7 +63,9 @@ public class Util {
 	 * Return the file path for a method.
 	 */
 	public static String getMethodFilePath(IMethod method) {
-		return method.getClassFile().getPath().toString();
+		String relativePath = method.getCompilationUnit().getPath().makeRelative().toString();
+		relativePath = relativePath.substring(relativePath.indexOf("/") + 1);
+		return relativePath;
 	}
 
 	public static List<ICompilationUnit> getCompilationUnits(IJavaProject javaProject) {

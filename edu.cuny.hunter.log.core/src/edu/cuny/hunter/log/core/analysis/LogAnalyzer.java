@@ -16,6 +16,7 @@ import org.eclipse.jdt.core.dom.MethodInvocation;
 import edu.cuny.hunter.log.core.messages.Messages;
 import edu.cuny.hunter.log.core.utils.LoggerNames;
 import edu.cuny.hunter.log.core.utils.Util;
+import edu.cuny.hunter.mylyngit.core.analysis.MylynGitPredictionProvider;
 
 public class LogAnalyzer extends ASTVisitor {
 
@@ -29,8 +30,6 @@ public class LogAnalyzer extends ASTVisitor {
 
 	private static boolean useLogCategory = false;
 
-	private static boolean useGitHis = false;
-
 	private int test;
 
 	public LogAnalyzer(int isTest) {
@@ -42,23 +41,12 @@ public class LogAnalyzer extends ASTVisitor {
 		useLogCategory = useLogLevelCategory;
 	}
 
-	public LogAnalyzer(boolean useConfigLogLevelCate, boolean useLogLevelCate, boolean useGitHistory) {
-		useLogCategoryWithConfig = useConfigLogLevelCate;
-		useLogCategory = useLogLevelCate;
-		useGitHis = useGitHistory;
-	}
-
 	public LogAnalyzer() {
 	}
 
 	public void analyze() {
 		// check failed preconditions.
 		this.checkCodeModification();
-
-		// We analyze git history
-		if (useGitHis) {
-			//TODO: use git history
-		}
 
 		HashSet<Float> degreeOfInterests = new HashSet<>();
 		for (LogInvocation logInvocation : this.logInvocationSet) {

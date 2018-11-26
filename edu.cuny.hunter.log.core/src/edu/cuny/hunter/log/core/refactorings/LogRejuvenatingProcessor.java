@@ -34,6 +34,7 @@ import edu.cuny.hunter.log.core.analysis.LogInvocation;
 import edu.cuny.hunter.log.core.descriptors.LogDescriptor;
 import edu.cuny.hunter.log.core.messages.Messages;
 import edu.cuny.hunter.log.core.utils.LoggerNames;
+import edu.cuny.hunter.mylyngit.core.analysis.MylynGitPredictionProvider;
 
 @SuppressWarnings({ "restriction", "deprecation" })
 public class LogRejuvenatingProcessor extends RefactoringProcessor {
@@ -120,9 +121,13 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 
 			LogAnalyzer analyzer;
 			if (this.useGitHistory) {
-				analyzer = new LogAnalyzer(this.useLogCategoryWithConfig, this.useLogCategory, this.useGitHistory);
-			} else
-				analyzer = new LogAnalyzer(this.useLogCategoryWithConfig, this.useLogCategory);
+
+				MylynGitPredictionProvider mylynProvider = new MylynGitPredictionProvider();
+				mylynProvider.setJavaProjects(this.javaProjects);
+				mylynProvider.processProjects();
+			}
+
+			analyzer = new LogAnalyzer(this.useLogCategoryWithConfig, this.useLogCategory);
 
 			for (IJavaProject jproj : this.getJavaProjects()) {
 				IPackageFragmentRoot[] roots = jproj.getPackageFragmentRoots();
