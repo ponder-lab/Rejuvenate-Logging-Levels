@@ -1,52 +1,43 @@
 package edu.cuny.hunter.mylyngit.core.utils;
 
-import java.util.HashSet;
-import java.util.Set;
-
 public class Vertex {
 	private String method;
 	private String file;
-	private Set<Vertex> next;
-	private Vertex head;
+	private Vertex next;
+	private Vertex prior;
+	private int commit;
 
-	public Vertex(String method, String file) {
+	public Vertex(String method, String file, int commit) {
 		this.method = method;
 		this.file = file;
 		this.next = null;
-		this.head = null;
-	}
-
-	public void setNextVertex(Vertex next, Vertex head) {
-		this.setNextVertex(next);
-		this.head = head;
+		this.prior = null;
+		this.commit = commit;
 	}
 
 	public void setNextVertex(Vertex next) {
-		if (next == null) {
-			this.next = null;
-			return;
-		}
-
-		if (this.next == null) {
-			this.next = new HashSet<Vertex>();
-			this.next.add(next);
-		} else {
-			this.next.add(next);
-		}
+		this.next = next;
 	}
 
-	public Vertex getHead() {
-		return this.head;
-	}
-
-	public Set<Vertex> getNextVertex() {
+	public Vertex getNextVertex() {
 		return this.next;
+	}
+	
+	public void setPriorVertex(Vertex prior) {
+		this.prior = prior;
+	}
+
+	public Vertex getPriorVertex() {
+		return this.prior;
 	}
 
 	public void setFile(String file) {
 		this.file = file;
 	}
 
+	/**
+	 * Because we can use method signature and file path to identify a method.
+	 */
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj)

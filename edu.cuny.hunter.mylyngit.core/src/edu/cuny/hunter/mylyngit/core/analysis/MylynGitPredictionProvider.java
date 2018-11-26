@@ -1,10 +1,11 @@
 package edu.cuny.hunter.mylyngit.core.analysis;
 
 import java.io.File;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.logging.Logger;
+import java.util.Set;
 
 import org.eclipse.jdt.core.ICompilationUnit;
 import org.eclipse.jdt.core.IJavaProject;
@@ -22,6 +23,7 @@ import org.eclipse.mylyn.monitor.core.InteractionEvent.Kind;
 
 import edu.cuny.hunter.mylyngit.core.utils.GitMethod;
 import edu.cuny.hunter.mylyngit.core.utils.Util;
+import edu.cuny.hunter.mylyngit.core.utils.Vertex;
 
 /**
  * @author tangy
@@ -94,7 +96,7 @@ public class MylynGitPredictionProvider {
 		GitHistoryAnalyzer gitHistoryAnalyzer = new GitHistoryAnalyzer(repo);
 		LinkedList<GitMethod> gitMethods = gitHistoryAnalyzer.getGitMethods();
 		gitMethods.forEach(method -> {
-			bumpDOIValuesForMethod(method);
+			bumpDOIValuesForMethod(method, gitHistoryAnalyzer);
 		});
 	}
 
@@ -102,9 +104,9 @@ public class MylynGitPredictionProvider {
 	 * Bump DOI value for a method in the current source code when its historical
 	 * method has a change.
 	 */
-	private void bumpDOIValuesForMethod(GitMethod gitMethod) {
+	private void bumpDOIValuesForMethod(GitMethod gitMethod, GitHistoryAnalyzer gitHistoryAnalyzer) {
 		TypesOfMethodOperations methodOp = gitMethod.getMethodOp();
-		IMethod method = getJavaMethod(gitMethod);
+		IMethod method = this.getJavaMethod(gitMethod, gitHistoryAnalyzer);
 		// The historical has its corresponding method in the current source code.
 		if (method != null)
 			switch (methodOp) {
@@ -124,10 +126,38 @@ public class MylynGitPredictionProvider {
 	 * Given a method information, return a IMethod instance whose methods exist in
 	 * the current source code.
 	 */
-	private IMethod getJavaMethod(GitMethod method) {
+	private IMethod getJavaMethod(GitMethod method, GitHistoryAnalyzer gitHistoryAnalyzer) {
+		IMethod iMethod = this.checkMethods(method.getMethodSignature(), method.getFilePath());
+		if (iMethod != null)
+			return iMethod;
+
+		// if it exists in the renaming graph
+		HashMap<Vertex, Vertex> historicalMethodToCurrentMethods = gitHistoryAnalyzer
+				.getHistoricalMethodToCurrentMethods();
+		Vertex vertex = new Vertex(method.getMethodSignature(), method.getFilePath(), -1);
+		Vertex targetVertex = null;
+		Set<Vertex> historicalMethods = historicalMethodToCurrentMethods.keySet();
+		for (Vertex historicalMethod : historicalMethods) {
+			if (historicalMethod.equals(vertex)) {
+				targetVertex = historicalMethod;
+				break;
+			}
+		}
+		// find the vertex exists in the renaming graph
+		if (targetVertex != null) {
+			Vertex currentMethod = historicalMethodToCurrentMethods.get(targetVertex);
+			return this.checkMethods(currentMethod.getMethod(), currentMethod.getFile());
+		}
+
+		return null;
+	}
+
+	/**
+	 * Check whether there is a method in the list of IMethod
+	 */
+	private IMethod checkMethods(String method, String filePath) {
 		for (IMethod m : this.methods) {
-			if (Util.getMethodSignatureForJavaMethod(m).equals(method.getMethodSignature())
-					&& (Util.getMethodFilePath(m).equals(method.getFilePath())))
+			if (Util.getMethodSignatureForJavaMethod(m).equals(method) && (Util.getMethodFilePath(m).equals(filePath)))
 				return m;
 		}
 		return null;

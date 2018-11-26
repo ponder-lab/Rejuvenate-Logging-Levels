@@ -51,7 +51,6 @@ import org.eclipse.jgit.treewalk.EmptyTreeIterator;
 import org.eclipse.jgit.treewalk.TreeWalk;
 import org.eclipse.jgit.treewalk.filter.PathFilter;
 
-import edu.cuny.hunter.mylyngit.core.utils.Edge;
 import edu.cuny.hunter.mylyngit.core.utils.GitMethod;
 import edu.cuny.hunter.mylyngit.core.utils.Graph;
 import edu.cuny.hunter.mylyngit.core.utils.Util;
@@ -78,14 +77,14 @@ public class GitHistoryAnalyzer {
 	// The old method in the revision A and the new method in the revision B
 	private HashMap<String, String> methodToMethod = new HashMap<>();
 
+	private LinkedList<RevCommit> commitList = new LinkedList<>();
+
 	private LinkedList<GitMethod> gitMethods = new LinkedList<>();
 
 	private Graph renaming = new Graph();
 
 	// the file index
 	private int commitIndex = 0;
-
-	private LinkedList<RevCommit> commitList = new LinkedList<>();
 
 	/**
 	 * Given the repo path, compute all method operations (e.g., delete a method)
@@ -115,6 +114,14 @@ public class GitHistoryAnalyzer {
 
 	public GitHistoryAnalyzer() {
 		super();
+	}
+
+	/**
+	 * Get a mapping: the historical method to the current method if the historical
+	 * method was renamed before.
+	 */
+	public HashMap<Vertex, Vertex> getHistoricalMethodToCurrentMethods() {
+		return this.renaming.getHistoricalMethodToCurrentMethods();
 	}
 
 	/**
@@ -184,13 +191,13 @@ public class GitHistoryAnalyzer {
 		copyHistoricalFile(currentCommit, repo, diffEntry.getNewPath(), "tmp_B_");
 		this.methodDeclarationsForB.forEach(methodDec -> {
 			// add vertex
-			Vertex vertex1 = new Vertex(Util.getMethodSignature(methodDec), diffEntry.getOldPath());
+			Vertex vertex1 = new Vertex(Util.getMethodSignature(methodDec), diffEntry.getOldPath(), this.commitIndex);
 			this.renaming.addVertex(vertex1);
 			// add vertex
-			Vertex vertex2 = new Vertex(Util.getMethodSignature(methodDec), diffEntry.getNewPath());
+			Vertex vertex2 = new Vertex(Util.getMethodSignature(methodDec), diffEntry.getNewPath(), this.commitIndex);
 			this.renaming.addVertex(vertex2);
 			// add edge
-			this.renaming.addEdge(new Edge(vertex1, vertex2));
+			this.renaming.addEdge(vertex1, vertex2);
 		});
 		return diffEntry.getNewPath();
 	}
@@ -286,15 +293,10 @@ public class GitHistoryAnalyzer {
 			for (Vertex v : exitVertices) {
 				if (v.getFile().equals(diffEntry.getOldPath())
 						&& v.getMethod().equals(Util.getMethodSignature(methodDec))) {
-					entry.add(v.getHead());
-					break;
+					renaming.pruneGraphByExist(v);
 				}
 			}
-			while (entry != null) {
-				Vertex tmp = entry;
-				entry = entry.getNextVertex();
-				this.renaming.removeVertex(tmp);
-			}
+
 		});
 		return diffEntry.getOldPath();
 	}
@@ -624,13 +626,13 @@ public class GitHistoryAnalyzer {
 	 */
 	private void addVertexIntoGraph(String targetMethodSig, String oldMethodSig, String file) {
 		// add vertex
-		Vertex vertex1 = new Vertex(targetMethodSig, file);
+		Vertex vertex1 = new Vertex(targetMethodSig, file, this.commitIndex);
 		this.renaming.addVertex(vertex1);
 		// add vertex
-		Vertex vertex2 = new Vertex(oldMethodSig, file);
+		Vertex vertex2 = new Vertex(oldMethodSig, file, this.commitIndex);
 		this.renaming.addVertex(vertex2);
 		// add edge
-		this.renaming.addEdge(new Edge(vertex1, vertex2));
+		this.renaming.addEdge(vertex1, vertex2);
 	}
 
 	/**
@@ -763,7 +765,7 @@ public class GitHistoryAnalyzer {
 					methodDeclarationsForB.add(methodDeclaration);
 				return true;
 			}
-		});                                                                                
+		});
 	}
 
 	public HashMap<String, LinkedList<TypesOfMethodOperations>> getMethodSignaturesToOps() {
