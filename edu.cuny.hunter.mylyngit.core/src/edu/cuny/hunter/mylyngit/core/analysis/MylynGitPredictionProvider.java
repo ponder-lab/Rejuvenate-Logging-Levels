@@ -43,6 +43,8 @@ public class MylynGitPredictionProvider {
 	 */
 	public void processProjects() {
 		for (IJavaProject javaProject : javaProjects) {
+			this.methods.clear();
+
 			List<ICompilationUnit> cUnits = Util.getCompilationUnits(javaProject);
 			cUnits.forEach(cUnit -> {
 				methods.addAll(this.getIMethodsInSouceCode(cUnit));
