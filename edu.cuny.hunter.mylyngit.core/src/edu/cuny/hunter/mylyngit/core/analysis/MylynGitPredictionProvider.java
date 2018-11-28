@@ -36,7 +36,7 @@ public class MylynGitPredictionProvider {
 
 	private HashSet<IMethod> methods = new HashSet<>();
 
-	private final static String ID = "mylyngit.git";
+	private final static String ID = MylynGitPredictionProvider.class.getName();
 
 	/**
 	 * The entry point
