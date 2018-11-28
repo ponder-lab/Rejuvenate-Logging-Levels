@@ -87,7 +87,7 @@ public class MylynGitPredictionProvider {
 	 */
 	public void bumpDOI(IMethod method) {
 		IInteractionContext activeContext = ContextCore.getContextManager().getActiveContext();
-		ContextCorePlugin.getContextManager().processInteractionEvent(method, Kind.PREDICTION, ID, activeContext);
+		ContextCorePlugin.getContextManager().processInteractionEvent(method, Kind.EDIT, ID, activeContext);
 	}
 
 	/**
