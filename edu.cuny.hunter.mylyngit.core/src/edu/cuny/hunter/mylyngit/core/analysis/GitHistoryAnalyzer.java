@@ -104,6 +104,7 @@ public class GitHistoryAnalyzer {
 
 				this.commitIndex++;
 
+				clear();
 				clearFiles(new File("").getAbsoluteFile());
 			}
 			git.close();
@@ -112,8 +113,22 @@ public class GitHistoryAnalyzer {
 		}
 	}
 
-	public GitHistoryAnalyzer() {
-		super();
+	public GitHistoryAnalyzer(String sha, File repoFile) throws IOException, GitAPIException {
+
+		Git git = Git.init().setDirectory(repoFile).call();
+		;
+
+		ObjectId currentCommitId = ObjectId.fromString(sha);
+		RevWalk revWalk = new RevWalk(git.getRepository());
+		RevCommit currentCommit = revWalk.parseCommit(currentCommitId);
+
+		RevCommit previousCommit = currentCommit.getParent(0);
+		previousCommit = revWalk.parseCommit(previousCommit.getId());
+		revWalk.close();
+
+		processOneCommit(currentCommit, previousCommit, git);
+
+		git.close();
 	}
 
 	/**
@@ -170,7 +185,6 @@ public class GitHistoryAnalyzer {
 				}
 
 				storeAllMethodOps(currentCommit, filePath, diffEntry.getChangeType().name());
-				clear();
 			}
 		}
 	}
@@ -340,25 +354,6 @@ public class GitHistoryAnalyzer {
 			}
 		}
 		return (directory.delete());
-	}
-
-	public void testMethods(String sha) throws IOException, GitAPIException {
-
-		Repository repo = new FileRepository("C:\\Users\\tangy\\logging-workspace\\Log-Git-Test\\.git");
-
-		Git git = new Git(repo);
-
-		ObjectId currentCommitId = ObjectId.fromString(sha);
-		RevWalk revWalk = new RevWalk(repo);
-		RevCommit currentCommit = revWalk.parseCommit(currentCommitId);
-
-		RevCommit previousCommit = currentCommit.getParent(0);
-		previousCommit = revWalk.parseCommit(previousCommit.getId());
-		revWalk.close();
-
-		processOneCommit(currentCommit, previousCommit, git);
-
-		git.close();
 	}
 
 	/**

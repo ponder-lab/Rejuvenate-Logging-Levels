@@ -4,6 +4,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -16,11 +17,10 @@ import edu.cuny.hunter.mylyngit.core.analysis.TypesOfMethodOperations;
 
 public class GitHistoryTest {
 
-	public void helper(String sha, GitAnalysisExpectedResult... expectedResults) throws IOException, GitAPIException {
+	public void helper(String sha, String repoPath, GitAnalysisExpectedResult... expectedResults) throws IOException, GitAPIException {
 
-		GitHistoryAnalyzer gitHistoryAnalyzer = new GitHistoryAnalyzer();
+		GitHistoryAnalyzer gitHistoryAnalyzer = new GitHistoryAnalyzer(sha, new File(repoPath));
 
-		gitHistoryAnalyzer.testMethods(sha);
 		HashMap<String, LinkedList<TypesOfMethodOperations>> methodSignaturesToOps = gitHistoryAnalyzer
 				.getMethodSignaturesToOps();
 
@@ -41,9 +41,9 @@ public class GitHistoryTest {
 	}
 
 	@Test
-	public void test() throws IOException, GitAPIException {
-		helper("2b28383602304c0c6e96fdb95b02d3580203c2c9",
-				new GitAnalysisExpectedResult("n()", TypesOfMethodOperations.RENAME));
+	public void testRename() throws IOException, GitAPIException {
+		helper("719714c5a6b80b7049328d2debce929e1b9e5bea", "C:\\Users\\tangy\\log-test-workspace\\Logging-Level-Evolution-Test\\",
+				new GitAnalysisExpectedResult("newMethod()", TypesOfMethodOperations.RENAME));
 
 	}
 }

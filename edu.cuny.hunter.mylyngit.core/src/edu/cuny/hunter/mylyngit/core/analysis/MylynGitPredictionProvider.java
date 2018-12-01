@@ -49,7 +49,7 @@ public class MylynGitPredictionProvider {
 			cUnits.forEach(cUnit -> {
 				methods.addAll(this.getIMethodsInSouceCode(cUnit));
 			});
-			bumpDOIValuesForAllMethods(javaProject);
+			bumpDOIValuesForAllGitMethods(javaProject);
 		}
 	}
 
@@ -93,7 +93,7 @@ public class MylynGitPredictionProvider {
 	/**
 	 * Process all methods in the git history and bump the DOI values
 	 */
-	private void bumpDOIValuesForAllMethods(IJavaProject javaProject) {
+	private void bumpDOIValuesForAllGitMethods(IJavaProject javaProject) {
 		File repo = getRepoFile(javaProject);
 		GitHistoryAnalyzer gitHistoryAnalyzer = new GitHistoryAnalyzer(repo);
 		LinkedList<GitMethod> gitMethods = gitHistoryAnalyzer.getGitMethods();
