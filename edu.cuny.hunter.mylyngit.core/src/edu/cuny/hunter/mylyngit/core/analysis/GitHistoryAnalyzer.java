@@ -35,7 +35,6 @@ import org.eclipse.jgit.diff.EditList;
 import org.eclipse.jgit.errors.CorruptObjectException;
 import org.eclipse.jgit.errors.IncorrectObjectTypeException;
 import org.eclipse.jgit.errors.MissingObjectException;
-import org.eclipse.jgit.internal.storage.file.FileRepository;
 import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.ObjectLoader;
 import org.eclipse.jgit.lib.ObjectReader;
@@ -56,7 +55,6 @@ import edu.cuny.hunter.mylyngit.core.utils.Graph;
 import edu.cuny.hunter.mylyngit.core.utils.Util;
 import edu.cuny.hunter.mylyngit.core.utils.Vertex;
 
-@SuppressWarnings("restriction")
 public class GitHistoryAnalyzer {
 
 	private static final Logger LOGGER = Logger.getLogger(Util.LOGGER_NAME);
@@ -524,13 +522,13 @@ public class GitHistoryAnalyzer {
 	}
 
 	/**
-	 * Return a set of A-B.
+	 * Return a set of B-A.
 	 */
-	private HashSet<String> getAdditionalMethods(HashSet<String> methodSignaturesSetA,
-			HashSet<String> methodSignaturesSetB) {
-		HashSet<String> additionalMethods = new HashSet<>();
-		additionalMethods.addAll(methodSignaturesSetA);
-		additionalMethods.removeAll(methodSignaturesSetB);
+	private Collection<String> getAdditionalMethods(Collection<String> methodSignaturesA,
+			Collection<String> methodSignaturesB) {
+		Collection<String> additionalMethods = new LinkedList<String>();
+		additionalMethods.addAll(methodSignaturesB);
+		additionalMethods.removeAll(methodSignaturesA);
 		return additionalMethods;
 	}
 
@@ -538,13 +536,15 @@ public class GitHistoryAnalyzer {
 	 * Given a set of method signatures, get its corresponding set of method
 	 * declarations.
 	 */
-	private HashSet<MethodDeclaration> getSetOfMethodDeclaration(HashSet<MethodDeclaration> methodsDecs,
-			HashSet<String> methodSigs) {
-		HashSet<MethodDeclaration> methodDeclarations = new HashSet<>();
+	private Collection<MethodDeclaration> getSetOfMethodDeclaration(HashSet<MethodDeclaration> methodsDecs,
+			Collection<String> methodSigs) {
+		Collection<MethodDeclaration> methodDeclarations = new LinkedList<MethodDeclaration>();
+		HashMap<String, MethodDeclaration> methodSigToMethodDec = new HashMap<>();
 		methodsDecs.forEach(method -> {
-			String methodSig = Util.getMethodSignature(method);
-			if (methodSigs.contains(methodSig))
-				methodDeclarations.add(method);
+			methodSigToMethodDec.put(Util.getMethodSignature(method), method);
+		});
+		methodSigs.forEach(methodSig -> {
+			methodDeclarations.add(methodSigToMethodDec.get(methodSig));
 		});
 		return methodDeclarations;
 	}
@@ -554,13 +554,13 @@ public class GitHistoryAnalyzer {
 	 * file.
 	 */
 	private void computeMethodChanges(String file) {
-		HashSet<String> methodSignaturesForEditsA = getMethodSignatures(this.editToMethodDeclarationForA.values());
-		HashSet<String> methodSignaturesForEditsB = getMethodSignatures(this.editToMethodDeclarationForB.values());
+		Collection<String> methodSignaturesForEditsA = getMethodSignatures(this.editToMethodDeclarationForA.values());
+		Collection<String> methodSignaturesForEditsB = getMethodSignatures(this.editToMethodDeclarationForB.values());
 
-		HashSet<String> additionalMethodInB = getAdditionalMethods(methodSignaturesForEditsB,
-				methodSignaturesForEditsA);
+		Collection<String> additionalMethodInB = getAdditionalMethods(methodSignaturesForEditsA,
+				methodSignaturesForEditsB);
 
-		HashSet<MethodDeclaration> additionalMethodDecInB = getSetOfMethodDeclaration(this.methodDeclarationsForB,
+		Collection<MethodDeclaration> additionalMethodDecInB = getSetOfMethodDeclaration(this.methodDeclarationsForB,
 				additionalMethodInB);
 
 		// Iterate over edits. Each edit should be counted as an event
@@ -571,38 +571,26 @@ public class GitHistoryAnalyzer {
 
 				// Modify method body, or rename parameters
 				if (methodSignaturesForEditsB.contains(methodSig)) {
-					putIntoMethodToOps(this.methodSignaturesToOps, methodSig, TypesOfMethodOperations.CHANGE);
-				} else if (this.methodToMethod.keySet().contains(methodSig)) {
-					putIntoMethodToOps(methodSignaturesToOps, methodToMethod.get(methodSig),
-							TypesOfMethodOperations.CHANGE);
+					this.putIntoMethodToOps(this.methodSignaturesToOps, methodSig, TypesOfMethodOperations.CHANGE);
 				} else {
 
 					// Keep the method name same, but add/delete the parameter or change the type of
 					// the parameter
 					MethodDeclaration targetMethodDec = getMethodWithParameterChanged(methodForA,
 							additionalMethodDecInB);
-					if (targetMethodDec != null) {
-						process(targetMethodDec, additionalMethodDecInB, additionalMethodInB,
-								TypesOfMethodOperations.CHANGEPARAMETER);
-						this.methodToMethod.put(methodSig, Util.getMethodSignature(targetMethodDec));
-						break;
-					}
+					if (!this.processGitMethodOperations(additionalMethodDecInB, additionalMethodInB, file, methodSig,
+							TypesOfMethodOperations.CHANGEPARAMETER, targetMethodDec)) {
 
-					// If the method is renamed
-					targetMethodDec = getMethodWithMethodNameChanged(methodForA, additionalMethodDecInB);
-					if (targetMethodDec != null) {
-						process(targetMethodDec, additionalMethodDecInB, additionalMethodInB,
-								TypesOfMethodOperations.RENAME);
-						addVertexIntoGraph(Util.getMethodSignature(targetMethodDec), methodSig, file);
-						this.methodToMethod.put(methodSig, Util.getMethodSignature(targetMethodDec));
-						break;
-					}
+						// If the method is renamed
+						targetMethodDec = getMethodWithMethodNameChanged(methodForA, additionalMethodDecInB);
 
-					putIntoMethodToOps(this.methodSignaturesToOps, methodSig, TypesOfMethodOperations.DELETE);
+						if (!this.processGitMethodOperations(additionalMethodDecInB, additionalMethodInB, file,
+								methodSig, TypesOfMethodOperations.RENAME, targetMethodDec))
+							this.process(methodForA, additionalMethodDecInB, additionalMethodInB,
+									TypesOfMethodOperations.DELETE);
+					}
 				}
-
 			}
-			// edits
 		});
 
 		additionalMethodDecInB.forEach(methodDec -> {
@@ -614,6 +602,21 @@ public class GitHistoryAnalyzer {
 			System.out.println(methodSig + ": " + ops);
 		});
 
+	}
+
+	/**
+	 * process when the git method is renamed or its parameters are changed.
+	 */
+	private boolean processGitMethodOperations(Collection<MethodDeclaration> additionalMethodDecInB,
+			Collection<String> additionalMethodInB, String file, String methodSig, TypesOfMethodOperations methodOp,
+			MethodDeclaration targetMethodDec) {
+		if (targetMethodDec != null) {
+			this.process(targetMethodDec, additionalMethodDecInB, additionalMethodInB, methodOp);
+			this.addVertexIntoGraph(Util.getMethodSignature(targetMethodDec), methodSig, file);
+			this.methodToMethod.put(methodSig, Util.getMethodSignature(targetMethodDec));
+			return true;
+		} else
+			return false;
 	}
 
 	/**
@@ -633,9 +636,17 @@ public class GitHistoryAnalyzer {
 	/**
 	 * Store target method declaration and remove it in the difference set.
 	 */
-	private void process(MethodDeclaration targetMethodDec, HashSet<MethodDeclaration> additionalMethodDecInB,
-			HashSet<String> additionalMethodInB, TypesOfMethodOperations op) {
+	private void process(MethodDeclaration targetMethodDec, Collection<MethodDeclaration> additionalMethodDecInB,
+			Collection<String> additionalMethodInB, TypesOfMethodOperations op) {
 		putIntoMethodToOps(this.methodSignaturesToOps, Util.getMethodSignature(targetMethodDec), op);
+		this.removeMethodInRevisionB(targetMethodDec, additionalMethodDecInB, additionalMethodInB);
+	}
+
+	/**
+	 * Remove method in revision B.
+	 */
+	private void removeMethodInRevisionB(MethodDeclaration targetMethodDec,
+			Collection<MethodDeclaration> additionalMethodDecInB, Collection<String> additionalMethodInB) {
 		String tagetMethodSig = Util.getMethodSignature(targetMethodDec);
 		additionalMethodDecInB.remove(targetMethodDec);
 		additionalMethodInB.remove(tagetMethodSig);
@@ -663,7 +674,7 @@ public class GitHistoryAnalyzer {
 	 * changed.
 	 */
 	private MethodDeclaration getMethodWithParameterChanged(MethodDeclaration methodForA,
-			HashSet<MethodDeclaration> additionalMethodDecInB) {
+			Collection<MethodDeclaration> additionalMethodDecInB) {
 		// Parameters are modified
 		MethodDeclaration targetMethodDec = null;
 		float similarity = -1;
@@ -683,7 +694,7 @@ public class GitHistoryAnalyzer {
 	 * Get the method when the method is renamed.
 	 */
 	private MethodDeclaration getMethodWithMethodNameChanged(MethodDeclaration methodForA,
-			HashSet<MethodDeclaration> additionalMethodDecInB) {
+			Collection<MethodDeclaration> additionalMethodDecInB) {
 		// Parameters are modified
 		MethodDeclaration targetMethodDec = null;
 		float similarity = -1;
@@ -731,8 +742,8 @@ public class GitHistoryAnalyzer {
 	/**
 	 * Returns all method signatures for all edits in one file.
 	 */
-	private HashSet<String> getMethodSignatures(Collection<HashSet<MethodDeclaration>> methodDeclarations) {
-		HashSet<String> methodSignatures = new HashSet<String>();
+	private Collection<String> getMethodSignatures(Collection<HashSet<MethodDeclaration>> methodDeclarations) {
+		Collection<String> methodSignatures = new LinkedList<String>();
 		methodDeclarations.forEach(methodDecSet -> {
 			methodDecSet.forEach(methodDec -> {
 				methodSignatures.add(Util.getMethodSignature(methodDec));
