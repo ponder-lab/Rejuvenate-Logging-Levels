@@ -23,7 +23,6 @@ import org.eclipse.jdt.internal.corext.refactoring.util.JavaStatusContext;
 import org.eclipse.ltk.core.refactoring.RefactoringStatus;
 import org.eclipse.ltk.core.refactoring.RefactoringStatusContext;
 import org.osgi.framework.FrameworkUtil;
-
 import org.eclipse.mylyn.context.core.ContextCore;
 import org.eclipse.mylyn.context.core.IDegreeOfInterest;
 import org.eclipse.mylyn.context.core.IInteractionElement;
@@ -34,20 +33,21 @@ import edu.cuny.hunter.log.core.utils.LoggerNames;
 @SuppressWarnings("restriction")
 public class LogInvocation {
 
-	private final MethodInvocation logExpression;
 	private final Level logLevel;
+	
+	private Action action = Action.NONE;
+	
+	private float degreeOfInterestValue;
+	
+	private IDegreeOfInterest degreeOfInterest;
+	
+	private final MethodInvocation logExpression;
 
 	private RefactoringStatus status = new RefactoringStatus();
 
-	private static final String PLUGIN_ID = FrameworkUtil.getBundle(LogInvocation.class).getSymbolicName();
-
-	private IDegreeOfInterest degreeOfInterest;
-
-	private float degreeOfInterestValue;
-
 	private static final Logger LOGGER = Logger.getLogger(LoggerNames.LOGGER_NAME);
-
-	private Action action = Action.NONE;
+	
+	private static final String PLUGIN_ID = FrameworkUtil.getBundle(LogInvocation.class).getSymbolicName();
 
 	public LogInvocation(MethodInvocation logExpression, Level loggingLevel) {
 		this.logExpression = logExpression;
@@ -73,6 +73,10 @@ public class LogInvocation {
 		return degreeOfInterestValue;
 	}
 
+	public void setDegreeOfInterestValue(int degreeOfInterestValue) {
+		this.degreeOfInterestValue = degreeOfInterestValue;
+	}
+
 	void addStatusEntry(PreconditionFailure failure, String message) {
 		MethodInvocation logExpression = this.getExpression();
 		CompilationUnit compilationUnit = (CompilationUnit) ASTNodes.getParent(logExpression, ASTNode.COMPILATION_UNIT);
@@ -89,13 +93,17 @@ public class LogInvocation {
 		return TasksUiPlugin.getTaskList();
 	}
 
+	// The element in Mylyn
+	private IInteractionElement getInteractionElement() {
+		IMethod enclosingMethod = this.getEnclosingEclipseMethod();
+		return ContextCore.getContextManager().getElement(enclosingMethod.getHandleIdentifier());
+	}
+
 	/**
 	 * Get DOI
 	 */
 	public IDegreeOfInterest getDegreeOfInterest() {
-		IMethod enclosingMethod = this.getEnclosingEclipseMethod();
-		IInteractionElement interactionElement = ContextCore.getContextManager()
-				.getElement(enclosingMethod.getHandleIdentifier());
+		IInteractionElement interactionElement = getInteractionElement();
 		if (interactionElement == null)
 			return null;
 		return interactionElement.getInterest();

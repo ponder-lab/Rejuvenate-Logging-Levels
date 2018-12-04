@@ -1,6 +1,5 @@
-package edu.hunter.log.evalution.handlers;
+package edu.cuny.hunter.log.evalution.handlers;
 
-import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
@@ -13,7 +12,6 @@ import java.util.Set;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
-import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
@@ -35,7 +33,7 @@ import edu.cuny.hunter.log.core.analysis.LogInvocation;
 import edu.cuny.hunter.log.core.analysis.PreconditionFailure;
 import edu.cuny.hunter.log.core.refactorings.LogRejuvenatingProcessor;
 import edu.cuny.hunter.log.core.utils.LoggerNames;
-import edu.hunter.log.evalution.utils.Util;
+import edu.cuny.hunter.log.evalution.utils.Util;
 
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.ltk.core.refactoring.RefactoringStatusEntry;
@@ -51,14 +49,12 @@ import org.eclipse.ltk.core.refactoring.participants.ProcessorBasedRefactoring;
 public class EvaluationHandler extends AbstractHandler {
 
 	private static final Logger LOGGER = Logger.getLogger(LoggerNames.LOGGER_NAME);
-	private static final String USE_LOG_CATEGORY_KEY = "edu.hunter.log.evalution.useLogCategory";
-	private static final String USE_LOG_CATEGORY_CONFIG_KEY = "edu.hunter.log.evalution.useLogCategoryWithConfig";
+	private static final String USE_LOG_CATEGORY_KEY = "edu.cuny.hunter.log.evalution.useLogCategory";
+	private static final String USE_LOG_CATEGORY_CONFIG_KEY = "edu.cuny.hunter.log.evalution.useLogCategoryWithConfig";
+	private static final String USE_GIT_HISTORY_KEY = "edu.cuny.hunter.log.evalution.useGitHistory";
 	private static final boolean USE_LOG_CATEGORY_DEFAULT = false;
 	private static final boolean USE_LOG_CATEGORY_CONFIG_DEFAULT = false;
-
-	public static CSVPrinter createCSVPrinter(String fileName, String[] header) throws IOException {
-		return new CSVPrinter(new FileWriter(fileName, true), CSVFormat.EXCEL.withHeader(header));
-	}
+	private static final boolean USE_GIT_HISTORY = false;
 
 	@Override
 	public Object execute(ExecutionEvent event) throws ExecutionException {
@@ -84,32 +80,38 @@ public class EvaluationHandler extends AbstractHandler {
 
 					try {
 
-						CSVPrinter resultPrinter = createCSVPrinter("result.csv", new String[] { "subject raw",
+						CSVPrinter resultPrinter = Util.createCSVPrinter("result.csv", new String[] { "subject raw",
 								"log invocations before", "candidate log invocations", "failed preconditions" });
-						CSVPrinter actionPrinter = createCSVPrinter("log_actions.csv",
+						CSVPrinter actionPrinter = Util.createCSVPrinter("log_actions.csv",
 								new String[] { "subject raw", "log expression", "start pos", "logging level",
 										"type FQN", "enclosing method", "action" });
-						CSVPrinter candidatePrinter = createCSVPrinter("candidate_log_invocations.csv",
+						CSVPrinter candidatePrinter = Util.createCSVPrinter("candidate_log_invocations.csv",
 								new String[] { "subject raw", "log expression", "start pos", "logging level",
 										"type FQN", "enclosing method", "DOI" });
-						CSVPrinter optimizablePrinter = createCSVPrinter("optimizable_log_invocations.csv",
+						CSVPrinter optimizablePrinter = Util.createCSVPrinter("optimizable_log_invocations.csv",
 								new String[] { "subject raw", "log expression", "start pos", "logging level",
 										"type FQN", "enclosing method", "DOI" });
-						CSVPrinter failedPreConsPrinter = createCSVPrinter("failed_preconditions.csv",
+						CSVPrinter failedPreConsPrinter = Util.createCSVPrinter("failed_preconditions.csv",
 								new String[] { "subject raw", "log expression", "start pos", "logging level",
 										"type FQN", "enclosing method", "code", "name", "message" });
+						CSVPrinter methodOpsPrinter = Util.createCSVPrinter("method_operations.csv",
+								new String[] { "Commit ID", "SHA-1", "files", "file ops", "methods", "method ops" });
 
 						// for each selected java project
 						for (IJavaProject project : javaProjectList) {
 
 							LogRejuvenatingProcessor logRejuvenatingProcessor = new LogRejuvenatingProcessor(
 									new IJavaProject[] { project }, this.useLogCategory(),
-									this.useLogCategoryWithConfig(), settings, monitor);
+									this.useLogCategoryWithConfig(), this.useGitHistory(), settings, monitor);
 
 							new ProcessorBasedRefactoring((RefactoringProcessor) logRejuvenatingProcessor)
 									.checkAllConditions(new NullProgressMonitor());
 
 							Set<LogInvocation> logInvocationSet = logRejuvenatingProcessor.getLogInvocationSet();
+
+							if (this.useGitHistory()) {
+								//TODO: print the results of using git history
+							}
 
 							// get candidate log invocations
 							Set<LogInvocation> candidates = logInvocationSet == null ? Collections.emptySet()
@@ -230,6 +232,15 @@ public class EvaluationHandler extends AbstractHandler {
 			return USE_LOG_CATEGORY_CONFIG_DEFAULT;
 		else
 			return Boolean.valueOf(useConfigLogLevels);
+	}
+
+	private boolean useGitHistory() {
+		String useGitHistory = System.getenv(USE_GIT_HISTORY_KEY);
+
+		if (useGitHistory == null)
+			return USE_GIT_HISTORY;
+		else
+			return Boolean.valueOf(useGitHistory);
 	}
 
 }

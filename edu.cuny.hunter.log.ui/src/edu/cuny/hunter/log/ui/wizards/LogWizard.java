@@ -18,9 +18,11 @@ import org.eclipse.ltk.ui.refactoring.UserInputWizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.PlatformUI;
 import edu.cuny.hunter.log.core.messages.Messages;
@@ -42,6 +44,8 @@ public class LogWizard extends RefactoringWizard {
 
 		private static final String USE_LOG_CATEGORY_CONFIG = "useLogCategoryWithConfig";
 
+		private static final String USE_GIT_HISTORY = "useGitHistory";
+
 		private LogRejuvenatingProcessor processor;
 
 		IDialogSettings settings;
@@ -51,8 +55,9 @@ public class LogWizard extends RefactoringWizard {
 			this.setDescription(DESCRIPTION);
 		}
 
-		private void addBooleanButton(String text, String key, Consumer<Boolean> valueConsumer, Composite result) {
-			Button button = new Button(result, SWT.RADIO);
+		private void addBooleanButton(String text, String key, Consumer<Boolean> valueConsumer, Composite result,
+				int buttonStyle) {
+			Button button = new Button(result, buttonStyle);
 			button.setText(text);
 			boolean value = this.settings.getBoolean(key);
 			valueConsumer.accept(value);
@@ -82,17 +87,30 @@ public class LogWizard extends RefactoringWizard {
 			layout.numColumns = 1;
 			result.setLayout(layout);
 
-			// set up buttons.
-			Button button = new Button(result, SWT.RADIO);
+			Label logLable = new Label(result, SWT.NONE);
+			logLable.setText("Choose the log level style:");
+      
+      Button button = new Button(result, SWT.RADIO);
 			button.setText("Defalut： traditional levels.");
 
 			// set up buttons.
-			this.addBooleanButton("Treat CONFIG logging level as a category and not a traditional level.",
-					USE_LOG_CATEGORY_CONFIG, this.getProcessor()::setParticularConfigLogLevel, result);
+			this.addBooleanButton("Treat CONFIG log level as a category and not a traditional level.",
+					USE_LOG_CATEGORY_CONFIG, this.getProcessor()::setParticularConfigLogLevel, result, SWT.RADIO);
 
 			// set up buttons.
-			this.addBooleanButton("Treat CONFIG/WARNING/SEVERE logging levels as category and not traditional levels.",
-					USE_LOG_CATEGORY, this.getProcessor()::setParticularLogLevel, result);
+			this.addBooleanButton("Treat CONFIG/WARNING/SEVERE log levels as category and not traditional levels.",
+					USE_LOG_CATEGORY, this.getProcessor()::setParticularLogLevel, result, SWT.RADIO);
+
+			Label separator = new Label(result, SWT.SEPARATOR | SWT.SHADOW_OUT | SWT.HORIZONTAL);
+			separator.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
+
+			Label gitLabel = new Label(result, SWT.NONE);
+			gitLabel.setText("Check the option below if you would like to use git history to "
+					+ "rejuvenate log levels for the whole repository.");
+
+			// set up buttons.
+			this.addBooleanButton("Traverse git history to rejuvenate log levels.", USE_GIT_HISTORY,
+					this.getProcessor()::setUseGitHistory, result, SWT.CHECK);
 
 			this.updateStatus();
 			Dialog.applyDialogFont(result);
@@ -110,8 +128,11 @@ public class LogWizard extends RefactoringWizard {
 				this.settings = this.getDialogSettings().addNewSection(DIALOG_SETTING_SECTION);
 				this.settings.put(USE_LOG_CATEGORY_CONFIG, this.getProcessor().getParticularConfigLogLevel());
 				this.settings.put(USE_LOG_CATEGORY, this.getProcessor().getParticularLogLevel());
+				this.settings.put(USE_GIT_HISTORY, this.getProcessor().getGitHistory());
 			}
-			this.processor.setParticularConfigLogLevel(this.settings.getBoolean(USE_LOG_CATEGORY));
+			this.processor.setParticularConfigLogLevel(this.settings.getBoolean(USE_LOG_CATEGORY_CONFIG));
+			this.processor.setParticularLogLevel(this.settings.getBoolean(USE_LOG_CATEGORY));
+			this.processor.setUseGitHistory(this.settings.getBoolean(USE_GIT_HISTORY));
 		}
 
 		private void setProcessor(LogRejuvenatingProcessor processor) {

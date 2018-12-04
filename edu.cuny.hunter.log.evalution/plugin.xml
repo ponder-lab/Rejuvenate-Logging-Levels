@@ -18,7 +18,7 @@
          point="org.eclipse.ui.handlers">
       <handler
             commandId="edu.hunter.log.evalution.commands.sampleCommand"
-            class="edu.hunter.log.evalution.handlers.EvaluationHandler">
+            class="edu.cuny.hunter.log.evalution.handlers.EvaluationHandler">
       </handler>
    </extension>
    <extension

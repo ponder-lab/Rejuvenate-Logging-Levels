@@ -129,4 +129,5 @@ public class LogEvolutionRejuvenatingTest extends RefactoringTest {
 		return null;
 	}
 
+
 }
