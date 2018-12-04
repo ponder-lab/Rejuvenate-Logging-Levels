@@ -102,7 +102,6 @@ public class GitHistoryAnalyzer {
 
 				this.commitIndex++;
 
-				clear();
 				clearFiles(new File("").getAbsoluteFile());
 			}
 			git.close();
@@ -183,6 +182,7 @@ public class GitHistoryAnalyzer {
 				}
 
 				storeAllMethodOps(currentCommit, filePath, diffEntry.getChangeType().name());
+				clear();
 			}
 		}
 	}
