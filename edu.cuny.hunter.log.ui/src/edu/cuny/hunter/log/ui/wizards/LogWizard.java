@@ -89,6 +89,9 @@ public class LogWizard extends RefactoringWizard {
 
 			Label logLable = new Label(result, SWT.NONE);
 			logLable.setText("Choose the log level style:");
+      
+      Button button = new Button(result, SWT.RADIO);
+			button.setText("Defalut： traditional levels.");
 
 			// set up buttons.
 			this.addBooleanButton("Treat CONFIG log level as a category and not a traditional level.",
