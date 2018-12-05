@@ -7,17 +7,11 @@ import java.util.LinkedList;
 import java.util.Set;
 
 public class Graph {
-	private Set<Vertex> vertices;
-	private Set<Vertex> headVertices;
-	private Set<Vertex> tailVertices;
+	private Set<Vertex> vertices = new HashSet<>();
+	private Set<Vertex> headVertices = new HashSet<>();
+	private Set<Vertex> tailVertices = new HashSet<>();
 
 	private HashMap<Vertex, Vertex> historicalMethodToCurrentMethods = new HashMap<>();
-
-	public Graph() {
-		vertices = new HashSet<>();
-		headVertices = new HashSet<>();
-		tailVertices = new HashSet<>();
-	}
 
 	public boolean addVertex(String method, String file, int commit) {
 		Vertex vertex = new Vertex(method, file, commit);
@@ -75,7 +69,7 @@ public class Graph {
 		return Collections.unmodifiableSet(vertices);
 	}
 
-	public Set<Vertex> getExitVertices() {
+	public Set<Vertex> getTailVertices() {
 		this.tailVertices.clear();
 		vertices.forEach(v -> {
 			if (v.getNextVertex() == null)
@@ -95,7 +89,7 @@ public class Graph {
 		return this.headVertices;
 	}
 
-	private Set<Vertex> getEntryVertices() {
+	private Set<Vertex> getHeadVertices() {
 		return this.headVertices;
 	}
 
@@ -132,16 +126,16 @@ public class Graph {
 	/**
 	 * Given an exist node, remove the connected component in which it is.
 	 */
-	public void pruneGraphByExist(Vertex exist) {
-		Vertex entry = this.getHead(exist);
+	public void pruneGraphByTail(Vertex tail) {
+		Vertex head = this.getHead(tail);
 		// traverse all vertices
-		while (entry != null) {
-			this.vertices.remove(entry);
-			entry = entry.getNextVertex();
+		while (head != null) {
+			this.vertices.remove(head);
+			head = head.getNextVertex();
 		}
 		// update heads and tails
 		this.updateEntryVertices();
-		this.getExitVertices();
+		this.getTailVertices();
 	}
 
 	public HashMap<Vertex, Vertex> getHistoricalMethodToCurrentMethods() {

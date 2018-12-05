@@ -270,7 +270,7 @@ public class GitHistoryAnalyzer {
 
 		}
 
-		computeMethodChanges(diffEntry.getNewPath());
+		this.computeMethodChanges(diffEntry.getNewPath());
 
 		return diffEntry.getNewPath();
 	}
@@ -300,12 +300,12 @@ public class GitHistoryAnalyzer {
 			putIntoMethodToOps(this.methodSignaturesToOps, Util.getMethodSignature(methodDec),
 					TypesOfMethodOperations.DELETE);
 
-			Set<Vertex> exitVertices = this.renaming.getExitVertices();
-			Set<Vertex> entry = null;
-			for (Vertex v : exitVertices) {
+			Set<Vertex> tailVertices = new HashSet<>();
+			tailVertices.addAll(this.renaming.getTailVertices());
+			for (Vertex v : tailVertices) {
 				if (v.getFile().equals(diffEntry.getOldPath())
 						&& v.getMethod().equals(Util.getMethodSignature(methodDec))) {
-					renaming.pruneGraphByExist(v);
+					renaming.pruneGraphByTail(v);
 				}
 			}
 
@@ -731,9 +731,11 @@ public class GitHistoryAnalyzer {
 	 */
 	private void putIntoMethodToOps(HashMap<String, LinkedList<TypesOfMethodOperations>> map, String key,
 			TypesOfMethodOperations element) {
-		LinkedList<TypesOfMethodOperations> list = new LinkedList<>();
+		LinkedList<TypesOfMethodOperations> list;
 		if (map.containsKey(key)) {
 			list = map.get(key);
+		} else {
+			list = new LinkedList<>();
 		}
 		list.add(element);
 		map.put(key, list);
