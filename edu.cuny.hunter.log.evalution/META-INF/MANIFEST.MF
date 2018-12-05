@@ -1,7 +1,7 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Evalution
-Bundle-SymbolicName: edu.cuny.hunter.log.evalution;singleton:=true
+Bundle-SymbolicName: edu.cuny.hunter.log.evaluation;singleton:=true
 Bundle-Version: 1.0.0.qualifier
 Require-Bundle: org.eclipse.ui,
  org.eclipse.core.resources;bundle-version="3.12.0",

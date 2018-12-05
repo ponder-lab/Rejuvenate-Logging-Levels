@@ -6,25 +6,25 @@
          point="org.eclipse.ui.commands">
       <category
             name="Sample Category"
-            id="edu.hunter.log.evalution.commands.category">
+            id="edu.hunter.log.evaluation.commands.category">
       </category>
       <command
             name="Evaluate log projects."
-            categoryId="edu.hunter.log.evalution.commands.category"
-            id="edu.hunter.log.evalution.commands.sampleCommand">
+            categoryId="edu.hunter.log.evaluation.commands.category"
+            id="edu.hunter.log.evaluation.commands.sampleCommand">
       </command>
    </extension>
    <extension
          point="org.eclipse.ui.handlers">
       <handler
-            commandId="edu.hunter.log.evalution.commands.sampleCommand"
-            class="edu.cuny.hunter.log.evalution.handlers.EvaluationHandler">
+            commandId="edu.hunter.log.evaluation.commands.sampleCommand"
+            class="edu.cuny.hunter.log.evaluation.handlers.EvaluationHandler">
       </handler>
    </extension>
    <extension
          point="org.eclipse.ui.bindings">
       <key
-            commandId="edu.hunter.log.evalution.commands.sampleCommand"
+            commandId="edu.hunter.log.evaluation.commands.sampleCommand"
             contextId="org.eclipse.ui.contexts.window"
             sequence="M1+6"
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration">
@@ -37,23 +37,23 @@
          <menu
                label="Sample Menu"
                mnemonic="M"
-               id="edu.hunter.log.evalution.menus.sampleMenu">
+               id="edu.hunter.log.evaluation.menus.sampleMenu">
             <command
-                  commandId="edu.hunter.log.evalution.commands.sampleCommand"
+                  commandId="edu.hunter.log.evaluation.commands.sampleCommand"
                   mnemonic="S"
-                  id="edu.hunter.log.evalution.menus.sampleCommand">
+                  id="edu.hunter.log.evaluation.menus.sampleCommand">
             </command>
          </menu>
       </menuContribution>
       <menuContribution
             locationURI="toolbar:org.eclipse.ui.main.toolbar?after=additions">
          <toolbar
-               id="edu.hunter.log.evalution.toolbars.sampleToolbar">
+               id="edu.hunter.log.evaluation.toolbars.sampleToolbar">
             <command
-                  commandId="edu.hunter.log.evalution.commands.sampleCommand"
+                  commandId="edu.hunter.log.evaluation.commands.sampleCommand"
                   icon="icons/sample.png"
                   tooltip="Say hello world"
-                  id="edu.hunter.log.evalution.toolbars.sampleCommand">
+                  id="edu.hunter.log.evaluation.toolbars.sampleCommand">
             </command>
          </toolbar>
       </menuContribution>
@@ -61,7 +61,7 @@
             allPopups="false"
             locationURI="popup:org.eclipse.jdt.ui.refactoring.menu?after=additions">
          <command
-               commandId="edu.hunter.log.evalution.commands.sampleCommand"
+               commandId="edu.hunter.log.evaluation.commands.sampleCommand"
                label="Evaluate log projects."
                style="push">
             <visibleWhen

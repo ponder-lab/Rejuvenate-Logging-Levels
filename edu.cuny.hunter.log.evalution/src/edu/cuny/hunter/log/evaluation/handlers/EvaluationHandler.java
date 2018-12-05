@@ -1,4 +1,4 @@
-package edu.cuny.hunter.log.evalution.handlers;
+package edu.cuny.hunter.log.evaluation.handlers;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -33,7 +33,7 @@ import edu.cuny.hunter.log.core.analysis.LogInvocation;
 import edu.cuny.hunter.log.core.analysis.PreconditionFailure;
 import edu.cuny.hunter.log.core.refactorings.LogRejuvenatingProcessor;
 import edu.cuny.hunter.log.core.utils.LoggerNames;
-import edu.cuny.hunter.log.evalution.utils.Util;
+import edu.cuny.hunter.log.evaluation.utils.Util;
 
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.ltk.core.refactoring.RefactoringStatusEntry;
@@ -49,9 +49,9 @@ import org.eclipse.ltk.core.refactoring.participants.ProcessorBasedRefactoring;
 public class EvaluationHandler extends AbstractHandler {
 
 	private static final Logger LOGGER = Logger.getLogger(LoggerNames.LOGGER_NAME);
-	private static final String USE_LOG_CATEGORY_KEY = "edu.cuny.hunter.log.evalution.useLogCategory";
-	private static final String USE_LOG_CATEGORY_CONFIG_KEY = "edu.cuny.hunter.log.evalution.useLogCategoryWithConfig";
-	private static final String USE_GIT_HISTORY_KEY = "edu.cuny.hunter.log.evalution.useGitHistory";
+	private static final String USE_LOG_CATEGORY_KEY = "edu.cuny.hunter.log.evaluation.useLogCategory";
+	private static final String USE_LOG_CATEGORY_CONFIG_KEY = "edu.cuny.hunter.log.evaluation.useLogCategoryWithConfig";
+	private static final String USE_GIT_HISTORY_KEY = "edu.cuny.hunter.log.evaluation.useGitHistory";
 	private static final boolean USE_LOG_CATEGORY_DEFAULT = false;
 	private static final boolean USE_LOG_CATEGORY_CONFIG_DEFAULT = false;
 	private static final boolean USE_GIT_HISTORY = false;
@@ -94,8 +94,6 @@ public class EvaluationHandler extends AbstractHandler {
 						CSVPrinter failedPreConsPrinter = Util.createCSVPrinter("failed_preconditions.csv",
 								new String[] { "subject raw", "log expression", "start pos", "logging level",
 										"type FQN", "enclosing method", "code", "name", "message" });
-						CSVPrinter methodOpsPrinter = Util.createCSVPrinter("method_operations.csv",
-								new String[] { "Commit ID", "SHA-1", "files", "file ops", "methods", "method ops" });
 
 						// for each selected java project
 						for (IJavaProject project : javaProjectList) {
@@ -108,10 +106,6 @@ public class EvaluationHandler extends AbstractHandler {
 									.checkAllConditions(new NullProgressMonitor());
 
 							Set<LogInvocation> logInvocationSet = logRejuvenatingProcessor.getLogInvocationSet();
-
-							if (this.useGitHistory()) {
-								//TODO: print the results of using git history
-							}
 
 							// get candidate log invocations
 							Set<LogInvocation> candidates = logInvocationSet == null ? Collections.emptySet()

@@ -43,14 +43,18 @@ public class MylynGitPredictionProvider {
 	 */
 	public void processProjects() {
 		for (IJavaProject javaProject : javaProjects) {
-			this.methods.clear();
-
-			List<ICompilationUnit> cUnits = Util.getCompilationUnits(javaProject);
-			cUnits.forEach(cUnit -> {
-				methods.addAll(this.getIMethodsInSouceCode(cUnit));
-			});
-			bumpDOIValuesForAllGitMethods(javaProject);
+			this.processOneProject(javaProject);
 		}
+	}
+
+	public void processOneProject(IJavaProject javaProject) {
+		this.methods.clear();
+
+		List<ICompilationUnit> cUnits = Util.getCompilationUnits(javaProject);
+		cUnits.forEach(cUnit -> {
+			this.methods.addAll(this.getIMethodsInSouceCode(cUnit));
+		});
+		bumpDOIValuesForAllGitMethods(javaProject);
 	}
 
 	/**
@@ -191,5 +195,9 @@ public class MylynGitPredictionProvider {
 		ContextCorePlugin.getContextManager().manipulateInterestForElement(getInteractionElement(method), false, false,
 				true, ID, true);
 
+	}
+	
+	public HashSet<IMethod> getMethods() {
+		return this.methods;
 	}
 }

@@ -1,4 +1,4 @@
-package edu.cuny.hunter.log.evalution.utils;
+package edu.cuny.hunter.log.evaluation.utils;
 
 import java.io.FileWriter;
 import java.io.IOException;
