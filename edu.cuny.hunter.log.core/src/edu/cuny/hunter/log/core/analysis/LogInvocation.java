@@ -70,7 +70,7 @@ public class LogInvocation {
 	}
 
 	public float getDegreeOfInterestValue() {
-		return degreeOfInterestValue;
+		return this.degreeOfInterestValue;
 	}
 
 	public void setDegreeOfInterestValue(int degreeOfInterestValue) {
