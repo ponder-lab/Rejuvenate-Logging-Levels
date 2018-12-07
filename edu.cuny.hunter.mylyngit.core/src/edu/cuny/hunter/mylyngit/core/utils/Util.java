@@ -15,6 +15,8 @@ import org.eclipse.jdt.core.ITypeParameter;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.SingleVariableDeclaration;
+import org.eclipse.mylyn.context.core.ContextCore;
+import org.eclipse.mylyn.context.core.IInteractionElement;
 
 public class Util {
 	public final static String LOGGER_NAME = "edu.cuny.hunter.logging";
@@ -90,5 +92,14 @@ public class Util {
 			e.printStackTrace();
 		}
 		return units;
+	}
+	
+	public static float getDOIValue(IMethod method) {
+		IInteractionElement element = ContextCore.getContextManager().getElement(method.getHandleIdentifier());
+
+		if (element == null || element.getContext() == null) {
+			return Float.NEGATIVE_INFINITY;
+		}
+		return element.getInterest().getValue();
 	}
 }

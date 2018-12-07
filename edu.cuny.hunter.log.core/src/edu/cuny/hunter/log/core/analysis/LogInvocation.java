@@ -104,7 +104,7 @@ public class LogInvocation {
 	 */
 	public IDegreeOfInterest getDegreeOfInterest() {
 		IInteractionElement interactionElement = getInteractionElement();
-		if (interactionElement == null)
+		if (interactionElement == null || interactionElement.getContext() == null) // workaround bug ...
 			return null;
 		return interactionElement.getInterest();
 	}
