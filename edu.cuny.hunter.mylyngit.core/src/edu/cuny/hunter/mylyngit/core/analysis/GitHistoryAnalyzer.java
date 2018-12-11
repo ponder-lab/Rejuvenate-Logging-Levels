@@ -95,12 +95,6 @@ public class GitHistoryAnalyzer {
 			// from the earliest commit to the current commit
 			for (RevCommit currentCommit : this.commitList) {
 
-				System.out.println("------------------------------");
-				System.out.println(currentCommit.getName());
-				System.out.println(currentCommit.getShortMessage());
-				
-				if (currentCommit.getId().getName().toString().equals("31306043b81dc0add7d8346bc6fb903f0fae2028")) {
-					System.out.println("!!");
 				}
 				
 				processOneCommit(currentCommit, previousCommit, git);
