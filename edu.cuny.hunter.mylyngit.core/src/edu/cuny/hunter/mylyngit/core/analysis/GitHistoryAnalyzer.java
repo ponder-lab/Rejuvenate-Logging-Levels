@@ -97,9 +97,15 @@ public class GitHistoryAnalyzer {
 				// Only consider normal commits instead of merge commits
 				if (currentCommit.getParentCount() == 1) {
 					processOneCommit(currentCommit, currentCommit.getParent(0), git);
-					this.commitIndex++;
-					this.clearFiles(new File("").getAbsoluteFile());
+				} else if (currentCommit.getParentCount() == 0) {
+					processOneCommit(currentCommit, null, git);
+				} else {
+					continue;
 				}
+
+				this.commitIndex++;
+				this.clearFiles(new File("").getAbsoluteFile());
+
 			}
 			git.close();
 		} catch (IOException | GitAPIException e) {
