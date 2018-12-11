@@ -59,7 +59,7 @@ public class GitHistoryAnalyzer {
 
 	private static final Logger LOGGER = Logger.getLogger(Util.LOGGER_NAME);
 
-	// Set of method declarations
+	// -----The variables below are used to store info only for one revision.----
 	private HashSet<MethodDeclaration> methodDeclarationsForA = new HashSet<MethodDeclaration>();
 	private HashSet<MethodDeclaration> methodDeclarationsForB = new HashSet<MethodDeclaration>();
 
@@ -71,9 +71,7 @@ public class GitHistoryAnalyzer {
 
 	// A mapping from the method signature to the operations
 	private HashMap<String, LinkedList<TypesOfMethodOperations>> methodSignaturesToOps = new HashMap<>();
-
-	// The old method in the revision A and the new method in the revision B
-	private HashMap<String, String> methodToMethod = new HashMap<>();
+	// ----------------------------------------------------------------------------
 
 	private LinkedList<RevCommit> commitList = new LinkedList<>();
 
@@ -97,12 +95,19 @@ public class GitHistoryAnalyzer {
 			// from the earliest commit to the current commit
 			for (RevCommit currentCommit : this.commitList) {
 
+				System.out.println("------------------------------");
+				System.out.println(currentCommit.getName());
+				System.out.println(currentCommit.getShortMessage());
+				
+				if (currentCommit.getId().getName().toString().equals("31306043b81dc0add7d8346bc6fb903f0fae2028")) {
+					System.out.println("!!");
+				}
+				
 				processOneCommit(currentCommit, previousCommit, git);
 				previousCommit = currentCommit;
-
 				this.commitIndex++;
 
-				clearFiles(new File("").getAbsoluteFile());
+				this.clearFiles(new File("").getAbsoluteFile());
 			}
 			git.close();
 		} catch (IOException | GitAPIException e) {
@@ -110,10 +115,12 @@ public class GitHistoryAnalyzer {
 		}
 	}
 
+	/**
+	 * This method is used to JUnit test.
+	 */
 	public GitHistoryAnalyzer(String sha, File repoFile) throws IOException, GitAPIException {
 
 		Git git = Git.init().setDirectory(repoFile).call();
-		;
 
 		ObjectId currentCommitId = ObjectId.fromString(sha);
 		RevWalk revWalk = new RevWalk(git.getRepository());
@@ -124,6 +131,8 @@ public class GitHistoryAnalyzer {
 		revWalk.close();
 
 		processOneCommit(currentCommit, previousCommit, git);
+
+		this.clearFiles(new File("").getAbsoluteFile());
 
 		git.close();
 	}
@@ -160,9 +169,10 @@ public class GitHistoryAnalyzer {
 			formatter.setRepository(git.getRepository());
 			formatter.scan(oldTreeIterator, newTreeIterator);
 
-			String filePath = null;
 			for (DiffEntry diffEntry : diffs) {
 
+				String filePath = null;
+				
 				switch (diffEntry.getChangeType()) {
 				case ADD:
 					filePath = addFile(currentCommit, git.getRepository(), diffEntry);
@@ -181,8 +191,8 @@ public class GitHistoryAnalyzer {
 					break;
 				}
 
-				storeAllMethodOps(currentCommit, filePath, diffEntry.getChangeType().name());
-				clear();
+				this.storeAllMethodOps(currentCommit, filePath, diffEntry.getChangeType().name());
+				this.clear();
 			}
 		}
 	}
@@ -245,10 +255,10 @@ public class GitHistoryAnalyzer {
 		// Get the file for revision B
 		copyHistoricalFile(currentCommit, repo, diffEntry.getNewPath(), "tmp_B_");
 
-		// For deleting, get the differences
+		// For revision A, get the differences
 		computeMethodPositions(this.methodDeclarationsForA, this.methodPositionsForA);
 
-		// For adding, get the differences
+		// For revision B, get the differences
 		computeMethodPositions(this.methodDeclarationsForB, this.methodPositionsForB);
 
 		List<? extends HunkHeader> hunks = fileHeader.getHunks();
@@ -305,7 +315,7 @@ public class GitHistoryAnalyzer {
 			for (Vertex v : tailVertices) {
 				if (v.getFile().equals(diffEntry.getOldPath())
 						&& v.getMethod().equals(Util.getMethodSignature(methodDec))) {
-					renaming.pruneGraphByTail(v);
+					this.renaming.pruneGraphByTail(v);
 				}
 			}
 
@@ -613,7 +623,6 @@ public class GitHistoryAnalyzer {
 		if (targetMethodDec != null) {
 			this.process(targetMethodDec, additionalMethodDecInB, additionalMethodInB, methodOp);
 			this.addVertexIntoGraph(Util.getMethodSignature(targetMethodDec), methodSig, file);
-			this.methodToMethod.put(methodSig, Util.getMethodSignature(targetMethodDec));
 			return true;
 		} else
 			return false;
