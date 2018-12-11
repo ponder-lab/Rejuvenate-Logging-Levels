@@ -19,6 +19,7 @@ import org.eclipse.mylyn.context.core.ContextCore;
 import org.eclipse.mylyn.context.core.IInteractionContext;
 import org.eclipse.mylyn.context.core.IInteractionElement;
 import org.eclipse.mylyn.internal.context.core.ContextCorePlugin;
+import org.eclipse.mylyn.internal.java.ui.search.AbstractJavaRelationProvider;
 import org.eclipse.mylyn.monitor.core.InteractionEvent.Kind;
 
 import edu.cuny.hunter.mylyngit.core.utils.GitMethod;
@@ -30,13 +31,19 @@ import edu.cuny.hunter.mylyngit.core.utils.Vertex;
  *
  */
 @SuppressWarnings("restriction")
-public class MylynGitPredictionProvider {
+public class MylynGitPredictionProvider extends AbstractJavaRelationProvider {
+
+	private static final String Name = "mylyn git";
+
+	public MylynGitPredictionProvider() {
+		super("java", ID);
+	}
 
 	private IJavaProject[] javaProjects;
 
 	private HashSet<IMethod> methods = new HashSet<>();
 
-	private final static String ID = MylynGitPredictionProvider.class.getName();
+	private static String ID = MylynGitPredictionProvider.class.getName();
 
 	/**
 	 * The entry point
@@ -196,8 +203,18 @@ public class MylynGitPredictionProvider {
 				true, ID, true);
 
 	}
-	
+
 	public HashSet<IMethod> getMethods() {
 		return this.methods;
+	}
+
+	@Override
+	public String getName() {
+		return this.Name;
+	}
+
+	@Override
+	protected String getSourceId() {
+		return this.ID;
 	}
 }

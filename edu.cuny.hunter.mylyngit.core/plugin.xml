@@ -1,5 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?eclipse version="3.4"?>
 <plugin>
+   <extension
+         point="org.eclipse.mylyn.context.core.relationProviders">
+      <provider
+            class="edu.cuny.hunter.mylyngit.core.analysis.MylynGitPredictionProvider"
+            contentType="java">
+      </provider>
+   </extension>
 
 </plugin>
