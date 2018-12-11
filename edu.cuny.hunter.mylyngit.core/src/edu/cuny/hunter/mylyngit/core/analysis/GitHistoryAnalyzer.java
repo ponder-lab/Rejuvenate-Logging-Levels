@@ -90,18 +90,16 @@ public class GitHistoryAnalyzer {
 		Git git;
 		try {
 			git = preProcessGitHistory(repoFile);
-			RevCommit previousCommit = null;
 
 			// from the earliest commit to the current commit
 			for (RevCommit currentCommit : this.commitList) {
 
+				// Only consider normal commits instead of merge commits
+				if (currentCommit.getParentCount() == 1) {
+					processOneCommit(currentCommit, currentCommit.getParent(0), git);
+					this.commitIndex++;
+					this.clearFiles(new File("").getAbsoluteFile());
 				}
-				
-				processOneCommit(currentCommit, previousCommit, git);
-				previousCommit = currentCommit;
-				this.commitIndex++;
-
-				this.clearFiles(new File("").getAbsoluteFile());
 			}
 			git.close();
 		} catch (IOException | GitAPIException e) {
@@ -166,7 +164,7 @@ public class GitHistoryAnalyzer {
 			for (DiffEntry diffEntry : diffs) {
 
 				String filePath = null;
-				
+
 				switch (diffEntry.getChangeType()) {
 				case ADD:
 					filePath = addFile(currentCommit, git.getRepository(), diffEntry);
