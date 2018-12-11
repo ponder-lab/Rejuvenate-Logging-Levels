@@ -1,7 +1,7 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Evalution
-Bundle-SymbolicName: edu.cuny.hunter.log.evalution;singleton:=true
+Bundle-SymbolicName: edu.cuny.hunter.mylyngit.eval;singleton:=true
 Bundle-Version: 1.0.0.qualifier
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Import-Package: edu.cuny.hunter.mylyngit.core.analysis,
@@ -9,7 +9,8 @@ Import-Package: edu.cuny.hunter.mylyngit.core.analysis,
  org.eclipse.jdt.core,
  org.eclipse.jdt.internal.ui.preferences,
  org.eclipse.jdt.internal.ui.util,
- org.eclipse.mylyn.context.core
+ org.eclipse.mylyn.context.core,
+ org.eclipse.mylyn.internal.java.ui.search
 Bundle-ClassPath: lib/commons-csv-1.1.jar,
  .
 Require-Bundle: org.eclipse.ui,
