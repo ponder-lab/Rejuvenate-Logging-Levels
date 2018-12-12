@@ -85,32 +85,27 @@ public class GitHistoryAnalyzer {
 	/**
 	 * Given the repo path, compute all method operations (e.g., delete a method)
 	 * for all commits.
+	 * @throws GitAPIException 
+	 * @throws IOException 
+	 * @throws NoHeadException 
 	 */
-	public GitHistoryAnalyzer(File repoFile) {
-		Git git;
-		try {
-			git = preProcessGitHistory(repoFile);
-
+	public GitHistoryAnalyzer(File repoFile) throws NoHeadException, IOException, GitAPIException {
+		try(Git git = preProcessGitHistory(repoFile)) {
 			// from the earliest commit to the current commit
 			for (RevCommit currentCommit : this.commitList) {
+				// for each parent
+				for (RevCommit parent : currentCommit.getParents())
+					// process the commit.
+					processOneCommit(currentCommit, parent, git);
 
-				// Only consider normal commits instead of merge commits
-				if (currentCommit.getParentCount() == 1) {
-					processOneCommit(currentCommit, currentCommit.getParent(0), git);
-				} else if (currentCommit.getParentCount() == 0) {
-					processOneCommit(currentCommit, null, git);
-				} else {
-					continue;
-				}
+				// special case for the initial commit, which has no parents.
+				if (currentCommit.getParentCount() == 0)
+					processOneCommit(currentCommit, null, git); 
 
 				this.commitIndex++;
 				this.clearFiles(new File("").getAbsoluteFile());
-
 			}
-			git.close();
-		} catch (IOException | GitAPIException e) {
-			LOGGER.warning("Cannot process git commits!");
-		}
+		} 
 	}
 
 	/**
