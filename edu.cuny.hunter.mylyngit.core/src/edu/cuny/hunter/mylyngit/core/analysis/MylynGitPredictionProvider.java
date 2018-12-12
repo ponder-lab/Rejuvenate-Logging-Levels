@@ -1,6 +1,7 @@
 package edu.cuny.hunter.mylyngit.core.analysis;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -15,6 +16,8 @@ import org.eclipse.jdt.core.dom.ASTParser;
 import org.eclipse.jdt.core.dom.ASTVisitor;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
+import org.eclipse.jgit.api.errors.GitAPIException;
+import org.eclipse.jgit.api.errors.NoHeadException;
 import org.eclipse.mylyn.context.core.ContextCore;
 import org.eclipse.mylyn.context.core.IInteractionContext;
 import org.eclipse.mylyn.context.core.IInteractionElement;
@@ -47,14 +50,17 @@ public class MylynGitPredictionProvider extends AbstractJavaRelationProvider {
 
 	/**
 	 * The entry point
+	 * @throws GitAPIException 
+	 * @throws IOException 
+	 * @throws NoHeadException 
 	 */
-	public void processProjects() {
+	public void processProjects() throws NoHeadException, IOException, GitAPIException {
 		for (IJavaProject javaProject : javaProjects) {
 			this.processOneProject(javaProject);
 		}
 	}
 
-	public void processOneProject(IJavaProject javaProject) {
+	public void processOneProject(IJavaProject javaProject) throws NoHeadException, IOException, GitAPIException {
 		this.methods.clear();
 
 		List<ICompilationUnit> cUnits = Util.getCompilationUnits(javaProject);
@@ -103,8 +109,11 @@ public class MylynGitPredictionProvider extends AbstractJavaRelationProvider {
 
 	/**
 	 * Process all methods in the git history and bump the DOI values
+	 * @throws GitAPIException 
+	 * @throws IOException 
+	 * @throws NoHeadException 
 	 */
-	private void bumpDOIValuesForAllGitMethods(IJavaProject javaProject) {
+	private void bumpDOIValuesForAllGitMethods(IJavaProject javaProject) throws NoHeadException, IOException, GitAPIException {
 		File repo = getRepoFile(javaProject);
 		GitHistoryAnalyzer gitHistoryAnalyzer = new GitHistoryAnalyzer(repo);
 		LinkedList<GitMethod> gitMethods = gitHistoryAnalyzer.getGitMethods();
