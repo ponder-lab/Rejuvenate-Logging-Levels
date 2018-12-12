@@ -16,7 +16,6 @@ import org.eclipse.jdt.core.dom.MethodInvocation;
 import edu.cuny.hunter.log.core.messages.Messages;
 import edu.cuny.hunter.log.core.utils.LoggerNames;
 import edu.cuny.hunter.log.core.utils.Util;
-import edu.cuny.hunter.mylyngit.core.analysis.MylynGitPredictionProvider;
 
 public class LogAnalyzer extends ASTVisitor {
 

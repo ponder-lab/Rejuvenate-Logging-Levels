@@ -23,6 +23,7 @@ import edu.cuny.hunter.mylyngit.core.analysis.MylynGitPredictionProvider;
 import edu.cuny.hunter.mylyngit.core.utils.Util;
 
 import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.jgit.api.errors.GitAPIException;
 
 /**
  * Our sample handler extends AbstractHandler, an IHandler base class.
@@ -76,7 +77,9 @@ public class EvaluationHandler extends AbstractHandler {
 
 						resultPrinter.close();
 					} catch (IOException e) {
-						LOGGER.info("Cannot print info correctly.");
+						LOGGER.info("Cannot print info correctly or cannot process git commit.");
+					} catch (GitAPIException e) {
+						LOGGER.info("Cannot get valid git object.");
 					}
 
 				}

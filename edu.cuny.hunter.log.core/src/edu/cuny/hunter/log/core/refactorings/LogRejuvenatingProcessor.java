@@ -3,6 +3,7 @@ package edu.cuny.hunter.log.core.refactorings;
 import java.util.Optional;
 import java.util.Set;
 import java.util.logging.Logger;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -27,6 +28,7 @@ import org.eclipse.jdt.internal.corext.codemanipulation.CodeGenerationSettings;
 import org.eclipse.jdt.internal.corext.refactoring.changes.DynamicValidationRefactoringChange;
 import org.eclipse.jdt.internal.corext.refactoring.structure.CompilationUnitRewrite;
 import org.eclipse.jdt.internal.corext.refactoring.util.TextEditBasedChangeManager;
+import org.eclipse.jgit.api.errors.GitAPIException;
 import edu.cuny.citytech.refactoring.common.core.RefactoringProcessor;
 import edu.cuny.hunter.log.core.analysis.Action;
 import edu.cuny.hunter.log.core.analysis.LogAnalyzer;
@@ -116,15 +118,19 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 	@Override
 	public RefactoringStatus checkFinalConditions(final IProgressMonitor monitor, final CheckConditionsContext context)
 			throws CoreException, OperationCanceledException {
-		try {
-			final RefactoringStatus status = new RefactoringStatus();
 
-			LogAnalyzer analyzer;
+		final RefactoringStatus status = new RefactoringStatus();
+
+		LogAnalyzer analyzer;
+
+		try {
 			if (this.useGitHistory) {
 
 				MylynGitPredictionProvider mylynProvider = new MylynGitPredictionProvider();
 				mylynProvider.setJavaProjects(this.javaProjects);
+
 				mylynProvider.processProjects();
+
 			}
 
 			analyzer = new LogAnalyzer(this.useLogCategoryWithConfig, this.useLogCategory);
@@ -162,13 +168,13 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 					status.addFatalError(Messages.NoPossibleRejuvenatedLog);
 				}
 			}
-			return status;
-		} catch (Exception e) {
-			LOGGER.info("Cannot accpet the visitors. ");
-			throw e;
-		} finally {
-			monitor.done();
+		} catch (GitAPIException e) {
+			LOGGER.info("Cannot get valid git object!");
+		} catch (IOException e) {
+			LOGGER.info("Cannot process git commits.");
 		}
+		return status;
+
 	}
 
 	/**

@@ -15,7 +15,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 import org.eclipse.core.runtime.NullProgressMonitor;
@@ -57,8 +56,6 @@ import edu.cuny.hunter.mylyngit.core.utils.Vertex;
 
 public class GitHistoryAnalyzer {
 
-	private static final Logger LOGGER = Logger.getLogger(Util.LOGGER_NAME);
-
 	// -----The variables below are used to store info only for one revision.----
 	private HashSet<MethodDeclaration> methodDeclarationsForA = new HashSet<MethodDeclaration>();
 	private HashSet<MethodDeclaration> methodDeclarationsForB = new HashSet<MethodDeclaration>();
@@ -85,12 +82,13 @@ public class GitHistoryAnalyzer {
 	/**
 	 * Given the repo path, compute all method operations (e.g., delete a method)
 	 * for all commits.
-	 * @throws GitAPIException 
-	 * @throws IOException 
-	 * @throws NoHeadException 
+	 * 
+	 * @throws GitAPIException
+	 * @throws IOException
+	 * @throws NoHeadException
 	 */
-	public GitHistoryAnalyzer(File repoFile) throws NoHeadException, IOException, GitAPIException {
-		try(Git git = preProcessGitHistory(repoFile)) {
+	public GitHistoryAnalyzer(File repoFile) throws GitAPIException, IOException {
+		try (Git git = preProcessGitHistory(repoFile)) {
 			// from the earliest commit to the current commit
 			for (RevCommit currentCommit : this.commitList) {
 				// for each parent
@@ -100,12 +98,12 @@ public class GitHistoryAnalyzer {
 
 				// special case for the initial commit, which has no parents.
 				if (currentCommit.getParentCount() == 0)
-					processOneCommit(currentCommit, null, git); 
+					processOneCommit(currentCommit, null, git);
 
 				this.commitIndex++;
 				this.clearFiles(new File("").getAbsoluteFile());
 			}
-		} 
+		}
 	}
 
 	/**
@@ -223,8 +221,11 @@ public class GitHistoryAnalyzer {
 
 	/**
 	 * Get git and git commits.
+	 * 
+	 * @throws GitAPIException
+	 * @throws NoHeadException
 	 */
-	private Git preProcessGitHistory(File repoFile) throws IOException, NoHeadException, GitAPIException {
+	private Git preProcessGitHistory(File repoFile) throws NoHeadException, GitAPIException {
 
 		Git git = Git.init().setDirectory(repoFile).call();
 

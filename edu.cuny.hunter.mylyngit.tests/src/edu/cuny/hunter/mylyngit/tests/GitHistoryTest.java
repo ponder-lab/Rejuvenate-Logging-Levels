@@ -42,7 +42,7 @@ public class GitHistoryTest {
 
 	@Test
 	public void testRename() throws IOException, GitAPIException {
-		helper("719714c5a6b80b7049328d2debce929e1b9e5bea", "C:\\Users\\tangy\\log-test-workspace\\Logging-Level-Evolution-Test\\",
+		helper("6e9bc600a2ccbd5d5b94e7f768e6ff1b6a33e508", "C:\\Users\\tangy\\log-test-workspace\\htm\\",
 				new GitAnalysisExpectedResult("newMethod()", TypesOfMethodOperations.RENAME));
 
 	}

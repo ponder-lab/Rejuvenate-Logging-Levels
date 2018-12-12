@@ -96,7 +96,7 @@ public class Graph {
 	public HashMap<Vertex, Vertex> computeHistoricalMethodToCurrentMethods() {
 		this.updateEntryVertices();
 		for (Vertex entry : this.headVertices) {
-			LinkedList<Vertex> visitedVertices = new LinkedList();
+			LinkedList<Vertex> visitedVertices = new LinkedList<Vertex>();
 
 			Vertex tmp = entry;
 			// traverse all vertices

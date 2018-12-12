@@ -20,3 +20,4 @@ Import-Package: edu.cuny.citytech.refactoring.common.core,
  org.eclipse.ltk.core.refactoring.participants
 Bundle-ClassPath: lib/commons-csv-1.1.jar,
  .
+Automatic-Module-Name: edu.cuny.hunter.log.evaluation

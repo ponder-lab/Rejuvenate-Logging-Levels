@@ -219,11 +219,11 @@ public class MylynGitPredictionProvider extends AbstractJavaRelationProvider {
 
 	@Override
 	public String getName() {
-		return this.Name;
+		return Name;
 	}
 
 	@Override
 	protected String getSourceId() {
-		return this.ID;
+		return ID;
 	}
 }
