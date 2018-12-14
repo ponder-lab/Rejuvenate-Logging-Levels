@@ -111,6 +111,8 @@ public class GitHistoryAnalyzer {
 				this.clearFiles(new File("").getAbsoluteFile());
 			}
 		}
+	}
+
 	/**
 	 * Process merge commits. If it has conflicts, we need to process it. If not, we
 	 * only need to ignore it.
