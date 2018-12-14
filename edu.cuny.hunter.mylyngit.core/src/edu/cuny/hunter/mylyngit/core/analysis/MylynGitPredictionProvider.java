@@ -20,7 +20,6 @@ import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.api.errors.NoHeadException;
 import org.eclipse.mylyn.context.core.ContextCore;
 import org.eclipse.mylyn.context.core.IInteractionContext;
-import org.eclipse.mylyn.context.core.IInteractionElement;
 import org.eclipse.mylyn.internal.context.core.ContextCorePlugin;
 import org.eclipse.mylyn.internal.java.ui.search.AbstractJavaRelationProvider;
 import org.eclipse.mylyn.monitor.core.InteractionEvent.Kind;
@@ -50,9 +49,10 @@ public class MylynGitPredictionProvider extends AbstractJavaRelationProvider {
 
 	/**
 	 * The entry point
-	 * @throws GitAPIException 
-	 * @throws IOException 
-	 * @throws NoHeadException 
+	 * 
+	 * @throws GitAPIException
+	 * @throws IOException
+	 * @throws NoHeadException
 	 */
 	public void processProjects() throws NoHeadException, IOException, GitAPIException {
 		for (IJavaProject javaProject : javaProjects) {
@@ -67,7 +67,7 @@ public class MylynGitPredictionProvider extends AbstractJavaRelationProvider {
 		cUnits.forEach(cUnit -> {
 			this.methods.addAll(this.getIMethodsInSouceCode(cUnit));
 		});
-		bumpDOIValuesForAllGitMethods(javaProject);
+		this.bumpDOIValuesForAllGitMethods(javaProject);
 	}
 
 	/**
@@ -93,13 +93,6 @@ public class MylynGitPredictionProvider extends AbstractJavaRelationProvider {
 	}
 
 	/**
-	 * Get the element in Mylyn.
-	 */
-	private IInteractionElement getInteractionElement(IMethod method) {
-		return ContextCore.getContextManager().getElement(method.getHandleIdentifier());
-	}
-
-	/**
 	 * Bump DOI when there is a method change.
 	 */
 	public void bumpDOI(IMethod method) {
@@ -109,11 +102,13 @@ public class MylynGitPredictionProvider extends AbstractJavaRelationProvider {
 
 	/**
 	 * Process all methods in the git history and bump the DOI values
-	 * @throws GitAPIException 
-	 * @throws IOException 
-	 * @throws NoHeadException 
+	 * 
+	 * @throws GitAPIException
+	 * @throws IOException
+	 * @throws NoHeadException
 	 */
-	private void bumpDOIValuesForAllGitMethods(IJavaProject javaProject) throws NoHeadException, IOException, GitAPIException {
+	private void bumpDOIValuesForAllGitMethods(IJavaProject javaProject)
+			throws NoHeadException, IOException, GitAPIException {
 		File repo = getRepoFile(javaProject);
 		GitHistoryAnalyzer gitHistoryAnalyzer = new GitHistoryAnalyzer(repo);
 		LinkedList<GitMethod> gitMethods = gitHistoryAnalyzer.getGitMethods();
@@ -139,7 +134,7 @@ public class MylynGitPredictionProvider extends AbstractJavaRelationProvider {
 				this.bumpDOI(method);
 				break;
 			case DELETE:
-				resetDOIValue(method);
+				Util.resetDOIValue(method, ID);
 				break;
 			}
 	}
@@ -202,15 +197,6 @@ public class MylynGitPredictionProvider extends AbstractJavaRelationProvider {
 		});
 
 		return methods;
-	}
-
-	/**
-	 * Make the method uninteresting here.
-	 */
-	public void resetDOIValue(IMethod method) {
-		ContextCorePlugin.getContextManager().manipulateInterestForElement(getInteractionElement(method), false, false,
-				true, ID, true);
-
 	}
 
 	public HashSet<IMethod> getMethods() {

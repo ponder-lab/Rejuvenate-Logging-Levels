@@ -17,7 +17,9 @@ import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.SingleVariableDeclaration;
 import org.eclipse.mylyn.context.core.ContextCore;
 import org.eclipse.mylyn.context.core.IInteractionElement;
+import org.eclipse.mylyn.internal.context.core.ContextCorePlugin;
 
+@SuppressWarnings("restriction")
 public class Util {
 	public final static String LOGGER_NAME = "edu.cuny.hunter.logging";
 	private static final Logger LOGGER = Logger.getLogger(LOGGER_NAME);
@@ -93,11 +95,34 @@ public class Util {
 		}
 		return units;
 	}
-	
+
+	/**
+	 * Make the method uninteresting here.
+	 */
+	public static void resetDOIValue(IMethod method, String ID) {
+		ContextCorePlugin.getContextManager().manipulateInterestForElement(getInteractionElement(method), false, false,
+				true, ID, true);
+	}
+
+	/**
+	 * Get the element in Mylyn.
+	 */
+	private static IInteractionElement getInteractionElement(IMethod method) {
+		return ContextCore.getContextManager().getElement(method.getHandleIdentifier());
+	}
+
+	/**
+	 * Treat negative DOI values as uninteresting.
+	 */
 	public static float getDOIValue(IMethod method) {
 		IInteractionElement element = ContextCore.getContextManager().getElement(method.getHandleIdentifier());
 
 		if (element == null || element.getContext() == null) {
+			return Float.NEGATIVE_INFINITY;
+		}
+
+		if (element.getInterest().getValue() <= 0) {
+			resetDOIValue(method, "Java");
 			return Float.NEGATIVE_INFINITY;
 		}
 		return element.getInterest().getValue();
