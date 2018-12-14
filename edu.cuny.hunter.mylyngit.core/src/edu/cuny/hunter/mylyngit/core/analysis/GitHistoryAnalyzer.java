@@ -38,6 +38,8 @@ import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.ObjectLoader;
 import org.eclipse.jgit.lib.ObjectReader;
 import org.eclipse.jgit.lib.Repository;
+import org.eclipse.jgit.merge.MergeStrategy;
+import org.eclipse.jgit.merge.ThreeWayMerger;
 import org.eclipse.jgit.patch.FileHeader;
 import org.eclipse.jgit.patch.HunkHeader;
 import org.eclipse.jgit.revwalk.RevCommit;
@@ -91,19 +93,39 @@ public class GitHistoryAnalyzer {
 		try (Git git = preProcessGitHistory(repoFile)) {
 			// from the earliest commit to the current commit
 			for (RevCommit currentCommit : this.commitList) {
-				// for each parent
-				for (RevCommit parent : currentCommit.getParents())
+
+				if (currentCommit.getParentCount() == 1)
 					// process the commit.
-					processOneCommit(currentCommit, parent, git);
+					processOneCommit(currentCommit, currentCommit.getParent(0), git);
 
 				// special case for the initial commit, which has no parents.
 				if (currentCommit.getParentCount() == 0)
 					processOneCommit(currentCommit, null, git);
 
+				// merge commits
+				if (currentCommit.getParentCount() == 2) {
+					processMergeCommit(currentCommit.getParent(0), currentCommit.getParent(1), git);
+				}
+
 				this.commitIndex++;
 				this.clearFiles(new File("").getAbsoluteFile());
 			}
 		}
+	/**
+	 * Process merge commits. If it has conflicts, we need to process it. If not, we
+	 * only need to ignore it.
+	 * 
+	 * @throws IOException
+	 */
+	private void processMergeCommit(RevCommit headCommit, RevCommit commitToMerge, Git git) throws IOException {
+		ThreeWayMerger merger = MergeStrategy.RECURSIVE.newMerger(git.getRepository(), true);
+		boolean canMerge = merger.merge(headCommit, commitToMerge);
+		// no conflicts for merging
+		if (canMerge)
+			return;
+
+		// TODO: process conflicts
+		System.out.println("Conflicits here");
 	}
 
 	/**
