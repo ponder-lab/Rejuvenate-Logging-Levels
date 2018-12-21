@@ -18,6 +18,8 @@ import org.eclipse.jdt.core.dom.SingleVariableDeclaration;
 import org.eclipse.mylyn.context.core.ContextCore;
 import org.eclipse.mylyn.context.core.IInteractionElement;
 import org.eclipse.mylyn.internal.context.core.ContextCorePlugin;
+import org.eclipse.mylyn.internal.context.tasks.ui.TaskContextStore;
+import org.eclipse.mylyn.internal.tasks.ui.TasksUiPlugin;
 
 @SuppressWarnings("restriction")
 public class Util {
@@ -126,5 +128,14 @@ public class Util {
 			return Float.NEGATIVE_INFINITY;
 		}
 		return element.getInterest().getValue();
+	}
+
+	/**
+	 * This method is used to clear mylyn task context. It should be called after
+	 * processing one project.
+	 */
+	public static void clearTaskContext() {
+		TaskContextStore store = (TaskContextStore) TasksUiPlugin.getContextStore();
+		store.clearContext(TasksUiPlugin.getTaskActivityManager().getActiveTask());
 	}
 }
