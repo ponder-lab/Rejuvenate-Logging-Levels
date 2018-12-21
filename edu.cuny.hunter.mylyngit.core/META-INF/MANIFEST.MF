@@ -16,7 +16,8 @@ Import-Package: org.eclipse.core.runtime;version="3.5.0",
  org.eclipse.mylyn.internal.context.tasks.ui,
  org.eclipse.mylyn.internal.java.ui.search,
  org.eclipse.mylyn.internal.tasks.ui,
- org.eclipse.mylyn.monitor.core
+ org.eclipse.mylyn.monitor.core,
+ org.eclipse.mylyn.tasks.core.context
 Export-Package: edu.cuny.hunter.mylyngit.core.analysis,
  edu.cuny.hunter.mylyngit.core.utils
 Automatic-Module-Name: edu.cuny.hunter.mylyngit.core
