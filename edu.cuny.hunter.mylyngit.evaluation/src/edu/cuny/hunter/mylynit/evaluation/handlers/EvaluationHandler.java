@@ -73,6 +73,7 @@ public class EvaluationHandler extends AbstractHandler {
 											Util.getMethodSignatureForJavaMethod(m), doiValue);
 								}
 							}
+							provider.clearTaskContext();
 						}
 
 						resultPrinter.close();

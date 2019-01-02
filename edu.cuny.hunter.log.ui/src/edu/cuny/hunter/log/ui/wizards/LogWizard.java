@@ -89,8 +89,8 @@ public class LogWizard extends RefactoringWizard {
 
 			Label logLable = new Label(result, SWT.NONE);
 			logLable.setText("Choose the log level style:");
-      
-      Button button = new Button(result, SWT.RADIO);
+
+			Button button = new Button(result, SWT.RADIO);
 			button.setText("Defalut： traditional levels.");
 
 			// set up buttons.
