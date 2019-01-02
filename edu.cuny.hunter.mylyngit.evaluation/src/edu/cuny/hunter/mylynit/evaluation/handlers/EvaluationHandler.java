@@ -78,9 +78,9 @@ public class EvaluationHandler extends AbstractHandler {
 
 						resultPrinter.close();
 					} catch (IOException e) {
-						LOGGER.info("Cannot print info correctly or cannot process git commit.");
+						LOGGER.info("Cannot print info correctly or cannot process git commits.");
 					} catch (GitAPIException e) {
-						LOGGER.info("Cannot get valid git object.");
+						LOGGER.info("Cannot get valid git object or process commits.");
 					}
 
 				}
