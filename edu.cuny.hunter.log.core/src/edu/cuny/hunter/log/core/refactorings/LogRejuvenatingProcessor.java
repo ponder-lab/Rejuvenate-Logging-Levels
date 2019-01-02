@@ -121,21 +121,11 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 
 		final RefactoringStatus status = new RefactoringStatus();
 
-		LogAnalyzer analyzer;
-
 		try {
-			if (this.useGitHistory) {
-
-				MylynGitPredictionProvider mylynProvider = new MylynGitPredictionProvider();
-				mylynProvider.setJavaProjects(this.javaProjects);
-
-				mylynProvider.processProjects();
-
-			}
-
-			analyzer = new LogAnalyzer(this.useLogCategoryWithConfig, this.useLogCategory);
 
 			for (IJavaProject jproj : this.getJavaProjects()) {
+				LogAnalyzer analyzer = new LogAnalyzer(this.useLogCategoryWithConfig, this.useLogCategory);
+
 				IPackageFragmentRoot[] roots = jproj.getPackageFragmentRoots();
 				for (IPackageFragmentRoot root : roots) {
 					IJavaElement[] children = root.getChildren();
@@ -149,12 +139,22 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 							}
 						}
 				}
+
+				MylynGitPredictionProvider mylynProvider = new MylynGitPredictionProvider();
+
+				if (this.useGitHistory) {
+					mylynProvider.processOneProject(jproj);
+				}
+
+				// analyze.
+				analyzer.analyze();
+
+				this.setLogInvocationSet(analyzer.getLogInvocationSet());
+
+				if (this.useGitHistory) {
+					mylynProvider.clearTaskContext();
+				}
 			}
-
-			// analyze.
-			analyzer.analyze();
-
-			this.setLogInvocationSet(analyzer.getLogInvocationSet());
 
 			// get the status of each log invocation.
 			RefactoringStatus collectedStatus = this.getLogInvocationSet().stream().map(LogInvocation::getStatus)
