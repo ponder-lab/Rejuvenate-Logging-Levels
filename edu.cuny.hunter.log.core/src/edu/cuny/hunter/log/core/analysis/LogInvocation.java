@@ -34,19 +34,19 @@ import edu.cuny.hunter.log.core.utils.LoggerNames;
 public class LogInvocation {
 
 	private final Level logLevel;
-	
+
 	private Action action = Action.NONE;
-	
+
 	private float degreeOfInterestValue;
-	
+
 	private IDegreeOfInterest degreeOfInterest;
-	
+
 	private final MethodInvocation logExpression;
 
 	private RefactoringStatus status = new RefactoringStatus();
 
 	private static final Logger LOGGER = Logger.getLogger(LoggerNames.LOGGER_NAME);
-	
+
 	private static final String PLUGIN_ID = FrameworkUtil.getBundle(LogInvocation.class).getSymbolicName();
 
 	public LogInvocation(MethodInvocation logExpression, Level loggingLevel) {
@@ -282,6 +282,15 @@ public class LogInvocation {
 	private void convertToFiner(CompilationUnitRewrite rewrite) {
 		convert("finer", "FINER", rewrite);
 
+	}
+
+	/**
+	 * Should update DOI values after evaluating git history.
+	 */
+	public void updateDOI() {
+		this.degreeOfInterest = this.getDegreeOfInterest();
+		if (this.degreeOfInterest != null)
+			this.degreeOfInterestValue = this.degreeOfInterest.getValue();
 	}
 
 }

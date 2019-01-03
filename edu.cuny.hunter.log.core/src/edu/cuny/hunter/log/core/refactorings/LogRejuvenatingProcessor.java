@@ -144,6 +144,7 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 
 				if (this.useGitHistory) {
 					mylynProvider.processOneProject(jproj);
+					analyzer.updateDOI();
 				}
 
 				// analyze.

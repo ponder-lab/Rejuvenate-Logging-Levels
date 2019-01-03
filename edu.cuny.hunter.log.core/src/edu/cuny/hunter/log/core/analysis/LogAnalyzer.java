@@ -283,4 +283,10 @@ public class LogAnalyzer extends ASTVisitor {
 		mylynProvider.clearTaskContext();
 	}
 
+	public void updateDOI() {
+		this.getLogInvocationSet().forEach(inv -> {
+			inv.updateDOI();
+		});
+	}
+
 }
