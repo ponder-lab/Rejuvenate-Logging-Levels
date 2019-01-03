@@ -150,7 +150,7 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 				// analyze.
 				analyzer.analyze();
 
-				this.setLogInvocationSet(analyzer.getLogInvocationSet());
+				this.addLogInvocationSet(analyzer.getLogInvocationSet());
 
 				// If we are using the git history.
 				if (this.useGitHistory) {
@@ -239,8 +239,8 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 		}
 	}
 
-	protected void setLogInvocationSet(Set<LogInvocation> logInvocationSet) {
-		this.logInvocationSet = logInvocationSet;
+	protected void addLogInvocationSet(Set<LogInvocation> logInvocationSet) {
+		this.logInvocationSet.addAll(logInvocationSet);
 	}
 
 	public Set<LogInvocation> getLogInvocationSet() {
