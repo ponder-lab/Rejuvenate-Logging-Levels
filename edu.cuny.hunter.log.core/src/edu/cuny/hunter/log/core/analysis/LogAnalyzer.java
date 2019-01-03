@@ -16,6 +16,7 @@ import org.eclipse.jdt.core.dom.MethodInvocation;
 import edu.cuny.hunter.log.core.messages.Messages;
 import edu.cuny.hunter.log.core.utils.LoggerNames;
 import edu.cuny.hunter.log.core.utils.Util;
+import edu.cuny.hunter.mylyngit.core.analysis.MylynGitPredictionProvider;
 
 public class LogAnalyzer extends ASTVisitor {
 
@@ -273,6 +274,13 @@ public class LogAnalyzer extends ASTVisitor {
 	private void createLogInvocation(MethodInvocation node, Level logLevel) {
 		LogInvocation logInvocation = new LogInvocation(node, logLevel);
 		this.getLogInvocationSet().add(logInvocation);
+	}
+
+	/**
+	 * Clear the active task context.
+	 */
+	public void clearTaskContext(MylynGitPredictionProvider mylynProvider) {
+		mylynProvider.clearTaskContext();
 	}
 
 }

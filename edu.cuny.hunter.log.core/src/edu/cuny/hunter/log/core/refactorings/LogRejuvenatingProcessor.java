@@ -151,8 +151,10 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 
 				this.setLogInvocationSet(analyzer.getLogInvocationSet());
 
+				// If we are using the git history.
 				if (this.useGitHistory) {
-					mylynProvider.clearTaskContext();
+					// then, we must clear the context
+					analyzer.clearTaskContext(mylynProvider);
 				}
 			}
 
