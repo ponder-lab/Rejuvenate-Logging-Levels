@@ -3,6 +3,7 @@ package edu.cuny.hunter.mylyngit.core.utils;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.eclipse.jdt.core.ICompilationUnit;
@@ -16,6 +17,7 @@ import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.SingleVariableDeclaration;
 import org.eclipse.mylyn.context.core.ContextCore;
+import org.eclipse.mylyn.context.core.IInteractionContextManager;
 import org.eclipse.mylyn.context.core.IInteractionElement;
 import org.eclipse.mylyn.internal.context.core.ContextCorePlugin;
 
@@ -126,5 +128,23 @@ public class Util {
 			return Float.NEGATIVE_INFINITY;
 		}
 		return element.getInterest().getValue();
+	}
+
+	/**
+	 * This method is used to clear mylyn task context. It should be called after
+	 * processing one project.
+	 */
+	public static void clearTaskContext() {
+		IInteractionContextManager contextManager = ContextCore.getContextManager();
+		String handleIdentifier = contextManager.getActiveContext().getHandleIdentifier();
+
+		// try to delete the active context.
+		try {
+			contextManager.deleteContext(handleIdentifier);
+		} catch (Exception e) {
+			LOGGER.log(Level.WARNING, e,
+					() -> "Caught exception while trying to clear active context with handle identifier: "
+							+ handleIdentifier + ".");
+		}
 	}
 }
