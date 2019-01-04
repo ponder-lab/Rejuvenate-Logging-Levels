@@ -244,13 +244,11 @@ public class GitHistoryAnalyzer {
 	}
 
 	/**
-	 * Get git and git commits.
+	 * Try to get git.
 	 * 
 	 * @throws GitAPIException
-	 * @throws NoHeadException
 	 */
-	private Git preProcessGitHistory(File repoFile) throws NoHeadException, GitAPIException {
-
+	private Git tryPreProcessGitHistory(File repoFile) throws GitAPIException {
 		Git git = Git.init().setDirectory(repoFile).call();
 
 		Iterable<RevCommit> log = git.log().call();
@@ -259,6 +257,24 @@ public class GitHistoryAnalyzer {
 			this.commitList.addFirst(commit);
 		}
 
+		return git;
+	}
+
+	/**
+	 * Search up all files to find repo file.
+	 * @param repoFile
+	 * @return
+	 */
+	private Git preProcessGitHistory(File repoFile) {
+		Git git = null;
+		while (repoFile != null) {
+			try {
+				git = tryPreProcessGitHistory(repoFile);
+				break;
+			} catch (GitAPIException e) {
+				repoFile = repoFile.getParentFile();
+			}
+		}
 		return git;
 	}
 

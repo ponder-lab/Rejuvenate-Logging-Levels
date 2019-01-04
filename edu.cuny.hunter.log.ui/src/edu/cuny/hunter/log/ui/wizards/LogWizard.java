@@ -107,7 +107,7 @@ public class LogWizard extends RefactoringWizard {
 
 			Label gitLabel = new Label(result, SWT.NONE);
 			gitLabel.setText("Check the option below if you would like to use git history to "
-					+ "rejuvenate log levels for the whole repository.");
+					+ "rejuvenate log levels.");
 
 			// set up buttons.
 			this.addBooleanButton("Traverse git history to rejuvenate log levels.", USE_GIT_HISTORY,
