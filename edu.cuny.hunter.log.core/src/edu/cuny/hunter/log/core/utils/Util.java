@@ -95,7 +95,7 @@ public final class Util {
 		List<Expression> arguments = node.arguments();
 		if (arguments.size() == 0)
 			return null;
-		String firstArgument = arguments.get(0).toString();
+		Expression firstArgument = arguments.get(0);
 
 		// TODO: may need wala?
 		// They should not be null
@@ -125,24 +125,27 @@ public final class Util {
 	 * @param argument
 	 * @return logging level
 	 */
-	public static Level getLogLevel(String argument) {
-		if (argument.equals("Level.SEVERE"))
+	public static Level getLogLevel(Expression firstArg) {
+		if (!firstArg.resolveTypeBinding().getQualifiedName().equals("java.util.logging.Level"))
+			return null;
+		String argument = firstArg.toString();
+		if (argument.contains("Level.SEVERE"))
 			return Level.SEVERE;
-		if (argument.equals("Level.WARNING"))
+		if (argument.contains("Level.WARNING"))
 			return Level.WARNING;
-		if (argument.equals("Level.INFO"))
+		if (argument.contains("Level.INFO"))
 			return Level.INFO;
-		if (argument.equals("Level.CONFIG"))
+		if (argument.contains("Level.CONFIG"))
 			return Level.CONFIG;
-		if (argument.equals("Level.FINE"))
+		if (argument.contains("Level.FINE"))
 			return Level.FINE;
-		if (argument.equals("Level.FINER"))
+		if (argument.contains("Level.FINER"))
 			return Level.FINER;
-		if (argument.equals("Level.FINEST"))
+		if (argument.contains("Level.FINEST"))
 			return Level.FINEST;
-		if (argument.equals("Level.ALL"))
+		if (argument.contains("Level.ALL"))
 			return Level.ALL;
-		if (argument.equals("Level.OFF"))
+		if (argument.contains("Level.OFF"))
 			return Level.OFF;
 		return null;
 	}
