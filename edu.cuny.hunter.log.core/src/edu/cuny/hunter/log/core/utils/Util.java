@@ -15,6 +15,7 @@ import org.eclipse.jdt.core.dom.Expression;
 import org.eclipse.jdt.core.dom.IMethodBinding;
 import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.MethodInvocation;
+import org.eclipse.jdt.internal.compiler.lookup.TypeBinding;
 import org.eclipse.jdt.internal.corext.codemanipulation.CodeGenerationSettings;
 import org.eclipse.jdt.internal.ui.preferences.JavaPreferencesSettings;
 import org.eclipse.ltk.core.refactoring.participants.ProcessorBasedRefactoring;
@@ -126,7 +127,8 @@ public final class Util {
 	 * @return logging level
 	 */
 	public static Level getLogLevel(Expression firstArg) {
-		if (!firstArg.resolveTypeBinding().getQualifiedName().equals("java.util.logging.Level"))
+		ITypeBinding typeBinding = firstArg.resolveTypeBinding();
+		if (typeBinding == null || !typeBinding.getQualifiedName().equals("java.util.logging.Level"))
 			return null;
 		String argument = firstArg.toString();
 		if (argument.contains("Level.SEVERE"))

@@ -58,7 +58,7 @@ public class LogInvocation {
 					+ " has argument LogRecord or log level variable which cannot be handled yet.");
 		}
 
-		degreeOfInterest = getDegreeOfInterest();
+		degreeOfInterest = this.getDegreeOfInterest();
 
 		if (degreeOfInterest != null) {
 			degreeOfInterestValue = degreeOfInterest.getValue();
