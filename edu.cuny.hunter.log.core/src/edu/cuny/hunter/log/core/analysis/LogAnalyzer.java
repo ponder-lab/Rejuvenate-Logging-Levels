@@ -30,9 +30,9 @@ public class LogAnalyzer extends ASTVisitor {
 
 	private static boolean useLogCategory = false;
 
-	private int test;
+	private boolean test;
 
-	public LogAnalyzer(int isTest) {
+	public LogAnalyzer(boolean isTest) {
 		this.test = isTest;
 	}
 
@@ -220,7 +220,7 @@ public class LogAnalyzer extends ASTVisitor {
 		return this.logInvocationSet;
 	}
 
-	public void setTest(int test) {
+	public void setTest(boolean test) {
 		this.test = test;
 	}
 

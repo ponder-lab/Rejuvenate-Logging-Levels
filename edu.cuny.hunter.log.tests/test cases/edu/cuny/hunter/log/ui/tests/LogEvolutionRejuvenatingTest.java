@@ -62,6 +62,9 @@ public class LogEvolutionRejuvenatingTest extends RefactoringTest {
 	protected ICompilationUnit createCUfromTestFile(IPackageFragment pack, String cuName) throws Exception {
 
 		ICompilationUnit unit = super.createCUfromTestFile(pack, cuName);
+		
+		if (!unit.isStructureKnown())
+			throw new IllegalArgumentException(cuName + " has structural errors.");
 
 		Path directory = Paths.get(unit.getParent().getParent().getParent().getResource().getLocation().toString());
 
@@ -73,15 +76,15 @@ public class LogEvolutionRejuvenatingTest extends RefactoringTest {
 	private void helper(LogInvocationExpectedResult... expectedResults) throws Exception {
 
 		// compute the actual results.
-		ICompilationUnit cu = createCUfromTestFile(getPackageP(), "A");
+		ICompilationUnit cu = this.createCUfromTestFile(this.getPackageP(), "A");
 
 		ASTParser parser = ASTParser.newParser(AST.JLS8);
 		parser.setResolveBindings(true);
 		parser.setSource(cu);
-
+		parser.setKind(ASTParser.K_COMPILATION_UNIT);
 		ASTNode ast = parser.createAST(new NullProgressMonitor());
 
-		LogAnalyzer logAnalyzer = new LogAnalyzer(1);
+		LogAnalyzer logAnalyzer = new LogAnalyzer(true);
 		ast.accept(logAnalyzer);
 
 		logAnalyzer.analyze();

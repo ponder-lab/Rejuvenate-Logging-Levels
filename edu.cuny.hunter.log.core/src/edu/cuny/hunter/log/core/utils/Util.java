@@ -15,7 +15,6 @@ import org.eclipse.jdt.core.dom.Expression;
 import org.eclipse.jdt.core.dom.IMethodBinding;
 import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.MethodInvocation;
-import org.eclipse.jdt.internal.compiler.lookup.TypeBinding;
 import org.eclipse.jdt.internal.corext.codemanipulation.CodeGenerationSettings;
 import org.eclipse.jdt.internal.ui.preferences.JavaPreferencesSettings;
 import org.eclipse.ltk.core.refactoring.participants.ProcessorBasedRefactoring;
@@ -52,17 +51,6 @@ public final class Util {
 		return ret;
 	}
 
-	// if isTest == 1, then it is junit test
-	public static Level isLogExpression(MethodInvocation node, int isTest) {
-		if (isTest != 1) {
-			IMethodBinding methodBinding = node.resolveMethodBinding();
-
-			if (methodBinding == null
-					|| !methodBinding.getDeclaringClass().getQualifiedName().equals("java.util.logging.Logger"))
-				return null;
-		}
-		return isLogExpression(node);
-	}
 
 	/**
 	 * We only focus on the logging level, which is set by the developer. Hence, we
@@ -73,7 +61,15 @@ public final class Util {
 	 * @param node
 	 * @return logging level
 	 */
-	public static Level isLogExpression(MethodInvocation node) {
+	// if isTest == 1, then it is junit test
+	public static Level isLogExpression(MethodInvocation node, boolean isTest) {
+		if (!isTest) {
+			IMethodBinding methodBinding = node.resolveMethodBinding();
+
+			if (methodBinding == null
+					|| !methodBinding.getDeclaringClass().getQualifiedName().equals("java.util.logging.Logger"))
+				return null;
+		}
 
 		String methodName = node.getName().toString();
 
@@ -101,7 +97,7 @@ public final class Util {
 		// TODO: may need wala?
 		// They should not be null
 		if (methodName.equals("log")) {
-			Level loggingLevel = getLogLevel(firstArgument);
+			Level loggingLevel = getLogLevel(firstArgument, isTest);
 			if (loggingLevel == null) {
 				throw new IllegalStateException("The log level cannot be detected.");
 			}
@@ -111,7 +107,7 @@ public final class Util {
 		}
 
 		if (methodName.equals("logp") || methodName.equals("logrb")) {
-			Level loggingLevel = getLogLevel(firstArgument);
+			Level loggingLevel = getLogLevel(firstArgument, isTest);
 			if (loggingLevel == Level.ALL || loggingLevel == Level.OFF)
 				return null;
 			return loggingLevel;
@@ -126,9 +122,9 @@ public final class Util {
 	 * @param argument
 	 * @return logging level
 	 */
-	public static Level getLogLevel(Expression firstArg) {
+	public static Level getLogLevel(Expression firstArg, boolean isTest) {
 		ITypeBinding typeBinding = firstArg.resolveTypeBinding();
-		if (typeBinding == null || !typeBinding.getQualifiedName().equals("java.util.logging.Level"))
+		if ((!isTest) && (typeBinding == null || !typeBinding.getQualifiedName().equals("java.util.logging.Level")))
 			return null;
 		String argument = firstArg.toString();
 		if (argument.contains("Level.SEVERE"))
