@@ -189,7 +189,9 @@ public class MylynGitPredictionProvider extends AbstractJavaRelationProvider {
 			@Override
 			public boolean visit(MethodDeclaration methodDeclaration) {
 				try {
-					methods.add((IMethod) methodDeclaration.resolveBinding().getJavaElement());
+					IMethod method = (IMethod) methodDeclaration.resolveBinding().getJavaElement();
+					if (method != null)
+						methods.add(method);
 					return true;
 				} catch (Exception e) {
 					return false;
@@ -203,7 +205,7 @@ public class MylynGitPredictionProvider extends AbstractJavaRelationProvider {
 	public HashSet<IMethod> getMethods() {
 		return this.methods;
 	}
-	
+
 	public void clearTaskContext() {
 		Util.clearTaskContext();
 	}
