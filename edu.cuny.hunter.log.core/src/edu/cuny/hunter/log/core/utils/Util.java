@@ -51,7 +51,6 @@ public final class Util {
 		return ret;
 	}
 
-
 	/**
 	 * We only focus on the logging level, which is set by the developer. Hence, we
 	 * do not record the logging level which is embedded by the logging package.
@@ -124,26 +123,31 @@ public final class Util {
 	 */
 	public static Level getLogLevel(Expression firstArg, boolean isTest) {
 		ITypeBinding typeBinding = firstArg.resolveTypeBinding();
-		if ((!isTest) && (typeBinding == null || !typeBinding.getQualifiedName().equals("java.util.logging.Level")))
+		if (isTest)
+			return getLogLevel(firstArg.toString());
+		if (typeBinding == null || !typeBinding.getQualifiedName().equals("java.util.logging.Level"))
 			return null;
-		String argument = firstArg.toString();
-		if (argument.contains("Level.SEVERE"))
+		return getLogLevel(firstArg.toString());
+	}
+
+	private static Level getLogLevel(String argument) {
+		if (argument.contains("SEVERE"))
 			return Level.SEVERE;
-		if (argument.contains("Level.WARNING"))
+		if (argument.contains("WARNING"))
 			return Level.WARNING;
-		if (argument.contains("Level.INFO"))
+		if (argument.contains("INFO"))
 			return Level.INFO;
-		if (argument.contains("Level.CONFIG"))
+		if (argument.contains("CONFIG"))
 			return Level.CONFIG;
-		if (argument.contains("Level.FINE"))
-			return Level.FINE;
-		if (argument.contains("Level.FINER"))
+		if (argument.contains("FINER"))
 			return Level.FINER;
-		if (argument.contains("Level.FINEST"))
+		if (argument.contains("FINEST"))
 			return Level.FINEST;
-		if (argument.contains("Level.ALL"))
+		if (argument.contains("FINE"))
+			return Level.FINE;
+		if (argument.contains("ALL"))
 			return Level.ALL;
-		if (argument.contains("Level.OFF"))
+		if (argument.contains("OFF"))
 			return Level.OFF;
 		return null;
 	}
