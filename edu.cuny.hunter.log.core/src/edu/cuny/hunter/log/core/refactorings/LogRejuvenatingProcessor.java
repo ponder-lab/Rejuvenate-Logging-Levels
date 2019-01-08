@@ -32,8 +32,6 @@ import org.eclipse.jdt.internal.corext.refactoring.structure.CompilationUnitRewr
 import org.eclipse.jdt.internal.corext.refactoring.util.TextEditBasedChangeManager;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.api.errors.JGitInternalException;
-import org.eclipse.jgit.api.errors.NoHeadException;
-
 import edu.cuny.citytech.refactoring.common.core.RefactoringProcessor;
 import edu.cuny.hunter.log.core.analysis.Action;
 import edu.cuny.hunter.log.core.analysis.LogAnalyzer;
@@ -190,16 +188,16 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 	}
 
 	/**
-	 * get a set of optimizable log set
+	 * get a set of rejuvenated log set
 	 */
 	public Set<LogInvocation> getPossibleRejuvenatedLog() {
-		HashSet<LogInvocation> optimizableSet = new HashSet<>();
+		HashSet<LogInvocation> rejuvenatedSet = new HashSet<>();
 		for (LogInvocation logInvocation : this.logInvocationSet) {
 			if (!logInvocation.getAction().equals(Action.NONE))
-				optimizableSet.add(logInvocation);
+				rejuvenatedSet.add(logInvocation);
 		}
 
-		return optimizableSet;
+		return rejuvenatedSet;
 	}
 
 	private IJavaProject[] getJavaProjects() {
@@ -214,13 +212,13 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 	public Change createChange(IProgressMonitor pm) throws CoreException, OperationCanceledException {
 		try {
 			final TextEditBasedChangeManager manager = new TextEditBasedChangeManager();
-			Set<LogInvocation> optimizableLogs = this.getLogInvocationSet();
+			Set<LogInvocation> rejuvenatedLogs = this.getLogInvocationSet();
 
-			if (optimizableLogs.isEmpty())
+			if (rejuvenatedLogs.isEmpty())
 				return new NullChange(Messages.NoPossibleRejuvenatedLog);
 
-			pm.beginTask("Transforming logging levels ...", optimizableLogs.size());
-			for (LogInvocation logInvocation : optimizableLogs) {
+			pm.beginTask("Transforming logging levels ...", rejuvenatedLogs.size());
+			for (LogInvocation logInvocation : rejuvenatedLogs) {
 				CompilationUnitRewrite rewrite = this.getCompilationUnitRewrite(
 						logInvocation.getEnclosingEclipseMethod().getCompilationUnit(),
 						logInvocation.getEnclosingCompilationUnit());
