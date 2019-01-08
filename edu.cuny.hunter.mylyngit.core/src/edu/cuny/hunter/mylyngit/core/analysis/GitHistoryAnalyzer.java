@@ -78,8 +78,15 @@ public class GitHistoryAnalyzer {
 
 	private Graph renaming = new Graph();
 
+	// ----- Which is needed for multiple projects (not for mylyngit test plugin)---
+	private HashMap<String, LinkedList<GitMethod>> repoToGitMethods = new HashMap<>();
+	private HashMap<String, Graph> repoToRenaming = new HashMap<>();
+	// -----------------------------------------------------------------------------
+
 	// the file index
 	private int commitIndex = 0;
+
+	private String repo;
 
 	/**
 	 * Given the repo path, compute all method operations (e.g., delete a method)
@@ -91,6 +98,10 @@ public class GitHistoryAnalyzer {
 	 */
 	public GitHistoryAnalyzer(File repoFile) throws GitAPIException, IOException {
 		try (Git git = preProcessGitHistory(repoFile)) {
+			// Already evaluated before
+			if (git == null)
+				return;
+
 			// from the earliest commit to the current commit
 			for (RevCommit currentCommit : this.commitList) {
 
@@ -109,8 +120,14 @@ public class GitHistoryAnalyzer {
 
 				this.commitIndex++;
 				this.clearFiles(new File("").getAbsoluteFile());
+				this.storeMappingData();
 			}
 		}
+	}
+
+	private void storeMappingData() {
+		repoToGitMethods.put(this.repo, this.gitMethods);
+		repoToRenaming.put(this.repo, this.renaming);
 	}
 
 	/**
@@ -166,7 +183,7 @@ public class GitHistoryAnalyzer {
 	 * @throws IOException
 	 * @throws GitAPIException
 	 */
-	public void processOneCommit(RevCommit currentCommit, RevCommit previousCommit, Git git)
+	private void processOneCommit(RevCommit currentCommit, RevCommit previousCommit, Git git)
 			throws IOException, GitAPIException {
 		AbstractTreeIterator oldTreeIterator;
 		if (previousCommit != null) {
@@ -223,7 +240,7 @@ public class GitHistoryAnalyzer {
 	/**
 	 * Rename or copy a file in a commit.
 	 */
-	public String renameOrCopyFile(RevCommit currentCommit, Repository repo, DiffEntry diffEntry)
+	private String renameOrCopyFile(RevCommit currentCommit, Repository repo, DiffEntry diffEntry)
 			throws MissingObjectException, IncorrectObjectTypeException, CorruptObjectException, IOException {
 		copyHistoricalFile(currentCommit, repo, diffEntry.getNewPath(), "tmp_B_");
 		this.methodDeclarationsForB.forEach(methodDec -> {
@@ -245,7 +262,8 @@ public class GitHistoryAnalyzer {
 
 	/**
 	 * Try to get git.
-	 * @throws NoHeadException 
+	 * 
+	 * @throws NoHeadException
 	 * 
 	 * @throws GitAPIException
 	 */
@@ -263,6 +281,7 @@ public class GitHistoryAnalyzer {
 
 	/**
 	 * Search up all files to find repo file.
+	 * 
 	 * @param repoFile
 	 * @return
 	 */
@@ -275,6 +294,14 @@ public class GitHistoryAnalyzer {
 			} catch (GitAPIException e) {
 				repoFile = repoFile.getParentFile();
 			}
+		}
+
+		if (repoFile != null) {
+			if (repoToGitMethods.containsKey(repoFile) && repoToRenaming.containsKey(repoFile)) {
+				this.gitMethods = repoToGitMethods.get(repoFile.getAbsolutePath());
+				this.renaming = repoToRenaming.get(repoFile.getAbsolutePath());
+			}
+			this.repo = repoFile.getAbsolutePath();
 		}
 		return git;
 	}
@@ -462,11 +489,11 @@ public class GitHistoryAnalyzer {
 		});
 	}
 
-	public static int getStartingLineNumber(MethodDeclaration methodDeclaration) {
+	private static int getStartingLineNumber(MethodDeclaration methodDeclaration) {
 		return (((CompilationUnit) methodDeclaration.getRoot()).getLineNumber(methodDeclaration.getStartPosition()));
 	}
 
-	public static int getEndingLineNumber(MethodDeclaration methodDeclaration) {
+	private static int getEndingLineNumber(MethodDeclaration methodDeclaration) {
 		return (((CompilationUnit) methodDeclaration.getRoot())
 				.getLineNumber(methodDeclaration.getStartPosition() + methodDeclaration.getLength()));
 	}
