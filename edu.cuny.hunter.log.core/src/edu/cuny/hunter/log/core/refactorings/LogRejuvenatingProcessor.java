@@ -6,6 +6,7 @@ import java.util.logging.Logger;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.Map;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -44,6 +45,8 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 	private IJavaProject[] javaProjects;
 
 	private Set<LogInvocation> logInvocationSet = new HashSet<>();
+	
+	private LinkedList<Float> boundary;
 
 	private static final Logger LOGGER = Logger.getLogger(LoggerNames.LOGGER_NAME);
 
@@ -149,6 +152,8 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 
 				// analyze.
 				analyzer.analyze();
+				// Get boundary
+				this.boundary = analyzer.getBoundary();
 
 				this.addLogInvocationSet(analyzer.getLogInvocationSet());
 
@@ -195,6 +200,10 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 
 	private IJavaProject[] getJavaProjects() {
 		return this.javaProjects;
+	}
+	
+	public LinkedList<Float> getBoundary(){
+		return this.boundary;
 	}
 
 	@Override

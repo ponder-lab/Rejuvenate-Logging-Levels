@@ -24,7 +24,7 @@ public class LogAnalyzer extends ASTVisitor {
 
 	private Set<LogInvocation> logInvocationSet = new HashSet<>();
 
-	private static LinkedList<Float> boundary;
+	private LinkedList<Float> boundary;
 
 	private static boolean useLogCategoryWithConfig = false;
 
@@ -36,6 +36,10 @@ public class LogAnalyzer extends ASTVisitor {
 		this.test = isTest;
 	}
 
+	public LinkedList<Float> getBoundary(){
+		return this.boundary;
+	}
+	
 	public LogAnalyzer(boolean useConfigLogLevelCategory, boolean useLogLevelCategory) {
 		useLogCategoryWithConfig = useConfigLogLevelCategory;
 		useLogCategory = useLogLevelCategory;
@@ -124,7 +128,7 @@ public class LogAnalyzer extends ASTVisitor {
 		}
 
 		if (useLogCategory) {
-			LOGGER.info("Use log category: config/warning/severe.");
+			LOGGER.info("Use log category: do not consider config/warning/severe.");
 			if (DOI >= boundary.get(0) && DOI < boundary.get(1))
 				return Level.FINEST;
 			if (DOI < boundary.get(2))
@@ -134,7 +138,7 @@ public class LogAnalyzer extends ASTVisitor {
 			if (DOI <= boundary.get(4))
 				return Level.INFO;
 		} else if (useLogCategoryWithConfig) {
-			LOGGER.info("Use log category: config.");
+			LOGGER.info("Use log category: do not consider config.");
 			if (DOI >= boundary.get(0) && DOI < boundary.get(1))
 				return Level.FINEST;
 			if (DOI < boundary.get(2))
