@@ -68,7 +68,7 @@ public class EvaluationHandler extends AbstractHandler {
 							for (IMethod m : methods) {
 								// Work around DOI values
 								float doiValue = Util.getDOIValue(m);
-								if (!(Float.compare(Float.NEGATIVE_INFINITY, doiValue) == 0)) {
+								if (!(Float.compare(0, doiValue) == 0)) {
 									resultPrinter.printRecord(javaProject.getElementName(), Util.getMethodFilePath(m),
 											Util.getMethodSignatureForJavaMethod(m), doiValue);
 								}

@@ -120,12 +120,12 @@ public class Util {
 		IInteractionElement element = ContextCore.getContextManager().getElement(method.getHandleIdentifier());
 
 		if (element == null || element.getContext() == null) {
-			return Float.NEGATIVE_INFINITY;
+			return 0;
 		}
 
 		if (element.getInterest().getValue() <= 0) {
 			resetDOIValue(method, "Java");
-			return Float.NEGATIVE_INFINITY;
+			return 0;
 		}
 		return element.getInterest().getValue();
 	}
