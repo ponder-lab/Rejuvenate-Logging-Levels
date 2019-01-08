@@ -17,6 +17,7 @@ import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.jdt.core.IPackageFragmentRoot;
+import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.ltk.core.refactoring.Change;
 import org.eclipse.ltk.core.refactoring.NullChange;
@@ -30,6 +31,9 @@ import org.eclipse.jdt.internal.corext.refactoring.changes.DynamicValidationRefa
 import org.eclipse.jdt.internal.corext.refactoring.structure.CompilationUnitRewrite;
 import org.eclipse.jdt.internal.corext.refactoring.util.TextEditBasedChangeManager;
 import org.eclipse.jgit.api.errors.GitAPIException;
+import org.eclipse.jgit.api.errors.JGitInternalException;
+import org.eclipse.jgit.api.errors.NoHeadException;
+
 import edu.cuny.citytech.refactoring.common.core.RefactoringProcessor;
 import edu.cuny.hunter.log.core.analysis.Action;
 import edu.cuny.hunter.log.core.analysis.LogAnalyzer;
@@ -45,7 +49,7 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 	private IJavaProject[] javaProjects;
 
 	private Set<LogInvocation> logInvocationSet = new HashSet<>();
-	
+
 	private LinkedList<Float> boundary;
 
 	private static final Logger LOGGER = Logger.getLogger(LoggerNames.LOGGER_NAME);
@@ -120,7 +124,7 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 
 	@Override
 	public RefactoringStatus checkFinalConditions(final IProgressMonitor monitor, final CheckConditionsContext context)
-			throws CoreException, OperationCanceledException {
+			throws JavaModelException {
 
 		final RefactoringStatus status = new RefactoringStatus();
 
@@ -176,8 +180,8 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 					status.addFatalError(Messages.NoPossibleRejuvenatedLog);
 				}
 			}
-		} catch (GitAPIException e) {
-			LOGGER.info("Cannot get valid git object!");
+		} catch (GitAPIException | JGitInternalException e) {
+			LOGGER.info("Cannot get valid git object! May not a valid git repo.");
 		} catch (IOException e) {
 			LOGGER.info("Cannot process git commits.");
 		}
@@ -201,8 +205,8 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 	private IJavaProject[] getJavaProjects() {
 		return this.javaProjects;
 	}
-	
-	public LinkedList<Float> getBoundary(){
+
+	public LinkedList<Float> getBoundary() {
 		return this.boundary;
 	}
 

@@ -245,10 +245,11 @@ public class GitHistoryAnalyzer {
 
 	/**
 	 * Try to get git.
+	 * @throws NoHeadException 
 	 * 
 	 * @throws GitAPIException
 	 */
-	private Git tryPreProcessGitHistory(File repoFile) throws GitAPIException {
+	private Git tryPreProcessGitHistory(File repoFile) throws NoHeadException, GitAPIException {
 		Git git = Git.init().setDirectory(repoFile).call();
 
 		Iterable<RevCommit> log = git.log().call();

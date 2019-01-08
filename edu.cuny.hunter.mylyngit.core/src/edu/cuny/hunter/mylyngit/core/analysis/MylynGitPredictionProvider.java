@@ -108,8 +108,7 @@ public class MylynGitPredictionProvider extends AbstractJavaRelationProvider {
 	 * @throws IOException
 	 * @throws NoHeadException
 	 */
-	private void bumpDOIValuesForAllGitMethods(IJavaProject javaProject)
-			throws NoHeadException, IOException, GitAPIException {
+	private void bumpDOIValuesForAllGitMethods(IJavaProject javaProject) throws GitAPIException, IOException {
 		File repo = getRepoFile(javaProject);
 		GitHistoryAnalyzer gitHistoryAnalyzer = new GitHistoryAnalyzer(repo);
 		LinkedList<GitMethod> gitMethods = gitHistoryAnalyzer.getGitMethods();
