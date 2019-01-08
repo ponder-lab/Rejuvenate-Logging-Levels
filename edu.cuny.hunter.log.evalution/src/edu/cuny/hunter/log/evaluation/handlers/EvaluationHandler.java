@@ -233,8 +233,8 @@ public class EvaluationHandler extends AbstractHandler {
 
 	private void printBoundaryWithConfig(LinkedList<Float> boundary, CSVPrinter doiPrinter) throws IOException {
 		this.printBoundaryLogCategory(boundary, doiPrinter);
-		doiPrinter.printRecord("[" + boundary.get(5) + ", " + boundary.get(6) + ")", Level.WARNING);
-		doiPrinter.printRecord("[" + boundary.get(6) + ", " + boundary.get(7) + ")", Level.SEVERE);
+		doiPrinter.printRecord("[" + boundary.get(4) + ", " + boundary.get(5) + ")", Level.WARNING);
+		doiPrinter.printRecord("[" + boundary.get(5) + ", " + boundary.get(6) + ")", Level.SEVERE);
 	}
 
 	private void printBoundaryDefault(LinkedList<Float> boundary, CSVPrinter doiPrinter) throws IOException {
