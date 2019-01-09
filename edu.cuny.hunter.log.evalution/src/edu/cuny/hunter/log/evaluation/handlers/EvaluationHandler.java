@@ -34,6 +34,7 @@ import edu.cuny.hunter.log.core.analysis.LogInvocation;
 import edu.cuny.hunter.log.core.analysis.Failure;
 import edu.cuny.hunter.log.core.refactorings.LogRejuvenatingProcessor;
 import edu.cuny.hunter.log.core.utils.LoggerNames;
+import edu.cuny.hunter.log.core.utils.TimeCollector;
 import edu.cuny.hunter.log.evaluation.utils.Util;
 
 import org.eclipse.jface.viewers.ISelection;
@@ -82,7 +83,7 @@ public class EvaluationHandler extends AbstractHandler {
 					try {
 
 						CSVPrinter resultPrinter = Util.createCSVPrinter("result.csv", new String[] { "subject raw",
-								"log invocations before", "candidate log invocations", "failures" });
+								"log invocations before", "candidate log invocations", "failures", "time (s)" });
 						CSVPrinter actionPrinter = Util.createCSVPrinter("log_actions.csv",
 								new String[] { "subject raw", "log expression", "start pos", "logging level",
 										"type FQN", "enclosing method", "action" });
@@ -101,6 +102,10 @@ public class EvaluationHandler extends AbstractHandler {
 						// for each selected java project
 						for (IJavaProject project : javaProjectList) {
 
+							// Collect running time.
+							TimeCollector resultsTimeCollector = new TimeCollector();
+							resultsTimeCollector.start();
+
 							LogRejuvenatingProcessor logRejuvenatingProcessor = new LogRejuvenatingProcessor(
 									new IJavaProject[] { project }, this.useLogCategory(),
 									this.useLogCategoryWithConfig(), this.useGitHistory(), settings, monitor);
@@ -118,20 +123,18 @@ public class EvaluationHandler extends AbstractHandler {
 
 										// check all failures
 										RefactoringStatusEntry missingJavaElementError = logInvocation.getStatus()
-												.getEntryMatchingCode(pluginId,
-														Failure.MISSING_JAVA_ELEMENT.getCode());
+												.getEntryMatchingCode(pluginId, Failure.MISSING_JAVA_ELEMENT.getCode());
 										RefactoringStatusEntry binaryElementError = logInvocation.getStatus()
-												.getEntryMatchingCode(pluginId,
-														Failure.BINARY_ELEMENT.getCode());
+												.getEntryMatchingCode(pluginId, Failure.BINARY_ELEMENT.getCode());
 										RefactoringStatusEntry readOnlyElementError = logInvocation.getStatus()
-												.getEntryMatchingCode(pluginId,
-														Failure.READ_ONLY_ELEMENT.getCode());
+												.getEntryMatchingCode(pluginId, Failure.READ_ONLY_ELEMENT.getCode());
 										RefactoringStatusEntry generatedElementError = logInvocation.getStatus()
-												.getEntryMatchingCode(pluginId,
-														Failure.GENERATED_ELEMENT.getCode());
+												.getEntryMatchingCode(pluginId, Failure.GENERATED_ELEMENT.getCode());
 										return missingJavaElementError == null && binaryElementError == null
 												&& readOnlyElementError == null && generatedElementError == null;
 									}).collect(Collectors.toSet());
+
+							resultsTimeCollector.stop();
 
 							// print candidate log invocations
 							for (LogInvocation logInvocation : candidates) {
@@ -194,7 +197,7 @@ public class EvaluationHandler extends AbstractHandler {
 							}
 
 							resultPrinter.printRecord(project.getElementName(), logInvocationSet.size(),
-									candidates.size(), errorEntries.size());
+									candidates.size(), errorEntries.size(), resultsTimeCollector.getCollectedTime());
 
 							LinkedList<Float> boundary = logRejuvenatingProcessor.getBoundary();
 							if (boundary != null && boundary.size() > 0)
