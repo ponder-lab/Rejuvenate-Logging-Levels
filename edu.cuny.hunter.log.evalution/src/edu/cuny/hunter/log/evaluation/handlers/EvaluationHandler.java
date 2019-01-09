@@ -180,8 +180,9 @@ public class EvaluationHandler extends AbstractHandler {
 
 							for (LogInvocation logInvocation : transformedLogInvocationSet) {
 								// print candidates
-								transformedLogInvPrinter.printRecord(project.getElementName(), logInvocation.getExpression(),
-										logInvocation.getStartPosition(), logInvocation.getLogLevel(),
+								transformedLogInvPrinter.printRecord(project.getElementName(),
+										logInvocation.getExpression(), logInvocation.getStartPosition(),
+										logInvocation.getLogLevel(),
 										logInvocation.getEnclosingType().getFullyQualifiedName(),
 										Util.getMethodIdentifier(logInvocation.getEnclosingEclipseMethod()),
 										logInvocation.getDegreeOfInterestValue());
@@ -197,7 +198,7 @@ public class EvaluationHandler extends AbstractHandler {
 							}
 
 							resultPrinter.printRecord(project.getElementName(), logInvocationSet.size(),
-									candidates.size(), errorEntries.size(), resultsTimeCollector.getCollectedTime());
+									candidates.size(), errorEntries.size(), resultsTimeCollector.getCollectedTime()/1000);
 
 							LinkedList<Float> boundary = logRejuvenatingProcessor.getBoundary();
 							if (boundary != null && boundary.size() > 0)
