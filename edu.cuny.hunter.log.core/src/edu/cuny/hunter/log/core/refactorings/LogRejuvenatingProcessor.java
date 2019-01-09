@@ -135,69 +135,80 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 
 		final RefactoringStatus status = new RefactoringStatus();
 
-		try {
+		for (IJavaProject jproj : this.getJavaProjects()) {
+			LogAnalyzer analyzer = new LogAnalyzer(this.useLogCategoryWithConfig, this.useLogCategory);
 
-			for (IJavaProject jproj : this.getJavaProjects()) {
-				LogAnalyzer analyzer = new LogAnalyzer(this.useLogCategoryWithConfig, this.useLogCategory);
-
-				IPackageFragmentRoot[] roots = jproj.getPackageFragmentRoots();
-				for (IPackageFragmentRoot root : roots) {
-					IJavaElement[] children = root.getChildren();
-					for (IJavaElement child : children)
-						if (child.getElementType() == IJavaElement.PACKAGE_FRAGMENT) {
-							IPackageFragment fragment = (IPackageFragment) child;
-							ICompilationUnit[] units = fragment.getCompilationUnits();
-							for (ICompilationUnit unit : units) {
-								CompilationUnit compilationUnit = super.getCompilationUnit(unit, monitor);
-								compilationUnit.accept(analyzer);
-							}
+			IPackageFragmentRoot[] roots = jproj.getPackageFragmentRoots();
+			for (IPackageFragmentRoot root : roots) {
+				IJavaElement[] children = root.getChildren();
+				for (IJavaElement child : children)
+					if (child.getElementType() == IJavaElement.PACKAGE_FRAGMENT) {
+						IPackageFragment fragment = (IPackageFragment) child;
+						ICompilationUnit[] units = fragment.getCompilationUnits();
+						for (ICompilationUnit unit : units) {
+							CompilationUnit compilationUnit = super.getCompilationUnit(unit, monitor);
+							compilationUnit.accept(analyzer);
 						}
-				}
-
-				MylynGitPredictionProvider mylynProvider = new MylynGitPredictionProvider();
-
-				if (this.useGitHistory) {
-					mylynProvider.processOneProject(jproj);
-					analyzer.updateDOI();
-				}
-
-				// analyze.
-				analyzer.analyze();
-				// Get boundary
-				this.boundary = analyzer.getBoundary();
-
-				this.addLogInvocationSet(analyzer.getLogInvocationSet());
-
-				// If we are using the git history.
-				if (this.useGitHistory) {
-					// then, we must clear the context
-					analyzer.clearTaskContext(mylynProvider);
-				}
+					}
 			}
 
-			// It is not called by evaluation plugin.
-			if (!isEvaluation)
-				MylynGitPredictionProvider.clearMappingData();
+			MylynGitPredictionProvider mylynProvider = new MylynGitPredictionProvider();
 
-			// get the status of each log invocation.
-			RefactoringStatus collectedStatus = this.getLogInvocationSet().stream().map(LogInvocation::getStatus)
-					.collect(() -> new RefactoringStatus(), (a, b) -> a.merge(b), (a, b) -> a.merge(b));
-			status.merge(collectedStatus);
+			this.processGitHistory(mylynProvider, analyzer, jproj);
 
-			if (!status.hasFatalError()) {
-				// those log invocations whose logging level can be rejuvenated
-				Set<LogInvocation> possibleTransformedLogSet = this.getPossibleTransformedLog();
-				if (possibleTransformedLogSet.isEmpty()) {
-					status.addFatalError(Messages.NoPossibleTransformedLog);
-				}
+			// analyze.
+			analyzer.analyze();
+			// Get boundary
+			this.boundary = analyzer.getBoundary();
+
+			this.addLogInvocationSet(analyzer.getLogInvocationSet());
+
+			// If we are using the git history.
+			if (this.useGitHistory) {
+				// then, we must clear the context
+				analyzer.clearTaskContext(mylynProvider);
+			}
+		}
+
+		// It is not called by evaluation plugin.
+		if (!isEvaluation)
+			MylynGitPredictionProvider.clearMappingData();
+
+		// get the status of each log invocation.
+		RefactoringStatus collectedStatus = this.getLogInvocationSet().stream().map(LogInvocation::getStatus)
+				.collect(() -> new RefactoringStatus(), (a, b) -> a.merge(b), (a, b) -> a.merge(b));
+		status.merge(collectedStatus);
+
+		if (!status.hasFatalError()) {
+			// those log invocations whose logging level can be rejuvenated
+			Set<LogInvocation> possibleTransformedLogSet = this.getPossibleTransformedLog();
+			if (possibleTransformedLogSet.isEmpty()) {
+				status.addFatalError(Messages.NoPossibleTransformedLog);
+			}
+		}
+
+		return status;
+
+	}
+
+	/**
+	 * Call mylyngit plugin to process git history.
+	 * 
+	 * @param mylynProvider
+	 * @param analyzer
+	 * @param jproj
+	 */
+	private void processGitHistory(MylynGitPredictionProvider mylynProvider, LogAnalyzer analyzer, IJavaProject jproj) {
+		try {
+			if (this.useGitHistory) {
+				mylynProvider.processOneProject(jproj);
+				analyzer.updateDOI();
 			}
 		} catch (GitAPIException | JGitInternalException e) {
 			LOGGER.info("Cannot get valid git object! May not a valid git repo.");
 		} catch (IOException e) {
 			LOGGER.info("Cannot process git commits.");
 		}
-		return status;
-
 	}
 
 	/**

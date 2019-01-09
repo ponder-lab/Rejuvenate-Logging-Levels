@@ -142,9 +142,7 @@ public class Util {
 		try {
 			contextManager.deleteContext(handleIdentifier);
 		} catch (Exception e) {
-			LOGGER.log(Level.WARNING, e,
-					() -> "Caught exception while trying to clear active context with handle identifier: "
-							+ handleIdentifier + ".");
+			LOGGER.log(Level.WARNING, "Context may not active.");
 		}
 	}
 }
