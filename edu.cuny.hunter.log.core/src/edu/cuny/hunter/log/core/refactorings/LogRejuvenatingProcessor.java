@@ -58,6 +58,8 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 
 	private boolean useGitHistory = false;
 
+	private boolean isEvaluation = false;
+
 	public LogRejuvenatingProcessor(final CodeGenerationSettings settings) {
 		super(settings);
 	}
@@ -108,6 +110,13 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 		} finally {
 			monitor.ifPresent(IProgressMonitor::done);
 		}
+	}
+
+	public LogRejuvenatingProcessor(IJavaProject[] javaProjects, boolean useLogLevelCategory,
+			boolean useConfigLogLevelCategory, boolean useGitHistory, final CodeGenerationSettings settings,
+			Optional<IProgressMonitor> monitor, boolean isEvaluation) {
+		this(javaProjects, useLogLevelCategory, useConfigLogLevelCategory, useGitHistory, settings, monitor);
+		this.isEvaluation = isEvaluation;
 	}
 
 	@Override
@@ -165,6 +174,10 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 					analyzer.clearTaskContext(mylynProvider);
 				}
 			}
+
+			// It is not called by evaluation plugin.
+			if (!isEvaluation)
+				MylynGitPredictionProvider.clearMappingData();
 
 			// get the status of each log invocation.
 			RefactoringStatus collectedStatus = this.getLogInvocationSet().stream().map(LogInvocation::getStatus)

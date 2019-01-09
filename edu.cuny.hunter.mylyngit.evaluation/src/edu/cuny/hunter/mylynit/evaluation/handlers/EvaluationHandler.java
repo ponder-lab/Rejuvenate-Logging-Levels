@@ -75,7 +75,7 @@ public class EvaluationHandler extends AbstractHandler {
 							}
 							provider.clearTaskContext();
 						}
-
+						MylynGitPredictionProvider.clearMappingData();
 						resultPrinter.close();
 					} catch (IOException e) {
 						LOGGER.info("Cannot print info correctly or cannot process git commits.");

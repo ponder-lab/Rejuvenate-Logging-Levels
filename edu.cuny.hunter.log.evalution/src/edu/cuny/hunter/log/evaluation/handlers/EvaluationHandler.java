@@ -36,6 +36,7 @@ import edu.cuny.hunter.log.core.refactorings.LogRejuvenatingProcessor;
 import edu.cuny.hunter.log.core.utils.LoggerNames;
 import edu.cuny.hunter.log.core.utils.TimeCollector;
 import edu.cuny.hunter.log.evaluation.utils.Util;
+import edu.cuny.hunter.mylyngit.core.analysis.MylynGitPredictionProvider;
 
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.ltk.core.refactoring.RefactoringStatusEntry;
@@ -106,7 +107,10 @@ public class EvaluationHandler extends AbstractHandler {
 
 					LogRejuvenatingProcessor logRejuvenatingProcessor = new LogRejuvenatingProcessor(
 							new IJavaProject[] { project }, this.useLogCategory(), this.useLogCategoryWithConfig(),
-							this.useGitHistory(), settings, monitor);
+							this.useGitHistory(), settings, monitor, true);
+
+					// Clear intermediate data for mylyngit plugin.
+					MylynGitPredictionProvider.clearMappingData();
 
 					new ProcessorBasedRefactoring((RefactoringProcessor) logRejuvenatingProcessor)
 							.checkAllConditions(new NullProgressMonitor());

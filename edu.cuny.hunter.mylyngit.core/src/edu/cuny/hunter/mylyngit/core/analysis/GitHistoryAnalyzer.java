@@ -79,8 +79,8 @@ public class GitHistoryAnalyzer {
 	private Graph renaming = new Graph();
 
 	// ----- Which is needed for multiple projects (not for mylyngit test plugin)---
-	private HashMap<String, LinkedList<GitMethod>> repoToGitMethods = new HashMap<>();
-	private HashMap<String, Graph> repoToRenaming = new HashMap<>();
+	private static HashMap<String, LinkedList<GitMethod>> repoToGitMethods = new HashMap<>();
+	private static HashMap<String, Graph> repoToRenaming = new HashMap<>();
 	// -----------------------------------------------------------------------------
 
 	// the file index
@@ -297,11 +297,12 @@ public class GitHistoryAnalyzer {
 		}
 
 		if (repoFile != null) {
-			if (repoToGitMethods.containsKey(repoFile) && repoToRenaming.containsKey(repoFile)) {
-				this.gitMethods = repoToGitMethods.get(repoFile.getAbsolutePath());
-				this.renaming = repoToRenaming.get(repoFile.getAbsolutePath());
+			String repoPath = repoFile.getAbsolutePath();
+			if (repoToGitMethods.containsKey(repoPath) && repoToRenaming.containsKey(repoPath)) {
+				this.gitMethods = repoToGitMethods.get(repoPath);
+				this.renaming = repoToRenaming.get(repoPath);
 			}
-			this.repo = repoFile.getAbsolutePath();
+			this.repo = repoPath;
 		}
 		return git;
 	}
@@ -670,9 +671,9 @@ public class GitHistoryAnalyzer {
 					TypesOfMethodOperations.ADD);
 		});
 
-		this.methodSignaturesToOps.forEach((methodSig, ops) -> {
-			System.out.println(methodSig + ": " + ops);
-		});
+//		this.methodSignaturesToOps.forEach((methodSig, ops) -> {
+//			System.out.println(methodSig + ": " + ops);
+//		});
 
 	}
 
@@ -849,6 +850,14 @@ public class GitHistoryAnalyzer {
 
 	public HashMap<String, LinkedList<TypesOfMethodOperations>> getMethodSignaturesToOps() {
 		return this.methodSignaturesToOps;
+	}
+
+	/**
+	 * Clear intermediate data for each tool running.
+	 */
+	public static void clearMappingData() {
+		repoToGitMethods.clear();
+		repoToRenaming.clear();
 	}
 
 }

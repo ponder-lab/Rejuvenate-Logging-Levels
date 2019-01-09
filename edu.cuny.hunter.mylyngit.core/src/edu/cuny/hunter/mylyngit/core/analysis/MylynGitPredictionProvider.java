@@ -116,6 +116,13 @@ public class MylynGitPredictionProvider extends AbstractJavaRelationProvider {
 			bumpDOIValuesForMethod(method, gitHistoryAnalyzer);
 		});
 	}
+	
+	/**
+	 * Clear intermediate data.
+	 */
+	public static void clearMappingData() {
+		GitHistoryAnalyzer.clearMappingData();
+	}
 
 	/**
 	 * Bump DOI value for a method in the current source code when its historical
