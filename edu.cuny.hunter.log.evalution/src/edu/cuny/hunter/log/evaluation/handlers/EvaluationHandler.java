@@ -76,155 +76,151 @@ public class EvaluationHandler extends AbstractHandler {
 						javaProjectList.add((IJavaProject) jElem);
 						break;
 					}
+				}
+			CodeGenerationSettings settings = JavaPreferencesSettings.getCodeGenerationSettings(javaProjectList.get(0));
 
-					CodeGenerationSettings settings = JavaPreferencesSettings
-							.getCodeGenerationSettings(javaProjectList.get(0));
+			try {
 
-					try {
+				CSVPrinter resultPrinter = Util.createCSVPrinter("result.csv", new String[] { "subject raw",
+						"log invocations before", "possible_transformed log invocations", "failures", "time (s)" });
+				CSVPrinter actionPrinter = Util.createCSVPrinter("log_actions.csv", new String[] { "subject raw",
+						"log expression", "start pos", "logging level", "type FQN", "enclosing method", "action" });
+				CSVPrinter possibleTransformedLogInvPrinter = Util.createCSVPrinter(
+						"possible_transformed_log_invocations.csv", new String[] { "subject raw", "log expression",
+								"start pos", "logging level", "type FQN", "enclosing method", "DOI" });
+				CSVPrinter transformedLogInvPrinter = Util.createCSVPrinter("transformed_log_invocations.csv",
+						new String[] { "subject raw", "log expression", "start pos", "logging level", "type FQN",
+								"enclosing method", "DOI" });
+				CSVPrinter failurePrinter = Util.createCSVPrinter("failures.csv",
+						new String[] { "subject raw", "log expression", "start pos", "logging level", "type FQN",
+								"enclosing method", "code", "name", "message" });
+				CSVPrinter doiPrinter = Util.createCSVPrinter("DOI_boundaries.csv",
+						new String[] { "DOI boundary", "Log level" });
 
-						CSVPrinter resultPrinter = Util.createCSVPrinter("result.csv", new String[] { "subject raw",
-								"log invocations before", "possible_transformed log invocations", "failures", "time (s)" });
-						CSVPrinter actionPrinter = Util.createCSVPrinter("log_actions.csv",
-								new String[] { "subject raw", "log expression", "start pos", "logging level",
-										"type FQN", "enclosing method", "action" });
-						CSVPrinter possibleTransformedLogInvPrinter = Util.createCSVPrinter("possible_transformed_log_invocations.csv",
-								new String[] { "subject raw", "log expression", "start pos", "logging level",
-										"type FQN", "enclosing method", "DOI" });
-						CSVPrinter transformedLogInvPrinter = Util.createCSVPrinter("transformed_log_invocations.csv",
-								new String[] { "subject raw", "log expression", "start pos", "logging level",
-										"type FQN", "enclosing method", "DOI" });
-						CSVPrinter failurePrinter = Util.createCSVPrinter("failures.csv",
-								new String[] { "subject raw", "log expression", "start pos", "logging level",
-										"type FQN", "enclosing method", "code", "name", "message" });
-						CSVPrinter doiPrinter = Util.createCSVPrinter("DOI_boundaries.csv",
-								new String[] { "DOI boundary", "Log level" });
+				// for each selected java project
+				for (IJavaProject project : javaProjectList) {
 
-						// for each selected java project
-						for (IJavaProject project : javaProjectList) {
+					// Collect running time.
+					TimeCollector resultsTimeCollector = new TimeCollector();
+					resultsTimeCollector.start();
 
-							// Collect running time.
-							TimeCollector resultsTimeCollector = new TimeCollector();
-							resultsTimeCollector.start();
+					LogRejuvenatingProcessor logRejuvenatingProcessor = new LogRejuvenatingProcessor(
+							new IJavaProject[] { project }, this.useLogCategory(), this.useLogCategoryWithConfig(),
+							this.useGitHistory(), settings, monitor);
 
-							LogRejuvenatingProcessor logRejuvenatingProcessor = new LogRejuvenatingProcessor(
-									new IJavaProject[] { project }, this.useLogCategory(),
-									this.useLogCategoryWithConfig(), this.useGitHistory(), settings, monitor);
+					new ProcessorBasedRefactoring((RefactoringProcessor) logRejuvenatingProcessor)
+							.checkAllConditions(new NullProgressMonitor());
 
-							new ProcessorBasedRefactoring((RefactoringProcessor) logRejuvenatingProcessor)
-									.checkAllConditions(new NullProgressMonitor());
+					Set<LogInvocation> logInvocationSet = logRejuvenatingProcessor.getLogInvocationSet();
 
-							Set<LogInvocation> logInvocationSet = logRejuvenatingProcessor.getLogInvocationSet();
+					// get possibleTransformed log invocations
+					Set<LogInvocation> possibleTransformedLogInvs = logInvocationSet == null ? Collections.emptySet()
+							: logInvocationSet.parallelStream().filter(logInvocation -> {
+								String pluginId = FrameworkUtil.getBundle(LogInvocation.class).getSymbolicName();
 
-							// get possibleTransformed log invocations
-							Set<LogInvocation> possibleTransformedLogInvs = logInvocationSet == null ? Collections.emptySet()
-									: logInvocationSet.parallelStream().filter(logInvocation -> {
-										String pluginId = FrameworkUtil.getBundle(LogInvocation.class)
-												.getSymbolicName();
+								// check all failures
+								RefactoringStatusEntry missingJavaElementError = logInvocation.getStatus()
+										.getEntryMatchingCode(pluginId, Failure.MISSING_JAVA_ELEMENT.getCode());
+								RefactoringStatusEntry binaryElementError = logInvocation.getStatus()
+										.getEntryMatchingCode(pluginId, Failure.BINARY_ELEMENT.getCode());
+								RefactoringStatusEntry readOnlyElementError = logInvocation.getStatus()
+										.getEntryMatchingCode(pluginId, Failure.READ_ONLY_ELEMENT.getCode());
+								RefactoringStatusEntry generatedElementError = logInvocation.getStatus()
+										.getEntryMatchingCode(pluginId, Failure.GENERATED_ELEMENT.getCode());
+								return missingJavaElementError == null && binaryElementError == null
+										&& readOnlyElementError == null && generatedElementError == null;
+							}).collect(Collectors.toSet());
 
-										// check all failures
-										RefactoringStatusEntry missingJavaElementError = logInvocation.getStatus()
-												.getEntryMatchingCode(pluginId, Failure.MISSING_JAVA_ELEMENT.getCode());
-										RefactoringStatusEntry binaryElementError = logInvocation.getStatus()
-												.getEntryMatchingCode(pluginId, Failure.BINARY_ELEMENT.getCode());
-										RefactoringStatusEntry readOnlyElementError = logInvocation.getStatus()
-												.getEntryMatchingCode(pluginId, Failure.READ_ONLY_ELEMENT.getCode());
-										RefactoringStatusEntry generatedElementError = logInvocation.getStatus()
-												.getEntryMatchingCode(pluginId, Failure.GENERATED_ELEMENT.getCode());
-										return missingJavaElementError == null && binaryElementError == null
-												&& readOnlyElementError == null && generatedElementError == null;
-									}).collect(Collectors.toSet());
+					resultsTimeCollector.stop();
 
-							resultsTimeCollector.stop();
+					// print possible transformed log invocations
+					for (LogInvocation logInvocation : possibleTransformedLogInvs) {
+						// print possible transformed log invocations
+						possibleTransformedLogInvPrinter.printRecord(project.getElementName(),
+								logInvocation.getExpression(), logInvocation.getStartPosition(),
+								logInvocation.getLogLevel(), logInvocation.getEnclosingType().getFullyQualifiedName(),
+								Util.getMethodIdentifier(logInvocation.getEnclosingEclipseMethod()),
+								logInvocation.getDegreeOfInterestValue());
+					}
 
-							// print possible transformed log invocations
-							for (LogInvocation logInvocation : possibleTransformedLogInvs) {
-								// print possible transformed log invocations
-								possibleTransformedLogInvPrinter.printRecord(project.getElementName(), logInvocation.getExpression(),
-										logInvocation.getStartPosition(), logInvocation.getLogLevel(),
-										logInvocation.getEnclosingType().getFullyQualifiedName(),
-										Util.getMethodIdentifier(logInvocation.getEnclosingEclipseMethod()),
-										logInvocation.getDegreeOfInterestValue());
-							}
+					Set<LogInvocation> transformedLogInvocationSet = logRejuvenatingProcessor
+							.getPossibleTransformedLog();
+					// get the difference of possibleTransformeds and transformed log invocations
+					Set<LogInvocation> failures = new HashSet<LogInvocation>();
+					failures.addAll(possibleTransformedLogInvs);
+					failures.removeAll(transformedLogInvocationSet);
 
-							Set<LogInvocation> transformedLogInvocationSet = logRejuvenatingProcessor
-									.getPossibleTransformedLog();
-							// get the difference of possibleTransformeds and transformed log invocations
-							Set<LogInvocation> failures = new HashSet<LogInvocation>();
-							failures.addAll(possibleTransformedLogInvs);
-							failures.removeAll(transformedLogInvocationSet);
+					// failures.
+					Collection<RefactoringStatusEntry> errorEntries = failures.parallelStream()
+							.map(LogInvocation::getStatus).flatMap(s -> Arrays.stream(s.getEntries()))
+							.filter(RefactoringStatusEntry::isError).collect(Collectors.toSet());
 
-							// failures.
-							Collection<RefactoringStatusEntry> errorEntries = failures.parallelStream()
-									.map(LogInvocation::getStatus).flatMap(s -> Arrays.stream(s.getEntries()))
-									.filter(RefactoringStatusEntry::isError).collect(Collectors.toSet());
+					// print failures.
+					for (RefactoringStatusEntry entry : errorEntries)
+						if (!entry.isFatalError()) {
+							Object correspondingElement = entry.getData();
 
-							// print failures.
-							for (RefactoringStatusEntry entry : errorEntries)
-								if (!entry.isFatalError()) {
-									Object correspondingElement = entry.getData();
+							if (!(correspondingElement instanceof LogInvocation))
+								throw new IllegalStateException("The element: " + correspondingElement
+										+ " corresponding to a failure is not a log inovation."
+										+ correspondingElement.getClass());
 
-									if (!(correspondingElement instanceof LogInvocation))
-										throw new IllegalStateException("The element: " + correspondingElement
-												+ " corresponding to a failure is not a log inovation."
-												+ correspondingElement.getClass());
+							LogInvocation failedLogInvocation = (LogInvocation) correspondingElement;
 
-									LogInvocation failedLogInvocation = (LogInvocation) correspondingElement;
-
-									failurePrinter.printRecord(project.getElementName(),
-											failedLogInvocation.getExpression(), failedLogInvocation.getStartPosition(),
-											failedLogInvocation.getLogLevel(),
-											failedLogInvocation.getEnclosingType().getFullyQualifiedName(),
-											Util.getMethodIdentifier(failedLogInvocation.getEnclosingEclipseMethod()),
-											entry.getCode(), entry, entry.getMessage());
-								}
-
-							for (LogInvocation logInvocation : transformedLogInvocationSet) {
-								// print possibleTransformeds
-								transformedLogInvPrinter.printRecord(project.getElementName(),
-										logInvocation.getExpression(), logInvocation.getStartPosition(),
-										logInvocation.getLogLevel(),
-										logInvocation.getEnclosingType().getFullyQualifiedName(),
-										Util.getMethodIdentifier(logInvocation.getEnclosingEclipseMethod()),
-										logInvocation.getDegreeOfInterestValue());
-							}
-
-							for (LogInvocation logInvocation : logInvocationSet) {
-								// print actions
-								actionPrinter.printRecord(project.getElementName(), logInvocation.getExpression(),
-										logInvocation.getStartPosition(), logInvocation.getLogLevel(),
-										logInvocation.getEnclosingType().getFullyQualifiedName(),
-										Util.getMethodIdentifier(logInvocation.getEnclosingEclipseMethod()),
-										logInvocation.getAction());
-							}
-
-							resultPrinter.printRecord(project.getElementName(), logInvocationSet.size(),
-									possibleTransformedLogInvs.size(), errorEntries.size(), resultsTimeCollector.getCollectedTime()/1000);
-
-							LinkedList<Float> boundary = logRejuvenatingProcessor.getBoundary();
-							if (boundary != null && boundary.size() > 0)
-								if (USE_LOG_CATEGORY_DEFAULT) {
-									this.printBoundaryLogCategory(boundary, doiPrinter);
-								} else if (USE_LOG_CATEGORY_CONFIG_DEFAULT) { // Do not consider config
-									this.printBoundaryWithConfig(boundary, doiPrinter);
-								} else {// Treat log levels as traditional log levels
-									this.printBoundaryDefault(boundary, doiPrinter);
-								}
-
+							failurePrinter.printRecord(project.getElementName(), failedLogInvocation.getExpression(),
+									failedLogInvocation.getStartPosition(), failedLogInvocation.getLogLevel(),
+									failedLogInvocation.getEnclosingType().getFullyQualifiedName(),
+									Util.getMethodIdentifier(failedLogInvocation.getEnclosingEclipseMethod()),
+									entry.getCode(), entry, entry.getMessage());
 						}
 
-						resultPrinter.close();
-						actionPrinter.close();
-						possibleTransformedLogInvPrinter.close();
-						failurePrinter.close();
-						transformedLogInvPrinter.close();
-						doiPrinter.close();
-					} catch (IOException e) {
-						LOGGER.severe("Cannot create printer.");
-					} catch (OperationCanceledException | CoreException e) {
-						LOGGER.severe("Cannot pass all conditions.");
+					for (LogInvocation logInvocation : transformedLogInvocationSet) {
+						// print possibleTransformeds
+						transformedLogInvPrinter.printRecord(project.getElementName(), logInvocation.getExpression(),
+								logInvocation.getStartPosition(), logInvocation.getLogLevel(),
+								logInvocation.getEnclosingType().getFullyQualifiedName(),
+								Util.getMethodIdentifier(logInvocation.getEnclosingEclipseMethod()),
+								logInvocation.getDegreeOfInterestValue());
 					}
+
+					for (LogInvocation logInvocation : logInvocationSet) {
+						// print actions
+						actionPrinter.printRecord(project.getElementName(), logInvocation.getExpression(),
+								logInvocation.getStartPosition(), logInvocation.getLogLevel(),
+								logInvocation.getEnclosingType().getFullyQualifiedName(),
+								Util.getMethodIdentifier(logInvocation.getEnclosingEclipseMethod()),
+								logInvocation.getAction());
+					}
+
+					resultPrinter.printRecord(project.getElementName(), logInvocationSet.size(),
+							possibleTransformedLogInvs.size(), errorEntries.size(),
+							resultsTimeCollector.getCollectedTime() / 1000);
+
+					LinkedList<Float> boundary = logRejuvenatingProcessor.getBoundary();
+					if (boundary != null && boundary.size() > 0)
+						if (USE_LOG_CATEGORY_DEFAULT) {
+							this.printBoundaryLogCategory(boundary, doiPrinter);
+						} else if (USE_LOG_CATEGORY_CONFIG_DEFAULT) { // Do not consider config
+							this.printBoundaryWithConfig(boundary, doiPrinter);
+						} else {// Treat log levels as traditional log levels
+							this.printBoundaryDefault(boundary, doiPrinter);
+						}
+
 				}
+
+				resultPrinter.close();
+				actionPrinter.close();
+				possibleTransformedLogInvPrinter.close();
+				failurePrinter.close();
+				transformedLogInvPrinter.close();
+				doiPrinter.close();
+			} catch (IOException e) {
+				LOGGER.severe("Cannot create printer.");
+			} catch (OperationCanceledException | CoreException e) {
+				LOGGER.severe("Cannot pass all conditions.");
+			}
 		}
+
 		return null;
 	}
 
