@@ -83,11 +83,11 @@ public class EvaluationHandler extends AbstractHandler {
 					try {
 
 						CSVPrinter resultPrinter = Util.createCSVPrinter("result.csv", new String[] { "subject raw",
-								"log invocations before", "candidate log invocations", "failures", "time (s)" });
+								"log invocations before", "possible_transformed log invocations", "failures", "time (s)" });
 						CSVPrinter actionPrinter = Util.createCSVPrinter("log_actions.csv",
 								new String[] { "subject raw", "log expression", "start pos", "logging level",
 										"type FQN", "enclosing method", "action" });
-						CSVPrinter candidatePrinter = Util.createCSVPrinter("candidate_log_invocations.csv",
+						CSVPrinter possibleTransformedLogInvPrinter = Util.createCSVPrinter("possible_transformed_log_invocations.csv",
 								new String[] { "subject raw", "log expression", "start pos", "logging level",
 										"type FQN", "enclosing method", "DOI" });
 						CSVPrinter transformedLogInvPrinter = Util.createCSVPrinter("transformed_log_invocations.csv",
@@ -115,8 +115,8 @@ public class EvaluationHandler extends AbstractHandler {
 
 							Set<LogInvocation> logInvocationSet = logRejuvenatingProcessor.getLogInvocationSet();
 
-							// get candidate log invocations
-							Set<LogInvocation> candidates = logInvocationSet == null ? Collections.emptySet()
+							// get possibleTransformed log invocations
+							Set<LogInvocation> possibleTransformedLogInvs = logInvocationSet == null ? Collections.emptySet()
 									: logInvocationSet.parallelStream().filter(logInvocation -> {
 										String pluginId = FrameworkUtil.getBundle(LogInvocation.class)
 												.getSymbolicName();
@@ -136,10 +136,10 @@ public class EvaluationHandler extends AbstractHandler {
 
 							resultsTimeCollector.stop();
 
-							// print candidate log invocations
-							for (LogInvocation logInvocation : candidates) {
-								// print candidates
-								candidatePrinter.printRecord(project.getElementName(), logInvocation.getExpression(),
+							// print possible transformed log invocations
+							for (LogInvocation logInvocation : possibleTransformedLogInvs) {
+								// print possible transformed log invocations
+								possibleTransformedLogInvPrinter.printRecord(project.getElementName(), logInvocation.getExpression(),
 										logInvocation.getStartPosition(), logInvocation.getLogLevel(),
 										logInvocation.getEnclosingType().getFullyQualifiedName(),
 										Util.getMethodIdentifier(logInvocation.getEnclosingEclipseMethod()),
@@ -148,9 +148,9 @@ public class EvaluationHandler extends AbstractHandler {
 
 							Set<LogInvocation> transformedLogInvocationSet = logRejuvenatingProcessor
 									.getPossibleTransformedLog();
-							// get the difference of candidates and transformed log invocations
+							// get the difference of possibleTransformeds and transformed log invocations
 							Set<LogInvocation> failures = new HashSet<LogInvocation>();
-							failures.addAll(candidates);
+							failures.addAll(possibleTransformedLogInvs);
 							failures.removeAll(transformedLogInvocationSet);
 
 							// failures.
@@ -179,7 +179,7 @@ public class EvaluationHandler extends AbstractHandler {
 								}
 
 							for (LogInvocation logInvocation : transformedLogInvocationSet) {
-								// print candidates
+								// print possibleTransformeds
 								transformedLogInvPrinter.printRecord(project.getElementName(),
 										logInvocation.getExpression(), logInvocation.getStartPosition(),
 										logInvocation.getLogLevel(),
@@ -198,7 +198,7 @@ public class EvaluationHandler extends AbstractHandler {
 							}
 
 							resultPrinter.printRecord(project.getElementName(), logInvocationSet.size(),
-									candidates.size(), errorEntries.size(), resultsTimeCollector.getCollectedTime()/1000);
+									possibleTransformedLogInvs.size(), errorEntries.size(), resultsTimeCollector.getCollectedTime()/1000);
 
 							LinkedList<Float> boundary = logRejuvenatingProcessor.getBoundary();
 							if (boundary != null && boundary.size() > 0)
@@ -214,7 +214,7 @@ public class EvaluationHandler extends AbstractHandler {
 
 						resultPrinter.close();
 						actionPrinter.close();
-						candidatePrinter.close();
+						possibleTransformedLogInvPrinter.close();
 						failurePrinter.close();
 						transformedLogInvPrinter.close();
 						doiPrinter.close();
