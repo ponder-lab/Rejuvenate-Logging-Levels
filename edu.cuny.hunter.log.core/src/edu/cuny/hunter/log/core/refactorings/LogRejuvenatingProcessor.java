@@ -172,10 +172,10 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 			status.merge(collectedStatus);
 
 			if (!status.hasFatalError()) {
-				// those log invocations whose logging level can be refactored
-				Set<LogInvocation> possibleRejuvenatedLogSet = this.getPossibleRejuvenatedLog();
-				if (possibleRejuvenatedLogSet.isEmpty()) {
-					status.addFatalError(Messages.NoPossibleRejuvenatedLog);
+				// those log invocations whose logging level can be rejuvenated
+				Set<LogInvocation> possibleTransformedLogSet = this.getPossibleTransformedLog();
+				if (possibleTransformedLogSet.isEmpty()) {
+					status.addFatalError(Messages.NoPossibleTransformedLog);
 				}
 			}
 		} catch (GitAPIException | JGitInternalException e) {
@@ -188,16 +188,16 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 	}
 
 	/**
-	 * get a set of rejuvenated log set
+	 * get a set of transformed log set
 	 */
-	public Set<LogInvocation> getPossibleRejuvenatedLog() {
-		HashSet<LogInvocation> rejuvenatedSet = new HashSet<>();
+	public Set<LogInvocation> getPossibleTransformedLog() {
+		HashSet<LogInvocation> transformedSet = new HashSet<>();
 		for (LogInvocation logInvocation : this.logInvocationSet) {
 			if (!logInvocation.getAction().equals(Action.NONE))
-				rejuvenatedSet.add(logInvocation);
+				transformedSet.add(logInvocation);
 		}
 
-		return rejuvenatedSet;
+		return transformedSet;
 	}
 
 	private IJavaProject[] getJavaProjects() {
@@ -212,13 +212,13 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 	public Change createChange(IProgressMonitor pm) throws CoreException, OperationCanceledException {
 		try {
 			final TextEditBasedChangeManager manager = new TextEditBasedChangeManager();
-			Set<LogInvocation> rejuvenatedLogs = this.getLogInvocationSet();
+			Set<LogInvocation> transformedLogs = this.getLogInvocationSet();
 
-			if (rejuvenatedLogs.isEmpty())
-				return new NullChange(Messages.NoPossibleRejuvenatedLog);
+			if (transformedLogs.isEmpty())
+				return new NullChange(Messages.NoPossibleTransformedLog);
 
-			pm.beginTask("Transforming logging levels ...", rejuvenatedLogs.size());
-			for (LogInvocation logInvocation : rejuvenatedLogs) {
+			pm.beginTask("Transforming logging levels ...", transformedLogs.size());
+			for (LogInvocation logInvocation : transformedLogs) {
 				CompilationUnitRewrite rewrite = this.getCompilationUnitRewrite(
 						logInvocation.getEnclosingEclipseMethod().getCompilationUnit(),
 						logInvocation.getEnclosingCompilationUnit());

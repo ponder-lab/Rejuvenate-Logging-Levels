@@ -49,7 +49,7 @@ public class LogAnalyzer extends ASTVisitor {
 	}
 
 	public void analyze() {
-		// check failed preconditions.
+		// check failures.
 		this.checkCodeModification();
 
 		HashSet<Float> degreeOfInterests = new HashSet<>();

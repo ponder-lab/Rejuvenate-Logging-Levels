@@ -89,7 +89,7 @@ public class EvaluationHandler extends AbstractHandler {
 						CSVPrinter candidatePrinter = Util.createCSVPrinter("candidate_log_invocations.csv",
 								new String[] { "subject raw", "log expression", "start pos", "logging level",
 										"type FQN", "enclosing method", "DOI" });
-						CSVPrinter rejuvenatedLogInvPrinter = Util.createCSVPrinter("rejuvenated_log_invocations.csv",
+						CSVPrinter transformedLogInvPrinter = Util.createCSVPrinter("transformed_log_invocations.csv",
 								new String[] { "subject raw", "log expression", "start pos", "logging level",
 										"type FQN", "enclosing method", "DOI" });
 						CSVPrinter failurePrinter = Util.createCSVPrinter("failures.csv",
@@ -143,12 +143,12 @@ public class EvaluationHandler extends AbstractHandler {
 										logInvocation.getDegreeOfInterestValue());
 							}
 
-							Set<LogInvocation> rejuvenatedLogInvocationSet = logRejuvenatingProcessor
-									.getPossibleRejuvenatedLog();
-							// get the difference of candidates and rejuvenated log invocations
+							Set<LogInvocation> transformedLogInvocationSet = logRejuvenatingProcessor
+									.getPossibleTransformedLog();
+							// get the difference of candidates and transformed log invocations
 							Set<LogInvocation> failures = new HashSet<LogInvocation>();
 							failures.addAll(candidates);
-							failures.removeAll(rejuvenatedLogInvocationSet);
+							failures.removeAll(transformedLogInvocationSet);
 
 							// failures.
 							Collection<RefactoringStatusEntry> errorEntries = failures.parallelStream()
@@ -175,9 +175,9 @@ public class EvaluationHandler extends AbstractHandler {
 											entry.getCode(), entry, entry.getMessage());
 								}
 
-							for (LogInvocation logInvocation : rejuvenatedLogInvocationSet) {
+							for (LogInvocation logInvocation : transformedLogInvocationSet) {
 								// print candidates
-								rejuvenatedLogInvPrinter.printRecord(project.getElementName(), logInvocation.getExpression(),
+								transformedLogInvPrinter.printRecord(project.getElementName(), logInvocation.getExpression(),
 										logInvocation.getStartPosition(), logInvocation.getLogLevel(),
 										logInvocation.getEnclosingType().getFullyQualifiedName(),
 										Util.getMethodIdentifier(logInvocation.getEnclosingEclipseMethod()),
@@ -212,7 +212,7 @@ public class EvaluationHandler extends AbstractHandler {
 						actionPrinter.close();
 						candidatePrinter.close();
 						failurePrinter.close();
-						rejuvenatedLogInvPrinter.close();
+						transformedLogInvPrinter.close();
 						doiPrinter.close();
 					} catch (IOException e) {
 						LOGGER.severe("Cannot create printer.");
