@@ -25,7 +25,7 @@ import edu.cuny.citytech.refactoring.common.tests.RefactoringTest;
 import edu.cuny.hunter.log.core.analysis.LogAnalyzer;
 import edu.cuny.hunter.log.core.analysis.LogInvocation;
 import edu.cuny.hunter.log.core.utils.LoggerNames;
-import edu.cuny.hunter.log.core.analysis.PreconditionFailure;
+import edu.cuny.hunter.log.core.analysis.Failure;
 
 @SuppressWarnings("restriction")
 public class LogEvolutionRejuvenatingTest extends RefactoringTest {
@@ -120,7 +120,7 @@ public class LogEvolutionRejuvenatingTest extends RefactoringTest {
 	public void testArgumentLogRecord() throws Exception {
 		helper(new LogInvocationExpectedResult("Logger.getGlobal().info(\"hi\")", Level.INFO, null),
 				new LogInvocationExpectedResult("Logger.getGlobal().log(record)", null,
-						PreconditionFailure.CURRENTLY_NOT_HANDLED));
+						Failure.CURRENTLY_NOT_HANDLED));
 	}
 
 	protected void tearDown() throws Exception {

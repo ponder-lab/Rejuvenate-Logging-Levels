@@ -1,6 +1,6 @@
 package edu.cuny.hunter.log.core.analysis;
 
-public enum PreconditionFailure {
+public enum Failure {
 
 	CURRENTLY_NOT_HANDLED(1),
 	NO_ENOUGH_DATA(2),
@@ -11,7 +11,7 @@ public enum PreconditionFailure {
 	
 	private int code;
 
-	private PreconditionFailure(int code) {
+	private Failure(int code) {
 		this.code = code;
 	}
 

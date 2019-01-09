@@ -2,14 +2,14 @@ package edu.cuny.hunter.log.ui.tests;
 
 import java.util.logging.Level;
 
-import edu.cuny.hunter.log.core.analysis.PreconditionFailure;
+import edu.cuny.hunter.log.core.analysis.Failure;
 
 public class LogInvocationExpectedResult {
 	private String logExpression;
 	private Level logLevel;
-	private PreconditionFailure expectedFailure;
+	private Failure expectedFailure;
 
-	public LogInvocationExpectedResult(String logExpression, Level logLevel, PreconditionFailure expectedFailure) {
+	public LogInvocationExpectedResult(String logExpression, Level logLevel, Failure expectedFailure) {
 		this.logExpression = logExpression;
 		this.logLevel = logLevel;
 		this.setExpectedFailure(expectedFailure);
@@ -23,11 +23,11 @@ public class LogInvocationExpectedResult {
 		return this.logLevel;
 	}
 
-	public PreconditionFailure getExpectedFailure() {
+	public Failure getExpectedFailure() {
 		return expectedFailure;
 	}
 
-	public void setExpectedFailure(PreconditionFailure expectedFailure) {
+	public void setExpectedFailure(Failure expectedFailure) {
 		this.expectedFailure = expectedFailure;
 	}
 }

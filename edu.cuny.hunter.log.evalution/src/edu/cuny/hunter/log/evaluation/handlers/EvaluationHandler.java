@@ -31,7 +31,7 @@ import org.osgi.framework.FrameworkUtil;
 
 import edu.cuny.citytech.refactoring.common.core.RefactoringProcessor;
 import edu.cuny.hunter.log.core.analysis.LogInvocation;
-import edu.cuny.hunter.log.core.analysis.PreconditionFailure;
+import edu.cuny.hunter.log.core.analysis.Failure;
 import edu.cuny.hunter.log.core.refactorings.LogRejuvenatingProcessor;
 import edu.cuny.hunter.log.core.utils.LoggerNames;
 import edu.cuny.hunter.log.evaluation.utils.Util;
@@ -82,7 +82,7 @@ public class EvaluationHandler extends AbstractHandler {
 					try {
 
 						CSVPrinter resultPrinter = Util.createCSVPrinter("result.csv", new String[] { "subject raw",
-								"log invocations before", "candidate log invocations", "failed preconditions" });
+								"log invocations before", "candidate log invocations", "failures" });
 						CSVPrinter actionPrinter = Util.createCSVPrinter("log_actions.csv",
 								new String[] { "subject raw", "log expression", "start pos", "logging level",
 										"type FQN", "enclosing method", "action" });
@@ -92,7 +92,7 @@ public class EvaluationHandler extends AbstractHandler {
 						CSVPrinter rejuvenatedLogInvPrinter = Util.createCSVPrinter("rejuvenated_log_invocations.csv",
 								new String[] { "subject raw", "log expression", "start pos", "logging level",
 										"type FQN", "enclosing method", "DOI" });
-						CSVPrinter failedPreConsPrinter = Util.createCSVPrinter("failed_preconditions.csv",
+						CSVPrinter failurePrinter = Util.createCSVPrinter("failures.csv",
 								new String[] { "subject raw", "log expression", "start pos", "logging level",
 										"type FQN", "enclosing method", "code", "name", "message" });
 						CSVPrinter doiPrinter = Util.createCSVPrinter("DOI_boundaries.csv",
@@ -116,19 +116,19 @@ public class EvaluationHandler extends AbstractHandler {
 										String pluginId = FrameworkUtil.getBundle(LogInvocation.class)
 												.getSymbolicName();
 
-										// check all precondition failures
+										// check all failures
 										RefactoringStatusEntry missingJavaElementError = logInvocation.getStatus()
 												.getEntryMatchingCode(pluginId,
-														PreconditionFailure.MISSING_JAVA_ELEMENT.getCode());
+														Failure.MISSING_JAVA_ELEMENT.getCode());
 										RefactoringStatusEntry binaryElementError = logInvocation.getStatus()
 												.getEntryMatchingCode(pluginId,
-														PreconditionFailure.BINARY_ELEMENT.getCode());
+														Failure.BINARY_ELEMENT.getCode());
 										RefactoringStatusEntry readOnlyElementError = logInvocation.getStatus()
 												.getEntryMatchingCode(pluginId,
-														PreconditionFailure.READ_ONLY_ELEMENT.getCode());
+														Failure.READ_ONLY_ELEMENT.getCode());
 										RefactoringStatusEntry generatedElementError = logInvocation.getStatus()
 												.getEntryMatchingCode(pluginId,
-														PreconditionFailure.GENERATED_ELEMENT.getCode());
+														Failure.GENERATED_ELEMENT.getCode());
 										return missingJavaElementError == null && binaryElementError == null
 												&& readOnlyElementError == null && generatedElementError == null;
 									}).collect(Collectors.toSet());
@@ -150,24 +150,24 @@ public class EvaluationHandler extends AbstractHandler {
 							failures.addAll(candidates);
 							failures.removeAll(rejuvenatedLogInvocationSet);
 
-							// failed preconditions.
+							// failures.
 							Collection<RefactoringStatusEntry> errorEntries = failures.parallelStream()
 									.map(LogInvocation::getStatus).flatMap(s -> Arrays.stream(s.getEntries()))
 									.filter(RefactoringStatusEntry::isError).collect(Collectors.toSet());
 
-							// print failed preconditions
+							// print failures.
 							for (RefactoringStatusEntry entry : errorEntries)
 								if (!entry.isFatalError()) {
 									Object correspondingElement = entry.getData();
 
 									if (!(correspondingElement instanceof LogInvocation))
 										throw new IllegalStateException("The element: " + correspondingElement
-												+ " corresponding to a failed precondition is not a Stream. Instead, it is a: "
+												+ " corresponding to a failure is not a log inovation."
 												+ correspondingElement.getClass());
 
 									LogInvocation failedLogInvocation = (LogInvocation) correspondingElement;
 
-									failedPreConsPrinter.printRecord(project.getElementName(),
+									failurePrinter.printRecord(project.getElementName(),
 											failedLogInvocation.getExpression(), failedLogInvocation.getStartPosition(),
 											failedLogInvocation.getLogLevel(),
 											failedLogInvocation.getEnclosingType().getFullyQualifiedName(),
@@ -211,7 +211,7 @@ public class EvaluationHandler extends AbstractHandler {
 						resultPrinter.close();
 						actionPrinter.close();
 						candidatePrinter.close();
-						failedPreConsPrinter.close();
+						failurePrinter.close();
 						rejuvenatedLogInvPrinter.close();
 						doiPrinter.close();
 					} catch (IOException e) {

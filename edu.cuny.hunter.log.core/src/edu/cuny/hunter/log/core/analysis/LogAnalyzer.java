@@ -121,7 +121,7 @@ public class LogAnalyzer extends ASTVisitor {
 		if (boundary == null)
 			return null;
 		if (Float.compare(boundary.getFirst(), boundary.getLast()) == 0) {
-			logInvocation.addStatusEntry(PreconditionFailure.NO_ENOUGH_DATA,
+			logInvocation.addStatusEntry(Failure.NO_ENOUGH_DATA,
 					"The DOI values are all same or no DOI values. Cannot get valid results.");
 			LOGGER.info("The DOI values are all same or no DOI values. Cannot get valid results.");
 			return null;
@@ -258,17 +258,17 @@ public class LogAnalyzer extends ASTVisitor {
 			if (cu != null) {
 				IJavaElement element = cu.getJavaElement();
 				if (element.isReadOnly())
-					logInvocation.addStatusEntry(PreconditionFailure.READ_ONLY_ELEMENT, Messages.ReadOnlyElement);
+					logInvocation.addStatusEntry(Failure.READ_ONLY_ELEMENT, Messages.ReadOnlyElement);
 
 				IMethod method = logInvocation.getEnclosingEclipseMethod();
 				if (method != null && method.isBinary())
-					logInvocation.addStatusEntry(PreconditionFailure.BINARY_ELEMENT, Messages.BinaryElement);
+					logInvocation.addStatusEntry(Failure.BINARY_ELEMENT, Messages.BinaryElement);
 
 				try {
 					if (Util.isGeneratedCode(element))
-						logInvocation.addStatusEntry(PreconditionFailure.GENERATED_ELEMENT, Messages.GeneratedElement);
+						logInvocation.addStatusEntry(Failure.GENERATED_ELEMENT, Messages.GeneratedElement);
 				} catch (JavaModelException e) {
-					logInvocation.addStatusEntry(PreconditionFailure.MISSING_JAVA_ELEMENT, Messages.MissingJavaElement);
+					logInvocation.addStatusEntry(Failure.MISSING_JAVA_ELEMENT, Messages.MissingJavaElement);
 				}
 			} else
 				LOGGER.warning("Can't find enclosing compilation unit for: " + logInvocation + ".");

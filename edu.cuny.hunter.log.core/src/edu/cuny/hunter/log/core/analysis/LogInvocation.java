@@ -54,7 +54,7 @@ public class LogInvocation {
 		this.logLevel = loggingLevel;
 
 		if (loggingLevel == null) {
-			this.addStatusEntry(PreconditionFailure.CURRENTLY_NOT_HANDLED, this.getExpression()
+			this.addStatusEntry(Failure.CURRENTLY_NOT_HANDLED, this.getExpression()
 					+ " has argument LogRecord or log level variable which cannot be handled yet.");
 		}
 
@@ -77,7 +77,7 @@ public class LogInvocation {
 		this.degreeOfInterestValue = degreeOfInterestValue;
 	}
 
-	void addStatusEntry(PreconditionFailure failure, String message) {
+	void addStatusEntry(Failure failure, String message) {
 		MethodInvocation logExpression = this.getExpression();
 		CompilationUnit compilationUnit = (CompilationUnit) ASTNodes.getParent(logExpression, ASTNode.COMPILATION_UNIT);
 		ICompilationUnit compilationUnit2 = (ICompilationUnit) compilationUnit.getJavaElement();
