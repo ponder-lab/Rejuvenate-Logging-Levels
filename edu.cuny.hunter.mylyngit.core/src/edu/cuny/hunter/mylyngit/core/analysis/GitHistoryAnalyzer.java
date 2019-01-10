@@ -120,8 +120,8 @@ public class GitHistoryAnalyzer {
 
 				this.commitIndex++;
 				this.clearFiles(new File("").getAbsoluteFile());
-				this.storeMappingData();
 			}
+			this.storeMappingData();
 		}
 	}
 
