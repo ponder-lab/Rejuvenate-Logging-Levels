@@ -109,9 +109,6 @@ public class EvaluationHandler extends AbstractHandler {
 							new IJavaProject[] { project }, this.useLogCategory(), this.useLogCategoryWithConfig(),
 							this.useGitHistory(), settings, monitor, true);
 
-					// Clear intermediate data for mylyngit plugin.
-					MylynGitPredictionProvider.clearMappingData();
-
 					new ProcessorBasedRefactoring((RefactoringProcessor) logRejuvenatingProcessor)
 							.checkAllConditions(new NullProgressMonitor());
 
@@ -211,6 +208,9 @@ public class EvaluationHandler extends AbstractHandler {
 						}
 
 				}
+
+				// Clear intermediate data for mylyngit plugin.
+				MylynGitPredictionProvider.clearMappingData();
 
 				resultPrinter.close();
 				actionPrinter.close();

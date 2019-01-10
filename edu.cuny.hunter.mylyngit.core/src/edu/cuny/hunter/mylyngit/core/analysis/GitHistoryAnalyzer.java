@@ -301,6 +301,7 @@ public class GitHistoryAnalyzer {
 			if (repoToGitMethods.containsKey(repoPath) && repoToRenaming.containsKey(repoPath)) {
 				this.gitMethods = repoToGitMethods.get(repoPath);
 				this.renaming = repoToRenaming.get(repoPath);
+				return null;
 			}
 			this.repo = repoPath;
 		}
