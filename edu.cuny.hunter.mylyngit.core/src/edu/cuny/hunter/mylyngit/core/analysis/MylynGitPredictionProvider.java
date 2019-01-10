@@ -43,7 +43,7 @@ public class MylynGitPredictionProvider extends AbstractJavaRelationProvider {
 
 	private IJavaProject[] javaProjects;
 
-	private HashSet<IMethod> methods = new HashSet<>();
+	private HashSet<MethodDeclaration> methodDeclarations = new HashSet<>();
 
 	private static String ID = MylynGitPredictionProvider.class.getName();
 
@@ -62,11 +62,11 @@ public class MylynGitPredictionProvider extends AbstractJavaRelationProvider {
 	}
 
 	public void processOneProject(IJavaProject javaProject) throws NoHeadException, IOException, GitAPIException {
-		this.methods.clear();
+		this.methodDeclarations.clear();
 
 		List<ICompilationUnit> cUnits = Util.getCompilationUnits(javaProject);
 		cUnits.forEach(cUnit -> {
-			this.methods.addAll(this.getIMethodsInSouceCode(cUnit));
+			this.methodDeclarations.addAll(this.getIMethodsInSouceCode(cUnit));
 		});
 		this.bumpDOIValuesForAllGitMethods(javaProject);
 	}
@@ -109,14 +109,14 @@ public class MylynGitPredictionProvider extends AbstractJavaRelationProvider {
 	 * @throws NoHeadException
 	 */
 	private void bumpDOIValuesForAllGitMethods(IJavaProject javaProject) throws GitAPIException, IOException {
-		File repo = getRepoFile(javaProject);
+		File repo = this.getRepoFile(javaProject);
 		GitHistoryAnalyzer gitHistoryAnalyzer = new GitHistoryAnalyzer(repo);
 		LinkedList<GitMethod> gitMethods = gitHistoryAnalyzer.getGitMethods();
 		gitMethods.forEach(method -> {
 			bumpDOIValuesForMethod(method, gitHistoryAnalyzer);
 		});
 	}
-	
+
 	/**
 	 * Clear intermediate data.
 	 */
@@ -130,7 +130,10 @@ public class MylynGitPredictionProvider extends AbstractJavaRelationProvider {
 	 */
 	private void bumpDOIValuesForMethod(GitMethod gitMethod, GitHistoryAnalyzer gitHistoryAnalyzer) {
 		TypesOfMethodOperations methodOp = gitMethod.getMethodOp();
-		IMethod method = this.getJavaMethod(gitMethod, gitHistoryAnalyzer);
+		MethodDeclaration methodDec = this.getMethodDeclaration(gitMethod, gitHistoryAnalyzer);
+		if (methodDec == null)
+			return;
+		IMethod method = (IMethod) methodDec.resolveBinding().getJavaElement();
 		// The historical has its corresponding method in the current source code.
 		if (method != null)
 			switch (methodOp) {
@@ -150,10 +153,10 @@ public class MylynGitPredictionProvider extends AbstractJavaRelationProvider {
 	 * Given a method information, return a IMethod instance whose methods exist in
 	 * the current source code.
 	 */
-	private IMethod getJavaMethod(GitMethod method, GitHistoryAnalyzer gitHistoryAnalyzer) {
-		IMethod iMethod = this.checkMethods(method.getMethodSignature(), method.getFilePath());
-		if (iMethod != null)
-			return iMethod;
+	private MethodDeclaration getMethodDeclaration(GitMethod method, GitHistoryAnalyzer gitHistoryAnalyzer) {
+		MethodDeclaration methodDec = this.checkMethods(method.getMethodSignature(), method.getFilePath());
+		if (methodDec != null)
+			return methodDec;
 
 		// if it exists in the renaming graph
 		HashMap<Vertex, Vertex> historicalMethodToCurrentMethods = gitHistoryAnalyzer
@@ -179,25 +182,29 @@ public class MylynGitPredictionProvider extends AbstractJavaRelationProvider {
 	/**
 	 * Check whether there is a method in the list of IMethod
 	 */
-	private IMethod checkMethods(String method, String filePath) {
-		for (IMethod m : this.methods) {
-			if (Util.getMethodSignatureForJavaMethod(m).equals(method) && (Util.getMethodFilePath(m).equals(filePath)))
+	private MethodDeclaration checkMethods(String method, String filePath) {
+		int i = 0;
+		for (MethodDeclaration m : this.methodDeclarations) {
+			if (Util.getMethodSignature(m).equals(method) && (Util.getMethodFilePath(m).equals(filePath))) {
+				System.out.println("%%%%");
 				return m;
+			}
+			if (Util.getMethodSignature(m).equals("postInit(Stage)"))
+				System.out.println("post");
 		}
 		return null;
 	}
 
-	private HashSet<IMethod> getIMethodsInSouceCode(ICompilationUnit icu) {
-		HashSet<IMethod> methods = new HashSet<>();
+	private HashSet<MethodDeclaration> getIMethodsInSouceCode(ICompilationUnit icu) {
+		HashSet<MethodDeclaration> methodDecs = new HashSet<>();
 		final CompilationUnit cu = this.getCompilationUnit(icu);
 
 		cu.accept(new ASTVisitor() {
 			@Override
 			public boolean visit(MethodDeclaration methodDeclaration) {
 				try {
-					IMethod method = (IMethod) methodDeclaration.resolveBinding().getJavaElement();
-					if (method != null)
-						methods.add(method);
+					if (methodDeclaration != null)
+						methodDecs.add(methodDeclaration);
 					return true;
 				} catch (Exception e) {
 					return false;
@@ -205,11 +212,11 @@ public class MylynGitPredictionProvider extends AbstractJavaRelationProvider {
 			}
 		});
 
-		return methods;
+		return methodDecs;
 	}
 
-	public HashSet<IMethod> getMethods() {
-		return this.methods;
+	public HashSet<MethodDeclaration> getMethods() {
+		return this.methodDeclarations;
 	}
 
 	public void clearTaskContext() {

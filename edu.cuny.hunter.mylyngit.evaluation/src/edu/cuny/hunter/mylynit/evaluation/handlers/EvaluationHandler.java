@@ -16,6 +16,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IMethod;
+import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.internal.ui.util.SelectionUtil;
 import org.eclipse.ui.handlers.HandlerUtil;
 
@@ -54,37 +55,37 @@ public class EvaluationHandler extends AbstractHandler {
 						javaProjectList.add((IJavaProject) jElem);
 						break;
 					}
-
-					CSVPrinter resultPrinter;
-					try {
-						resultPrinter = this.createCSVPrinter("DOI_Values.csv",
-								new String[] { "subject raw", "file path", "methods", "DOI values" });
-
-						MylynGitPredictionProvider provider = new MylynGitPredictionProvider();
-						provider.setJavaProjects(javaProjectList.toArray(new IJavaProject[0]));
-						for (IJavaProject javaProject : javaProjectList) {
-							provider.processOneProject(javaProject);
-							HashSet<IMethod> methods = provider.getMethods();
-							for (IMethod m : methods) {
-								// Work around DOI values
-								float doiValue = Util.getDOIValue(m);
-								if (!(Float.compare(0, doiValue) == 0)) {
-									resultPrinter.printRecord(javaProject.getElementName(), Util.getMethodFilePath(m),
-											Util.getMethodSignatureForJavaMethod(m), doiValue);
-								}
-							}
-							provider.clearTaskContext();
-						}
-						MylynGitPredictionProvider.clearMappingData();
-						resultPrinter.close();
-					} catch (IOException e) {
-						LOGGER.info("Cannot print info correctly or cannot process git commits.");
-					} catch (GitAPIException e) {
-						LOGGER.info("Cannot get valid git object or process commits.");
-					}
-
 				}
+			CSVPrinter resultPrinter;
+			try {
+				resultPrinter = this.createCSVPrinter("DOI_Values.csv",
+						new String[] { "subject raw", "file path", "methods", "DOI values" });
+
+				MylynGitPredictionProvider provider = new MylynGitPredictionProvider();
+				for (IJavaProject javaProject : javaProjectList) {
+					provider.processOneProject(javaProject);
+					HashSet<MethodDeclaration> methods = provider.getMethods();
+					for (MethodDeclaration m : methods) {
+						IMethod iMethod = (IMethod) m.resolveBinding().getJavaElement();
+						// Work around DOI values
+						float doiValue = Util.getDOIValue(iMethod);
+						if (!(Float.compare(0, doiValue) == 0)) {
+							resultPrinter.printRecord(javaProject.getElementName(), Util.getMethodFilePath(m),
+									Util.getMethodSignature(m), doiValue);
+						}
+					}
+					provider.clearTaskContext();
+				}
+				MylynGitPredictionProvider.clearMappingData();
+				resultPrinter.close();
+			} catch (IOException e) {
+				LOGGER.info("Cannot print info correctly or cannot process git commits.");
+			} catch (GitAPIException e) {
+				LOGGER.info("Cannot get valid git object or process commits.");
+			}
+
 		}
+
 		return null;
 	}
 

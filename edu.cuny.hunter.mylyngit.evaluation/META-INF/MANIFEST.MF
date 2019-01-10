@@ -7,6 +7,7 @@ Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Import-Package: edu.cuny.hunter.mylyngit.core.analysis,
  edu.cuny.hunter.mylyngit.core.utils,
  org.eclipse.jdt.core,
+ org.eclipse.jdt.core.dom,
  org.eclipse.jdt.internal.ui.preferences,
  org.eclipse.jdt.internal.ui.util,
  org.eclipse.jgit.api.errors;version="5.1.0",

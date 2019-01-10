@@ -12,8 +12,6 @@ import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IMethod;
 import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.jdt.core.IPackageFragmentRoot;
-import org.eclipse.jdt.core.ITypeParameter;
-import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.SingleVariableDeclaration;
 import org.eclipse.mylyn.context.core.ContextCore;
@@ -44,32 +42,10 @@ public class Util {
 	}
 
 	/**
-	 * Return a method signature
-	 */
-	public static String getMethodSignatureForJavaMethod(IMethod method) {
-		String signature = "";
-		signature += method.getElementName() + "(";
-
-		ITypeParameter[] parameterTypes;
-		try {
-			parameterTypes = method.getTypeParameters();
-			if (parameterTypes.length > 0)
-				signature += parameterTypes[0];
-			for (int i = 1; i < parameterTypes.length; ++i) {
-				signature += ", " + parameterTypes[i];
-			}
-			signature += ")";
-		} catch (JavaModelException e) {
-			LOGGER.info("Cannot get parameter types!");
-		}
-		return signature;
-	}
-
-	/**
 	 * Return the file path for a method.
 	 */
-	public static String getMethodFilePath(IMethod method) {
-		String relativePath = method.getCompilationUnit().getPath().makeRelative().toString();
+	public static String getMethodFilePath(MethodDeclaration method) {
+		String relativePath = method.resolveBinding().getJavaElement().getPath().makeRelative().toString();
 		relativePath = relativePath.substring(relativePath.indexOf("/") + 1);
 		return relativePath;
 	}
