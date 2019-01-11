@@ -10,6 +10,7 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IJavaProject;
+import org.eclipse.jdt.core.IMethod;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.core.dom.Expression;
 import org.eclipse.jdt.core.dom.IMethodBinding;
@@ -18,6 +19,9 @@ import org.eclipse.jdt.core.dom.MethodInvocation;
 import org.eclipse.jdt.internal.corext.codemanipulation.CodeGenerationSettings;
 import org.eclipse.jdt.internal.ui.preferences.JavaPreferencesSettings;
 import org.eclipse.ltk.core.refactoring.participants.ProcessorBasedRefactoring;
+import org.eclipse.mylyn.context.core.ContextCore;
+import org.eclipse.mylyn.context.core.IDegreeOfInterest;
+import org.eclipse.mylyn.context.core.IInteractionElement;
 
 import edu.cuny.hunter.log.core.refactorings.LogRejuvenatingProcessor;
 
@@ -49,6 +53,34 @@ public final class Util {
 		}
 
 		return ret;
+	}
+
+	/**
+	 * Get DOI value.
+	 */
+	public static float getDOIValue(IDegreeOfInterest degreeOfInterest) {
+		if (degreeOfInterest != null) {
+			if (degreeOfInterest.getValue() > 0)
+				return degreeOfInterest.getValue();
+		}
+		return 0;
+	}
+
+	/**
+	 * Get DOI
+	 */
+	public static IDegreeOfInterest getDegreeOfInterest(IMethod method) {
+		IInteractionElement interactionElement = getInteractionElement(method);
+		if (interactionElement == null || interactionElement.getContext() == null) // workaround bug ...
+			return null;
+		return interactionElement.getInterest();
+	}
+
+	// The element in Mylyn
+	private static IInteractionElement getInteractionElement(IMethod method) {
+		if (method != null)
+			return ContextCore.getContextManager().getElement(method.getHandleIdentifier());
+		return null;
 	}
 
 	/**

@@ -23,12 +23,11 @@ import org.eclipse.jdt.internal.corext.refactoring.util.JavaStatusContext;
 import org.eclipse.ltk.core.refactoring.RefactoringStatus;
 import org.eclipse.ltk.core.refactoring.RefactoringStatusContext;
 import org.osgi.framework.FrameworkUtil;
-import org.eclipse.mylyn.context.core.ContextCore;
 import org.eclipse.mylyn.context.core.IDegreeOfInterest;
-import org.eclipse.mylyn.context.core.IInteractionElement;
 import org.eclipse.mylyn.internal.tasks.core.TaskList;
 import org.eclipse.mylyn.internal.tasks.ui.TasksUiPlugin;
 import edu.cuny.hunter.log.core.utils.LoggerNames;
+import edu.cuny.hunter.log.core.utils.Util;
 
 @SuppressWarnings("restriction")
 public class LogInvocation {
@@ -58,12 +57,7 @@ public class LogInvocation {
 					+ " has argument LogRecord or log level variable which cannot be handled yet.");
 		}
 
-		this.degreeOfInterest = this.getDegreeOfInterest();
-
-		if (this.degreeOfInterest != null) {
-			this.degreeOfInterestValue = this.degreeOfInterest.getValue();
-			if (this.degreeOfInterestValue < 0 ) this.degreeOfInterestValue = 0;
-		}
+		this.updateDOI();
 	}
 
 	public void setAction(Action action) {
@@ -92,22 +86,6 @@ public class LogInvocation {
 
 	public TaskList getTaskList() {
 		return TasksUiPlugin.getTaskList();
-	}
-
-	// The element in Mylyn
-	private IInteractionElement getInteractionElement() {
-		IMethod enclosingMethod = this.getEnclosingEclipseMethod();
-		return ContextCore.getContextManager().getElement(enclosingMethod.getHandleIdentifier());
-	}
-
-	/**
-	 * Get DOI
-	 */
-	public IDegreeOfInterest getDegreeOfInterest() {
-		IInteractionElement interactionElement = getInteractionElement();
-		if (interactionElement == null || interactionElement.getContext() == null) // workaround bug ...
-			return null;
-		return interactionElement.getInterest();
 	}
 
 	public MethodInvocation getExpression() {
@@ -154,9 +132,8 @@ public class LogInvocation {
 	}
 
 	public void logInfo() {
-		IDegreeOfInterest degreeOfInterest = this.getDegreeOfInterest();
 		LOGGER.info("Find a log expression." + this.getExpression().toString() + " The logging level: " + getLogLevel()
-				+ ". Degree of Interest " + (degreeOfInterest == null ? "0" : degreeOfInterest.getValue()) + ". ");
+				+ ". Degree of Interest " + this.degreeOfInterestValue + ". ");
 	}
 
 	public Action getAction() {
@@ -249,6 +226,8 @@ public class LogInvocation {
 		case CONVERT_TO_SEVERE:
 			this.convertToSevere(rewrite);
 			break;
+		default:
+			break;
 		}
 	}
 
@@ -289,10 +268,8 @@ public class LogInvocation {
 	 * Should update DOI values after evaluating git history.
 	 */
 	public void updateDOI() {
-		this.degreeOfInterest = this.getDegreeOfInterest();
-		if (this.degreeOfInterest != null)
-			this.degreeOfInterestValue = this.degreeOfInterest.getValue();
-		else this.degreeOfInterestValue = 0;
+		this.degreeOfInterest = Util.getDegreeOfInterest(this.getEnclosingEclipseMethod());
+		this.degreeOfInterestValue = Util.getDOIValue(this.degreeOfInterest);
 	}
 
 }
