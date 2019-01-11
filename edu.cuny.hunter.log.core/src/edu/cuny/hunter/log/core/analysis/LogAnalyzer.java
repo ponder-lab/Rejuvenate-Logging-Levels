@@ -12,7 +12,9 @@ import org.eclipse.jdt.core.IMethod;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.core.dom.ASTVisitor;
 import org.eclipse.jdt.core.dom.CompilationUnit;
+import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.MethodInvocation;
+import org.eclipse.mylyn.context.core.IDegreeOfInterest;
 import edu.cuny.hunter.log.core.messages.Messages;
 import edu.cuny.hunter.log.core.utils.LoggerNames;
 import edu.cuny.hunter.log.core.utils.Util;
@@ -24,11 +26,13 @@ public class LogAnalyzer extends ASTVisitor {
 
 	private Set<LogInvocation> logInvocationSet = new HashSet<>();
 
-	private LinkedList<Float> boundary;
-
 	private static boolean useLogCategoryWithConfig = false;
 
 	private static boolean useLogCategory = false;
+	
+	private HashSet<Float> DOIValues = new HashSet<>();
+	
+	private LinkedList<Float> boundary;
 
 	private boolean test;
 
@@ -52,20 +56,8 @@ public class LogAnalyzer extends ASTVisitor {
 		// check failures.
 		this.checkCodeModification();
 
-		HashSet<Float> degreeOfInterests = new HashSet<>();
-		for (LogInvocation logInvocation : this.logInvocationSet) {
-			logInvocation.logInfo();
-			if (logInvocation.getDegreeOfInterest() != null) {
-				if ((useLogCategory && (logInvocation.getLogLevel() != Level.CONFIG
-						&& logInvocation.getLogLevel() != Level.SEVERE && logInvocation.getLogLevel() != Level.WARNING))
-						|| (useLogCategoryWithConfig && logInvocation.getLogLevel() != Level.CONFIG)
-						|| (!useLogCategory && !useLogCategoryWithConfig))
-					degreeOfInterests.add(logInvocation.getDegreeOfInterestValue());
-			}
-		}
-
 		// build boundary
-		boundary = buildBoundary(degreeOfInterests);
+		boundary = buildBoundary(this.DOIValues);
 		// check whether action is needed
 		for (LogInvocation logInvocation : this.logInvocationSet)
 			if (this.doAction(logInvocation))
@@ -248,7 +240,17 @@ public class LogAnalyzer extends ASTVisitor {
 
 		return super.visit(node);
 	}
-
+	
+	/**
+	 * This method is used to get DOI values for all method declarations.
+	 */
+	@Override
+	public boolean visit(MethodDeclaration node) {
+		IDegreeOfInterest degreeOfInterest = Util.getDegreeOfInterest((IMethod) node.resolveBinding().getJavaElement());
+		this.DOIValues.add(Util.getDOIValue(degreeOfInterest));
+		return super.visit(node);
+	}
+	
 	/**
 	 * Whether the code is read-only, generated code and in a .class file.
 	 */
