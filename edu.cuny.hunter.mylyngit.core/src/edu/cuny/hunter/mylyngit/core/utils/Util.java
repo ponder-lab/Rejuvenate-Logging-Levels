@@ -44,8 +44,8 @@ public class Util {
 	/**
 	 * Return the file path for a method.
 	 */
-	public static String getMethodFilePath(MethodDeclaration method) {
-		String relativePath = method.resolveBinding().getJavaElement().getPath().makeRelative().toString();
+	public static String getMethodFilePath(MethodDeclaration m) {
+		String relativePath = m.resolveBinding().getJavaElement().getResource().getFullPath().toString();
 		relativePath = relativePath.substring(relativePath.indexOf("/") + 1);
 		return relativePath;
 	}

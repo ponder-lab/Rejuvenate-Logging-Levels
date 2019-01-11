@@ -183,14 +183,9 @@ public class MylynGitPredictionProvider extends AbstractJavaRelationProvider {
 	 * Check whether there is a method in the list of IMethod
 	 */
 	private MethodDeclaration checkMethods(String method, String filePath) {
-		int i = 0;
 		for (MethodDeclaration m : this.methodDeclarations) {
-			if (Util.getMethodSignature(m).equals(method) && (Util.getMethodFilePath(m).equals(filePath))) {
-				System.out.println("%%%%");
+			if (Util.getMethodSignature(m).equals(method) && (Util.getMethodFilePath(m).equals(filePath)))
 				return m;
-			}
-			if (Util.getMethodSignature(m).equals("postInit(Stage)"))
-				System.out.println("post");
 		}
 		return null;
 	}
