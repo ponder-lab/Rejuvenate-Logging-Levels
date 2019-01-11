@@ -152,12 +152,17 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 					}
 			}
 
-			MylynGitPredictionProvider mylynProvider = new MylynGitPredictionProvider();
+			MylynGitPredictionProvider mylynProvider = null;
 
-			this.processGitHistory(mylynProvider, analyzer, jproj);
+			if (this.useGitHistory) {
+				// Process git history.
+				mylynProvider = new MylynGitPredictionProvider();
+				this.processGitHistory(mylynProvider, analyzer, jproj);
+				// analyze.
+				analyzer.analyze(mylynProvider);
+			} else
+				analyzer.analyze();
 
-			// analyze.
-			analyzer.analyze();
 			// Get boundary
 			this.boundary = analyzer.getBoundary();
 

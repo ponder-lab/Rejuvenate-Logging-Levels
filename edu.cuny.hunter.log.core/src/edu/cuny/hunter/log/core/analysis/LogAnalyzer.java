@@ -15,6 +15,8 @@ import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.MethodInvocation;
 import org.eclipse.mylyn.context.core.IDegreeOfInterest;
+import org.eclipse.mylyn.internal.context.core.DegreeOfInterest;
+
 import edu.cuny.hunter.log.core.messages.Messages;
 import edu.cuny.hunter.log.core.utils.LoggerNames;
 import edu.cuny.hunter.log.core.utils.Util;
@@ -29,9 +31,9 @@ public class LogAnalyzer extends ASTVisitor {
 	private static boolean useLogCategoryWithConfig = false;
 
 	private static boolean useLogCategory = false;
-	
+
 	private HashSet<Float> DOIValues = new HashSet<>();
-	
+
 	private LinkedList<Float> boundary;
 
 	private boolean test;
@@ -40,10 +42,10 @@ public class LogAnalyzer extends ASTVisitor {
 		this.test = isTest;
 	}
 
-	public LinkedList<Float> getBoundary(){
+	public LinkedList<Float> getBoundary() {
 		return this.boundary;
 	}
-	
+
 	public LogAnalyzer(boolean useConfigLogLevelCategory, boolean useLogLevelCategory) {
 		useLogCategoryWithConfig = useConfigLogLevelCategory;
 		useLogCategory = useLogLevelCategory;
@@ -51,11 +53,31 @@ public class LogAnalyzer extends ASTVisitor {
 
 	public LogAnalyzer() {
 	}
-
+	
+	/**
+	 * Analyze project without git history.
+	 */
 	public void analyze() {
 		// check failures.
 		this.checkCodeModification();
+		this.analyzeLogInvs();
+	}
+	
+	/**
+	 * Analyze for project with git history.
+	 */
+	public void analyze(MylynGitPredictionProvider mylynProvider) {
+		// check failures.
+		this.checkCodeModification();
 
+		this.collectDOIValues(mylynProvider.getMethods());
+		this.analyzeLogInvs();
+	}
+	
+	/**
+	 * Build boundary and analyze log invocations.
+	 */
+	private void analyzeLogInvs() {
 		// build boundary
 		boundary = buildBoundary(this.DOIValues);
 		// check whether action is needed
@@ -63,7 +85,6 @@ public class LogAnalyzer extends ASTVisitor {
 			if (this.doAction(logInvocation))
 				LOGGER.info("Do action: " + logInvocation.getAction() + "! The changed log expression is "
 						+ logInvocation.getExpression());
-
 	}
 
 	private boolean doAction(LogInvocation logInvocation) {
@@ -240,17 +261,15 @@ public class LogAnalyzer extends ASTVisitor {
 
 		return super.visit(node);
 	}
-	
-	/**
-	 * This method is used to get DOI values for all method declarations.
-	 */
-	@Override
-	public boolean visit(MethodDeclaration node) {
-		IDegreeOfInterest degreeOfInterest = Util.getDegreeOfInterest((IMethod) node.resolveBinding().getJavaElement());
-		this.DOIValues.add(Util.getDOIValue(degreeOfInterest));
-		return super.visit(node);
+
+	public void collectDOIValues(HashSet<MethodDeclaration> methods) {
+		methods.forEach(m -> {
+			IDegreeOfInterest degreeOfInterest = Util
+					.getDegreeOfInterest((IMethod) m.resolveBinding().getJavaElement());
+			this.DOIValues.add(Util.getDOIValue(degreeOfInterest));
+		});
 	}
-	
+
 	/**
 	 * Whether the code is read-only, generated code and in a .class file.
 	 */
