@@ -45,6 +45,8 @@ public class MylynGitPredictionProvider extends AbstractJavaRelationProvider {
 
 	private HashSet<MethodDeclaration> methodDeclarations = new HashSet<>();
 
+	private HashMap<MethodDeclaration, IMethod> methodDecToIMethod = new HashMap<>();
+
 	private static String ID = MylynGitPredictionProvider.class.getName();
 
 	/**
@@ -63,10 +65,15 @@ public class MylynGitPredictionProvider extends AbstractJavaRelationProvider {
 
 	public void processOneProject(IJavaProject javaProject) throws NoHeadException, IOException, GitAPIException {
 		this.methodDeclarations.clear();
+		this.methodDecToIMethod.clear();
 
 		List<ICompilationUnit> cUnits = Util.getCompilationUnits(javaProject);
 		cUnits.forEach(cUnit -> {
 			this.methodDeclarations.addAll(this.getIMethodsInSouceCode(cUnit));
+		});
+
+		this.methodDeclarations.forEach(m -> {
+			this.methodDecToIMethod.put(m, (IMethod) m.resolveBinding().getJavaElement());
 		});
 		this.bumpDOIValuesForAllGitMethods(javaProject);
 	}
@@ -133,7 +140,7 @@ public class MylynGitPredictionProvider extends AbstractJavaRelationProvider {
 		MethodDeclaration methodDec = this.getMethodDeclaration(gitMethod, gitHistoryAnalyzer);
 		if (methodDec == null)
 			return;
-		IMethod method = (IMethod) methodDec.resolveBinding().getJavaElement();
+		IMethod method = this.methodDecToIMethod.get(methodDec);
 		// The historical has its corresponding method in the current source code.
 		if (method != null)
 			switch (methodOp) {
@@ -147,6 +154,10 @@ public class MylynGitPredictionProvider extends AbstractJavaRelationProvider {
 				Util.resetDOIValue(method, ID);
 				break;
 			}
+	}
+
+	public IMethod getIMethod(MethodDeclaration method) {
+		return this.methodDecToIMethod.get(method);
 	}
 
 	/**
@@ -184,7 +195,8 @@ public class MylynGitPredictionProvider extends AbstractJavaRelationProvider {
 	 */
 	private MethodDeclaration checkMethods(String method, String filePath) {
 		for (MethodDeclaration m : this.methodDeclarations) {
-			if (Util.getMethodSignature(m).equals(method) && (Util.getMethodFilePath(m).equals(filePath)))
+			if (Util.getMethodSignature(m).equals(method)
+					&& (Util.getMethodFilePath(methodDecToIMethod.get(m)).equals(filePath)))
 				return m;
 		}
 		return null;

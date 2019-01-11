@@ -44,10 +44,13 @@ public class Util {
 	/**
 	 * Return the file path for a method.
 	 */
-	public static String getMethodFilePath(MethodDeclaration m) {
-		String relativePath = m.resolveBinding().getJavaElement().getResource().getFullPath().toString();
-		relativePath = relativePath.substring(relativePath.indexOf("/") + 1);
-		return relativePath;
+	public static String getMethodFilePath(IMethod m) {
+		if (m != null) {
+			String relativePath = m.getResource().getFullPath().toString();
+			relativePath = relativePath.substring(relativePath.indexOf("/") + 1);
+			return relativePath;
+		}
+		return "";
 	}
 
 	public static List<ICompilationUnit> getCompilationUnits(IJavaProject javaProject) {

@@ -70,8 +70,9 @@ public class EvaluationHandler extends AbstractHandler {
 						// Work around DOI values
 						float doiValue = Util.getDOIValue(iMethod);
 						if (!(Float.compare(0, doiValue) == 0)) {
-							resultPrinter.printRecord(javaProject.getElementName(), Util.getMethodFilePath(m),
-									Util.getMethodSignature(m), doiValue);
+							resultPrinter.printRecord(javaProject.getElementName(),
+									Util.getMethodFilePath(provider.getIMethod(m)), Util.getMethodSignature(m),
+									doiValue);
 						}
 					}
 					provider.clearTaskContext();
