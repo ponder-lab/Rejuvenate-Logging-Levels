@@ -96,7 +96,7 @@ public class EvaluationHandler extends AbstractHandler {
 						new String[] { "subject raw", "log expression", "start pos", "logging level", "type FQN",
 								"enclosing method", "code", "name", "message" });
 				CSVPrinter doiPrinter = Util.createCSVPrinter("DOI_boundaries.csv",
-						new String[] { "DOI boundary", "Log level" });
+						new String[] { "subject raw", "DOI boundary", "Log level" });
 
 				// for each selected java project
 				for (IJavaProject project : javaProjectList) {
@@ -176,7 +176,7 @@ public class EvaluationHandler extends AbstractHandler {
 						}
 
 					for (LogInvocation logInvocation : transformedLogInvocationSet) {
-						// print possibleTransformeds
+						// print possibleTransformed logInvocations
 						transformedLogInvPrinter.printRecord(project.getElementName(), logInvocation.getExpression(),
 								logInvocation.getStartPosition(), logInvocation.getLogLevel(),
 								logInvocation.getEnclosingType().getFullyQualifiedName(),
@@ -200,11 +200,11 @@ public class EvaluationHandler extends AbstractHandler {
 					LinkedList<Float> boundary = logRejuvenatingProcessor.getBoundary();
 					if (boundary != null && boundary.size() > 0)
 						if (USE_LOG_CATEGORY_DEFAULT) {
-							this.printBoundaryLogCategory(boundary, doiPrinter);
+							this.printBoundaryLogCategory(project.getElementName(), boundary, doiPrinter);
 						} else if (USE_LOG_CATEGORY_CONFIG_DEFAULT) { // Do not consider config
-							this.printBoundaryWithConfig(boundary, doiPrinter);
+							this.printBoundaryWithConfig(project.getElementName(), boundary, doiPrinter);
 						} else {// Treat log levels as traditional log levels
-							this.printBoundaryDefault(boundary, doiPrinter);
+							this.printBoundaryDefault(project.getElementName(), boundary, doiPrinter);
 						}
 
 				}
@@ -228,27 +228,30 @@ public class EvaluationHandler extends AbstractHandler {
 		return null;
 	}
 
-	private void printBoundaryLogCategory(LinkedList<Float> boundary, CSVPrinter doiPrinter) throws IOException {
-		doiPrinter.printRecord("[" + boundary.get(0) + ", " + boundary.get(1) + ")", Level.FINEST);
-		doiPrinter.printRecord("[" + boundary.get(1) + ", " + boundary.get(2) + ")", Level.FINER);
-		doiPrinter.printRecord("[" + boundary.get(2) + ", " + boundary.get(3) + ")", Level.FINE);
-		doiPrinter.printRecord("[" + boundary.get(3) + ", " + boundary.get(4) + ")", Level.INFO);
+	private void printBoundaryLogCategory(String subject, LinkedList<Float> boundary, CSVPrinter doiPrinter)
+			throws IOException {
+		doiPrinter.printRecord(subject, "[" + boundary.get(0) + ", " + boundary.get(1) + ")", Level.FINEST);
+		doiPrinter.printRecord(subject, "[" + boundary.get(1) + ", " + boundary.get(2) + ")", Level.FINER);
+		doiPrinter.printRecord(subject, "[" + boundary.get(2) + ", " + boundary.get(3) + ")", Level.FINE);
+		doiPrinter.printRecord(subject, "[" + boundary.get(3) + ", " + boundary.get(4) + ")", Level.INFO);
 	}
 
-	private void printBoundaryWithConfig(LinkedList<Float> boundary, CSVPrinter doiPrinter) throws IOException {
-		this.printBoundaryLogCategory(boundary, doiPrinter);
-		doiPrinter.printRecord("[" + boundary.get(4) + ", " + boundary.get(5) + ")", Level.WARNING);
-		doiPrinter.printRecord("[" + boundary.get(5) + ", " + boundary.get(6) + ")", Level.SEVERE);
+	private void printBoundaryWithConfig(String subject, LinkedList<Float> boundary, CSVPrinter doiPrinter)
+			throws IOException {
+		this.printBoundaryLogCategory(subject, boundary, doiPrinter);
+		doiPrinter.printRecord(subject, "[" + boundary.get(4) + ", " + boundary.get(5) + ")", Level.WARNING);
+		doiPrinter.printRecord(subject, "[" + boundary.get(5) + ", " + boundary.get(6) + ")", Level.SEVERE);
 	}
 
-	private void printBoundaryDefault(LinkedList<Float> boundary, CSVPrinter doiPrinter) throws IOException {
-		doiPrinter.printRecord("[" + boundary.get(0) + ", " + boundary.get(1) + ")", Level.FINEST);
-		doiPrinter.printRecord("[" + boundary.get(1) + ", " + boundary.get(2) + ")", Level.FINER);
-		doiPrinter.printRecord("[" + boundary.get(2) + ", " + boundary.get(3) + ")", Level.FINE);
-		doiPrinter.printRecord("[" + boundary.get(3) + ", " + boundary.get(4) + ")", Level.CONFIG);
-		doiPrinter.printRecord("[" + boundary.get(4) + ", " + boundary.get(5) + ")", Level.INFO);
-		doiPrinter.printRecord("[" + boundary.get(5) + ", " + boundary.get(6) + ")", Level.WARNING);
-		doiPrinter.printRecord("[" + boundary.get(6) + ", " + boundary.get(7) + ")", Level.SEVERE);
+	private void printBoundaryDefault(String subject, LinkedList<Float> boundary, CSVPrinter doiPrinter)
+			throws IOException {
+		doiPrinter.printRecord(subject, "[" + boundary.get(0) + ", " + boundary.get(1) + ")", Level.FINEST);
+		doiPrinter.printRecord(subject, "[" + boundary.get(1) + ", " + boundary.get(2) + ")", Level.FINER);
+		doiPrinter.printRecord(subject, "[" + boundary.get(2) + ", " + boundary.get(3) + ")", Level.FINE);
+		doiPrinter.printRecord(subject, "[" + boundary.get(3) + ", " + boundary.get(4) + ")", Level.CONFIG);
+		doiPrinter.printRecord(subject, "[" + boundary.get(4) + ", " + boundary.get(5) + ")", Level.INFO);
+		doiPrinter.printRecord(subject, "[" + boundary.get(5) + ", " + boundary.get(6) + ")", Level.WARNING);
+		doiPrinter.printRecord(subject, "[" + boundary.get(6) + ", " + boundary.get(7) + ")", Level.SEVERE);
 	}
 
 	private boolean useLogCategory() {
