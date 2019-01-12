@@ -24,6 +24,8 @@ public class LogAnalyzer extends ASTVisitor {
 
 	private static final Logger LOGGER = Logger.getLogger(LoggerNames.LOGGER_NAME);
 
+	private HashSet<MethodDeclaration> methodDeclarations = new HashSet<>();
+
 	private Set<LogInvocation> logInvocationSet = new HashSet<>();
 
 	private static boolean useLogCategoryWithConfig = false;
@@ -31,7 +33,7 @@ public class LogAnalyzer extends ASTVisitor {
 	private static boolean useLogCategory = false;
 
 	private HashSet<Float> DOIValues = new HashSet<>();
-
+	
 	private LinkedList<Float> boundary;
 
 	private boolean test;
@@ -58,17 +60,7 @@ public class LogAnalyzer extends ASTVisitor {
 	public void analyze() {
 		// check failures.
 		this.checkCodeModification();
-		this.analyzeLogInvs();
-	}
-	
-	/**
-	 * Analyze for project with git history.
-	 */
-	public void analyze(MylynGitPredictionProvider mylynProvider) {
-		// check failures.
-		this.checkCodeModification();
-
-		this.collectDOIValues(mylynProvider.getMethods());
+		this.collectDOIValues(this.methodDeclarations);
 		this.analyzeLogInvs();
 	}
 	
@@ -77,7 +69,7 @@ public class LogAnalyzer extends ASTVisitor {
 	 */
 	private void analyzeLogInvs() {
 		// build boundary
-		boundary = buildBoundary(this.DOIValues);
+		boundary = this.buildBoundary(this.DOIValues);
 		// check whether action is needed
 		for (LogInvocation logInvocation : this.logInvocationSet)
 			if (this.doAction(logInvocation))
@@ -257,6 +249,15 @@ public class LogAnalyzer extends ASTVisitor {
 		if (logLevel != null)
 			createLogInvocation(node, logLevel);
 
+		return super.visit(node);
+	}
+	
+	/**
+	 * This method is used to find a set of logging objects
+	 */
+	@Override
+	public boolean visit(MethodDeclaration node) {
+		this.methodDeclarations.add(node);
 		return super.visit(node);
 	}
 
