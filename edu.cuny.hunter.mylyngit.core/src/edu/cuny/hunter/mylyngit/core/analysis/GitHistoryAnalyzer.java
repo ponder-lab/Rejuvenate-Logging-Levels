@@ -272,8 +272,12 @@ public class GitHistoryAnalyzer {
 
 		Iterable<RevCommit> log = git.log().call();
 
+		// Limit number of commits.
+		int maxCommitNumber = 0;
 		for (RevCommit commit : log) {
-			this.commitList.addFirst(commit);
+			if (maxCommitNumber < 100)
+				this.commitList.addFirst(commit);
+			maxCommitNumber++;
 		}
 
 		return git;
