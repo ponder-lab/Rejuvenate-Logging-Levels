@@ -195,9 +195,11 @@ public class MylynGitPredictionProvider extends AbstractJavaRelationProvider {
 	 */
 	private MethodDeclaration checkMethods(String method, String filePath) {
 		for (MethodDeclaration m : this.methodDeclarations) {
-			if (Util.getMethodSignature(m).equals(method)
-					&& (Util.getMethodFilePath(this.methodDecToIMethod.get(m)).contains(filePath)))
-				return m;
+			if (Util.getMethodSignature(m).equals(method)) {
+				String path = Util.getMethodFilePath(this.methodDecToIMethod.get(m));
+				if (path.substring(path.length() - filePath.length()).equals(filePath))
+					return m;
+			}
 		}
 		return null;
 	}

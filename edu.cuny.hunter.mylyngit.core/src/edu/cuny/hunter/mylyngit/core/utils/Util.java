@@ -46,7 +46,7 @@ public class Util {
 	 */
 	public static String getMethodFilePath(IMethod m) {
 		if (m != null) {
-			return m.getResource().getFullPath().toString();
+			return m.getResource().getLocation().makeAbsolute().toString();
 		}
 		return "";
 	}
