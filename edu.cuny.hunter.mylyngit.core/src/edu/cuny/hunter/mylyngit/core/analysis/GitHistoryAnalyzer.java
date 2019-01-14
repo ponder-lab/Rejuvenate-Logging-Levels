@@ -275,7 +275,7 @@ public class GitHistoryAnalyzer {
 		// Limit number of commits.
 		int maxCommitNumber = 0;
 		for (RevCommit commit : log) {
-			if (maxCommitNumber < 500)
+			if (maxCommitNumber < 300)
 				this.commitList.addFirst(commit);
 			maxCommitNumber++;
 		}
