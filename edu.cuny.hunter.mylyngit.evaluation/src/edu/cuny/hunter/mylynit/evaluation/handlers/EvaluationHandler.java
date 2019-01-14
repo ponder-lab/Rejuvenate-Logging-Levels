@@ -16,6 +16,8 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IMethod;
+import org.eclipse.jdt.core.IType;
+import org.eclipse.jdt.core.dom.IMethodBinding;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.internal.ui.util.SelectionUtil;
 import org.eclipse.ui.handlers.HandlerUtil;
@@ -59,20 +61,22 @@ public class EvaluationHandler extends AbstractHandler {
 			CSVPrinter resultPrinter;
 			try {
 				resultPrinter = this.createCSVPrinter("DOI_Values.csv",
-						new String[] { "subject raw", "file path", "methods", "DOI values" });
+						new String[] { "subject raw", "TypeFQN", "methods", "DOI values" });
 
 				MylynGitPredictionProvider provider = new MylynGitPredictionProvider();
 				for (IJavaProject javaProject : javaProjectList) {
 					provider.processOneProject(javaProject);
 					HashSet<MethodDeclaration> methods = provider.getMethods();
 					for (MethodDeclaration m : methods) {
-						IMethod iMethod = (IMethod) m.resolveBinding().getJavaElement();
+						IMethodBinding methodBinding = m.resolveBinding();
+						IMethod iMethod = (IMethod) methodBinding.getJavaElement();
 						// Work around DOI values
 						float doiValue = Util.getDOIValue(iMethod);
 						if (!(Float.compare(0, doiValue) == 0)) {
 							resultPrinter.printRecord(javaProject.getElementName(),
-									Util.getMethodFilePath(provider.getIMethod(m)), Util.getMethodSignature(m),
-									doiValue);
+									((IType) methodBinding.getDeclaringClass().getJavaElement())
+											.getFullyQualifiedName(),
+									Util.getMethodSignature(m), doiValue);
 						}
 					}
 					provider.clearTaskContext();
