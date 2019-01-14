@@ -109,8 +109,7 @@ public class LogInvocation {
 		if (enclosingMethodDeclaration == null)
 			return null;
 
-		IMethodBinding binding = enclosingMethodDeclaration.resolveBinding();
-		return (IType) binding.getDeclaringClass().getJavaElement();
+		return (IType) enclosingMethodDeclaration.resolveBinding().getDeclaringClass().getJavaElement();
 	}
 
 	public IMethod getEnclosingEclipseMethod() {
