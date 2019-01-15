@@ -86,21 +86,21 @@ public class EvaluationHandler extends AbstractHandler {
 			try {
 
 				CSVPrinter resultPrinter = Util.createCSVPrinter("result.csv",
-						new String[] { "subject raw", "N for commits", "log invocations before",
+						new String[] { "subject", "N for commits", "log invocations before",
 								"candidate log invocations", "failures", "time (s)" });
-				CSVPrinter actionPrinter = Util.createCSVPrinter("log_actions.csv", new String[] { "subject raw",
+				CSVPrinter actionPrinter = Util.createCSVPrinter("log_actions.csv", new String[] { "subject",
 						"log expression", "start pos", "logging level", "type FQN", "enclosing method", "action" });
 				CSVPrinter candidateLogInvPrinter = Util.createCSVPrinter(
-						"candidate_log_invocations.csv", new String[] { "subject raw", "log expression",
+						"candidate_log_invocations.csv", new String[] { "subject", "log expression",
 								"start pos", "logging level", "type FQN", "enclosing method", "DOI" });
 				CSVPrinter transformedLogInvPrinter = Util.createCSVPrinter("transformed_log_invocations.csv",
-						new String[] { "subject raw", "log expression", "start pos", "logging level", "type FQN",
+						new String[] { "subject", "log expression", "start pos", "logging level", "type FQN",
 								"enclosing method", "DOI" });
 				CSVPrinter failurePrinter = Util.createCSVPrinter("failures.csv",
-						new String[] { "subject raw", "log expression", "start pos", "logging level", "type FQN",
+						new String[] { "subject", "log expression", "start pos", "logging level", "type FQN",
 								"enclosing method", "code", "name", "message" });
 				CSVPrinter doiPrinter = Util.createCSVPrinter("DOI_boundaries.csv",
-						new String[] { "subject raw", "DOI boundary", "Log level" });
+						new String[] { "subject", "DOI boundary", "Log level" });
 
 				// for each selected java project
 				for (IJavaProject project : javaProjectList) {

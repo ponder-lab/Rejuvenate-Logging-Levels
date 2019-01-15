@@ -67,7 +67,7 @@ public class EvaluationHandler extends AbstractHandler {
 			CSVPrinter resultPrinter;
 			try {
 				resultPrinter = this.createCSVPrinter("DOI_Values.csv",
-						new String[] { "subject raw", "N for commits", "TypeFQN", "methods", "DOI values" });
+						new String[] { "subject", "N for commits", "TypeFQN", "methods", "DOI values" });
 
 				for (IJavaProject javaProject : javaProjectList) {
 					int NToUseForCommit = Util.getNToUseForCommits(javaProject, N_TO_USE_FOR_COMMITS_KEY,
