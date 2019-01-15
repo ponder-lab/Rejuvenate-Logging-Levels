@@ -196,10 +196,10 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 		status.merge(collectedStatus);
 
 		if (!status.hasFatalError()) {
-			// those log invocations whose logging level can be rejuvenated
-			Set<LogInvocation> possibleTransformedLogSet = this.getPossibleTransformedLog();
-			if (possibleTransformedLogSet.isEmpty()) {
-				status.addFatalError(Messages.NoPossibleTransformedLog);
+			// those log invocations whose logging level could be transformed
+			Set<LogInvocation> candidateLogInvSet = this.getCandidateLog();
+			if (candidateLogInvSet.isEmpty()) {
+				status.addFatalError(Messages.NoCandidateLogInvs);
 			}
 		}
 
@@ -230,7 +230,7 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 	/**
 	 * get a set of transformed log set
 	 */
-	public Set<LogInvocation> getPossibleTransformedLog() {
+	public Set<LogInvocation> getCandidateLog() {
 		HashSet<LogInvocation> transformedSet = new HashSet<>();
 		for (LogInvocation logInvocation : this.logInvocationSet) {
 			if (!logInvocation.getAction().equals(Action.NONE))
@@ -255,7 +255,7 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 			Set<LogInvocation> transformedLogs = this.getLogInvocationSet();
 
 			if (transformedLogs.isEmpty())
-				return new NullChange(Messages.NoPossibleTransformedLog);
+				return new NullChange(Messages.NoCandidateLogInvs);
 
 			pm.beginTask("Transforming logging levels ...", transformedLogs.size());
 			for (LogInvocation logInvocation : transformedLogs) {

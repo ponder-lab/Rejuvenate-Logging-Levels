@@ -87,11 +87,11 @@ public class EvaluationHandler extends AbstractHandler {
 
 				CSVPrinter resultPrinter = Util.createCSVPrinter("result.csv",
 						new String[] { "subject raw", "N for commits", "log invocations before",
-								"possible_transformed log invocations", "failures", "time (s)" });
+								"candidate log invocations", "failures", "time (s)" });
 				CSVPrinter actionPrinter = Util.createCSVPrinter("log_actions.csv", new String[] { "subject raw",
 						"log expression", "start pos", "logging level", "type FQN", "enclosing method", "action" });
-				CSVPrinter possibleTransformedLogInvPrinter = Util.createCSVPrinter(
-						"possible_transformed_log_invocations.csv", new String[] { "subject raw", "log expression",
+				CSVPrinter candidateLogInvPrinter = Util.createCSVPrinter(
+						"candidate_log_invocations.csv", new String[] { "subject raw", "log expression",
 								"start pos", "logging level", "type FQN", "enclosing method", "DOI" });
 				CSVPrinter transformedLogInvPrinter = Util.createCSVPrinter("transformed_log_invocations.csv",
 						new String[] { "subject raw", "log expression", "start pos", "logging level", "type FQN",
@@ -120,8 +120,8 @@ public class EvaluationHandler extends AbstractHandler {
 
 					Set<LogInvocation> logInvocationSet = logRejuvenatingProcessor.getLogInvocationSet();
 
-					// get possibleTransformed log invocations
-					Set<LogInvocation> possibleTransformedLogInvs = logInvocationSet == null ? Collections.emptySet()
+					// get candidate log invocations
+					Set<LogInvocation> candidateLogInvs = logInvocationSet == null ? Collections.emptySet()
 							: logInvocationSet.parallelStream().filter(logInvocation -> {
 								String pluginId = FrameworkUtil.getBundle(LogInvocation.class).getSymbolicName();
 
@@ -140,10 +140,10 @@ public class EvaluationHandler extends AbstractHandler {
 
 					resultsTimeCollector.stop();
 
-					// print possible transformed log invocations
-					for (LogInvocation logInvocation : possibleTransformedLogInvs) {
-						// print possible transformed log invocations
-						possibleTransformedLogInvPrinter.printRecord(project.getElementName(),
+					// print candidate log invocations
+					for (LogInvocation logInvocation : candidateLogInvs) {
+						// print candidate log invocations
+						candidateLogInvPrinter.printRecord(project.getElementName(),
 								logInvocation.getExpression(), logInvocation.getStartPosition(),
 								logInvocation.getLogLevel(), logInvocation.getEnclosingType().getFullyQualifiedName(),
 								Util.getMethodIdentifier(logInvocation.getEnclosingEclipseMethod()),
@@ -151,10 +151,10 @@ public class EvaluationHandler extends AbstractHandler {
 					}
 
 					Set<LogInvocation> transformedLogInvocationSet = logRejuvenatingProcessor
-							.getPossibleTransformedLog();
-					// get the difference of possibleTransformeds and transformed log invocations
+							.getCandidateLog();
+					// get the difference of candidate log invocations and transformed log invocations
 					Set<LogInvocation> failures = new HashSet<LogInvocation>();
-					failures.addAll(possibleTransformedLogInvs);
+					failures.addAll(candidateLogInvs);
 					failures.removeAll(transformedLogInvocationSet);
 
 					// failures.
@@ -182,7 +182,7 @@ public class EvaluationHandler extends AbstractHandler {
 						}
 
 					for (LogInvocation logInvocation : transformedLogInvocationSet) {
-						// print possibleTransformed logInvocations
+						// print candidate log Invocations
 						transformedLogInvPrinter.printRecord(project.getElementName(), logInvocation.getExpression(),
 								logInvocation.getStartPosition(), logInvocation.getLogLevel(),
 								logInvocation.getEnclosingType().getFullyQualifiedName(),
@@ -200,7 +200,7 @@ public class EvaluationHandler extends AbstractHandler {
 					}
 
 					resultPrinter.printRecord(project.getElementName(), NToUseCommit, logInvocationSet.size(),
-							possibleTransformedLogInvs.size(), errorEntries.size(),
+							candidateLogInvs.size(), errorEntries.size(),
 							resultsTimeCollector.getCollectedTime() / 1000);
 
 					LinkedList<Float> boundary = logRejuvenatingProcessor.getBoundary();
@@ -220,7 +220,7 @@ public class EvaluationHandler extends AbstractHandler {
 
 				resultPrinter.close();
 				actionPrinter.close();
-				possibleTransformedLogInvPrinter.close();
+				candidateLogInvPrinter.close();
 				failurePrinter.close();
 				transformedLogInvPrinter.close();
 				doiPrinter.close();
