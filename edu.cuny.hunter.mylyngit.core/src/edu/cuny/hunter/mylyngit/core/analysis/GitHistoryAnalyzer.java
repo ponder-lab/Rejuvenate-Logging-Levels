@@ -96,8 +96,8 @@ public class GitHistoryAnalyzer {
 	 * @throws IOException
 	 * @throws NoHeadException
 	 */
-	public GitHistoryAnalyzer(File repoFile) throws GitAPIException, IOException {
-		try (Git git = preProcessGitHistory(repoFile)) {
+	public GitHistoryAnalyzer(File repoFile, int NToUseForCommits) throws GitAPIException, IOException {
+		try (Git git = preProcessGitHistory(repoFile, NToUseForCommits)) {
 			// Already evaluated before
 			if (git == null)
 				return;
@@ -267,7 +267,7 @@ public class GitHistoryAnalyzer {
 	 * 
 	 * @throws GitAPIException
 	 */
-	private Git tryPreProcessGitHistory(File repoFile) throws NoHeadException, GitAPIException {
+	private Git tryPreProcessGitHistory(File repoFile, int NToUseForCommits) throws NoHeadException, GitAPIException {
 		Git git = Git.init().setDirectory(repoFile).call();
 
 		Iterable<RevCommit> log = git.log().call();
@@ -275,7 +275,7 @@ public class GitHistoryAnalyzer {
 		// Limit number of commits.
 		int maxCommitNumber = 0;
 		for (RevCommit commit : log) {
-			if (maxCommitNumber < 100)
+			if (maxCommitNumber < NToUseForCommits)
 				this.commitList.addFirst(commit);
 			maxCommitNumber++;
 		}
@@ -289,11 +289,11 @@ public class GitHistoryAnalyzer {
 	 * @param repoFile
 	 * @return
 	 */
-	private Git preProcessGitHistory(File repoFile) {
+	private Git preProcessGitHistory(File repoFile, int NToUseForCommits) {
 		Git git = null;
 		while (repoFile != null) {
 			try {
-				git = tryPreProcessGitHistory(repoFile);
+				git = tryPreProcessGitHistory(repoFile, NToUseForCommits);
 				break;
 			} catch (GitAPIException e) {
 				repoFile = repoFile.getParentFile();

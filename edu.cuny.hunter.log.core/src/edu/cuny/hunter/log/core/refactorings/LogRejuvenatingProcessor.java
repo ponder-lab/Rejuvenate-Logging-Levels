@@ -58,6 +58,8 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 
 	private boolean useGitHistory = false;
 
+	private int NToUseForCommits = 0;
+
 	private boolean isEvaluation = false;
 
 	public LogRejuvenatingProcessor(final CodeGenerationSettings settings) {
@@ -74,6 +76,14 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 
 	public void setParticularLogLevel(boolean useLogLevelCategory) {
 		this.useLogCategory = useLogLevelCategory;
+	}
+
+	public void setNToUseForCommits(int NToUseForCommits) {
+		this.NToUseForCommits = NToUseForCommits;
+	}
+
+	public int getNToUseForCommits() {
+		return this.NToUseForCommits;
 	}
 
 	public boolean getParticularConfigLogLevel() {
@@ -99,23 +109,25 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 	}
 
 	public LogRejuvenatingProcessor(IJavaProject[] javaProjects, boolean useLogLevelCategory,
-			boolean useConfigLogLevelCategory, boolean useGitHistory, final CodeGenerationSettings settings,
-			Optional<IProgressMonitor> monitor) {
+			boolean useConfigLogLevelCategory, boolean useGitHistory, int NToUseForCommits,
+			final CodeGenerationSettings settings, Optional<IProgressMonitor> monitor) {
 		super(settings);
 		try {
 			this.javaProjects = javaProjects;
 			this.useLogCategoryWithConfig = useConfigLogLevelCategory;
 			this.useLogCategory = useLogLevelCategory;
 			this.useGitHistory = useGitHistory;
+			this.NToUseForCommits = NToUseForCommits;
 		} finally {
 			monitor.ifPresent(IProgressMonitor::done);
 		}
 	}
 
 	public LogRejuvenatingProcessor(IJavaProject[] javaProjects, boolean useLogLevelCategory,
-			boolean useConfigLogLevelCategory, boolean useGitHistory, final CodeGenerationSettings settings,
-			Optional<IProgressMonitor> monitor, boolean isEvaluation) {
-		this(javaProjects, useLogLevelCategory, useConfigLogLevelCategory, useGitHistory, settings, monitor);
+			boolean useConfigLogLevelCategory, boolean useGitHistory, int NToUseForCommits,
+			final CodeGenerationSettings settings, Optional<IProgressMonitor> monitor, boolean isEvaluation) {
+		this(javaProjects, useLogLevelCategory, useConfigLogLevelCategory, useGitHistory, NToUseForCommits, settings,
+				monitor);
 		this.isEvaluation = isEvaluation;
 	}
 
@@ -156,7 +168,7 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 
 			if (this.useGitHistory) {
 				// Process git history.
-				mylynProvider = new MylynGitPredictionProvider();
+				mylynProvider = new MylynGitPredictionProvider(this.NToUseForCommits);
 				this.processGitHistory(mylynProvider, analyzer, jproj);
 			}
 

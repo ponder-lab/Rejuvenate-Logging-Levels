@@ -52,9 +52,12 @@ import org.eclipse.ltk.core.refactoring.participants.ProcessorBasedRefactoring;
 public class EvaluationHandler extends AbstractHandler {
 
 	private static final Logger LOGGER = Logger.getLogger(LoggerNames.LOGGER_NAME);
+	private static final String EVALUATION_PROPERTIES_FILE_NAME = "eval.properties";
 	private static final String USE_LOG_CATEGORY_KEY = "edu.cuny.hunter.log.evaluation.useLogCategory";
 	private static final String USE_LOG_CATEGORY_CONFIG_KEY = "edu.cuny.hunter.log.evaluation.useLogCategoryWithConfig";
 	private static final String USE_GIT_HISTORY_KEY = "edu.cuny.hunter.log.evaluation.useGitHistory";
+	private static final String N_TO_USE_FOR_COMMITS_KEY = "NToUseForCommits";
+	private static final int N_TO_USE_FOR_COMMITS_DEFAULT = 100;
 	private static final boolean USE_LOG_CATEGORY_DEFAULT = false;
 	private static final boolean USE_LOG_CATEGORY_CONFIG_DEFAULT = false;
 	private static final boolean USE_GIT_HISTORY = false;
@@ -82,8 +85,9 @@ public class EvaluationHandler extends AbstractHandler {
 
 			try {
 
-				CSVPrinter resultPrinter = Util.createCSVPrinter("result.csv", new String[] { "subject raw",
-						"log invocations before", "possible_transformed log invocations", "failures", "time (s)" });
+				CSVPrinter resultPrinter = Util.createCSVPrinter("result.csv",
+						new String[] { "subject raw", "N for commits", "log invocations before",
+								"possible_transformed log invocations", "failures", "time (s)" });
 				CSVPrinter actionPrinter = Util.createCSVPrinter("log_actions.csv", new String[] { "subject raw",
 						"log expression", "start pos", "logging level", "type FQN", "enclosing method", "action" });
 				CSVPrinter possibleTransformedLogInvPrinter = Util.createCSVPrinter(
@@ -105,9 +109,11 @@ public class EvaluationHandler extends AbstractHandler {
 					TimeCollector resultsTimeCollector = new TimeCollector();
 					resultsTimeCollector.start();
 
+					int NToUseCommit = edu.cuny.hunter.mylyngit.core.utils.Util.getNToUseForCommits(project,
+							N_TO_USE_FOR_COMMITS_KEY, N_TO_USE_FOR_COMMITS_DEFAULT, EVALUATION_PROPERTIES_FILE_NAME);
 					LogRejuvenatingProcessor logRejuvenatingProcessor = new LogRejuvenatingProcessor(
 							new IJavaProject[] { project }, this.useLogCategory(), this.useLogCategoryWithConfig(),
-							this.useGitHistory(), settings, monitor, true);
+							this.useGitHistory(), NToUseCommit, settings, monitor, true);
 
 					new ProcessorBasedRefactoring((RefactoringProcessor) logRejuvenatingProcessor)
 							.checkAllConditions(new NullProgressMonitor());
@@ -193,7 +199,7 @@ public class EvaluationHandler extends AbstractHandler {
 								logInvocation.getAction());
 					}
 
-					resultPrinter.printRecord(project.getElementName(), logInvocationSet.size(),
+					resultPrinter.printRecord(project.getElementName(), NToUseCommit, logInvocationSet.size(),
 							possibleTransformedLogInvs.size(), errorEntries.size(),
 							resultsTimeCollector.getCollectedTime() / 1000);
 

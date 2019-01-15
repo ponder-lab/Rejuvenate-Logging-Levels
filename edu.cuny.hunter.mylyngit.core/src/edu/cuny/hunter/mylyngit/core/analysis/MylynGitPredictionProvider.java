@@ -40,7 +40,14 @@ public class MylynGitPredictionProvider extends AbstractJavaRelationProvider {
 	public MylynGitPredictionProvider() {
 		super("java", ID);
 	}
+	
+	public MylynGitPredictionProvider(int N) {
+		this();
+		NToUseForCommits = N;
+	}
 
+	private static int NToUseForCommits;
+	
 	private IJavaProject[] javaProjects;
 
 	private HashSet<MethodDeclaration> methodDeclarations = new HashSet<>();
@@ -117,7 +124,7 @@ public class MylynGitPredictionProvider extends AbstractJavaRelationProvider {
 	 */
 	private void bumpDOIValuesForAllGitMethods(IJavaProject javaProject) throws GitAPIException, IOException {
 		File repo = this.getRepoFile(javaProject);
-		GitHistoryAnalyzer gitHistoryAnalyzer = new GitHistoryAnalyzer(repo);
+		GitHistoryAnalyzer gitHistoryAnalyzer = new GitHistoryAnalyzer(repo, NToUseForCommits);
 		LinkedList<GitMethod> gitMethods = gitHistoryAnalyzer.getGitMethods();
 		gitMethods.forEach(method -> {
 			bumpDOIValuesForMethod(method, gitHistoryAnalyzer);

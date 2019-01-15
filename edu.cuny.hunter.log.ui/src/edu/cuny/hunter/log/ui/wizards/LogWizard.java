@@ -24,7 +24,9 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
+import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.PlatformUI;
+
 import edu.cuny.hunter.log.core.messages.Messages;
 import edu.cuny.hunter.log.core.refactorings.LogRejuvenatingProcessor;
 import edu.cuny.hunter.log.core.utils.Util;
@@ -36,7 +38,7 @@ public class LogWizard extends RefactoringWizard {
 
 		private static final String DESCRIPTION = Messages.Name;
 
-		private static final String DIALOG_SETTING_SECTION = "RejuvenateLoggingLevel"; //$NON-NLS-1$
+		private static final String DIALOG_SETTING_SECTION = "RejuvenateLogLevel"; //$NON-NLS-1$
 
 		public static final String PAGE_NAME = "LogInputPage"; //$NON-NLS-1$
 
@@ -46,9 +48,11 @@ public class LogWizard extends RefactoringWizard {
 
 		private static final String USE_GIT_HISTORY = "useGitHistory";
 
+		private static final String N_TO_USE_FOR_COMMITS = "NToUseForCommits";
+
 		private LogRejuvenatingProcessor processor;
 
-		IDialogSettings settings;
+		private IDialogSettings settings;
 
 		public LogInputPage() {
 			super(PAGE_NAME);
@@ -106,17 +110,52 @@ public class LogWizard extends RefactoringWizard {
 			separator.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
 
 			Label gitLabel = new Label(result, SWT.NONE);
-			gitLabel.setText("Check the option below if you would like to use git history to "
-					+ "rejuvenate log levels.");
+			gitLabel.setText(
+					"Check the option below if you would like to use git history to " + "rejuvenate log levels.");
 
 			// set up buttons.
 			this.addBooleanButton("Traverse git history to rejuvenate log levels.", USE_GIT_HISTORY,
 					this.getProcessor()::setUseGitHistory, result, SWT.CHECK);
 
+			Label separator2 = new Label(result, SWT.SEPARATOR | SWT.SHADOW_OUT | SWT.HORIZONTAL);
+			separator2.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
+			
+			this.addIntegerButton("N values used to limit number of commits: ", N_TO_USE_FOR_COMMITS,
+					this.getProcessor()::setNToUseForCommits, this.addIntegerButton(result));
+
 			this.updateStatus();
 			Dialog.applyDialogFont(result);
 			PlatformUI.getWorkbench().getHelpSystem().setHelp(this.getControl(),
 					"rejuvenate_logging_level_wizard_page_context");
+		}
+
+		private Composite addIntegerButton(Composite result) {
+			Composite compositeForIntegerButton = new Composite(result, SWT.NONE);
+			GridLayout layoutForIntegerButton = new GridLayout(2, true);
+
+			compositeForIntegerButton.setLayout(layoutForIntegerButton);
+			return compositeForIntegerButton;
+		}
+
+		private void addIntegerButton(String text, String key, Consumer<Integer> valueConsumer, Composite result) {
+			Label label = new Label(result, SWT.NULL);
+			label.setText(text);
+
+			Text textBox = new Text(result, SWT.SINGLE);
+			textBox.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_FILL));
+			int value = this.settings.getInt(key);
+			valueConsumer.accept(value);
+			textBox.setText(String.valueOf(value));
+			textBox.addModifyListener(event -> {
+				int selection;
+				try {
+					selection = Integer.parseInt(((Text) event.widget).getText());
+				} catch (NumberFormatException e) {
+					return;
+				}
+				LogInputPage.this.settings.put(key, selection);
+				valueConsumer.accept(selection);
+			});
 		}
 
 		private LogRejuvenatingProcessor getProcessor() {
@@ -130,10 +169,12 @@ public class LogWizard extends RefactoringWizard {
 				this.settings.put(USE_LOG_CATEGORY_CONFIG, this.getProcessor().getParticularConfigLogLevel());
 				this.settings.put(USE_LOG_CATEGORY, this.getProcessor().getParticularLogLevel());
 				this.settings.put(USE_GIT_HISTORY, this.getProcessor().getGitHistory());
+				this.settings.put(N_TO_USE_FOR_COMMITS, this.getProcessor().getNToUseForCommits());
 			}
 			this.processor.setParticularConfigLogLevel(this.settings.getBoolean(USE_LOG_CATEGORY_CONFIG));
 			this.processor.setParticularLogLevel(this.settings.getBoolean(USE_LOG_CATEGORY));
 			this.processor.setUseGitHistory(this.settings.getBoolean(USE_GIT_HISTORY));
+			this.processor.setNToUseForCommits(this.settings.getInt(N_TO_USE_FOR_COMMITS));
 		}
 
 		private void setProcessor(LogRejuvenatingProcessor processor) {

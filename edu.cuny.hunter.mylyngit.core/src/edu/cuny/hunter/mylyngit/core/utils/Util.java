@@ -1,17 +1,24 @@
 package edu.cuny.hunter.mylyngit.core.utils;
 
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.Reader;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.jdt.core.ICompilationUnit;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IMethod;
 import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.jdt.core.IPackageFragmentRoot;
+import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.SingleVariableDeclaration;
 import org.eclipse.mylyn.context.core.ContextCore;
@@ -120,6 +127,55 @@ public class Util {
 			contextManager.deleteContext(handleIdentifier);
 		} catch (Exception e) {
 			LOGGER.log(Level.WARNING, "Context may not active.");
+		}
+	}
+
+	private static File findEvaluationPropertiesFile(IJavaProject project, String fileName)
+			throws JavaModelException {
+		IPath location = project.getCorrespondingResource().getLocation();
+		return findEvaluationPropertiesFile(location.toFile(), fileName);
+	}
+
+	private static File findEvaluationPropertiesFile(File directory, String fileName) {
+		if (directory == null)
+			return null;
+
+		if (!directory.isDirectory())
+			throw new IllegalArgumentException("Expecting directory: " + directory + ".");
+
+		File evaluationFile = directory.toPath().resolve(fileName).toFile();
+
+		if (evaluationFile != null && evaluationFile.exists())
+			return evaluationFile;
+		else
+			return findEvaluationPropertiesFile(directory.getParentFile(), fileName);
+	}
+
+	public static int getNToUseForCommits(IJavaProject project, String key, int value, String fileName)
+			throws IOException, JavaModelException {
+		Properties properties = new Properties();
+		File file = findEvaluationPropertiesFile(project, fileName);
+
+		if (file != null && file.exists())
+			try (Reader reader = new FileReader(file)) {
+				properties.load(reader);
+
+				String nToUseForStreams = properties.getProperty(key);
+
+				if (nToUseForStreams == null) {
+					int ret = value;
+					LOGGER.info("Using default N for commit number: " + ret + ".");
+					return ret;
+				} else {
+					int ret = Integer.valueOf(nToUseForStreams);
+					LOGGER.info("Using properties file N for commit number: " + ret + ".");
+					return ret;
+				}
+			}
+		else {
+			int ret = value;
+			LOGGER.info("Using default N for commit number: " + ret + ".");
+			return ret;
 		}
 	}
 }

@@ -17,6 +17,7 @@ import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IMethod;
 import org.eclipse.jdt.core.IType;
+import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.core.dom.IMethodBinding;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.internal.ui.util.SelectionUtil;
@@ -38,6 +39,11 @@ import org.eclipse.jgit.api.errors.GitAPIException;
 public class EvaluationHandler extends AbstractHandler {
 
 	private static final Logger LOGGER = Logger.getLogger(Util.LOGGER_NAME);
+
+	private static final String EVALUATION_PROPERTIES_FILE_NAME = "eval.properties";
+
+	private static final String N_TO_USE_FOR_COMMITS_KEY = "NToUseForCommits";
+	private static final int N_TO_USE_FOR_COMMITS_DEFAULT = 100;
 
 	@Override
 	public Object execute(ExecutionEvent event) throws ExecutionException {
@@ -61,10 +67,13 @@ public class EvaluationHandler extends AbstractHandler {
 			CSVPrinter resultPrinter;
 			try {
 				resultPrinter = this.createCSVPrinter("DOI_Values.csv",
-						new String[] { "subject raw", "TypeFQN", "methods", "DOI values" });
+						new String[] { "subject raw", "N for commits", "TypeFQN", "methods", "DOI values" });
 
-				MylynGitPredictionProvider provider = new MylynGitPredictionProvider();
 				for (IJavaProject javaProject : javaProjectList) {
+					int NToUseForCommit = Util.getNToUseForCommits(javaProject, N_TO_USE_FOR_COMMITS_KEY,
+							N_TO_USE_FOR_COMMITS_DEFAULT, EVALUATION_PROPERTIES_FILE_NAME);
+
+					MylynGitPredictionProvider provider = new MylynGitPredictionProvider(NToUseForCommit);
 					provider.processOneProject(javaProject);
 					HashSet<MethodDeclaration> methods = provider.getMethods();
 					for (MethodDeclaration m : methods) {
@@ -73,7 +82,7 @@ public class EvaluationHandler extends AbstractHandler {
 						// Work around DOI values
 						float doiValue = Util.getDOIValue(iMethod);
 						if (!(Float.compare(0, doiValue) == 0)) {
-							resultPrinter.printRecord(javaProject.getElementName(),
+							resultPrinter.printRecord(javaProject.getElementName(), NToUseForCommit,
 									((IType) methodBinding.getDeclaringClass().getJavaElement())
 											.getFullyQualifiedName(),
 									Util.getMethodSignature(m), doiValue);
@@ -87,6 +96,8 @@ public class EvaluationHandler extends AbstractHandler {
 				LOGGER.info("Cannot print info correctly or cannot process git commits.");
 			} catch (GitAPIException e) {
 				LOGGER.info("Cannot get valid git object or process commits.");
+			} catch (JavaModelException e) {
+				LOGGER.warning("Cannot find evaluation property file!");
 			}
 
 		}
