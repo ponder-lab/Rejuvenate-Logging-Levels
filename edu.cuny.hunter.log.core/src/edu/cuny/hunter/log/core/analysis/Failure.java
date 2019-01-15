@@ -2,11 +2,31 @@ package edu.cuny.hunter.log.core.analysis;
 
 public enum Failure {
 
+	/**
+	 * Log invocations could be detected, but their log levels cannot be detected. 
+	 * This could be from several reasons. 
+	 * The most common reason is that our tool is missing data flow analysis.
+	 */
 	CURRENTLY_NOT_HANDLED(1),
+	/**
+	 * All DOI values of methods are same. It is always caused by missing active task.
+	 */
 	NO_ENOUGH_DATA(2),
+	/**
+	 * Cannot detect method elements of Java model.
+	 */
 	MISSING_JAVA_ELEMENT(3),
+	/**
+	 * Element is read-only.
+	 */
 	READ_ONLY_ELEMENT(4),
+	/**
+	 * Element is from a CLASS file.
+	 */
 	BINARY_ELEMENT(5),
+	/**
+	 * This resource subtree is marked as derived. 
+	 */
 	GENERATED_ELEMENT(6);
 	
 	private int code;
