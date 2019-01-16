@@ -30,7 +30,6 @@ import edu.cuny.citytech.refactoring.common.core.RefactoringProcessor;
 import edu.cuny.hunter.log.core.analysis.LogInvocation;
 import edu.cuny.hunter.log.core.refactorings.LogRejuvenatingProcessor;
 import edu.cuny.hunter.log.core.utils.LoggerNames;
-import edu.cuny.hunter.log.core.utils.TimeCollector;
 import edu.cuny.hunter.log.evaluation.utils.Util;
 import edu.cuny.hunter.mylyngit.core.analysis.MylynGitPredictionProvider;
 
@@ -106,7 +105,7 @@ public class EvaluationHandler extends AbstractHandler {
 				for (IJavaProject project : javaProjectList) {
 
 					// collect running time.
-					TimeCollector resultsTimeCollector = new TimeCollector();
+					edu.cuny.hunter.mylyngit.core.utils.TimeCollector resultsTimeCollector = new edu.cuny.hunter.mylyngit.core.utils.TimeCollector();
 					resultsTimeCollector.start();
 
 					int NToUseCommit = edu.cuny.hunter.mylyngit.core.utils.Util.getNToUseForCommits(project,

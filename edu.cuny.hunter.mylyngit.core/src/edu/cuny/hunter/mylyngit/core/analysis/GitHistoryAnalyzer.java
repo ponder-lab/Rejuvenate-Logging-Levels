@@ -207,17 +207,18 @@ public class GitHistoryAnalyzer {
 
 				switch (diffEntry.getChangeType()) {
 				case ADD:
-					filePath = addFile(currentCommit, git.getRepository(), diffEntry);
+					filePath = this.addFile(currentCommit, git.getRepository(), diffEntry);
 					break;
 				case DELETE:
-					filePath = deleteFile(previousCommit, git.getRepository(), diffEntry);
+					filePath = this.deleteFile(previousCommit, git.getRepository(), diffEntry);
 					break;
 				case MODIFY:
-					filePath = modifyFile(currentCommit, previousCommit, git.getRepository(), diffEntry, formatter);
+					filePath = this.modifyFile(currentCommit, previousCommit, git.getRepository(), diffEntry,
+							formatter);
 					break;
 				case RENAME:
 				case COPY:
-					filePath = renameOrCopyFile(currentCommit, git.getRepository(), diffEntry);
+					filePath = this.renameOrCopyFile(currentCommit, git.getRepository(), diffEntry);
 					break;
 				default:
 					break;
@@ -319,15 +320,15 @@ public class GitHistoryAnalyzer {
 		FileHeader fileHeader = formatter.toFileHeader(diffEntry);
 
 		// Get the file for revision A
-		copyHistoricalFile(previousCommit, repo, diffEntry.getOldPath(), "tmp_A_");
+		this.copyHistoricalFile(previousCommit, repo, diffEntry.getOldPath(), "tmp_A_");
 		// Get the file for revision B
-		copyHistoricalFile(currentCommit, repo, diffEntry.getNewPath(), "tmp_B_");
+		this.copyHistoricalFile(currentCommit, repo, diffEntry.getNewPath(), "tmp_B_");
 
 		// For revision A, get the differences
-		computeMethodPositions(this.methodDeclarationsForA, this.methodPositionsForA);
+		this.computeMethodPositions(this.methodDeclarationsForA, this.methodPositionsForA);
 
 		// For revision B, get the differences
-		computeMethodPositions(this.methodDeclarationsForB, this.methodPositionsForB);
+		this.computeMethodPositions(this.methodDeclarationsForB, this.methodPositionsForB);
 
 		List<? extends HunkHeader> hunks = fileHeader.getHunks();
 		int editId = 0;
@@ -337,15 +338,13 @@ public class GitHistoryAnalyzer {
 				// For each pair of edit
 				for (Edit edit : editList) {
 					editId++;
-					mapEditToMethod(editId, edit.getBeginA(), edit.getEndA(), this.methodPositionsForA,
+					this.mapEditToMethod(editId, edit.getBeginA(), edit.getEndA(), this.methodPositionsForA,
 							this.editToMethodDeclarationForA);
-					mapEditToMethod(editId, edit.getBeginB(), edit.getEndB(), this.methodPositionsForB,
+					this.mapEditToMethod(editId, edit.getBeginB(), edit.getEndB(), this.methodPositionsForB,
 							this.editToMethodDeclarationForB);
 
 				}
-				;
 			}
-
 		}
 
 		this.computeMethodChanges(diffEntry.getNewPath());
@@ -361,7 +360,7 @@ public class GitHistoryAnalyzer {
 		// Get the file for revision B
 		copyHistoricalFile(currentCommit, repo, diffEntry.getNewPath(), "tmp_B_");
 		this.methodDeclarationsForB.forEach(methodDec -> {
-			putIntoMethodToOps(this.methodSignaturesToOps, Util.getMethodSignature(methodDec),
+			this.putIntoMethodToOps(this.methodSignaturesToOps, Util.getMethodSignature(methodDec),
 					TypesOfMethodOperations.ADD);
 		});
 		return diffEntry.getNewPath();
@@ -375,7 +374,7 @@ public class GitHistoryAnalyzer {
 		// Get the file for revision A
 		copyHistoricalFile(previousCommit, repo, diffEntry.getOldPath(), "tmp_A_");
 		this.methodDeclarationsForA.forEach(methodDec -> {
-			putIntoMethodToOps(this.methodSignaturesToOps, Util.getMethodSignature(methodDec),
+			this.putIntoMethodToOps(this.methodSignaturesToOps, Util.getMethodSignature(methodDec),
 					TypesOfMethodOperations.DELETE);
 
 			Set<Vertex> tailVertices = new HashSet<>();
@@ -672,7 +671,7 @@ public class GitHistoryAnalyzer {
 		});
 
 		additionalMethodDecInB.forEach(methodDec -> {
-			putIntoMethodToOps(this.methodSignaturesToOps, Util.getMethodSignature(methodDec),
+			this.putIntoMethodToOps(this.methodSignaturesToOps, Util.getMethodSignature(methodDec),
 					TypesOfMethodOperations.ADD);
 		});
 
@@ -715,7 +714,7 @@ public class GitHistoryAnalyzer {
 	 */
 	private void process(MethodDeclaration targetMethodDec, Collection<MethodDeclaration> additionalMethodDecInB,
 			Collection<String> additionalMethodInB, TypesOfMethodOperations op) {
-		putIntoMethodToOps(this.methodSignaturesToOps, Util.getMethodSignature(targetMethodDec), op);
+		this.putIntoMethodToOps(this.methodSignaturesToOps, Util.getMethodSignature(targetMethodDec), op);
 		this.removeMethodInRevisionB(targetMethodDec, additionalMethodDecInB, additionalMethodInB);
 	}
 

@@ -1,4 +1,4 @@
-package edu.cuny.hunter.log.core.utils;
+package edu.cuny.hunter.mylyngit.core.utils;
 
 /**
 * @author raffi

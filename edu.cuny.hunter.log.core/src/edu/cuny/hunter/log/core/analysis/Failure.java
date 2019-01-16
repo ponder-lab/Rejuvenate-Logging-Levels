@@ -13,7 +13,7 @@ public enum Failure {
 	 */
 	NO_ENOUGH_DATA(2),
 	/**
-	 * Cannot detect method elements of Java model.
+	 * Cannot detect elements of Java model.
 	 */
 	MISSING_JAVA_ELEMENT(3),
 	/**
