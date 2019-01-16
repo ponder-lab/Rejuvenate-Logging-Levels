@@ -63,8 +63,6 @@ public class LogAnalyzer extends ASTVisitor {
 	 * Analyze project without git history.
 	 */
 	public void analyze() {
-		// check failures.
-		this.checkCodeModification();
 		this.collectDOIValues(this.methodDeclarations);
 		this.analyzeLogInvs();
 	}
@@ -76,19 +74,36 @@ public class LogAnalyzer extends ASTVisitor {
 		// build boundary
 		boundary = this.buildBoundary(this.DOIValues);
 		// check whether action is needed
-		for (LogInvocation logInvocation : this.logInvocationSet)
-			if (this.doAction(logInvocation))
-				LOGGER.info("Do action: " + logInvocation.getAction() + "! The changed log expression is "
-						+ logInvocation.getExpression());
+		for (LogInvocation logInvocation : this.logInvocationSet) {
+			if (this.checkCodeModification(logInvocation) && this.checkEnoughData(logInvocation))
+				if (this.doAction(logInvocation))
+					LOGGER.info("Do action: " + logInvocation.getAction() + "! The changed log expression is "
+							+ logInvocation.getExpression());
+		}
+	}
+
+	/**
+	 * Check whether all DOI values are the same.
+	 */
+	private boolean checkEnoughData(LogInvocation logInvocation) {
+		if (Float.compare(this.boundary.getFirst(), this.boundary.getLast()) == 0) {
+			logInvocation.addStatusEntry(Failure.NO_ENOUGH_DATA,
+					"The DOI values are all same or no DOI values. Cannot get valid results.");
+			LOGGER.info("The DOI values are all same or no DOI values. Cannot get valid results.");
+			return false;
+		}
+		return true;
 	}
 
 	private boolean doAction(LogInvocation logInvocation) {
 
-		if (logInvocation.getInCatchBlock())
+		if (logInvocation.getInCatchBlock()) {
+			logInvocation.setAction(Action.NONE);
 			return true;
+		}
 
 		Level currentLogLevel = logInvocation.getLogLevel();
-		Level rejuvenatedLogLevel = getRejuvenatedLogLevel(boundary, logInvocation);
+		Level rejuvenatedLogLevel = getRejuvenatedLogLevel(this.boundary, logInvocation);
 
 		if (currentLogLevel == rejuvenatedLogLevel)
 			return false;
@@ -132,12 +147,6 @@ public class LogAnalyzer extends ASTVisitor {
 		float DOI = logInvocation.getDegreeOfInterestValue();
 		if (boundary == null)
 			return null;
-		if (Float.compare(boundary.getFirst(), boundary.getLast()) == 0) {
-			logInvocation.addStatusEntry(Failure.NO_ENOUGH_DATA,
-					"The DOI values are all same or no DOI values. Cannot get valid results.");
-			LOGGER.info("The DOI values are all same or no DOI values. Cannot get valid results.");
-			return null;
-		}
 
 		if (this.useLogCategory) {
 			LOGGER.info("Use log category: do not consider config/warning/severe.");
@@ -293,27 +302,38 @@ public class LogAnalyzer extends ASTVisitor {
 	/**
 	 * Whether the code is read-only, generated code and in a .class file.
 	 */
-	public void checkCodeModification() {
-		for (LogInvocation logInvocation : this.getLogInvocationSet()) {
-			CompilationUnit cu = logInvocation.getEnclosingCompilationUnit();
-			if (cu != null) {
-				IJavaElement element = cu.getJavaElement();
-				if (element.isReadOnly())
-					logInvocation.addStatusEntry(Failure.READ_ONLY_ELEMENT, Messages.ReadOnlyElement);
+	public boolean checkCodeModification(LogInvocation logInvocation) {
 
-				IMethod method = logInvocation.getEnclosingEclipseMethod();
-				if (method != null && method.isBinary())
-					logInvocation.addStatusEntry(Failure.BINARY_ELEMENT, Messages.BinaryElement);
+		CompilationUnit cu = logInvocation.getEnclosingCompilationUnit();
+		if (cu != null) {
+			IJavaElement element = cu.getJavaElement();
+			if (element.isReadOnly()) {
+				logInvocation.addStatusEntry(Failure.READ_ONLY_ELEMENT, Messages.ReadOnlyElement);
+				return false;
+			}
 
-				try {
-					if (Util.isGeneratedCode(element))
-						logInvocation.addStatusEntry(Failure.GENERATED_ELEMENT, Messages.GeneratedElement);
-				} catch (JavaModelException e) {
-					logInvocation.addStatusEntry(Failure.MISSING_JAVA_ELEMENT, Messages.MissingJavaElement);
+			IMethod method = logInvocation.getEnclosingEclipseMethod();
+			if (method != null && method.isBinary()) {
+				logInvocation.addStatusEntry(Failure.BINARY_ELEMENT, Messages.BinaryElement);
+				return false;
+			}
+
+			try {
+				if (Util.isGeneratedCode(element)) {
+					logInvocation.addStatusEntry(Failure.GENERATED_ELEMENT, Messages.GeneratedElement);
+					return false;
 				}
-			} else
-				LOGGER.warning("Can't find enclosing compilation unit for: " + logInvocation + ".");
+			} catch (JavaModelException e) {
+				logInvocation.addStatusEntry(Failure.MISSING_JAVA_ELEMENT, Messages.MissingJavaElement);
+				return false;
+			}
+		} else {
+			LOGGER.warning("Can't find enclosing compilation unit for: " + logInvocation + ".");
+			logInvocation.addStatusEntry(Failure.MISSING_JAVA_ELEMENT, Messages.MissingJavaElement);
+			return false;
 		}
+		return true;
+
 	}
 
 	private void createLogInvocation(MethodInvocation node, Level logLevel, boolean inCatchBlock) {

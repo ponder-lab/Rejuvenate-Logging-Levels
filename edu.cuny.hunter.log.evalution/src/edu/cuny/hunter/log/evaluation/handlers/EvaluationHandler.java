@@ -3,7 +3,6 @@ package edu.cuny.hunter.log.evaluation.handlers;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -27,11 +26,8 @@ import org.eclipse.jdt.internal.corext.codemanipulation.CodeGenerationSettings;
 import org.eclipse.jdt.internal.ui.preferences.JavaPreferencesSettings;
 import org.eclipse.jdt.internal.ui.util.SelectionUtil;
 import org.eclipse.ui.handlers.HandlerUtil;
-import org.osgi.framework.FrameworkUtil;
-
 import edu.cuny.citytech.refactoring.common.core.RefactoringProcessor;
 import edu.cuny.hunter.log.core.analysis.LogInvocation;
-import edu.cuny.hunter.log.core.analysis.Failure;
 import edu.cuny.hunter.log.core.refactorings.LogRejuvenatingProcessor;
 import edu.cuny.hunter.log.core.utils.LoggerNames;
 import edu.cuny.hunter.log.core.utils.TimeCollector;
@@ -88,26 +84,28 @@ public class EvaluationHandler extends AbstractHandler {
 			try {
 
 				CSVPrinter resultPrinter = Util.createCSVPrinter("result.csv",
-						new String[] { "subject", "N for commits", "log invocations before",
-								"candidate log invocations", "failures", "time (s)" });
-				CSVPrinter actionPrinter = Util.createCSVPrinter("log_actions.csv", new String[] { "subject",
-						"log expression", "start pos", "logging level", "type FQN", "enclosing method", "action" });
-				CSVPrinter candidateLogInvPrinter = Util.createCSVPrinter(
-						"candidate_log_invocations.csv", new String[] { "subject", "log expression",
-								"start pos", "logging level", "type FQN", "enclosing method", "DOI" });
+						new String[] { "subject", "N for commits", "input logging statements",
+								"passing logging statements", "failures", "transformed logging statements",
+								"time (s)" });
+				CSVPrinter actionPrinter = Util.createCSVPrinter("log_transformation_actions.csv",
+						new String[] { "subject", "log expression", "start pos", "log level", "type FQN",
+								"enclosing method", "action" });
+				CSVPrinter inputLogInvPrinter = Util.createCSVPrinter("input_log_invocations.csv",
+						new String[] { "subject", "log expression", "start pos", "log level", "type FQN",
+								"enclosing method", "DOI value" });
 				CSVPrinter transformedLogInvPrinter = Util.createCSVPrinter("transformed_log_invocations.csv",
-						new String[] { "subject", "log expression", "start pos", "logging level", "type FQN",
-								"enclosing method", "DOI" });
+						new String[] { "subject", "log expression", "start pos", "log level", "type FQN",
+								"enclosing method", "DOI value" });
 				CSVPrinter failurePrinter = Util.createCSVPrinter("failures.csv",
-						new String[] { "subject", "log expression", "start pos", "logging level", "type FQN",
+						new String[] { "subject", "log expression", "start pos", "log level", "type FQN",
 								"enclosing method", "code", "message" });
 				CSVPrinter doiPrinter = Util.createCSVPrinter("DOI_boundaries.csv",
-						new String[] { "subject", "DOI boundary", "Log level" });
+						new String[] { "subject", "DOI boundary", "log level" });
 
 				// for each selected java project
 				for (IJavaProject project : javaProjectList) {
 
-					// Collect running time.
+					// collect running time.
 					TimeCollector resultsTimeCollector = new TimeCollector();
 					resultsTimeCollector.start();
 
@@ -120,44 +118,25 @@ public class EvaluationHandler extends AbstractHandler {
 					new ProcessorBasedRefactoring((RefactoringProcessor) logRejuvenatingProcessor)
 							.checkAllConditions(new NullProgressMonitor());
 
-					Set<LogInvocation> logInvocationSet = logRejuvenatingProcessor.getLogInvocationSet();
-
-					// get candidate log invocations
-					Set<LogInvocation> candidateLogInvs = logInvocationSet == null ? Collections.emptySet()
-							: logInvocationSet.parallelStream().filter(logInvocation -> {
-								String pluginId = FrameworkUtil.getBundle(LogInvocation.class).getSymbolicName();
-
-								// check all failures
-								RefactoringStatusEntry missingJavaElementError = logInvocation.getStatus()
-										.getEntryMatchingCode(pluginId, Failure.MISSING_JAVA_ELEMENT.getCode());
-								RefactoringStatusEntry binaryElementError = logInvocation.getStatus()
-										.getEntryMatchingCode(pluginId, Failure.BINARY_ELEMENT.getCode());
-								RefactoringStatusEntry readOnlyElementError = logInvocation.getStatus()
-										.getEntryMatchingCode(pluginId, Failure.READ_ONLY_ELEMENT.getCode());
-								RefactoringStatusEntry generatedElementError = logInvocation.getStatus()
-										.getEntryMatchingCode(pluginId, Failure.GENERATED_ELEMENT.getCode());
-								return missingJavaElementError == null && binaryElementError == null
-										&& readOnlyElementError == null && generatedElementError == null;
-							}).collect(Collectors.toSet());
-
 					resultsTimeCollector.stop();
 
-					// print candidate log invocations
-					for (LogInvocation logInvocation : candidateLogInvs) {
-						// print candidate log invocations
-						candidateLogInvPrinter.printRecord(project.getElementName(),
-								logInvocation.getExpression(), logInvocation.getStartPosition(),
-								logInvocation.getLogLevel(), logInvocation.getEnclosingType().getFullyQualifiedName(),
+					Set<LogInvocation> logInvocationSet = logRejuvenatingProcessor.getLogInvocationSet();
+
+					// print input log invocations
+					for (LogInvocation logInvocation : logInvocationSet) {
+						// Print input log invocations
+						inputLogInvPrinter.printRecord(project.getElementName(), logInvocation.getExpression(),
+								logInvocation.getStartPosition(), logInvocation.getLogLevel(),
+								logInvocation.getEnclosingType().getFullyQualifiedName(),
 								Util.getMethodIdentifier(logInvocation.getEnclosingEclipseMethod()),
 								logInvocation.getDegreeOfInterestValue());
 					}
 
-					Set<LogInvocation> transformedLogInvocationSet = logRejuvenatingProcessor
-							.getCandidateLog();
-					// get the difference of candidate log invocations and transformed log invocations
-					Set<LogInvocation> failures = new HashSet<LogInvocation>();
-					failures.addAll(candidateLogInvs);
-					failures.removeAll(transformedLogInvocationSet);
+					// get the difference of log invocations and passing log invocations
+					HashSet<LogInvocation> failures = new HashSet<LogInvocation>();
+					failures.addAll(logInvocationSet);
+					HashSet<LogInvocation> passingLogInvocationSet = logRejuvenatingProcessor.getPassingLogInvocation();
+					failures.removeAll(passingLogInvocationSet);
 
 					// failures.
 					Collection<RefactoringStatusEntry> errorEntries = failures.parallelStream()
@@ -183,8 +162,10 @@ public class EvaluationHandler extends AbstractHandler {
 									entry.getCode(), entry.getMessage());
 						}
 
+					Set<LogInvocation> transformedLogInvocationSet = logRejuvenatingProcessor.getTransformedLog();
+
 					for (LogInvocation logInvocation : transformedLogInvocationSet) {
-						// print candidate log Invocations
+						// print transformed log Invocations
 						transformedLogInvPrinter.printRecord(project.getElementName(), logInvocation.getExpression(),
 								logInvocation.getStartPosition(), logInvocation.getLogLevel(),
 								logInvocation.getEnclosingType().getFullyQualifiedName(),
@@ -192,7 +173,7 @@ public class EvaluationHandler extends AbstractHandler {
 								logInvocation.getDegreeOfInterestValue());
 					}
 
-					for (LogInvocation logInvocation : logInvocationSet) {
+					for (LogInvocation logInvocation : passingLogInvocationSet) {
 						// print actions
 						actionPrinter.printRecord(project.getElementName(), logInvocation.getExpression(),
 								logInvocation.getStartPosition(), logInvocation.getLogLevel(),
@@ -202,7 +183,7 @@ public class EvaluationHandler extends AbstractHandler {
 					}
 
 					resultPrinter.printRecord(project.getElementName(), NToUseCommit, logInvocationSet.size(),
-							candidateLogInvs.size(), errorEntries.size(),
+							passingLogInvocationSet.size(), errorEntries.size(), transformedLogInvocationSet.size(),
 							resultsTimeCollector.getCollectedTime() / 1000);
 
 					LinkedList<Float> boundary = logRejuvenatingProcessor.getBoundary();
@@ -222,7 +203,7 @@ public class EvaluationHandler extends AbstractHandler {
 
 				resultPrinter.close();
 				actionPrinter.close();
-				candidateLogInvPrinter.close();
+				inputLogInvPrinter.close();
 				failurePrinter.close();
 				transformedLogInvPrinter.close();
 				doiPrinter.close();
@@ -288,7 +269,7 @@ public class EvaluationHandler extends AbstractHandler {
 		else
 			return Boolean.valueOf(useGitHistory);
 	}
-	
+
 	private boolean notConsiderCatchBlock() {
 		String notConsiderCatchBlock = System.getenv(NOT_CONSIDER_CATCH_BLOCK_KEY);
 

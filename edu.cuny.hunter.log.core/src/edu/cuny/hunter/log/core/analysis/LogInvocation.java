@@ -36,7 +36,7 @@ public class LogInvocation {
 
 	private boolean inCatchBlock = false;
 	
-	private Action action = Action.NONE;
+	private Action action;
 
 	private float degreeOfInterestValue;
 
