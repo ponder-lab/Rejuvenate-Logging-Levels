@@ -35,7 +35,7 @@ public class LogInvocation {
 	private final Level logLevel;
 
 	private boolean inCatchBlock = false;
-
+	
 	private Action action = Action.NONE;
 
 	private float degreeOfInterestValue;
@@ -199,7 +199,7 @@ public class LogInvocation {
 			return true;
 		return false;
 	}
-
+	
 	public boolean getInCatchBlock() {
 		return this.inCatchBlock;
 	}

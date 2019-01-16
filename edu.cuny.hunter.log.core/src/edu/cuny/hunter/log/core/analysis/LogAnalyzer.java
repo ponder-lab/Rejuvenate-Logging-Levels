@@ -35,7 +35,7 @@ public class LogAnalyzer extends ASTVisitor {
 	private static boolean useLogCategory = false;
 
 	private HashSet<Float> DOIValues = new HashSet<>();
-	
+
 	private LinkedList<Float> boundary;
 
 	private boolean test;
@@ -55,7 +55,7 @@ public class LogAnalyzer extends ASTVisitor {
 
 	public LogAnalyzer() {
 	}
-	
+
 	/**
 	 * Analyze project without git history.
 	 */
@@ -65,7 +65,7 @@ public class LogAnalyzer extends ASTVisitor {
 		this.collectDOIValues(this.methodDeclarations);
 		this.analyzeLogInvs();
 	}
-	
+
 	/**
 	 * Build boundary and analyze log invocations.
 	 */
@@ -80,9 +80,10 @@ public class LogAnalyzer extends ASTVisitor {
 	}
 
 	private boolean doAction(LogInvocation logInvocation) {
-		
-		if (logInvocation.getInCatchBlock()) return true;
-		
+
+		if (logInvocation.getInCatchBlock())
+			return true;
+
 		Level currentLogLevel = logInvocation.getLogLevel();
 		Level rejuvenatedLogLevel = getRejuvenatedLogLevel(boundary, logInvocation);
 
@@ -93,10 +94,10 @@ public class LogAnalyzer extends ASTVisitor {
 		// get rid of log level ALL and OFF
 		if (currentLogLevel == Level.ALL || currentLogLevel == Level.OFF)
 			return false;
-		if (useLogCategory && (currentLogLevel == Level.CONFIG || currentLogLevel == Level.WARNING
+		if (this.useLogCategory && (currentLogLevel == Level.CONFIG || currentLogLevel == Level.WARNING
 				|| currentLogLevel == Level.SEVERE))
 			return false;
-		if (useLogCategoryWithConfig && (currentLogLevel == Level.CONFIG))
+		if (this.useLogCategoryWithConfig && (currentLogLevel == Level.CONFIG))
 			return false;
 
 		if (rejuvenatedLogLevel == Level.FINEST)
@@ -124,7 +125,7 @@ public class LogAnalyzer extends ASTVisitor {
 	 * @param DOI
 	 * @return the rejuvenated log level
 	 */
-	private static Level getRejuvenatedLogLevel(LinkedList<Float> boundary, LogInvocation logInvocation) {
+	private Level getRejuvenatedLogLevel(LinkedList<Float> boundary, LogInvocation logInvocation) {
 		float DOI = logInvocation.getDegreeOfInterestValue();
 		if (boundary == null)
 			return null;
@@ -135,7 +136,7 @@ public class LogAnalyzer extends ASTVisitor {
 			return null;
 		}
 
-		if (useLogCategory) {
+		if (this.useLogCategory) {
 			LOGGER.info("Use log category: do not consider config/warning/severe.");
 			if (DOI >= boundary.get(0) && DOI < boundary.get(1))
 				return Level.FINEST;
@@ -145,7 +146,7 @@ public class LogAnalyzer extends ASTVisitor {
 				return Level.FINE;
 			if (DOI <= boundary.get(4))
 				return Level.INFO;
-		} else if (useLogCategoryWithConfig) {
+		} else if (this.useLogCategoryWithConfig) {
 			LOGGER.info("Use log category: do not consider config.");
 			if (DOI >= boundary.get(0) && DOI < boundary.get(1))
 				return Level.FINEST;
@@ -191,10 +192,10 @@ public class LogAnalyzer extends ASTVisitor {
 		float max = getMaxDOI(degreeOfInterests);
 		LinkedList<Float> boundary = new LinkedList<>();
 		if (min < max) {
-			if (useLogCategory) {
+			if (this.useLogCategory) {
 				float interval = (max - min) / 4;
 				IntStream.range(0, 5).forEach(i -> boundary.add(min + i * interval));
-			} else if (useLogCategoryWithConfig) {
+			} else if (this.useLogCategoryWithConfig) {
 				float interval = (max - min) / 6;
 				IntStream.range(0, 7).forEach(i -> boundary.add(min + i * interval));
 			} else {
@@ -256,19 +257,19 @@ public class LogAnalyzer extends ASTVisitor {
 
 		return super.visit(node);
 	}
-	
+
 	/**
 	 * Check whether logging statements are in catch blocks.
 	 */
 	private boolean checkLogInCatchBlock(ASTNode node) {
-		while(node != null) {
+		while (node != null) {
 			if (node instanceof CatchClause)
 				return true;
 			node = node.getParent();
 		}
 		return false;
 	}
-	
+
 	/**
 	 * This method is used to find a set of logging objects
 	 */

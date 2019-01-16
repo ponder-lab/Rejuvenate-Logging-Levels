@@ -186,6 +186,7 @@ public class LogWizard extends RefactoringWizard {
 		private void updateStatus() {
 			this.setPageComplete(true);
 		}
+		
 	}
 
 	public static void startRefactoring(IJavaProject[] javaProjects, Shell shell, Optional<IProgressMonitor> monitor)
