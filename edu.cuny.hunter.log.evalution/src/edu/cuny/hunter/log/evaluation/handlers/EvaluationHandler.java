@@ -98,7 +98,7 @@ public class EvaluationHandler extends AbstractHandler {
 								"enclosing method", "DOI" });
 				CSVPrinter failurePrinter = Util.createCSVPrinter("failures.csv",
 						new String[] { "subject", "log expression", "start pos", "logging level", "type FQN",
-								"enclosing method", "code", "name", "message" });
+								"enclosing method", "code", "message" });
 				CSVPrinter doiPrinter = Util.createCSVPrinter("DOI_boundaries.csv",
 						new String[] { "subject", "DOI boundary", "Log level" });
 
@@ -178,7 +178,7 @@ public class EvaluationHandler extends AbstractHandler {
 									failedLogInvocation.getStartPosition(), failedLogInvocation.getLogLevel(),
 									failedLogInvocation.getEnclosingType().getFullyQualifiedName(),
 									Util.getMethodIdentifier(failedLogInvocation.getEnclosingEclipseMethod()),
-									entry.getCode(), entry, entry.getMessage());
+									entry.getCode(), entry.getMessage());
 						}
 
 					for (LogInvocation logInvocation : transformedLogInvocationSet) {
