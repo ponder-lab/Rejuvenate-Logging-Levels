@@ -185,7 +185,7 @@ public class LogAnalyzer extends ASTVisitor {
 		float min = getMinDOI(degreeOfInterests);
 		float max = getMaxDOI(degreeOfInterests);
 		LinkedList<Float> boundary = new LinkedList<>();
-		if (min <= max) {
+		if (min < max) {
 			if (useLogCategory) {
 				float interval = (max - min) / 4;
 				IntStream.range(0, 5).forEach(i -> boundary.add(min + i * interval));
