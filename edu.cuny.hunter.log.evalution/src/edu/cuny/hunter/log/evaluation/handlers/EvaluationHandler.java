@@ -56,9 +56,11 @@ public class EvaluationHandler extends AbstractHandler {
 	private static final String USE_LOG_CATEGORY_KEY = "edu.cuny.hunter.log.evaluation.useLogCategory";
 	private static final String USE_LOG_CATEGORY_CONFIG_KEY = "edu.cuny.hunter.log.evaluation.useLogCategoryWithConfig";
 	private static final String USE_GIT_HISTORY_KEY = "edu.cuny.hunter.log.evaluation.useGitHistory";
+	private static final String NOT_CONSIDER_CATCH_BLOCK_KEY = "edu.cuny.hunter.log.evaluation.notConsiderCatchBlock";
 	private static final String N_TO_USE_FOR_COMMITS_KEY = "NToUseForCommits";
 	private static final int N_TO_USE_FOR_COMMITS_DEFAULT = 100;
 	private static final boolean USE_LOG_CATEGORY_DEFAULT = false;
+	private static final boolean NOT_CONSIDER_CATCH_BLOCK_DEFAULT = false;
 	private static final boolean USE_LOG_CATEGORY_CONFIG_DEFAULT = false;
 	private static final boolean USE_GIT_HISTORY = false;
 
@@ -113,7 +115,7 @@ public class EvaluationHandler extends AbstractHandler {
 							N_TO_USE_FOR_COMMITS_KEY, N_TO_USE_FOR_COMMITS_DEFAULT, EVALUATION_PROPERTIES_FILE_NAME);
 					LogRejuvenatingProcessor logRejuvenatingProcessor = new LogRejuvenatingProcessor(
 							new IJavaProject[] { project }, this.useLogCategory(), this.useLogCategoryWithConfig(),
-							this.useGitHistory(), NToUseCommit, settings, monitor, true);
+							this.useGitHistory(), this.notConsiderCatchBlock(), NToUseCommit, settings, monitor, true);
 
 					new ProcessorBasedRefactoring((RefactoringProcessor) logRejuvenatingProcessor)
 							.checkAllConditions(new NullProgressMonitor());
@@ -285,6 +287,15 @@ public class EvaluationHandler extends AbstractHandler {
 			return USE_GIT_HISTORY;
 		else
 			return Boolean.valueOf(useGitHistory);
+	}
+	
+	private boolean notConsiderCatchBlock() {
+		String notConsiderCatchBlock = System.getenv(NOT_CONSIDER_CATCH_BLOCK_KEY);
+
+		if (notConsiderCatchBlock == null)
+			return NOT_CONSIDER_CATCH_BLOCK_DEFAULT;
+		else
+			return Boolean.valueOf(notConsiderCatchBlock);
 	}
 
 }

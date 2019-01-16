@@ -50,6 +50,8 @@ public class LogWizard extends RefactoringWizard {
 
 		private static final String N_TO_USE_FOR_COMMITS = "NToUseForCommits";
 
+		private static final String NOT_CONSIDER_CATCH_BLOCK = "notConsiderCatchBlock";
+
 		private LogRejuvenatingProcessor processor;
 
 		private IDialogSettings settings;
@@ -115,13 +117,22 @@ public class LogWizard extends RefactoringWizard {
 					"Check the option below if you would like to use git history to " + "rejuvenate log levels.");
 
 			// set up buttons.
-			Button checkButton = this.addBooleanButton("Traverse git history to rejuvenate log levels.", USE_GIT_HISTORY,
-					this.getProcessor()::setUseGitHistory, result, SWT.CHECK);
+			Button checkButton = this.addBooleanButton("Traverse git history to rejuvenate log levels.",
+					USE_GIT_HISTORY, this.getProcessor()::setUseGitHistory, result, SWT.CHECK);
 			checkButton.setSelection(true);
 
 			Label separator2 = new Label(result, SWT.SEPARATOR | SWT.SHADOW_OUT | SWT.HORIZONTAL);
 			separator2.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
-			
+
+			// set up buttons.
+			Button checkButton2 = this.addBooleanButton(
+					"Never lower the logging level of logging statements within catch blocks.", USE_GIT_HISTORY,
+					this.getProcessor()::setNotConsiderCatchBlock, result, SWT.CHECK);
+			checkButton2.setSelection(true);
+
+			Label separator3 = new Label(result, SWT.SEPARATOR | SWT.SHADOW_OUT | SWT.HORIZONTAL);
+			separator3.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
+
 			this.addIntegerButton("N values used to limit number of commits: ", N_TO_USE_FOR_COMMITS,
 					this.getProcessor()::setNToUseForCommits, this.addIntegerButton(result));
 
@@ -165,18 +176,20 @@ public class LogWizard extends RefactoringWizard {
 		}
 
 		private void loadSettings() {
-			this.settings = this.getDialogSettings().getSection(DIALOG_SETTING_SECTION);
-			if (this.settings == null) {
-				this.settings = this.getDialogSettings().addNewSection(DIALOG_SETTING_SECTION);
+			IDialogSettings sections = this.getDialogSettings().getSection(DIALOG_SETTING_SECTION);
+			if (this.settings == null && sections != null) {
+				this.settings = sections;
 				this.settings.put(USE_LOG_CATEGORY_CONFIG, this.getProcessor().getParticularConfigLogLevel());
 				this.settings.put(USE_LOG_CATEGORY, this.getProcessor().getParticularLogLevel());
 				this.settings.put(USE_GIT_HISTORY, this.getProcessor().getGitHistory());
 				this.settings.put(N_TO_USE_FOR_COMMITS, this.getProcessor().getNToUseForCommits());
+				this.settings.put(NOT_CONSIDER_CATCH_BLOCK, this.getProcessor().getNotConsiderCatchBlock());
 			}
 			this.processor.setParticularConfigLogLevel(this.settings.getBoolean(USE_LOG_CATEGORY_CONFIG));
 			this.processor.setParticularLogLevel(this.settings.getBoolean(USE_LOG_CATEGORY));
 			this.processor.setUseGitHistory(this.settings.getBoolean(USE_GIT_HISTORY));
 			this.processor.setNToUseForCommits(this.settings.getInt(N_TO_USE_FOR_COMMITS));
+			this.processor.setNotConsiderCatchBlock(this.settings.getBoolean(NOT_CONSIDER_CATCH_BLOCK));
 		}
 
 		private void setProcessor(LogRejuvenatingProcessor processor) {
