@@ -58,7 +58,7 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 
 	private boolean useGitHistory = false;
 
-	private int NToUseForCommits = 0;
+	private int NToUseForCommits = 100;
 
 	private boolean isEvaluation = false;
 

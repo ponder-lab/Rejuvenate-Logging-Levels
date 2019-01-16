@@ -59,7 +59,7 @@ public class LogWizard extends RefactoringWizard {
 			this.setDescription(DESCRIPTION);
 		}
 
-		private void addBooleanButton(String text, String key, Consumer<Boolean> valueConsumer, Composite result,
+		private Button addBooleanButton(String text, String key, Consumer<Boolean> valueConsumer, Composite result,
 				int buttonStyle) {
 			Button button = new Button(result, buttonStyle);
 			button.setText(text);
@@ -75,6 +75,7 @@ public class LogWizard extends RefactoringWizard {
 					valueConsumer.accept(selection);
 				}
 			});
+			return button;
 		}
 
 		@Override
@@ -114,8 +115,9 @@ public class LogWizard extends RefactoringWizard {
 					"Check the option below if you would like to use git history to " + "rejuvenate log levels.");
 
 			// set up buttons.
-			this.addBooleanButton("Traverse git history to rejuvenate log levels.", USE_GIT_HISTORY,
+			Button checkButton = this.addBooleanButton("Traverse git history to rejuvenate log levels.", USE_GIT_HISTORY,
 					this.getProcessor()::setUseGitHistory, result, SWT.CHECK);
+			checkButton.setSelection(true);
 
 			Label separator2 = new Label(result, SWT.SEPARATOR | SWT.SHADOW_OUT | SWT.HORIZONTAL);
 			separator2.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
