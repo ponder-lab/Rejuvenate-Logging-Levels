@@ -10,7 +10,9 @@ import java.util.stream.IntStream;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IMethod;
 import org.eclipse.jdt.core.JavaModelException;
+import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.ASTVisitor;
+import org.eclipse.jdt.core.dom.CatchClause;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.MethodInvocation;
@@ -78,6 +80,9 @@ public class LogAnalyzer extends ASTVisitor {
 	}
 
 	private boolean doAction(LogInvocation logInvocation) {
+		
+		if (logInvocation.getInCatchBlock()) return true;
+		
 		Level currentLogLevel = logInvocation.getLogLevel();
 		Level rejuvenatedLogLevel = getRejuvenatedLogLevel(boundary, logInvocation);
 
@@ -243,13 +248,25 @@ public class LogAnalyzer extends ASTVisitor {
 			logLevel = Util.isLogExpression(node, test);
 		} catch (IllegalStateException e) {
 			LOGGER.warning("Need to process the variable of logging level or LogRecord!");
-			createLogInvocation(node, null);
+			this.createLogInvocation(node, null, false);
 		}
 
 		if (logLevel != null)
-			createLogInvocation(node, logLevel);
+			this.createLogInvocation(node, logLevel, this.checkLogInCatchBlock(node));
 
 		return super.visit(node);
+	}
+	
+	/**
+	 * Check whether logging statements are in catch blocks.
+	 */
+	private boolean checkLogInCatchBlock(ASTNode node) {
+		while(node != null) {
+			if (node instanceof CatchClause)
+				return true;
+			node = node.getParent();
+		}
+		return false;
 	}
 	
 	/**
@@ -295,8 +312,8 @@ public class LogAnalyzer extends ASTVisitor {
 		}
 	}
 
-	private void createLogInvocation(MethodInvocation node, Level logLevel) {
-		LogInvocation logInvocation = new LogInvocation(node, logLevel);
+	private void createLogInvocation(MethodInvocation node, Level logLevel, boolean inCatchBlock) {
+		LogInvocation logInvocation = new LogInvocation(node, logLevel, inCatchBlock);
 		this.getLogInvocationSet().add(logInvocation);
 	}
 

@@ -34,6 +34,8 @@ public class LogInvocation {
 
 	private final Level logLevel;
 
+	private boolean inCatchBlock = false;
+
 	private Action action = Action.NONE;
 
 	private float degreeOfInterestValue;
@@ -48,9 +50,10 @@ public class LogInvocation {
 
 	private static final String PLUGIN_ID = FrameworkUtil.getBundle(LogInvocation.class).getSymbolicName();
 
-	public LogInvocation(MethodInvocation logExpression, Level loggingLevel) {
+	public LogInvocation(MethodInvocation logExpression, Level loggingLevel, boolean inCatchBlock) {
 		this.logExpression = logExpression;
 		this.logLevel = loggingLevel;
+		this.inCatchBlock = inCatchBlock;
 
 		if (loggingLevel == null) {
 			this.addStatusEntry(Failure.CURRENTLY_NOT_HANDLED, this.getExpression()
@@ -195,6 +198,10 @@ public class LogInvocation {
 				|| methodName.equals("info") || methodName.equals("severe") || methodName.equals("warning"))
 			return true;
 		return false;
+	}
+
+	public boolean getInCatchBlock() {
+		return this.inCatchBlock;
 	}
 
 	/**
