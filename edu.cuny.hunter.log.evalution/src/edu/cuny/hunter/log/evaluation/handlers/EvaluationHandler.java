@@ -60,6 +60,9 @@ public class EvaluationHandler extends AbstractHandler {
 	private static final boolean USE_LOG_CATEGORY_CONFIG_DEFAULT = false;
 	private static final boolean USE_GIT_HISTORY = false;
 
+	long linesAdded = 0;
+	long linesRemoved = 0;
+
 	@Override
 	public Object execute(ExecutionEvent event) throws ExecutionException {
 		Optional<IProgressMonitor> monitor = Optional.empty();
@@ -84,9 +87,11 @@ public class EvaluationHandler extends AbstractHandler {
 			try {
 
 				CSVPrinter resultPrinter = Util.createCSVPrinter("result.csv",
-						new String[] { "subject", "N for commits", "input logging statements",
-								"passing logging statements", "failures", "transformed logging statements",
-								"time (s)" });
+						new String[] { "subject", "N for commits", "actual number of commits",
+								"input logging statements", "passing logging statements", "failures",
+								"transformed logging statements", "average lines added", "average lines removed",
+								"use log category (SEVERE/WARNING/CONFIG)", "use log category (CONFIG)",
+								"not lower log levels of logs inside of catch blocks", "time (s)" });
 				CSVPrinter actionPrinter = Util.createCSVPrinter("log_transformation_actions.csv",
 						new String[] { "subject", "log expression", "start pos", "log level", "type FQN",
 								"enclosing method", "action" });
@@ -184,10 +189,6 @@ public class EvaluationHandler extends AbstractHandler {
 								logInvocation.getAction());
 					}
 
-					resultPrinter.printRecord(project.getElementName(), NToUseCommit, logInvocationSet.size(),
-							passingLogInvocationSet.size(), errorEntries.size(), transformedLogInvocationSet.size(),
-							resultsTimeCollector.getCollectedTime() / 1000);
-
 					LinkedList<Float> boundary = logRejuvenatingProcessor.getBoundary();
 					if (boundary != null && boundary.size() > 0)
 						if (this.useLogCategory()) {
@@ -198,6 +199,9 @@ public class EvaluationHandler extends AbstractHandler {
 							this.printBoundaryDefault(project.getElementName(), boundary, doiPrinter);
 						}
 
+					int actualCommits = 0;
+					this.linesAdded = 0;
+					this.linesRemoved = 0;
 					if (this.useGitHistory()) {
 						LinkedList<Commit> commits = logRejuvenatingProcessor.getCommits();
 						commits.forEach(c -> {
@@ -205,11 +209,22 @@ public class EvaluationHandler extends AbstractHandler {
 								gitCommitPrinter.printRecord(project.getElementName(), c.getSHA1(), c.getLinesAdded(),
 										c.getLinesRemoved(), c.getMethodFound(), c.getInteractionEvents(),
 										c.getRunTime());
+								this.linesAdded += c.getLinesAdded();
+								this.linesRemoved += c.getLinesRemoved();
 							} catch (IOException e) {
 								LOGGER.warning("Cannot print commits correctly.");
 							}
 						});
+						actualCommits = commits.size();
 					}
+
+					resultPrinter.printRecord(project.getElementName(), NToUseCommit, actualCommits,
+							logInvocationSet.size(), passingLogInvocationSet.size(), errorEntries.size(),
+							transformedLogInvocationSet.size(),
+							actualCommits == 0 ? 0 : this.linesAdded / actualCommits,
+							actualCommits == 0 ? 0 : this.linesRemoved / actualCommits, this.useLogCategory(),
+							this.useLogCategoryWithConfig(), this.notConsiderCatchBlock(),
+							resultsTimeCollector.getCollectedTime() / 1000);
 
 				}
 
