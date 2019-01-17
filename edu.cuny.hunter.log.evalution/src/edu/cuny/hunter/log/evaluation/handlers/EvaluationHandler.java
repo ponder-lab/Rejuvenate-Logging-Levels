@@ -52,11 +52,11 @@ public class EvaluationHandler extends AbstractHandler {
 	private static final String USE_LOG_CATEGORY_KEY = "edu.cuny.hunter.log.evaluation.useLogCategory";
 	private static final String USE_LOG_CATEGORY_CONFIG_KEY = "edu.cuny.hunter.log.evaluation.useLogCategoryWithConfig";
 	private static final String USE_GIT_HISTORY_KEY = "edu.cuny.hunter.log.evaluation.useGitHistory";
-	private static final String NOT_CONSIDER_CATCH_BLOCK_KEY = "edu.cuny.hunter.log.evaluation.notConsiderCatchBlock";
+	private static final String NOT_LOWER_LOG_LEVEL_CATCH_BLOCK_KEY = "edu.cuny.hunter.log.evaluation.notLowerLogLevelInCatchBlock";
 	private static final String N_TO_USE_FOR_COMMITS_KEY = "NToUseForCommits";
 	private static final int N_TO_USE_FOR_COMMITS_DEFAULT = 100;
 	private static final boolean USE_LOG_CATEGORY_DEFAULT = false;
-	private static final boolean NOT_CONSIDER_CATCH_BLOCK_DEFAULT = false;
+	private static final boolean NOT_LOWER_LOG_LEVEL_CATCH_BLOCK_DEFAULT = false;
 	private static final boolean USE_LOG_CATEGORY_CONFIG_DEFAULT = false;
 	private static final boolean USE_GIT_HISTORY = false;
 
@@ -120,7 +120,7 @@ public class EvaluationHandler extends AbstractHandler {
 							N_TO_USE_FOR_COMMITS_KEY, N_TO_USE_FOR_COMMITS_DEFAULT, EVALUATION_PROPERTIES_FILE_NAME);
 					LogRejuvenatingProcessor logRejuvenatingProcessor = new LogRejuvenatingProcessor(
 							new IJavaProject[] { project }, this.useLogCategory(), this.useLogCategoryWithConfig(),
-							this.useGitHistory(), this.notConsiderCatchBlock(), NToUseCommit, settings, monitor, true);
+							this.useGitHistory(), this.notLowerLogLevelInCatchBlock(), NToUseCommit, settings, monitor, true);
 
 					new ProcessorBasedRefactoring((RefactoringProcessor) logRejuvenatingProcessor)
 							.checkAllConditions(new NullProgressMonitor());
@@ -223,7 +223,7 @@ public class EvaluationHandler extends AbstractHandler {
 							transformedLogInvocationSet.size(),
 							actualCommits == 0 ? 0 : this.linesAdded / actualCommits,
 							actualCommits == 0 ? 0 : this.linesRemoved / actualCommits, this.useLogCategory(),
-							this.useLogCategoryWithConfig(), this.notConsiderCatchBlock(),
+							this.useLogCategoryWithConfig(), this.notLowerLogLevelInCatchBlock(),
 							resultsTimeCollector.getCollectedTime() / 1000);
 
 				}
@@ -301,13 +301,13 @@ public class EvaluationHandler extends AbstractHandler {
 			return Boolean.valueOf(useGitHistory);
 	}
 
-	private boolean notConsiderCatchBlock() {
-		String notConsiderCatchBlock = System.getenv(NOT_CONSIDER_CATCH_BLOCK_KEY);
+	private boolean notLowerLogLevelInCatchBlock() {
+		String notLowerLogLevelInCatchBlock = System.getenv(NOT_LOWER_LOG_LEVEL_CATCH_BLOCK_KEY);
 
-		if (notConsiderCatchBlock == null)
-			return NOT_CONSIDER_CATCH_BLOCK_DEFAULT;
+		if (notLowerLogLevelInCatchBlock == null)
+			return NOT_LOWER_LOG_LEVEL_CATCH_BLOCK_DEFAULT;
 		else
-			return Boolean.valueOf(notConsiderCatchBlock);
+			return Boolean.valueOf(notLowerLogLevelInCatchBlock);
 	}
 
 }

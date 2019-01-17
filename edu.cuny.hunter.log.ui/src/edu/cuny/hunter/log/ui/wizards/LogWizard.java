@@ -50,7 +50,7 @@ public class LogWizard extends RefactoringWizard {
 
 		private static final String N_TO_USE_FOR_COMMITS = "NToUseForCommits";
 
-		private static final String NOT_CONSIDER_CATCH_BLOCK = "notConsiderCatchBlock";
+		private static final String NOT_LOWER_LOG_LEVEL_CATCH_BLOCK = "notLowerLogLevelInCatchBlock";
 
 		private LogRejuvenatingProcessor processor;
 
@@ -127,7 +127,7 @@ public class LogWizard extends RefactoringWizard {
 			// set up buttons.
 			Button checkButton2 = this.addBooleanButton(
 					"Never lower the logging level of logging statements within catch blocks.", USE_GIT_HISTORY,
-					this.getProcessor()::setNotConsiderCatchBlock, result, SWT.CHECK);
+					this.getProcessor()::setNotLowerLogLevelInCatchBlock, result, SWT.CHECK);
 			checkButton2.setSelection(true);
 
 			Label separator3 = new Label(result, SWT.SEPARATOR | SWT.SHADOW_OUT | SWT.HORIZONTAL);
@@ -183,13 +183,13 @@ public class LogWizard extends RefactoringWizard {
 				this.settings.put(USE_LOG_CATEGORY, this.getProcessor().getParticularLogLevel());
 				this.settings.put(USE_GIT_HISTORY, this.getProcessor().getGitHistory());
 				this.settings.put(N_TO_USE_FOR_COMMITS, this.getProcessor().getNToUseForCommits());
-				this.settings.put(NOT_CONSIDER_CATCH_BLOCK, this.getProcessor().getNotConsiderCatchBlock());
+				this.settings.put(NOT_LOWER_LOG_LEVEL_CATCH_BLOCK, this.getProcessor().getNotLowerLogLevelInCatchBlock());
 			}
 			this.processor.setParticularConfigLogLevel(this.settings.getBoolean(USE_LOG_CATEGORY_CONFIG));
 			this.processor.setParticularLogLevel(this.settings.getBoolean(USE_LOG_CATEGORY));
 			this.processor.setUseGitHistory(this.settings.getBoolean(USE_GIT_HISTORY));
 			this.processor.setNToUseForCommits(this.settings.getInt(N_TO_USE_FOR_COMMITS));
-			this.processor.setNotConsiderCatchBlock(this.settings.getBoolean(NOT_CONSIDER_CATCH_BLOCK));
+			this.processor.setNotLowerLogLevelInCatchBlock(this.settings.getBoolean(NOT_LOWER_LOG_LEVEL_CATCH_BLOCK));
 		}
 
 		private void setProcessor(LogRejuvenatingProcessor processor) {

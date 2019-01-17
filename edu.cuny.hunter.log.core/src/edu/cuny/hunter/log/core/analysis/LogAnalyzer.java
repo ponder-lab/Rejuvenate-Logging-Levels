@@ -30,7 +30,7 @@ public class LogAnalyzer extends ASTVisitor {
 
 	private Set<LogInvocation> logInvocationSet = new HashSet<>();
 
-	private boolean notConsiderCatchBlock = false;
+	private boolean notLowerLogLevelInCatchBlock = false;
 
 	private boolean useLogCategoryWithConfig = false;
 
@@ -50,10 +50,10 @@ public class LogAnalyzer extends ASTVisitor {
 		return this.boundary;
 	}
 
-	public LogAnalyzer(boolean useConfigLogLevelCategory, boolean useLogLevelCategory, boolean notConsiderCatchBlock) {
+	public LogAnalyzer(boolean useConfigLogLevelCategory, boolean useLogLevelCategory, boolean notLowerLogLevelInCatchBlock) {
 		this.useLogCategoryWithConfig = useConfigLogLevelCategory;
 		this.useLogCategory = useLogLevelCategory;
-		this.notConsiderCatchBlock = notConsiderCatchBlock;
+		this.notLowerLogLevelInCatchBlock = notLowerLogLevelInCatchBlock;
 	}
 
 	public LogAnalyzer() {
@@ -266,7 +266,7 @@ public class LogAnalyzer extends ASTVisitor {
 		}
 
 		if (logLevel != null)
-			this.createLogInvocation(node, logLevel, this.notConsiderCatchBlock && this.checkLogInCatchBlock(node));
+			this.createLogInvocation(node, logLevel, this.notLowerLogLevelInCatchBlock && this.checkLogInCatchBlock(node));
 
 		return super.visit(node);
 	}

@@ -63,7 +63,7 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 	private boolean useGitHistory = true;
 
 	// Should we consider logging statements in catch blocks?
-	private boolean notConsiderCatchBlock = true;
+	private boolean notLowerLogLevelInCatchBlock = true;
 
 	// Limit number of commits
 	private int NToUseForCommits = 100;
@@ -93,8 +93,8 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 		this.NToUseForCommits = NToUseForCommits;
 	}
 
-	public void setNotConsiderCatchBlock(boolean notConsiderCatchBlock) {
-		this.notConsiderCatchBlock = notConsiderCatchBlock;
+	public void setNotLowerLogLevelInCatchBlock(boolean notLowerLogLevelInCatchBlock) {
+		this.notLowerLogLevelInCatchBlock = notLowerLogLevelInCatchBlock;
 	}
 
 	public int getNToUseForCommits() {
@@ -113,8 +113,8 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 		return this.useGitHistory;
 	}
 
-	public boolean getNotConsiderCatchBlock() {
-		return this.notConsiderCatchBlock;
+	public boolean getNotLowerLogLevelInCatchBlock() {
+		return this.notLowerLogLevelInCatchBlock;
 	}
 
 	public LogRejuvenatingProcessor(IJavaProject[] javaProjects, final CodeGenerationSettings settings,
@@ -128,7 +128,7 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 	}
 
 	public LogRejuvenatingProcessor(IJavaProject[] javaProjects, boolean useLogLevelCategory,
-			boolean useConfigLogLevelCategory, boolean useGitHistory, boolean notConsiderCatchBlock,
+			boolean useConfigLogLevelCategory, boolean useGitHistory, boolean notLowerLogLevelInCatchBlock,
 			int NToUseForCommits, final CodeGenerationSettings settings, Optional<IProgressMonitor> monitor) {
 		super(settings);
 		try {
@@ -136,7 +136,7 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 			this.useLogCategoryWithConfig = useConfigLogLevelCategory;
 			this.useLogCategory = useLogLevelCategory;
 			this.useGitHistory = useGitHistory;
-			this.notConsiderCatchBlock = notConsiderCatchBlock;
+			this.notLowerLogLevelInCatchBlock = notLowerLogLevelInCatchBlock;
 			this.NToUseForCommits = NToUseForCommits;
 		} finally {
 			monitor.ifPresent(IProgressMonitor::done);
@@ -144,10 +144,10 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 	}
 
 	public LogRejuvenatingProcessor(IJavaProject[] javaProjects, boolean useLogLevelCategory,
-			boolean useConfigLogLevelCategory, boolean useGitHistory, boolean notConsiderCatchBlock,
+			boolean useConfigLogLevelCategory, boolean useGitHistory, boolean notLowerLogLevelInCatchBlock,
 			int NToUseForCommits, final CodeGenerationSettings settings, Optional<IProgressMonitor> monitor,
 			boolean isEvaluation) {
-		this(javaProjects, useLogLevelCategory, useConfigLogLevelCategory, useGitHistory, notConsiderCatchBlock,
+		this(javaProjects, useLogLevelCategory, useConfigLogLevelCategory, useGitHistory, notLowerLogLevelInCatchBlock,
 				NToUseForCommits, settings, monitor);
 		this.isEvaluation = isEvaluation;
 	}
@@ -170,7 +170,7 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 
 		for (IJavaProject jproj : this.getJavaProjects()) {
 			LogAnalyzer analyzer = new LogAnalyzer(this.useLogCategoryWithConfig, this.useLogCategory,
-					this.notConsiderCatchBlock);
+					this.notLowerLogLevelInCatchBlock);
 
 			IPackageFragmentRoot[] roots = jproj.getPackageFragmentRoots();
 			for (IPackageFragmentRoot root : roots) {
