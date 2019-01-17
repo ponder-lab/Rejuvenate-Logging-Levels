@@ -187,9 +187,9 @@ public class EvaluationHandler extends AbstractHandler {
 
 					LinkedList<Float> boundary = logRejuvenatingProcessor.getBoundary();
 					if (boundary != null && boundary.size() > 0)
-						if (USE_LOG_CATEGORY_DEFAULT) {
+						if (this.useLogCategory()) {
 							this.printBoundaryLogCategory(project.getElementName(), boundary, doiPrinter);
-						} else if (USE_LOG_CATEGORY_CONFIG_DEFAULT) { // Do not consider config
+						} else if (this.useLogCategoryWithConfig()) { // Do not consider config
 							this.printBoundaryWithConfig(project.getElementName(), boundary, doiPrinter);
 						} else {// Treat log levels as traditional log levels
 							this.printBoundaryDefault(project.getElementName(), boundary, doiPrinter);
