@@ -1,6 +1,6 @@
 # Logging-Level-Evolution-Plugin
 
-[![Build Status](https://travis-ci.com/ponder-lab/Logging-Level-Evolution-Plugin.svg?token=gywSHb5G1W81zrovzorQ&branch=master)](https://travis-ci.com/ponder-lab/Logging-Level-Evolution-Plugin) [![Coverage Status](https://coveralls.io/repos/github/ponder-lab/Logging-Level-Evolution-Plugin/badge.svg?branch=master&t=SHx1bW)](https://coveralls.io/github/ponder-lab/Logging-Level-Evolution-Plugin?branch=master)
+[![Build Status](https://travis-ci.com/ponder-lab/Logging-Level-Evolution-Plugin.svg?token=gywSHb5G1W81zrovzorQ&branch=master)](https://travis-ci.com/ponder-lab/Logging-Level-Evolution-Plugin) [![Coverage Status](https://coveralls.io/repos/github/ponder-lab/Logging-Level-Evolution-Plugin/badge.svg?branch=master&t=SHx1bW)](https://coveralls.io/github/ponder-lab/Logging-Level-Evolution-Plugin?branch=master) [![Java profiler](https://www.ej-technologies.com/images/product_banners/jprofiler_small.png)](https://www.ej-technologies.com/products/jprofiler/overview.html)
 
 It's an eclipse plugin which researches logging level.
 
