@@ -78,7 +78,7 @@ public class GitHistoryAnalyzer {
 
 	private Graph renaming = new Graph();
 
-	// ----- Which is needed for multiple projects (not for mylyngit test plugin)---
+	// ---- Which are needed for multiple projects (not for mylyngit test plugin)---
 	private static HashMap<String, LinkedList<GitMethod>> repoToGitMethods = new HashMap<>();
 	private static HashMap<String, Graph> repoToRenaming = new HashMap<>();
 	// -----------------------------------------------------------------------------
@@ -87,6 +87,13 @@ public class GitHistoryAnalyzer {
 	private int commitIndex = 0;
 
 	private String repo;
+
+	// -------------------------- data for one commit ------------------------------
+	private int linesAdded = 0;
+	private int linesRemoved = 0;
+	private int methodFound = 0;
+	private int interactionEvent = 0;
+	// -----------------------------------------------------------------------------
 
 	/**
 	 * Given the repo path, compute all method operations (e.g., delete a method)
@@ -530,12 +537,12 @@ public class GitHistoryAnalyzer {
 		}
 		ObjectId objectId = treeWalk.getObjectId(0);
 		ObjectLoader loader = repo.open(objectId);
-		copyToFile(loader, path, newDirectory);
+		return this.copyToFile(loader, path, newDirectory);
 	}
 
 	private void copyToFile(ObjectLoader loader, String path, String newDirectory) throws IOException {
 		// Get the empty or existing file in the new directory.
-		File file = getFile(path, newDirectory);
+		File file = this.getFile(path, newDirectory);
 		if (file == null)
 			return;
 		// Copy the file content into the new file.

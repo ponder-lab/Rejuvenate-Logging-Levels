@@ -40,14 +40,14 @@ public class MylynGitPredictionProvider extends AbstractJavaRelationProvider {
 	public MylynGitPredictionProvider() {
 		super("java", ID);
 	}
-	
+
 	public MylynGitPredictionProvider(int N) {
 		this();
 		NToUseForCommits = N;
 	}
 
 	private static int NToUseForCommits;
-	
+
 	private IJavaProject[] javaProjects;
 
 	private HashSet<MethodDeclaration> methodDeclarations = new HashSet<>();
