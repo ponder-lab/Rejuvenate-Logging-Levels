@@ -97,25 +97,26 @@ public class LogAnalyzer extends ASTVisitor {
 
 	private boolean doAction(LogInvocation logInvocation) {
 
-		if (logInvocation.getInCatchBlock()) {
-			logInvocation.setAction(Action.NONE);
-			return true;
-		}
-
 		Level currentLogLevel = logInvocation.getLogLevel();
 		Level rejuvenatedLogLevel = getRejuvenatedLogLevel(this.boundary, logInvocation);
 
-		if (currentLogLevel == rejuvenatedLogLevel)
+		if ((currentLogLevel == rejuvenatedLogLevel) // current log level is same to transformed log level
+
+				|| (currentLogLevel == Level.ALL || currentLogLevel == Level.OFF) // not consider all and off
+
+				|| (this.useLogCategory && (currentLogLevel == Level.CONFIG || currentLogLevel == Level.WARNING
+						|| currentLogLevel == Level.SEVERE)) // process log category (CONFIG/WARNING/SERVRE)
+
+				|| (this.useLogCategoryWithConfig && (currentLogLevel == Level.CONFIG)) // process log category (CONFIG)
+
+				|| (logInvocation.getInCatchBlock() // process not lower log levels in catch blocks
+						&& (currentLogLevel.intValue() > rejuvenatedLogLevel.intValue()))) {
+
+			logInvocation.setAction(Action.NONE);
 			return false;
+		}
+
 		if (rejuvenatedLogLevel == null || currentLogLevel == null)
-			return false;
-		// get rid of log level ALL and OFF
-		if (currentLogLevel == Level.ALL || currentLogLevel == Level.OFF)
-			return false;
-		if (this.useLogCategory && (currentLogLevel == Level.CONFIG || currentLogLevel == Level.WARNING
-				|| currentLogLevel == Level.SEVERE))
-			return false;
-		if (this.useLogCategoryWithConfig && (currentLogLevel == Level.CONFIG))
 			return false;
 
 		if (rejuvenatedLogLevel == Level.FINEST)
