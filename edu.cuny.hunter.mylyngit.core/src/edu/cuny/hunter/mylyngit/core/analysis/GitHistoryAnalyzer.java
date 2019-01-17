@@ -588,6 +588,12 @@ public class GitHistoryAnalyzer {
 	@SuppressWarnings("resource")
 	private long copyHistoricalFile(RevCommit commit, Repository repo, String path, String newDirectory)
 			throws MissingObjectException, IncorrectObjectTypeException, CorruptObjectException, IOException {
+		// Check whether it is java file at first
+		String fileName = getJavaFileName(path);
+		if (fileName == null)
+			return -1;
+
+		// It is a java file.
 		RevTree tree = commit.getTree();
 		TreeWalk treeWalk = new TreeWalk(repo);
 		treeWalk.addTree(tree);
@@ -598,12 +604,12 @@ public class GitHistoryAnalyzer {
 		}
 		ObjectId objectId = treeWalk.getObjectId(0);
 		ObjectLoader loader = repo.open(objectId);
-		return this.copyToFile(loader, path, newDirectory);
+		return this.copyToFile(loader, fileName, newDirectory);
 	}
 
-	private long copyToFile(ObjectLoader loader, String path, String newDirectory) throws IOException {
+	private long copyToFile(ObjectLoader loader, String fileName, String newDirectory) throws IOException {
 		// Get the empty or existing file in the new directory.
-		File file = this.getFile(path, newDirectory);
+		File file = this.getFile(fileName, newDirectory);
 		if (file == null)
 			return -1;
 		// Copy the file content into the new file.
@@ -624,10 +630,7 @@ public class GitHistoryAnalyzer {
 	/**
 	 * Get the file in the new directory.
 	 */
-	private File getFile(String path, String newDirectory) throws IOException {
-		String fileName = getJavaFileName(path);
-		if (fileName == null)
-			return null;
+	private File getFile(String fileName, String newDirectory) throws IOException {
 		// ALL files are moved into a new directory
 		File file = new File(newDirectory + commitIndex + "/" + fileName);
 
