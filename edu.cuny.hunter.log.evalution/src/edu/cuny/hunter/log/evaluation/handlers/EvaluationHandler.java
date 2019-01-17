@@ -180,7 +180,7 @@ public class EvaluationHandler extends AbstractHandler {
 								logInvocation.getDegreeOfInterestValue());
 					}
 
-					for (LogInvocation logInvocation : passingLogInvocationSet) {
+					for (LogInvocation logInvocation : transformedLogInvocationSet) {
 						// print actions
 						actionPrinter.printRecord(project.getElementName(), logInvocation.getExpression(),
 								logInvocation.getStartPosition(), logInvocation.getLogLevel(),
