@@ -284,13 +284,10 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 	public Change createChange(IProgressMonitor pm) throws CoreException, OperationCanceledException {
 		try {
 			final TextEditBasedChangeManager manager = new TextEditBasedChangeManager();
-			Set<LogInvocation> allLogs = this.getLogInvocationSet();
+			Set<LogInvocation> transformedLogs = this.getTransformedLog();
 
-			if (allLogs.isEmpty())
-				return new NullChange(Messages.NoInputLogInvs);
-
-			pm.beginTask("Transforming logging levels ...", allLogs.size());
-			for (LogInvocation logInvocation : allLogs) {
+			pm.beginTask("Transforming logging levels ...", transformedLogs.size());
+			for (LogInvocation logInvocation : transformedLogs) {
 				CompilationUnitRewrite rewrite = this.getCompilationUnitRewrite(
 						logInvocation.getEnclosingEclipseMethod().getCompilationUnit(),
 						logInvocation.getEnclosingCompilationUnit());
