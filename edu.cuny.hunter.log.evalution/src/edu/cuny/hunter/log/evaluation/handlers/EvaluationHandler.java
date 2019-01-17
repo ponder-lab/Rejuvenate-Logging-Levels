@@ -32,6 +32,7 @@ import edu.cuny.hunter.log.core.refactorings.LogRejuvenatingProcessor;
 import edu.cuny.hunter.log.core.utils.LoggerNames;
 import edu.cuny.hunter.log.evaluation.utils.Util;
 import edu.cuny.hunter.mylyngit.core.analysis.MylynGitPredictionProvider;
+import edu.cuny.hunter.mylyngit.core.utils.Commit;
 
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.ltk.core.refactoring.RefactoringStatusEntry;
@@ -100,6 +101,8 @@ public class EvaluationHandler extends AbstractHandler {
 								"enclosing method", "code", "message" });
 				CSVPrinter doiPrinter = Util.createCSVPrinter("DOI_boundaries.csv",
 						new String[] { "subject", "DOI boundary", "log level" });
+				CSVPrinter gitCommitPrinter = Util.createCSVPrinter("git_commits.csv", new String[] { "subject", "SHA1",
+						"lines added", "lines removed", "methods found", "interaction events", "run time (s)" });
 
 				// for each selected java project
 				for (IJavaProject project : javaProjectList) {
@@ -195,6 +198,19 @@ public class EvaluationHandler extends AbstractHandler {
 							this.printBoundaryDefault(project.getElementName(), boundary, doiPrinter);
 						}
 
+					if (this.useGitHistory()) {
+						LinkedList<Commit> commits = logRejuvenatingProcessor.getCommits();
+						commits.forEach(c -> {
+							try {
+								gitCommitPrinter.printRecord(project.getElementName(), c.getSHA1(), c.getLinesAdded(),
+										c.getLinesRemoved(), c.getMethodFound(), c.getInteractionEvents(),
+										c.getRunTime());
+							} catch (IOException e) {
+								LOGGER.warning("Cannot print commits correctly.");
+							}
+						});
+					}
+
 				}
 
 				// Clear intermediate data for mylyngit plugin.
@@ -206,6 +222,7 @@ public class EvaluationHandler extends AbstractHandler {
 				failurePrinter.close();
 				transformedLogInvPrinter.close();
 				doiPrinter.close();
+				gitCommitPrinter.close();
 			} catch (IOException e) {
 				LOGGER.severe("Cannot create printer.");
 			} catch (OperationCanceledException | CoreException e) {

@@ -40,6 +40,7 @@ import edu.cuny.hunter.log.core.descriptors.LogDescriptor;
 import edu.cuny.hunter.log.core.messages.Messages;
 import edu.cuny.hunter.log.core.utils.LoggerNames;
 import edu.cuny.hunter.mylyngit.core.analysis.MylynGitPredictionProvider;
+import edu.cuny.hunter.mylyngit.core.utils.Commit;
 
 @SuppressWarnings({ "restriction", "deprecation" })
 public class LogRejuvenatingProcessor extends RefactoringProcessor {
@@ -69,6 +70,8 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 
 	// It the caller Evaluation plugin?
 	private boolean isEvaluation = false;
+
+	private LinkedList<Commit> commits = new LinkedList<>();
 
 	public LogRejuvenatingProcessor(final CodeGenerationSettings settings) {
 		super(settings);
@@ -189,6 +192,7 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 				// Process git history.
 				mylynProvider = new MylynGitPredictionProvider(this.NToUseForCommits);
 				this.processGitHistory(mylynProvider, analyzer, jproj);
+				this.setCommits(mylynProvider.getCommits());
 			}
 
 			analyzer.analyze();
@@ -340,6 +344,14 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 	public RefactoringParticipant[] loadParticipants(RefactoringStatus status, SharableParticipants sharedParticipants)
 			throws CoreException {
 		return null;
+	}
+
+	public LinkedList<Commit> getCommits() {
+		return commits;
+	}
+
+	private void setCommits(LinkedList<Commit> commits) {
+		this.commits = commits;
 	}
 
 }

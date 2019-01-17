@@ -24,6 +24,7 @@ import org.eclipse.mylyn.internal.context.core.ContextCorePlugin;
 import org.eclipse.mylyn.internal.java.ui.search.AbstractJavaRelationProvider;
 import org.eclipse.mylyn.monitor.core.InteractionEvent.Kind;
 
+import edu.cuny.hunter.mylyngit.core.utils.Commit;
 import edu.cuny.hunter.mylyngit.core.utils.GitMethod;
 import edu.cuny.hunter.mylyngit.core.utils.Util;
 import edu.cuny.hunter.mylyngit.core.utils.Vertex;
@@ -55,6 +56,8 @@ public class MylynGitPredictionProvider extends AbstractJavaRelationProvider {
 	private HashMap<MethodDeclaration, IMethod> methodDecToIMethod = new HashMap<>();
 
 	private static String ID = MylynGitPredictionProvider.class.getName();
+
+	private LinkedList<Commit> commits;
 
 	/**
 	 * The entry point
@@ -125,6 +128,7 @@ public class MylynGitPredictionProvider extends AbstractJavaRelationProvider {
 	private void bumpDOIValuesForAllGitMethods(IJavaProject javaProject) throws GitAPIException, IOException {
 		File repo = this.getRepoFile(javaProject);
 		GitHistoryAnalyzer gitHistoryAnalyzer = new GitHistoryAnalyzer(repo, NToUseForCommits);
+		this.setCommits(gitHistoryAnalyzer.getCommits());
 		LinkedList<GitMethod> gitMethods = gitHistoryAnalyzer.getGitMethods();
 		gitMethods.forEach(method -> {
 			bumpDOIValuesForMethod(method, gitHistoryAnalyzer);
@@ -247,5 +251,13 @@ public class MylynGitPredictionProvider extends AbstractJavaRelationProvider {
 	@Override
 	protected String getSourceId() {
 		return ID;
+	}
+
+	public LinkedList<Commit> getCommits() {
+		return commits;
+	}
+
+	private void setCommits(LinkedList<Commit> commits) {
+		this.commits = commits;
 	}
 }

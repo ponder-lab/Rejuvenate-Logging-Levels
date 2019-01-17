@@ -7,6 +7,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -16,6 +18,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jdt.core.dom.AST;
@@ -51,8 +54,10 @@ import org.eclipse.jgit.treewalk.EmptyTreeIterator;
 import org.eclipse.jgit.treewalk.TreeWalk;
 import org.eclipse.jgit.treewalk.filter.PathFilter;
 
+import edu.cuny.hunter.mylyngit.core.utils.Commit;
 import edu.cuny.hunter.mylyngit.core.utils.GitMethod;
 import edu.cuny.hunter.mylyngit.core.utils.Graph;
+import edu.cuny.hunter.mylyngit.core.utils.TimeCollector;
 import edu.cuny.hunter.mylyngit.core.utils.Util;
 import edu.cuny.hunter.mylyngit.core.utils.Vertex;
 
@@ -83,6 +88,8 @@ public class GitHistoryAnalyzer {
 	private static HashMap<String, Graph> repoToRenaming = new HashMap<>();
 	// -----------------------------------------------------------------------------
 
+	private LinkedList<Commit> commits = new LinkedList<Commit>();
+
 	// the file index
 	private int commitIndex = 0;
 
@@ -112,6 +119,11 @@ public class GitHistoryAnalyzer {
 			// from the earliest commit to the current commit
 			for (RevCommit currentCommit : this.commitList) {
 
+				Commit commit = new Commit(currentCommit.getName());
+				// collect running time.
+				TimeCollector commitTimeCollector = new TimeCollector();
+				commitTimeCollector.start();
+
 				if (currentCommit.getParentCount() == 1)
 					// process the commit.
 					processOneCommit(currentCommit, currentCommit.getParent(0), git);
@@ -124,12 +136,42 @@ public class GitHistoryAnalyzer {
 				if (currentCommit.getParentCount() == 2) {
 					processMergeCommit(currentCommit.getParent(0), currentCommit.getParent(1), git);
 				}
+				commitTimeCollector.stop();
+
+				this.setCommit(commit, commitTimeCollector.getCollectedTime() / 1000);
+				this.commits.add(commit);
 
 				this.commitIndex++;
-				this.clearFiles(new File("").getAbsoluteFile());
+				this.resetDataForOneCommit();
 			}
 			this.storeMappingData();
 		}
+	}
+
+	public LinkedList<Commit> getCommits() {
+		return this.commits;
+	}
+
+	/**
+	 * Set data of commits for each git commit.
+	 */
+	private void setCommit(Commit commit, float runTime) {
+		commit.setLinesAdded(this.linesAdded);
+		commit.setLinesRemoved(this.linesRemoved);
+		commit.setMethodFound(this.methodFound);
+		commit.setInteractionEvents(this.interactionEvent);
+		commit.setRunTime(runTime);
+	}
+
+	/**
+	 * Remove intermediate files and reset statistical data.
+	 */
+	private void resetDataForOneCommit() {
+		this.clearFiles(new File("").getAbsoluteFile());
+		this.linesAdded = 0;
+		this.linesRemoved = 0;
+		this.methodFound = 0;
+		this.interactionEvent = 0;
 	}
 
 	private void storeMappingData() {
@@ -250,7 +292,12 @@ public class GitHistoryAnalyzer {
 	 */
 	private String renameOrCopyFile(RevCommit currentCommit, Repository repo, DiffEntry diffEntry)
 			throws MissingObjectException, IncorrectObjectTypeException, CorruptObjectException, IOException {
-		copyHistoricalFile(currentCommit, repo, diffEntry.getNewPath(), "tmp_B_");
+		long lines = this.copyHistoricalFile(currentCommit, repo, diffEntry.getNewPath(), "tmp_B_");
+		if (lines != -1) {
+			this.linesAdded += lines;
+			this.linesRemoved += lines;
+		}
+
 		this.methodDeclarationsForB.forEach(methodDec -> {
 			// add vertex
 			Vertex vertex1 = new Vertex(Util.getMethodSignature(methodDec), diffEntry.getOldPath(), this.commitIndex);
@@ -345,10 +392,10 @@ public class GitHistoryAnalyzer {
 				// For each pair of edit
 				for (Edit edit : editList) {
 					editId++;
-					this.mapEditToMethod(editId, edit.getBeginA(), edit.getEndA(), this.methodPositionsForA,
-							this.editToMethodDeclarationForA);
-					this.mapEditToMethod(editId, edit.getBeginB(), edit.getEndB(), this.methodPositionsForB,
-							this.editToMethodDeclarationForB);
+					this.linesRemoved += this.mapEditToMethod(editId, edit.getBeginA(), edit.getEndA(),
+							this.methodPositionsForA, this.editToMethodDeclarationForA);
+					this.linesAdded += this.mapEditToMethod(editId, edit.getBeginB(), edit.getEndB(),
+							this.methodPositionsForB, this.editToMethodDeclarationForB);
 
 				}
 			}
@@ -365,7 +412,9 @@ public class GitHistoryAnalyzer {
 	private String addFile(RevCommit currentCommit, Repository repo, DiffEntry diffEntry)
 			throws MissingObjectException, IncorrectObjectTypeException, CorruptObjectException, IOException {
 		// Get the file for revision B
-		copyHistoricalFile(currentCommit, repo, diffEntry.getNewPath(), "tmp_B_");
+		long linesAddedForFile = this.copyHistoricalFile(currentCommit, repo, diffEntry.getNewPath(), "tmp_B_");
+		if (linesAddedForFile != -1)
+			this.linesAdded += linesAddedForFile;
 		this.methodDeclarationsForB.forEach(methodDec -> {
 			this.putIntoMethodToOps(this.methodSignaturesToOps, Util.getMethodSignature(methodDec),
 					TypesOfMethodOperations.ADD);
@@ -379,7 +428,9 @@ public class GitHistoryAnalyzer {
 	private String deleteFile(RevCommit previousCommit, Repository repo, DiffEntry diffEntry)
 			throws MissingObjectException, IncorrectObjectTypeException, CorruptObjectException, IOException {
 		// Get the file for revision A
-		copyHistoricalFile(previousCommit, repo, diffEntry.getOldPath(), "tmp_A_");
+		long linesRemovedForFile = this.copyHistoricalFile(previousCommit, repo, diffEntry.getOldPath(), "tmp_A_");
+		if (linesRemovedForFile != -1)
+			this.linesRemoved += linesRemovedForFile;
 		this.methodDeclarationsForA.forEach(methodDec -> {
 			this.putIntoMethodToOps(this.methodSignaturesToOps, Util.getMethodSignature(methodDec),
 					TypesOfMethodOperations.DELETE);
@@ -402,8 +453,11 @@ public class GitHistoryAnalyzer {
 	 */
 	private void storeAllMethodOps(RevCommit commit, String path, String fileOp) {
 		this.methodSignaturesToOps.forEach((methodSig, ops) -> {
-			for (TypesOfMethodOperations op : ops)
+			this.methodFound++;
+			for (TypesOfMethodOperations op : ops) {
+				this.interactionEvent++;
 				this.gitMethods.add(new GitMethod(methodSig, op, path, fileOp, commitIndex, commit.name()));
+			}
 		});
 	}
 
@@ -439,6 +493,13 @@ public class GitHistoryAnalyzer {
 	}
 
 	/**
+	 * Clear list of commits.
+	 */
+	public void clearCommits() {
+		this.commits.clear();
+	}
+
+	/**
 	 * Clear all sets and maps.
 	 */
 	public void clear() {
@@ -467,7 +528,7 @@ public class GitHistoryAnalyzer {
 	/**
 	 * Map line number to method
 	 */
-	private void mapEditToMethod(int editId, int editStart, int editEnd,
+	private int mapEditToMethod(int editId, int editStart, int editEnd,
 			HashMap<MethodDeclaration, Map<Integer, Integer>> methodPositions,
 			HashMap<Integer, HashSet<MethodDeclaration>> editToMethodDeclaration) {
 		for (int line = editStart + 1; line <= editEnd; ++line) {
@@ -475,7 +536,7 @@ public class GitHistoryAnalyzer {
 		}
 		if (editStart == editEnd)
 			addCorrespondingMethod(editId, methodPositions, editToMethodDeclaration, editEnd + 1);
-
+		return editEnd - editStart;
 	}
 
 	// Given a line, add its corresponding method into editToMethodDeclaration
@@ -525,7 +586,7 @@ public class GitHistoryAnalyzer {
 	 * it into a new file.
 	 */
 	@SuppressWarnings("resource")
-	private void copyHistoricalFile(RevCommit commit, Repository repo, String path, String newDirectory)
+	private long copyHistoricalFile(RevCommit commit, Repository repo, String path, String newDirectory)
 			throws MissingObjectException, IncorrectObjectTypeException, CorruptObjectException, IOException {
 		RevTree tree = commit.getTree();
 		TreeWalk treeWalk = new TreeWalk(repo);
@@ -533,18 +594,18 @@ public class GitHistoryAnalyzer {
 		treeWalk.setRecursive(true);
 		treeWalk.setFilter(PathFilter.create(path));
 		if (!treeWalk.next()) {
-			return;
+			return -1;
 		}
 		ObjectId objectId = treeWalk.getObjectId(0);
 		ObjectLoader loader = repo.open(objectId);
 		return this.copyToFile(loader, path, newDirectory);
 	}
 
-	private void copyToFile(ObjectLoader loader, String path, String newDirectory) throws IOException {
+	private long copyToFile(ObjectLoader loader, String path, String newDirectory) throws IOException {
 		// Get the empty or existing file in the new directory.
 		File file = this.getFile(path, newDirectory);
 		if (file == null)
-			return;
+			return -1;
 		// Copy the file content into the new file.
 		FileOutputStream fileOutputStream = new FileOutputStream(file.getAbsolutePath(), false);
 		loader.copyTo(fileOutputStream);
@@ -554,7 +615,10 @@ public class GitHistoryAnalyzer {
 		String fileContent = new BufferedReader(new InputStreamReader(loader.openStream())).lines()
 				.collect(Collectors.joining("\n"));
 		if (!fileContent.isEmpty())
-			parseJavaFile(fileContent, newDirectory);
+			this.parseJavaFile(fileContent, newDirectory);
+		try (Stream<String> stream = Files.lines(Paths.get(file.getAbsolutePath()))) {
+			return stream.count();
+		}
 	}
 
 	/**
