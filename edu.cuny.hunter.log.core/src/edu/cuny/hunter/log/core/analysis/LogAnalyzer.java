@@ -86,7 +86,7 @@ public class LogAnalyzer extends ASTVisitor {
 	 * Check whether all DOI values are the same.
 	 */
 	private boolean checkEnoughData(LogInvocation logInvocation) {
-		if (Float.compare(this.boundary.getFirst(), this.boundary.getLast()) == 0) {
+		if (this.boundary == null) {
 			logInvocation.addStatusEntry(Failure.NO_ENOUGH_DATA,
 					"The DOI values are all same or no DOI values. Cannot get valid results.");
 			LOGGER.info("The DOI values are all same or no DOI values. Cannot get valid results.");
