@@ -227,7 +227,7 @@ public class LogAnalyzer extends ASTVisitor {
 	 * @param degreeOfInterests
 	 */
 	private float getMinDOI(HashSet<Float> degreeOfInterests) {
-		float min = Float.MAX_VALUE;
+		float min = 0;
 		for (float d : degreeOfInterests)
 			if (d < min)
 				min = d;
@@ -235,7 +235,7 @@ public class LogAnalyzer extends ASTVisitor {
 	}
 
 	private float getMaxDOI(HashSet<Float> degreeOfInterests) {
-		float max = Float.MIN_VALUE;
+		float max = 0;
 		for (float d : degreeOfInterests)
 			if (d > max)
 				max = d;
