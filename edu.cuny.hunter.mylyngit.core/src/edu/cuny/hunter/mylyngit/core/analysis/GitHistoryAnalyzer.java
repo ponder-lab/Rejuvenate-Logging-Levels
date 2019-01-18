@@ -102,6 +102,8 @@ public class GitHistoryAnalyzer {
 	private int interactionEvent = 0;
 	// -----------------------------------------------------------------------------
 
+	private boolean isSameRepo = false;
+
 	/**
 	 * Given the repo path, compute all method operations (e.g., delete a method)
 	 * for all commits.
@@ -111,10 +113,13 @@ public class GitHistoryAnalyzer {
 	 * @throws NoHeadException
 	 */
 	public GitHistoryAnalyzer(File repoFile, int NToUseForCommits) throws GitAPIException, IOException {
+		this.setSameRepo(false);
 		try (Git git = preProcessGitHistory(repoFile, NToUseForCommits)) {
 			// Already evaluated before
-			if (git == null)
+			if (git == null) {
+				this.setSameRepo(true);
 				return;
+			}
 
 			// from the earliest commit to the current commit
 			for (RevCommit currentCommit : this.commitList) {
@@ -936,6 +941,14 @@ public class GitHistoryAnalyzer {
 	public static void clearMappingData() {
 		repoToGitMethods.clear();
 		repoToRenaming.clear();
+	}
+
+	public boolean isSameRepo() {
+		return isSameRepo;
+	}
+
+	private void setSameRepo(boolean isSameRepo) {
+		this.isSameRepo = isSameRepo;
 	}
 
 }

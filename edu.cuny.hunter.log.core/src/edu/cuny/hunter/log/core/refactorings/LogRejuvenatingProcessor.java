@@ -71,6 +71,8 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 	// It the caller Evaluation plugin?
 	private boolean isEvaluation = false;
 
+	private boolean isSameRepo = false;
+
 	private LinkedList<Commit> commits = new LinkedList<>();
 
 	public LogRejuvenatingProcessor(final CodeGenerationSettings settings) {
@@ -193,6 +195,7 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 				mylynProvider = new MylynGitPredictionProvider(this.NToUseForCommits);
 				this.processGitHistory(mylynProvider, analyzer, jproj);
 				this.setCommits(mylynProvider.getCommits());
+				this.setSameRepo(mylynProvider.isSameRepo());
 			}
 
 			analyzer.analyze();
@@ -349,6 +352,14 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 
 	private void setCommits(LinkedList<Commit> commits) {
 		this.commits = commits;
+	}
+
+	public boolean isSameRepo() {
+		return isSameRepo;
+	}
+
+	private void setSameRepo(boolean isSameRepo) {
+		this.isSameRepo = isSameRepo;
 	}
 
 }

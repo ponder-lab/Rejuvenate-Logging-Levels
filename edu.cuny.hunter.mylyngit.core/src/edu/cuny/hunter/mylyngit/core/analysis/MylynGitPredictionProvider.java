@@ -38,6 +38,8 @@ public class MylynGitPredictionProvider extends AbstractJavaRelationProvider {
 
 	private static final String Name = "mylyn git";
 
+	private boolean isSameRepo = false;
+
 	public MylynGitPredictionProvider() {
 		super("java", ID);
 	}
@@ -129,6 +131,7 @@ public class MylynGitPredictionProvider extends AbstractJavaRelationProvider {
 		File repo = this.getRepoFile(javaProject);
 		GitHistoryAnalyzer gitHistoryAnalyzer = new GitHistoryAnalyzer(repo, NToUseForCommits);
 		this.setCommits(gitHistoryAnalyzer.getCommits());
+		this.setSameRepo(gitHistoryAnalyzer.isSameRepo());
 		LinkedList<GitMethod> gitMethods = gitHistoryAnalyzer.getGitMethods();
 		gitMethods.forEach(method -> {
 			bumpDOIValuesForMethod(method, gitHistoryAnalyzer);
@@ -260,5 +263,13 @@ public class MylynGitPredictionProvider extends AbstractJavaRelationProvider {
 
 	private void setCommits(LinkedList<Commit> commits) {
 		this.commits = commits;
+	}
+
+	public boolean isSameRepo() {
+		return isSameRepo;
+	}
+
+	private void setSameRepo(boolean isSameRepo) {
+		this.isSameRepo = isSameRepo;
 	}
 }

@@ -30,6 +30,7 @@ import edu.cuny.citytech.refactoring.common.core.RefactoringProcessor;
 import edu.cuny.hunter.log.core.analysis.LogInvocation;
 import edu.cuny.hunter.log.core.refactorings.LogRejuvenatingProcessor;
 import edu.cuny.hunter.log.core.utils.LoggerNames;
+import edu.cuny.hunter.log.evaluation.utils.ResultForCommit;
 import edu.cuny.hunter.log.evaluation.utils.Util;
 import edu.cuny.hunter.mylyngit.core.analysis.MylynGitPredictionProvider;
 import edu.cuny.hunter.mylyngit.core.utils.Commit;
@@ -60,8 +61,7 @@ public class EvaluationHandler extends AbstractHandler {
 	private static final boolean USE_LOG_CATEGORY_CONFIG_DEFAULT = false;
 	private static final boolean USE_GIT_HISTORY = false;
 
-	long linesAdded = 0;
-	long linesRemoved = 0;
+	private ResultForCommit resultCommit = new ResultForCommit();
 
 	@Override
 	public Object execute(ExecutionEvent event) throws ExecutionException {
@@ -120,7 +120,8 @@ public class EvaluationHandler extends AbstractHandler {
 							N_TO_USE_FOR_COMMITS_KEY, N_TO_USE_FOR_COMMITS_DEFAULT, EVALUATION_PROPERTIES_FILE_NAME);
 					LogRejuvenatingProcessor logRejuvenatingProcessor = new LogRejuvenatingProcessor(
 							new IJavaProject[] { project }, this.useLogCategory(), this.useLogCategoryWithConfig(),
-							this.useGitHistory(), this.notLowerLogLevelInCatchBlock(), NToUseCommit, settings, monitor, true);
+							this.useGitHistory(), this.notLowerLogLevelInCatchBlock(), NToUseCommit, settings, monitor,
+							true);
 
 					new ProcessorBasedRefactoring((RefactoringProcessor) logRejuvenatingProcessor)
 							.checkAllConditions(new NullProgressMonitor());
@@ -199,31 +200,29 @@ public class EvaluationHandler extends AbstractHandler {
 							this.printBoundaryDefault(project.getElementName(), boundary, doiPrinter);
 						}
 
-					int actualCommits = 0;
-					this.linesAdded = 0;
-					this.linesRemoved = 0;
-					if (this.useGitHistory()) {
+					if (this.useGitHistory() && !logRejuvenatingProcessor.isSameRepo()) {
+						// Clear commit info in results.csv
+						this.resultCommit.clear();
+
 						LinkedList<Commit> commits = logRejuvenatingProcessor.getCommits();
 						commits.forEach(c -> {
 							try {
 								gitCommitPrinter.printRecord(project.getElementName(), c.getSHA1(), c.getLinesAdded(),
 										c.getLinesRemoved(), c.getMethodFound(), c.getInteractionEvents(),
 										c.getRunTime());
-								this.linesAdded += c.getLinesAdded();
-								this.linesRemoved += c.getLinesRemoved();
 							} catch (IOException e) {
 								LOGGER.warning("Cannot print commits correctly.");
 							}
+							this.resultCommit.computLines(c);
 						});
-						actualCommits = commits.size();
+						this.resultCommit.setActualCommits(commits.size());
 					}
 
-					resultPrinter.printRecord(project.getElementName(), NToUseCommit, actualCommits,
-							logInvocationSet.size(), passingLogInvocationSet.size(), errorEntries.size(),
-							transformedLogInvocationSet.size(),
-							actualCommits == 0 ? 0 : this.linesAdded / actualCommits,
-							actualCommits == 0 ? 0 : this.linesRemoved / actualCommits, this.useLogCategory(),
-							this.useLogCategoryWithConfig(), this.notLowerLogLevelInCatchBlock(),
+					resultPrinter.printRecord(project.getElementName(), NToUseCommit,
+							this.resultCommit.getActualCommits(), logInvocationSet.size(),
+							passingLogInvocationSet.size(), errorEntries.size(), transformedLogInvocationSet.size(),
+							this.resultCommit.getAverageLinesAdded(), this.resultCommit.getAverageLinesRemoved(),
+							this.useLogCategory(), this.useLogCategoryWithConfig(), this.notLowerLogLevelInCatchBlock(),
 							resultsTimeCollector.getCollectedTime() / 1000);
 
 				}
