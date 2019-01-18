@@ -7,6 +7,7 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Random;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -87,27 +88,29 @@ public class EvaluationHandler extends AbstractHandler {
 			try {
 
 				CSVPrinter resultPrinter = Util.createCSVPrinter("result.csv",
-						new String[] { "subject", "N for commits", "actual number of commits",
+						new String[] { "sequence", "subject", "N for commits", "actual number of commits",
 								"input logging statements", "passing logging statements", "failures",
 								"transformed logging statements", "average lines added", "average lines removed",
 								"use log category (SEVERE/WARNING/CONFIG)", "use log category (CONFIG)",
 								"not lower log levels of logs inside of catch blocks", "time (s)" });
 				CSVPrinter actionPrinter = Util.createCSVPrinter("log_transformation_actions.csv",
-						new String[] { "subject", "log expression", "start pos", "log level", "type FQN",
+						new String[] { "sequence", "subject", "log expression", "start pos", "log level", "type FQN",
 								"enclosing method", "action" });
 				CSVPrinter inputLogInvPrinter = Util.createCSVPrinter("input_log_invocations.csv",
 						new String[] { "subject", "log expression", "start pos", "log level", "type FQN",
 								"enclosing method", "DOI value" });
 				CSVPrinter transformedLogInvPrinter = Util.createCSVPrinter("transformed_log_invocations.csv",
-						new String[] { "subject", "log expression", "start pos", "log level", "type FQN",
+						new String[] { "sequence", "subject", "log expression", "start pos", "log level", "type FQN",
 								"enclosing method", "DOI value" });
 				CSVPrinter failurePrinter = Util.createCSVPrinter("failures.csv",
-						new String[] { "subject", "log expression", "start pos", "log level", "type FQN",
+						new String[] { "sequence", "subject", "log expression", "start pos", "log level", "type FQN",
 								"enclosing method", "code", "message" });
 				CSVPrinter doiPrinter = Util.createCSVPrinter("DOI_boundaries.csv",
-						new String[] { "subject", "DOI boundary", "log level" });
+						new String[] { "sequence", "subject", "DOI boundary", "log level" });
 				CSVPrinter gitCommitPrinter = Util.createCSVPrinter("git_commits.csv", new String[] { "subject", "SHA1",
 						"lines added", "lines removed", "methods found", "interaction events", "run time (s)" });
+
+				String sequence = this.getRunId();
 
 				// for each selected java project
 				for (IJavaProject project : javaProjectList) {
@@ -163,8 +166,9 @@ public class EvaluationHandler extends AbstractHandler {
 
 							LogInvocation failedLogInvocation = (LogInvocation) correspondingElement;
 
-							failurePrinter.printRecord(project.getElementName(), failedLogInvocation.getExpression(),
-									failedLogInvocation.getStartPosition(), failedLogInvocation.getLogLevel(),
+							failurePrinter.printRecord(sequence, project.getElementName(),
+									failedLogInvocation.getExpression(), failedLogInvocation.getStartPosition(),
+									failedLogInvocation.getLogLevel(),
 									failedLogInvocation.getEnclosingType().getFullyQualifiedName(),
 									Util.getMethodIdentifier(failedLogInvocation.getEnclosingEclipseMethod()),
 									entry.getCode(), entry.getMessage());
@@ -174,16 +178,16 @@ public class EvaluationHandler extends AbstractHandler {
 
 					for (LogInvocation logInvocation : transformedLogInvocationSet) {
 						// print transformed log Invocations
-						transformedLogInvPrinter.printRecord(project.getElementName(), logInvocation.getExpression(),
-								logInvocation.getStartPosition(), logInvocation.getLogLevel(),
-								logInvocation.getEnclosingType().getFullyQualifiedName(),
+						transformedLogInvPrinter.printRecord(sequence, project.getElementName(),
+								logInvocation.getExpression(), logInvocation.getStartPosition(),
+								logInvocation.getLogLevel(), logInvocation.getEnclosingType().getFullyQualifiedName(),
 								Util.getMethodIdentifier(logInvocation.getEnclosingEclipseMethod()),
 								logInvocation.getDegreeOfInterestValue());
 					}
 
 					for (LogInvocation logInvocation : transformedLogInvocationSet) {
 						// print actions
-						actionPrinter.printRecord(project.getElementName(), logInvocation.getExpression(),
+						actionPrinter.printRecord(sequence, project.getElementName(), logInvocation.getExpression(),
 								logInvocation.getStartPosition(), logInvocation.getLogLevel(),
 								logInvocation.getEnclosingType().getFullyQualifiedName(),
 								Util.getMethodIdentifier(logInvocation.getEnclosingEclipseMethod()),
@@ -193,11 +197,11 @@ public class EvaluationHandler extends AbstractHandler {
 					LinkedList<Float> boundary = logRejuvenatingProcessor.getBoundary();
 					if (boundary != null && boundary.size() > 0)
 						if (this.useLogCategory()) {
-							this.printBoundaryLogCategory(project.getElementName(), boundary, doiPrinter);
+							this.printBoundaryLogCategory(sequence, project.getElementName(), boundary, doiPrinter);
 						} else if (this.useLogCategoryWithConfig()) { // Do not consider config
-							this.printBoundaryWithConfig(project.getElementName(), boundary, doiPrinter);
+							this.printBoundaryWithConfig(sequence, project.getElementName(), boundary, doiPrinter);
 						} else {// Treat log levels as traditional log levels
-							this.printBoundaryDefault(project.getElementName(), boundary, doiPrinter);
+							this.printBoundaryDefault(sequence, project.getElementName(), boundary, doiPrinter);
 						}
 
 					if (this.useGitHistory() && !logRejuvenatingProcessor.isSameRepo()) {
@@ -218,7 +222,7 @@ public class EvaluationHandler extends AbstractHandler {
 						this.resultCommit.setActualCommits(commits.size());
 					}
 
-					resultPrinter.printRecord(project.getElementName(), NToUseCommit,
+					resultPrinter.printRecord(sequence, project.getElementName(), NToUseCommit,
 							this.resultCommit.getActualCommits(), logInvocationSet.size(),
 							passingLogInvocationSet.size(), errorEntries.size(), transformedLogInvocationSet.size(),
 							this.resultCommit.getAverageLinesAdded(), this.resultCommit.getAverageLinesRemoved(),
@@ -247,30 +251,42 @@ public class EvaluationHandler extends AbstractHandler {
 		return null;
 	}
 
-	private void printBoundaryLogCategory(String subject, LinkedList<Float> boundary, CSVPrinter doiPrinter)
-			throws IOException {
-		doiPrinter.printRecord(subject, "[" + boundary.get(0) + ", " + boundary.get(1) + ")", Level.FINEST);
-		doiPrinter.printRecord(subject, "[" + boundary.get(1) + ", " + boundary.get(2) + ")", Level.FINER);
-		doiPrinter.printRecord(subject, "[" + boundary.get(2) + ", " + boundary.get(3) + ")", Level.FINE);
-		doiPrinter.printRecord(subject, "[" + boundary.get(3) + ", " + boundary.get(4) + ")", Level.INFO);
+	/**
+	 * Get id of run times.
+	 */
+	private String getRunId() {
+		Random random = new Random();
+		String id = "";
+		for (int i = 0; i < 10; ++i) {
+			id += random.nextInt(10);
+		}
+		return id;
 	}
 
-	private void printBoundaryWithConfig(String subject, LinkedList<Float> boundary, CSVPrinter doiPrinter)
-			throws IOException {
-		this.printBoundaryLogCategory(subject, boundary, doiPrinter);
-		doiPrinter.printRecord(subject, "[" + boundary.get(4) + ", " + boundary.get(5) + ")", Level.WARNING);
-		doiPrinter.printRecord(subject, "[" + boundary.get(5) + ", " + boundary.get(6) + ")", Level.SEVERE);
+	private void printBoundaryLogCategory(String sequence, String subject, LinkedList<Float> boundary,
+			CSVPrinter doiPrinter) throws IOException {
+		doiPrinter.printRecord(sequence, subject, "[" + boundary.get(0) + ", " + boundary.get(1) + ")", Level.FINEST);
+		doiPrinter.printRecord(sequence, subject, "[" + boundary.get(1) + ", " + boundary.get(2) + ")", Level.FINER);
+		doiPrinter.printRecord(sequence, subject, "[" + boundary.get(2) + ", " + boundary.get(3) + ")", Level.FINE);
+		doiPrinter.printRecord(sequence, subject, "[" + boundary.get(3) + ", " + boundary.get(4) + ")", Level.INFO);
 	}
 
-	private void printBoundaryDefault(String subject, LinkedList<Float> boundary, CSVPrinter doiPrinter)
-			throws IOException {
-		doiPrinter.printRecord(subject, "[" + boundary.get(0) + ", " + boundary.get(1) + ")", Level.FINEST);
-		doiPrinter.printRecord(subject, "[" + boundary.get(1) + ", " + boundary.get(2) + ")", Level.FINER);
-		doiPrinter.printRecord(subject, "[" + boundary.get(2) + ", " + boundary.get(3) + ")", Level.FINE);
-		doiPrinter.printRecord(subject, "[" + boundary.get(3) + ", " + boundary.get(4) + ")", Level.CONFIG);
-		doiPrinter.printRecord(subject, "[" + boundary.get(4) + ", " + boundary.get(5) + ")", Level.INFO);
-		doiPrinter.printRecord(subject, "[" + boundary.get(5) + ", " + boundary.get(6) + ")", Level.WARNING);
-		doiPrinter.printRecord(subject, "[" + boundary.get(6) + ", " + boundary.get(7) + ")", Level.SEVERE);
+	private void printBoundaryWithConfig(String sequence, String subject, LinkedList<Float> boundary,
+			CSVPrinter doiPrinter) throws IOException {
+		this.printBoundaryLogCategory(sequence, subject, boundary, doiPrinter);
+		doiPrinter.printRecord(sequence, subject, "[" + boundary.get(4) + ", " + boundary.get(5) + ")", Level.WARNING);
+		doiPrinter.printRecord(sequence, subject, "[" + boundary.get(5) + ", " + boundary.get(6) + ")", Level.SEVERE);
+	}
+
+	private void printBoundaryDefault(String sequence, String subject, LinkedList<Float> boundary,
+			CSVPrinter doiPrinter) throws IOException {
+		doiPrinter.printRecord(sequence, subject, "[" + boundary.get(0) + ", " + boundary.get(1) + ")", Level.FINEST);
+		doiPrinter.printRecord(sequence, subject, "[" + boundary.get(1) + ", " + boundary.get(2) + ")", Level.FINER);
+		doiPrinter.printRecord(sequence, subject, "[" + boundary.get(2) + ", " + boundary.get(3) + ")", Level.FINE);
+		doiPrinter.printRecord(sequence, subject, "[" + boundary.get(3) + ", " + boundary.get(4) + ")", Level.CONFIG);
+		doiPrinter.printRecord(sequence, subject, "[" + boundary.get(4) + ", " + boundary.get(5) + ")", Level.INFO);
+		doiPrinter.printRecord(sequence, subject, "[" + boundary.get(5) + ", " + boundary.get(6) + ")", Level.WARNING);
+		doiPrinter.printRecord(sequence, subject, "[" + boundary.get(6) + ", " + boundary.get(7) + ")", Level.SEVERE);
 	}
 
 	private boolean useLogCategory() {
