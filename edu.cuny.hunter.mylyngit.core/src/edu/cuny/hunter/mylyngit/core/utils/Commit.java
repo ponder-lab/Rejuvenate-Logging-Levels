@@ -9,6 +9,12 @@ public class Commit {
 
 	// Number of lines removed in the commit
 	private int linesRemoved = 0;
+	
+	// Number of java lines added in the commit
+	private int javaLinesAdded = 0;
+	
+	// Number of java lines removed in the commit
+	private int javaLinesRemoved = 0;
 
 	// Number of methods found and processed
 	private int methodFound = 0;
@@ -69,5 +75,21 @@ public class Commit {
 
 	public void setRunTime(float runTime) {
 		this.runTime = runTime;
+	}
+
+	public int getJavaLinesAdded() {
+		return javaLinesAdded;
+	}
+
+	public void setJavaLinesAdded(int javaLinesAdded) {
+		this.javaLinesAdded = javaLinesAdded;
+	}
+
+	public int getJavaLinesRemoved() {
+		return javaLinesRemoved;
+	}
+
+	public void setJavaLinesRemoved(int javaLinesRemoved) {
+		this.javaLinesRemoved = javaLinesRemoved;
 	}
 }

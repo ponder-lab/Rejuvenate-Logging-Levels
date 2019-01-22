@@ -34,6 +34,7 @@ import org.eclipse.jgit.diff.DiffEntry;
 import org.eclipse.jgit.diff.DiffFormatter;
 import org.eclipse.jgit.diff.Edit;
 import org.eclipse.jgit.diff.EditList;
+import org.eclipse.jgit.diff.DiffEntry.ChangeType;
 import org.eclipse.jgit.errors.CorruptObjectException;
 import org.eclipse.jgit.errors.IncorrectObjectTypeException;
 import org.eclipse.jgit.errors.MissingObjectException;
@@ -98,6 +99,8 @@ public class GitHistoryAnalyzer {
 	// -------------------------- data for one commit ------------------------------
 	private int linesAdded = 0;
 	private int linesRemoved = 0;
+	private int javaLinesAdded = 0;
+	private int javaLinesRemoved = 0;
 	private int methodFound = 0;
 	private int interactionEvent = 0;
 	// -----------------------------------------------------------------------------
@@ -163,6 +166,8 @@ public class GitHistoryAnalyzer {
 	private void setCommit(Commit commit, float runTime) {
 		commit.setLinesAdded(this.linesAdded);
 		commit.setLinesRemoved(this.linesRemoved);
+		commit.setJavaLinesAdded(this.javaLinesAdded);
+		commit.setJavaLinesRemoved(this.javaLinesRemoved);
 		commit.setMethodFound(this.methodFound);
 		commit.setInteractionEvents(this.interactionEvent);
 		commit.setRunTime(runTime);
@@ -175,6 +180,8 @@ public class GitHistoryAnalyzer {
 		this.clearFiles(new File("").getAbsoluteFile());
 		this.linesAdded = 0;
 		this.linesRemoved = 0;
+		this.javaLinesAdded = 0;
+		this.javaLinesRemoved = 0;
 		this.methodFound = 0;
 		this.interactionEvent = 0;
 	}
@@ -257,6 +264,11 @@ public class GitHistoryAnalyzer {
 
 			for (DiffEntry diffEntry : diffs) {
 
+				FileHeader fileHeader = formatter.toFileHeader(diffEntry);
+				// Count lines added/removed
+				if (!diffEntry.getChangeType().equals(ChangeType.MODIFY))
+					this.countLinesInEdits(diffEntry, fileHeader);
+
 				String filePath = null;
 
 				switch (diffEntry.getChangeType()) {
@@ -268,7 +280,7 @@ public class GitHistoryAnalyzer {
 					break;
 				case MODIFY:
 					filePath = this.modifyFile(currentCommit, previousCommit, git.getRepository(), diffEntry,
-							formatter);
+							fileHeader);
 					break;
 				case RENAME:
 				case COPY:
@@ -285,6 +297,24 @@ public class GitHistoryAnalyzer {
 	}
 
 	/**
+	 * Compute non-Java source file changes.
+	 */
+	private void countLinesInEdits(DiffEntry diffEntry, FileHeader fileHeader) {
+		List<? extends HunkHeader> hunks = fileHeader.getHunks();
+		for (HunkHeader hunk : hunks) {
+			EditList editList = hunk.toEditList();
+			if (!editList.isEmpty()) {
+				// For each pair of edit
+				for (Edit edit : editList) {
+					this.linesAdded += edit.getEndA() - edit.getBeginA();
+					this.linesRemoved += edit.getEndB() - edit.getBeginB();
+
+				}
+			}
+		}
+	}
+
+	/**
 	 * Returns a sequence of methods in the git history. Each instance stores method
 	 * signature, method ops, file path, file ops, commit index and commit name.
 	 */
@@ -294,13 +324,15 @@ public class GitHistoryAnalyzer {
 
 	/**
 	 * Rename or copy a file in a commit.
+	 * 
+	 * @param formatter
 	 */
 	private String renameOrCopyFile(RevCommit currentCommit, Repository repo, DiffEntry diffEntry)
 			throws MissingObjectException, IncorrectObjectTypeException, CorruptObjectException, IOException {
 		long lines = this.copyHistoricalFile(currentCommit, repo, diffEntry.getNewPath(), "tmp_B_");
 		if (lines != -1) {
-			this.linesAdded += lines;
-			this.linesRemoved += lines;
+			this.javaLinesAdded += lines;
+			this.javaLinesRemoved += lines;
 		}
 
 		this.methodDeclarationsForB.forEach(methodDec -> {
@@ -373,10 +405,8 @@ public class GitHistoryAnalyzer {
 	}
 
 	private String modifyFile(RevCommit currentCommit, RevCommit previousCommit, Repository repo, DiffEntry diffEntry,
-			DiffFormatter formatter)
+			FileHeader fileHeader)
 			throws MissingObjectException, IncorrectObjectTypeException, CorruptObjectException, IOException {
-
-		FileHeader fileHeader = formatter.toFileHeader(diffEntry);
 
 		// Get the file for revision A
 		this.copyHistoricalFile(previousCommit, repo, diffEntry.getOldPath(), "tmp_A_");
@@ -396,19 +426,30 @@ public class GitHistoryAnalyzer {
 			if (!editList.isEmpty()) {
 				// For each pair of edit
 				for (Edit edit : editList) {
-					editId++;
-					this.linesRemoved += this.mapEditToMethod(editId, edit.getBeginA(), edit.getEndA(),
-							this.methodPositionsForA, this.editToMethodDeclarationForA);
-					this.linesAdded += this.mapEditToMethod(editId, edit.getBeginB(), edit.getEndB(),
-							this.methodPositionsForB, this.editToMethodDeclarationForB);
+					this.processEditsForModifyingFiles(edit, editId++);
 
 				}
 			}
 		}
-
 		this.computeMethodChanges(diffEntry.getNewPath());
 
 		return diffEntry.getNewPath();
+	}
+
+	/**
+	 * Process edits while modifying files and also records Java/non-Java lines
+	 * added/removed.
+	 */
+	private void processEditsForModifyingFiles(Edit edit, int editId) {
+		int linesR = this.mapEditToMethod(editId, edit.getBeginA(), edit.getEndA(), this.methodPositionsForA,
+				this.editToMethodDeclarationForA);
+		this.linesRemoved += linesR;
+		this.javaLinesRemoved += linesR;
+
+		int linesA = this.mapEditToMethod(editId, edit.getBeginB(), edit.getEndB(), this.methodPositionsForB,
+				this.editToMethodDeclarationForB);
+		this.linesAdded += linesA;
+		this.javaLinesAdded += linesA;
 	}
 
 	/**
@@ -419,11 +460,12 @@ public class GitHistoryAnalyzer {
 		// Get the file for revision B
 		long linesAddedForFile = this.copyHistoricalFile(currentCommit, repo, diffEntry.getNewPath(), "tmp_B_");
 		if (linesAddedForFile != -1)
-			this.linesAdded += linesAddedForFile;
+			this.javaLinesAdded += linesAddedForFile;
 		this.methodDeclarationsForB.forEach(methodDec -> {
 			this.putIntoMethodToOps(this.methodSignaturesToOps, Util.getMethodSignature(methodDec),
 					TypesOfMethodOperations.ADD);
 		});
+
 		return diffEntry.getNewPath();
 	}
 
@@ -435,7 +477,7 @@ public class GitHistoryAnalyzer {
 		// Get the file for revision A
 		long linesRemovedForFile = this.copyHistoricalFile(previousCommit, repo, diffEntry.getOldPath(), "tmp_A_");
 		if (linesRemovedForFile != -1)
-			this.linesRemoved += linesRemovedForFile;
+			this.javaLinesRemoved += linesRemovedForFile;
 		this.methodDeclarationsForA.forEach(methodDec -> {
 			this.putIntoMethodToOps(this.methodSignaturesToOps, Util.getMethodSignature(methodDec),
 					TypesOfMethodOperations.DELETE);
@@ -949,6 +991,22 @@ public class GitHistoryAnalyzer {
 
 	private void setSameRepo(boolean isSameRepo) {
 		this.isSameRepo = isSameRepo;
+	}
+
+	public int getJavaLinesRemoved() {
+		return javaLinesRemoved;
+	}
+
+	public void setJavaLinesRemoved(int javaLinesRemoved) {
+		this.javaLinesRemoved = javaLinesRemoved;
+	}
+
+	public int getJavaLinesAdded() {
+		return javaLinesAdded;
+	}
+
+	public void setJavaLinesAdded(int javaLinesAdded) {
+		this.javaLinesAdded = javaLinesAdded;
 	}
 
 }
