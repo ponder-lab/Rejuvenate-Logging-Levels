@@ -296,10 +296,7 @@ public class GitHistoryAnalyzer {
 	 */
 	private String renameOrCopyFile(RevCommit currentCommit, Repository repo, DiffEntry diffEntry)
 			throws MissingObjectException, IncorrectObjectTypeException, CorruptObjectException, IOException {
-		long lines = this.copyHistoricalFile(currentCommit, repo, diffEntry.getNewPath(), "tmp_B_");
-		// Count Java source changes.
-		this.javaLinesAdded += lines;
-		this.javaLinesRemoved += lines;
+		this.copyHistoricalFile(currentCommit, repo, diffEntry.getNewPath(), "tmp_B_");
 
 		this.methodDeclarationsForB.forEach(methodDec -> {
 			// add vertex
