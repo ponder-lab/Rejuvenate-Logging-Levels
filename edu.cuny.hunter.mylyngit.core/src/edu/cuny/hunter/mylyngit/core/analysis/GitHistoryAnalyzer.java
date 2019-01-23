@@ -95,7 +95,7 @@ public class GitHistoryAnalyzer {
 	// the file index
 	private int commitIndex = 0;
 
-	private String repo;
+	private String repoPath;
 
 	// -------------------------- data for one commit ------------------------------
 	private int javaLinesAdded = 0;
@@ -177,8 +177,8 @@ public class GitHistoryAnalyzer {
 	}
 
 	private void storeMappingData() {
-		repoToGitMethods.put(this.repo, this.gitMethods);
-		repoToRenaming.put(this.repo, this.renaming);
+		repoToGitMethods.put(this.repoPath, this.gitMethods);
+		repoToRenaming.put(this.repoPath, this.renaming);
 	}
 
 	/**
@@ -419,7 +419,7 @@ public class GitHistoryAnalyzer {
 				this.renaming = repoToRenaming.get(repoPath);
 				return null;
 			}
-			this.repo = repoPath;
+			this.repoPath = repoPath;
 		}
 		return git;
 	}
