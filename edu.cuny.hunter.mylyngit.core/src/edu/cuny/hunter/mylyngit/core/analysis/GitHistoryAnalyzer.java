@@ -34,6 +34,8 @@ import org.eclipse.jgit.diff.DiffEntry;
 import org.eclipse.jgit.diff.DiffFormatter;
 import org.eclipse.jgit.diff.Edit;
 import org.eclipse.jgit.diff.EditList;
+import org.eclipse.jgit.diff.RenameDetector;
+import org.eclipse.jgit.diff.DiffEntry.ChangeType;
 import org.eclipse.jgit.errors.CorruptObjectException;
 import org.eclipse.jgit.errors.IncorrectObjectTypeException;
 import org.eclipse.jgit.errors.MissingObjectException;
@@ -249,36 +251,92 @@ public class GitHistoryAnalyzer {
 		try (DiffFormatter formatter = new DiffFormatter(outputStream)) {
 			formatter.setRepository(git.getRepository());
 			formatter.scan(oldTreeIterator, newTreeIterator);
-
-			for (DiffEntry diffEntry : diffs) {
-
-				FileHeader fileHeader = formatter.toFileHeader(diffEntry);
-
-				String filePath = null;
-
-				switch (diffEntry.getChangeType()) {
-				case ADD:
-					filePath = this.addFile(currentCommit, git.getRepository(), diffEntry);
-					break;
-				case DELETE:
-					filePath = this.deleteFile(previousCommit, git.getRepository(), diffEntry);
-					break;
-				case MODIFY:
-					filePath = this.modifyFile(currentCommit, previousCommit, git.getRepository(), diffEntry,
-							fileHeader);
-					break;
-				case RENAME:
-				case COPY:
-					filePath = this.renameOrCopyFile(currentCommit, git.getRepository(), diffEntry);
-					break;
-				default:
-					break;
-				}
-
-				this.storeAllMethodOps(currentCommit, filePath, diffEntry.getChangeType().name());
-				this.clear();
-			}
+			// process renaming files and non-renaming files respectively.
+			List<DiffEntry> renamingFiles = this.processRenamingFiles(diffs, git.getRepository(), currentCommit,
+					previousCommit, formatter);
+			this.processNonRenamingFiles(diffs, renamingFiles, formatter, currentCommit, previousCommit,
+					git.getRepository());
 		}
+	}
+
+	/**
+	 * Process non-renaming files.
+	 */
+	private void processNonRenamingFiles(List<DiffEntry> inputFiles, List<DiffEntry> renamingFiles,
+			DiffFormatter formatter, RevCommit currentCommit, RevCommit previousCommit, Repository repo)
+			throws CorruptObjectException, MissingObjectException, IOException {
+		// remove renaming files.
+		this.computeNonRenamingFiles(inputFiles, renamingFiles);
+
+		for (DiffEntry diffEntry : inputFiles) {
+
+			FileHeader fileHeader = formatter.toFileHeader(diffEntry);
+
+			String filePath = null;
+
+			switch (diffEntry.getChangeType()) {
+			case ADD:
+				filePath = this.addFile(currentCommit, repo, diffEntry);
+				break;
+			case DELETE:
+				filePath = this.deleteFile(previousCommit, repo, diffEntry);
+				break;
+			case MODIFY:
+				filePath = this.modifyFile(currentCommit, previousCommit, repo, diffEntry, fileHeader);
+				break;
+			default:
+				break;
+			}
+
+			this.storeAllMethodOps(currentCommit, filePath, diffEntry.getChangeType().name());
+			this.clear();
+		}
+	}
+
+	private void computeNonRenamingFiles(List<DiffEntry> inputFiles, List<DiffEntry> renamingFiles) {
+		HashSet<String> renamingFilePaths = new HashSet<String>();
+		for (DiffEntry renamingFile : renamingFiles) {
+			renamingFilePaths.add(renamingFile.getOldPath());
+			renamingFilePaths.add(renamingFile.getNewPath());
+		}
+		HashSet<DiffEntry> removeFiles = new HashSet<DiffEntry>();
+		inputFiles.forEach(file -> {
+			if (file.getChangeType().equals(ChangeType.RENAME) || file.getChangeType().equals(ChangeType.COPY)
+					|| renamingFilePaths.contains(file.getOldPath()) || renamingFilePaths.contains(file.getNewPath()))
+				removeFiles.add(file);
+		});
+		inputFiles.removeAll(removeFiles);
+	}
+
+	/**
+	 * Process renaming files.
+	 */
+	private List<DiffEntry> processRenamingFiles(List<DiffEntry> inputFiles, Repository repo, RevCommit currentCommit,
+			RevCommit previousCommit, DiffFormatter formatter) throws IOException {
+		List<DiffEntry> renamingFiles = this.getRenameFiles(inputFiles, repo);
+		for (DiffEntry file : renamingFiles) {
+			String filePath = null;
+			this.modifyFile(currentCommit, previousCommit, repo, file, formatter.toFileHeader(file));
+			filePath = this.renameOrCopyFile(currentCommit, repo, file);
+			this.storeAllMethodOps(currentCommit, filePath, file.getChangeType().name());
+			this.clear();
+		}
+		return renamingFiles;
+	}
+
+	/**
+	 * Return a list of renaming files.
+	 */
+	private List<DiffEntry> getRenameFiles(List<DiffEntry> inputFiles, Repository repo) throws IOException {
+		RenameDetector rd = new RenameDetector(repo);
+		rd.addAll(inputFiles);
+		List<DiffEntry> files = rd.compute();
+		List<DiffEntry> renameFiles = new LinkedList<>();
+		files.forEach(file -> {
+			if (file.getChangeType().equals(ChangeType.RENAME) || file.getChangeType().equals(ChangeType.COPY))
+				renameFiles.add(file);
+		});
+		return renameFiles;
 	}
 
 	/**
@@ -296,7 +354,6 @@ public class GitHistoryAnalyzer {
 	 */
 	private String renameOrCopyFile(RevCommit currentCommit, Repository repo, DiffEntry diffEntry)
 			throws MissingObjectException, IncorrectObjectTypeException, CorruptObjectException, IOException {
-		this.copyHistoricalFile(currentCommit, repo, diffEntry.getNewPath(), "tmp_B_");
 
 		this.methodDeclarationsForB.forEach(methodDec -> {
 			// add vertex
