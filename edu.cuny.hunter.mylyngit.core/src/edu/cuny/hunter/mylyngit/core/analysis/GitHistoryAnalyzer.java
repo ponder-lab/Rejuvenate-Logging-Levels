@@ -673,7 +673,7 @@ public class GitHistoryAnalyzer {
 		// Get the empty or existing file in the new directory.
 		File file = this.getFile(fileName, newDirectory);
 		if (file == null)
-			return -1;
+			return 0;
 		// Copy the file content into the new file.
 		FileOutputStream fileOutputStream = new FileOutputStream(file.getAbsolutePath(), false);
 		loader.copyTo(fileOutputStream);
