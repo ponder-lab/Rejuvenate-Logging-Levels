@@ -62,8 +62,6 @@ public class EvaluationHandler extends AbstractHandler {
 	private static final boolean USE_LOG_CATEGORY_CONFIG_DEFAULT = false;
 	private static final boolean USE_GIT_HISTORY = false;
 
-	private ResultForCommit resultCommit = new ResultForCommit();
-
 	@Override
 	public Object execute(ExecutionEvent event) throws ExecutionException {
 		Optional<IProgressMonitor> monitor = Optional.empty();
@@ -206,10 +204,8 @@ public class EvaluationHandler extends AbstractHandler {
 							this.printBoundaryDefault(sequence, project.getElementName(), boundary, doiPrinter);
 						}
 
-					if (this.useGitHistory() && !logRejuvenatingProcessor.isSameRepo()) {
-						// Clear commit info in results.csv
-						this.resultCommit.clear();
-
+					ResultForCommit resultCommit = new ResultForCommit();
+					if (this.useGitHistory()) {
 						LinkedList<Commit> commits = logRejuvenatingProcessor.getCommits();
 						commits.forEach(c -> {
 							try {
@@ -219,17 +215,16 @@ public class EvaluationHandler extends AbstractHandler {
 							} catch (IOException e) {
 								LOGGER.warning("Cannot print commits correctly.");
 							}
-							this.resultCommit.computLines(c);
+							resultCommit.computLines(c);
 						});
-						this.resultCommit.setActualCommits(commits.size());
+						resultCommit.setActualCommits(commits.size());
 					}
 
 					resultPrinter.printRecord(sequence, project.getElementName(), NToUseCommit,
-							this.resultCommit.getActualCommits(), logInvocationSet.size(),
-							passingLogInvocationSet.size(), errorEntries.size(), transformedLogInvocationSet.size(),
-							this.resultCommit.getAverageJavaLinesAdded(),
-							this.resultCommit.getAverageJavaLinesRemoved(), this.useLogCategory(),
-							this.useLogCategoryWithConfig(), this.notLowerLogLevelInCatchBlock(),
+							resultCommit.getActualCommits(), logInvocationSet.size(), passingLogInvocationSet.size(),
+							errorEntries.size(), transformedLogInvocationSet.size(),
+							resultCommit.getAverageJavaLinesAdded(), resultCommit.getAverageJavaLinesRemoved(),
+							this.useLogCategory(), this.useLogCategoryWithConfig(), this.notLowerLogLevelInCatchBlock(),
 							resultsTimeCollector.getCollectedTime() / 1000);
 				}
 

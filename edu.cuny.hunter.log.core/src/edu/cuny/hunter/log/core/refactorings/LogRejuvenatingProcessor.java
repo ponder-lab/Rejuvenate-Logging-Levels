@@ -20,7 +20,6 @@ import org.eclipse.jdt.core.IPackageFragmentRoot;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.ltk.core.refactoring.Change;
-import org.eclipse.ltk.core.refactoring.NullChange;
 import org.eclipse.ltk.core.refactoring.RefactoringDescriptor;
 import org.eclipse.ltk.core.refactoring.RefactoringStatus;
 import org.eclipse.ltk.core.refactoring.participants.CheckConditionsContext;
@@ -70,8 +69,6 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 
 	// It the caller Evaluation plugin?
 	private boolean isEvaluation = false;
-
-	private boolean isSameRepo = false;
 
 	private LinkedList<Commit> commits = new LinkedList<>();
 
@@ -195,7 +192,6 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 				mylynProvider = new MylynGitPredictionProvider(this.NToUseForCommits);
 				this.processGitHistory(mylynProvider, analyzer, jproj);
 				this.setCommits(mylynProvider.getCommits());
-				this.setSameRepo(mylynProvider.isSameRepo());
 			}
 
 			analyzer.analyze();
@@ -353,13 +349,4 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 	private void setCommits(LinkedList<Commit> commits) {
 		this.commits = commits;
 	}
-
-	public boolean isSameRepo() {
-		return isSameRepo;
-	}
-
-	private void setSameRepo(boolean isSameRepo) {
-		this.isSameRepo = isSameRepo;
-	}
-
 }
