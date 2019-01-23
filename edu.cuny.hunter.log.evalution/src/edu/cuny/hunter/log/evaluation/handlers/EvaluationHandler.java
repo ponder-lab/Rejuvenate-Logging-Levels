@@ -233,10 +233,9 @@ public class EvaluationHandler extends AbstractHandler {
 							this.resultCommit.getAverageJavaLinesRemoved(), this.useLogCategory(),
 							this.useLogCategoryWithConfig(), this.notLowerLogLevelInCatchBlock(),
 							resultsTimeCollector.getCollectedTime() / 1000);
-
 				}
 
-				// Clear intermediate data for mylyngit plugin.
+				// Clear intermediate data for mylyn-git plug-in.
 				MylynGitPredictionProvider.clearMappingData();
 
 				resultPrinter.close();
