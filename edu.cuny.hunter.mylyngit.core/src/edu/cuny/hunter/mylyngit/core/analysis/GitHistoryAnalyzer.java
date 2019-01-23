@@ -662,7 +662,7 @@ public class GitHistoryAnalyzer {
 		treeWalk.setRecursive(true);
 		treeWalk.setFilter(PathFilter.create(path));
 		if (!treeWalk.next()) {
-			return -1;
+			return 0;
 		}
 		ObjectId objectId = treeWalk.getObjectId(0);
 		ObjectLoader loader = repo.open(objectId);
