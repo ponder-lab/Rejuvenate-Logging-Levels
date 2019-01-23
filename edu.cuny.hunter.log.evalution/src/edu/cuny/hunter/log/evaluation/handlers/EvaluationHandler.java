@@ -90,10 +90,10 @@ public class EvaluationHandler extends AbstractHandler {
 				CSVPrinter resultPrinter = Util.createCSVPrinter("result.csv",
 						new String[] { "sequence", "subject", "N for commits", "actual number of commits",
 								"input logging statements", "passing logging statements", "failures",
-								"transformed logging statements", "average lines added", "average lines removed",
-								"average Java lines added", "average Java lines removed",
-								"use log category (SEVERE/WARNING/CONFIG)", "use log category (CONFIG)",
-								"not lower log levels of logs inside of catch blocks", "time (s)" });
+								"transformed logging statements", "average Java lines added",
+								"average Java lines removed", "use log category (SEVERE/WARNING/CONFIG)",
+								"use log category (CONFIG)", "not lower log levels of logs inside of catch blocks",
+								"time (s)" });
 				CSVPrinter actionPrinter = Util.createCSVPrinter("log_transformation_actions.csv",
 						new String[] { "sequence", "subject", "log expression", "start pos", "log level", "type FQN",
 								"enclosing method", "action" });
@@ -109,8 +109,7 @@ public class EvaluationHandler extends AbstractHandler {
 				CSVPrinter doiPrinter = Util.createCSVPrinter("DOI_boundaries.csv",
 						new String[] { "sequence", "subject", "DOI boundary", "log level" });
 				CSVPrinter gitCommitPrinter = Util.createCSVPrinter("git_commits.csv",
-						new String[] { "subject", "SHA1", "lines added", "lines removed",
-								"Java lines added", "Java lines removed", "methods found",
+						new String[] { "subject", "SHA1", "Java lines added", "Java lines removed", "methods found",
 								"interaction events", "run time (s)" });
 
 				String sequence = this.getRunId();
@@ -214,9 +213,9 @@ public class EvaluationHandler extends AbstractHandler {
 						LinkedList<Commit> commits = logRejuvenatingProcessor.getCommits();
 						commits.forEach(c -> {
 							try {
-								gitCommitPrinter.printRecord(project.getElementName(), c.getSHA1(), c.getLinesAdded(),
-										c.getLinesRemoved(), c.getJavaLinesAdded(), c.getJavaLinesRemoved(),
-										c.getMethodFound(), c.getInteractionEvents(), c.getRunTime());
+								gitCommitPrinter.printRecord(project.getElementName(), c.getSHA1(),
+										c.getJavaLinesAdded(), c.getJavaLinesRemoved(), c.getMethodFound(),
+										c.getInteractionEvents(), c.getRunTime());
 							} catch (IOException e) {
 								LOGGER.warning("Cannot print commits correctly.");
 							}
@@ -228,7 +227,6 @@ public class EvaluationHandler extends AbstractHandler {
 					resultPrinter.printRecord(sequence, project.getElementName(), NToUseCommit,
 							this.resultCommit.getActualCommits(), logInvocationSet.size(),
 							passingLogInvocationSet.size(), errorEntries.size(), transformedLogInvocationSet.size(),
-							this.resultCommit.getAverageLinesAdded(), this.resultCommit.getAverageLinesRemoved(),
 							this.resultCommit.getAverageJavaLinesAdded(),
 							this.resultCommit.getAverageJavaLinesRemoved(), this.useLogCategory(),
 							this.useLogCategoryWithConfig(), this.notLowerLogLevelInCatchBlock(),

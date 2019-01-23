@@ -3,12 +3,6 @@ package edu.cuny.hunter.mylyngit.core.utils;
 public class Commit {
 	// SHA1 of the commit
 	private String SHA1;
-
-	// Number of lines added in the commit
-	private int linesAdded = 0;
-
-	// Number of lines removed in the commit
-	private int linesRemoved = 0;
 	
 	// Number of java lines added in the commit
 	private int javaLinesAdded = 0;
@@ -35,22 +29,6 @@ public class Commit {
 
 	public void setSHA1(String SHA1) {
 		this.SHA1 = SHA1;
-	}
-
-	public int getLinesAdded() {
-		return this.linesAdded;
-	}
-
-	public void setLinesAdded(int linesAdded) {
-		this.linesAdded = linesAdded;
-	}
-
-	public int getLinesRemoved() {
-		return this.linesRemoved;
-	}
-
-	public void setLinesRemoved(int linesRemoved) {
-		this.linesRemoved = linesRemoved;
 	}
 
 	public int getMethodFound() {

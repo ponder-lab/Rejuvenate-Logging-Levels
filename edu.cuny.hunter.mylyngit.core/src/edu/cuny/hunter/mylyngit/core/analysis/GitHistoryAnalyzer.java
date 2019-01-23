@@ -34,7 +34,6 @@ import org.eclipse.jgit.diff.DiffEntry;
 import org.eclipse.jgit.diff.DiffFormatter;
 import org.eclipse.jgit.diff.Edit;
 import org.eclipse.jgit.diff.EditList;
-import org.eclipse.jgit.diff.DiffEntry.ChangeType;
 import org.eclipse.jgit.errors.CorruptObjectException;
 import org.eclipse.jgit.errors.IncorrectObjectTypeException;
 import org.eclipse.jgit.errors.MissingObjectException;
@@ -97,8 +96,6 @@ public class GitHistoryAnalyzer {
 	private String repo;
 
 	// -------------------------- data for one commit ------------------------------
-	private int linesAdded = 0;
-	private int linesRemoved = 0;
 	private int javaLinesAdded = 0;
 	private int javaLinesRemoved = 0;
 	private int methodFound = 0;
@@ -164,8 +161,6 @@ public class GitHistoryAnalyzer {
 	 * Set data of commits for each git commit.
 	 */
 	private void setCommit(Commit commit, float runTime) {
-		commit.setLinesAdded(this.linesAdded);
-		commit.setLinesRemoved(this.linesRemoved);
 		commit.setJavaLinesAdded(this.javaLinesAdded);
 		commit.setJavaLinesRemoved(this.javaLinesRemoved);
 		commit.setMethodFound(this.methodFound);
@@ -178,8 +173,6 @@ public class GitHistoryAnalyzer {
 	 */
 	private void resetDataForOneCommit() {
 		this.clearFiles(new File("").getAbsoluteFile());
-		this.linesAdded = 0;
-		this.linesRemoved = 0;
 		this.javaLinesAdded = 0;
 		this.javaLinesRemoved = 0;
 		this.methodFound = 0;
@@ -265,9 +258,6 @@ public class GitHistoryAnalyzer {
 			for (DiffEntry diffEntry : diffs) {
 
 				FileHeader fileHeader = formatter.toFileHeader(diffEntry);
-				// Count lines added/removed
-				if (!diffEntry.getChangeType().equals(ChangeType.MODIFY))
-					this.countLinesInEdits(diffEntry, fileHeader);
 
 				String filePath = null;
 
@@ -297,24 +287,6 @@ public class GitHistoryAnalyzer {
 	}
 
 	/**
-	 * Compute non-Java source file changes.
-	 */
-	private void countLinesInEdits(DiffEntry diffEntry, FileHeader fileHeader) {
-		List<? extends HunkHeader> hunks = fileHeader.getHunks();
-		for (HunkHeader hunk : hunks) {
-			EditList editList = hunk.toEditList();
-			if (!editList.isEmpty()) {
-				// For each pair of edit
-				for (Edit edit : editList) {
-					this.linesAdded += edit.getEndA() - edit.getBeginA();
-					this.linesRemoved += edit.getEndB() - edit.getBeginB();
-
-				}
-			}
-		}
-	}
-
-	/**
 	 * Returns a sequence of methods in the git history. Each instance stores method
 	 * signature, method ops, file path, file ops, commit index and commit name.
 	 */
@@ -330,10 +302,9 @@ public class GitHistoryAnalyzer {
 	private String renameOrCopyFile(RevCommit currentCommit, Repository repo, DiffEntry diffEntry)
 			throws MissingObjectException, IncorrectObjectTypeException, CorruptObjectException, IOException {
 		long lines = this.copyHistoricalFile(currentCommit, repo, diffEntry.getNewPath(), "tmp_B_");
-		if (lines != -1) {
-			this.javaLinesAdded += lines;
-			this.javaLinesRemoved += lines;
-		}
+		// Count Java source changes.
+		this.javaLinesAdded += lines;
+		this.javaLinesRemoved += lines;
 
 		this.methodDeclarationsForB.forEach(methodDec -> {
 			// add vertex
@@ -409,9 +380,9 @@ public class GitHistoryAnalyzer {
 			throws MissingObjectException, IncorrectObjectTypeException, CorruptObjectException, IOException {
 
 		// Get the file for revision A
-		this.copyHistoricalFile(previousCommit, repo, diffEntry.getOldPath(), "tmp_A_");
+		long lines = this.copyHistoricalFile(previousCommit, repo, diffEntry.getOldPath(), "tmp_A_");
 		// Get the file for revision B
-		this.copyHistoricalFile(currentCommit, repo, diffEntry.getNewPath(), "tmp_B_");
+		lines += this.copyHistoricalFile(currentCommit, repo, diffEntry.getNewPath(), "tmp_B_");
 
 		// For revision A, get the differences
 		this.computeMethodPositions(this.methodDeclarationsForA, this.methodPositionsForA);
@@ -426,8 +397,7 @@ public class GitHistoryAnalyzer {
 			if (!editList.isEmpty()) {
 				// For each pair of edit
 				for (Edit edit : editList) {
-					this.processEditsForModifyingFiles(edit, editId++);
-
+					this.processEditsForModifyingFiles(edit, editId++, lines);
 				}
 			}
 		}
@@ -437,19 +407,19 @@ public class GitHistoryAnalyzer {
 	}
 
 	/**
-	 * Process edits while modifying files and also records Java/non-Java lines
-	 * added/removed.
+	 * Process edits while modifying files and also records Java lines (check java
+	 * file at first) added/removed.
 	 */
-	private void processEditsForModifyingFiles(Edit edit, int editId) {
-		int linesR = this.mapEditToMethod(editId, edit.getBeginA(), edit.getEndA(), this.methodPositionsForA,
-				this.editToMethodDeclarationForA);
-		this.linesRemoved += linesR;
-		this.javaLinesRemoved += linesR;
+	private void processEditsForModifyingFiles(Edit edit, int editId, long lines) {
+		// We are analyzing Java files.
+		if (lines > 0) {
+			this.javaLinesRemoved += this.mapEditToMethod(editId, edit.getBeginA(), edit.getEndA(),
+					this.methodPositionsForA, this.editToMethodDeclarationForA);
 
-		int linesA = this.mapEditToMethod(editId, edit.getBeginB(), edit.getEndB(), this.methodPositionsForB,
-				this.editToMethodDeclarationForB);
-		this.linesAdded += linesA;
-		this.javaLinesAdded += linesA;
+			this.javaLinesAdded += this.mapEditToMethod(editId, edit.getBeginB(), edit.getEndB(),
+					this.methodPositionsForB, this.editToMethodDeclarationForB);
+		}
+
 	}
 
 	/**
@@ -458,9 +428,7 @@ public class GitHistoryAnalyzer {
 	private String addFile(RevCommit currentCommit, Repository repo, DiffEntry diffEntry)
 			throws MissingObjectException, IncorrectObjectTypeException, CorruptObjectException, IOException {
 		// Get the file for revision B
-		long linesAddedForFile = this.copyHistoricalFile(currentCommit, repo, diffEntry.getNewPath(), "tmp_B_");
-		if (linesAddedForFile != -1)
-			this.javaLinesAdded += linesAddedForFile;
+		this.javaLinesAdded += this.copyHistoricalFile(currentCommit, repo, diffEntry.getNewPath(), "tmp_B_");
 		this.methodDeclarationsForB.forEach(methodDec -> {
 			this.putIntoMethodToOps(this.methodSignaturesToOps, Util.getMethodSignature(methodDec),
 					TypesOfMethodOperations.ADD);
@@ -475,9 +443,7 @@ public class GitHistoryAnalyzer {
 	private String deleteFile(RevCommit previousCommit, Repository repo, DiffEntry diffEntry)
 			throws MissingObjectException, IncorrectObjectTypeException, CorruptObjectException, IOException {
 		// Get the file for revision A
-		long linesRemovedForFile = this.copyHistoricalFile(previousCommit, repo, diffEntry.getOldPath(), "tmp_A_");
-		if (linesRemovedForFile != -1)
-			this.javaLinesRemoved += linesRemovedForFile;
+		this.javaLinesRemoved += this.copyHistoricalFile(previousCommit, repo, diffEntry.getOldPath(), "tmp_A_");
 		this.methodDeclarationsForA.forEach(methodDec -> {
 			this.putIntoMethodToOps(this.methodSignaturesToOps, Util.getMethodSignature(methodDec),
 					TypesOfMethodOperations.DELETE);
@@ -579,10 +545,10 @@ public class GitHistoryAnalyzer {
 			HashMap<MethodDeclaration, Map<Integer, Integer>> methodPositions,
 			HashMap<Integer, HashSet<MethodDeclaration>> editToMethodDeclaration) {
 		for (int line = editStart + 1; line <= editEnd; ++line) {
-			addCorrespondingMethod(editId, methodPositions, editToMethodDeclaration, line);
+			this.addCorrespondingMethod(editId, methodPositions, editToMethodDeclaration, line);
 		}
 		if (editStart == editEnd)
-			addCorrespondingMethod(editId, methodPositions, editToMethodDeclaration, editEnd + 1);
+			this.addCorrespondingMethod(editId, methodPositions, editToMethodDeclaration, editEnd + 1);
 		return editEnd - editStart;
 	}
 
@@ -638,7 +604,7 @@ public class GitHistoryAnalyzer {
 		// Check whether it is java file at first
 		String fileName = getJavaFileName(path);
 		if (fileName == null)
-			return -1;
+			return 0;
 
 		// It is a java file.
 		RevTree tree = commit.getTree();
