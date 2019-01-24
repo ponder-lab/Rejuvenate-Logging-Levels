@@ -93,15 +93,15 @@ public class GitHistoryAnalyzer {
 	private LinkedList<Commit> commits = new LinkedList<Commit>();
 
 	// the file index
-	private int commitIndex = 0;
+	private int commitIndex;
 
 	private String repoPath;
 
 	// -------------------------- data for one commit ------------------------------
-	private int javaLinesAdded = 0;
-	private int javaLinesRemoved = 0;
-	private int methodFound = 0;
-	private int interactionEvent = 0;
+	private int javaLinesAdded;
+	private int javaLinesRemoved;
+	private int methodFound;
+	private int interactionEvent;
 	// -----------------------------------------------------------------------------
 
 	/**
@@ -157,7 +157,7 @@ public class GitHistoryAnalyzer {
 	/**
 	 * Set data of commits for each git commit.
 	 */
-	private void setCommit(Commit commit, float runTime) {
+	private void setCommit(Commit commit, double runTime) {
 		commit.setJavaLinesAdded(this.javaLinesAdded);
 		commit.setJavaLinesRemoved(this.javaLinesRemoved);
 		commit.setMethodFound(this.methodFound);

@@ -1,23 +1,35 @@
 package edu.cuny.hunter.mylyngit.core.utils;
 
 public class Commit {
-	// SHA1 of the commit
+	/**
+	 * SHA1 of the commit
+	 */
 	private String SHA1;
 	
-	// Number of java lines added in the commit
-	private int javaLinesAdded = 0;
+	/**
+	 * Number of java lines added in the commit
+	 */
+	private int javaLinesAdded;
 	
-	// Number of java lines removed in the commit
-	private int javaLinesRemoved = 0;
+	/**
+	 * Number of java lines removed in the commit
+	 */
+	private int javaLinesRemoved;
 
-	// Number of methods found and processed
-	private int methodFound = 0;
+	/**
+	 * Number of methods found and processed
+	 */
+	private int methodFound;
 
-	// Number of interaction events created
-	private int interactionEvents = 0;
+	/**
+	 * Number of interaction events created
+	 */
+	private int interactionEvents;
 
-	// Time needed to process the commit in seconds
-	private float runTime;
+	/**
+	 * Time needed to process the commit in seconds
+	 */
+	private double runTime;
 
 	public Commit(String SHA1) {
 		this.SHA1 = SHA1;
@@ -47,11 +59,11 @@ public class Commit {
 		this.interactionEvents = interactionEvents;
 	}
 
-	public float getRunTime() {
+	public double getRunTime() {
 		return this.runTime;
 	}
 
-	public void setRunTime(float runTime) {
+	public void setRunTime(double runTime) {
 		this.runTime = runTime;
 	}
 
