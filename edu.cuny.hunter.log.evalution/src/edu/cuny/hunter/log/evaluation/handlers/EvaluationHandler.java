@@ -225,7 +225,7 @@ public class EvaluationHandler extends AbstractHandler {
 							errorEntries.size(), transformedLogInvocationSet.size(),
 							resultCommit.getAverageJavaLinesAdded(), resultCommit.getAverageJavaLinesRemoved(),
 							this.useLogCategory(), this.useLogCategoryWithConfig(), this.notLowerLogLevelInCatchBlock(),
-							resultsTimeCollector.getCollectedTime() / 1000);
+							resultsTimeCollector.getCollectedTime());
 				}
 
 				// Clear intermediate data for mylyn-git plug-in.

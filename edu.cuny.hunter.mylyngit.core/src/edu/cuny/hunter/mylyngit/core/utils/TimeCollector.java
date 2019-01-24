@@ -1,9 +1,9 @@
 package edu.cuny.hunter.mylyngit.core.utils;
 
 /**
-* @author raffi
-*
-*/
+ * @author raffi
+ *
+ */
 public class TimeCollector {
 
 	private long collectedTime;
@@ -16,8 +16,11 @@ public class TimeCollector {
 		this.collectedTime = 0;
 	}
 
-	public long getCollectedTime() {
-		return this.collectedTime;
+	/**
+	 * Let's return seconds.
+	 */
+	public double getCollectedTime() {
+		return ((double) this.collectedTime) / 1000;
 	}
 
 	public void start() {

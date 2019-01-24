@@ -140,7 +140,7 @@ public class GitHistoryAnalyzer {
 				}
 				commitTimeCollector.stop();
 
-				this.setCommit(commit, commitTimeCollector.getCollectedTime() / 1000);
+				this.setCommit(commit, commitTimeCollector.getCollectedTime());
 				this.commits.add(commit);
 
 				this.commitIndex++;
