@@ -284,6 +284,8 @@ public class GitHistoryAnalyzer {
 			case MODIFY:
 				filePath = this.modifyFile(currentCommit, previousCommit, repo, diffEntry, fileHeader);
 				break;
+			case COPY:
+				filePath = this.renameOrCopyFile(currentCommit, repo, diffEntry);
 			default:
 				break;
 			}
@@ -301,7 +303,7 @@ public class GitHistoryAnalyzer {
 		}
 		HashSet<DiffEntry> removeFiles = new HashSet<DiffEntry>();
 		inputFiles.forEach(file -> {
-			if (file.getChangeType().equals(ChangeType.RENAME) || file.getChangeType().equals(ChangeType.COPY)
+			if (file.getChangeType().equals(ChangeType.RENAME)
 					|| renamingFilePaths.contains(file.getOldPath()) || renamingFilePaths.contains(file.getNewPath()))
 				removeFiles.add(file);
 		});
@@ -333,7 +335,7 @@ public class GitHistoryAnalyzer {
 		List<DiffEntry> files = rd.compute();
 		List<DiffEntry> renameFiles = new LinkedList<>();
 		files.forEach(file -> {
-			if (file.getChangeType().equals(ChangeType.RENAME) || file.getChangeType().equals(ChangeType.COPY))
+			if (file.getChangeType().equals(ChangeType.RENAME))
 				renameFiles.add(file);
 		});
 		return renameFiles;
