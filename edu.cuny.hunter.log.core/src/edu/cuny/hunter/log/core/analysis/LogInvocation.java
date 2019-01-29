@@ -73,37 +73,9 @@ public class LogInvocation {
 		this.updateDOI();
 	}
 
-	private void calculateNewLevel() {
-		switch (this.getAction()) {
-		case CONVERT_TO_FINEST:
-			this.newLogLevel = Level.FINEST;
-			break;
-		case CONVERT_TO_FINER:
-			this.newLogLevel = Level.FINER;
-			break;
-		case CONVERT_TO_FINE:
-			this.newLogLevel = Level.FINE;
-			break;
-		case CONVERT_TO_CONFIG:
-			this.newLogLevel = Level.CONFIG;
-			break;
-		case CONVERT_TO_INFO:
-			this.newLogLevel = Level.INFO;
-			break;
-		case CONVERT_TO_WARNING:
-			this.newLogLevel = Level.WARNING;
-			break;
-		case CONVERT_TO_SEVERE:
-			this.newLogLevel = Level.SEVERE;
-			break;
-		default:
-			break;
-		}
-	}
-
-	public void setAction(Action action) {
+	public void setAction(Action action, Level newLogLevel) {
 		this.action = action;
-		this.calculateNewLevel();
+		this.newLogLevel = newLogLevel;
 	}
 
 	public float getDegreeOfInterestValue() {

@@ -112,7 +112,7 @@ public class LogAnalyzer extends ASTVisitor {
 				|| (logInvocation.getInCatchBlock() // process not lower log levels in catch blocks
 						&& (currentLogLevel.intValue() > rejuvenatedLogLevel.intValue()))) {
 
-			logInvocation.setAction(Action.NONE);
+			logInvocation.setAction(Action.NONE, null);
 			return false;
 		}
 
@@ -120,19 +120,19 @@ public class LogAnalyzer extends ASTVisitor {
 			return false;
 
 		if (rejuvenatedLogLevel == Level.FINEST)
-			logInvocation.setAction(Action.CONVERT_TO_FINEST);
+			logInvocation.setAction(Action.CONVERT_TO_FINEST, Level.FINEST);
 		if (rejuvenatedLogLevel == Level.FINER)
-			logInvocation.setAction(Action.CONVERT_TO_FINER);
+			logInvocation.setAction(Action.CONVERT_TO_FINER, Level.FINER);
 		if (rejuvenatedLogLevel == Level.FINE)
-			logInvocation.setAction(Action.CONVERT_TO_FINE);
+			logInvocation.setAction(Action.CONVERT_TO_FINE, Level.FINE);
 		if (rejuvenatedLogLevel == Level.CONFIG)
-			logInvocation.setAction(Action.CONVERT_TO_CONFIG);
+			logInvocation.setAction(Action.CONVERT_TO_CONFIG, Level.CONFIG);
 		if (rejuvenatedLogLevel == Level.INFO)
-			logInvocation.setAction(Action.CONVERT_TO_INFO);
+			logInvocation.setAction(Action.CONVERT_TO_INFO, Level.INFO);
 		if (rejuvenatedLogLevel == Level.WARNING)
-			logInvocation.setAction(Action.CONVERT_TO_WARNING);
+			logInvocation.setAction(Action.CONVERT_TO_WARNING, Level.WARNING);
 		if (rejuvenatedLogLevel == Level.SEVERE)
-			logInvocation.setAction(Action.CONVERT_TO_SEVERE);
+			logInvocation.setAction(Action.CONVERT_TO_SEVERE, Level.SEVERE);
 
 		return true;
 	}
