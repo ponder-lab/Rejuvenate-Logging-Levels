@@ -38,6 +38,8 @@ public class MylynGitPredictionProvider extends AbstractJavaRelationProvider {
 
 	private static final String Name = "mylyn git";
 
+	private String repoURL = "";
+
 	public MylynGitPredictionProvider() {
 		super("java", ID);
 	}
@@ -128,7 +130,10 @@ public class MylynGitPredictionProvider extends AbstractJavaRelationProvider {
 	private void bumpDOIValuesForAllGitMethods(IJavaProject javaProject) throws GitAPIException, IOException {
 		File repo = this.getRepoFile(javaProject);
 		GitHistoryAnalyzer gitHistoryAnalyzer = new GitHistoryAnalyzer(repo, NToUseForCommits);
+		// store commits and remote URL of repository
 		this.setCommits(gitHistoryAnalyzer.getCommits());
+		this.setRepoURL(gitHistoryAnalyzer.getRepoURL());
+
 		LinkedList<GitMethod> gitMethods = gitHistoryAnalyzer.getGitMethods();
 		gitMethods.forEach(method -> {
 			bumpDOIValuesForMethod(method, gitHistoryAnalyzer);
@@ -260,5 +265,13 @@ public class MylynGitPredictionProvider extends AbstractJavaRelationProvider {
 
 	private void setCommits(LinkedList<Commit> commits) {
 		this.commits = commits;
+	}
+
+	public String getRepoURL() {
+		return repoURL;
+	}
+
+	public void setRepoURL(String repoURL) {
+		this.repoURL = repoURL;
 	}
 }

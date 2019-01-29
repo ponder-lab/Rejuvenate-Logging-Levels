@@ -96,6 +96,8 @@ public class GitHistoryAnalyzer {
 	private int commitIndex;
 
 	private String repoPath;
+	
+	private String repoURL;
 
 	// -------------------------- data for one commit ------------------------------
 	private int javaLinesAdded;
@@ -118,6 +120,8 @@ public class GitHistoryAnalyzer {
 			if (git == null)
 				return;
 
+			this.setRepoURL(git.getRepository().getConfig().getString( "remote", "origin", "url" ));
+			
 			// from the earliest commit to the current commit
 			for (RevCommit currentCommit : this.commitList) {
 
@@ -1016,6 +1020,14 @@ public class GitHistoryAnalyzer {
 
 	public void setJavaLinesAdded(int javaLinesAdded) {
 		this.javaLinesAdded = javaLinesAdded;
+	}
+
+	public String getRepoURL() {
+		return repoURL;
+	}
+
+	private void setRepoURL(String repoURL) {
+		this.repoURL = repoURL;
 	}
 
 }

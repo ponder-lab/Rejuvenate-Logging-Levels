@@ -86,6 +86,8 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 	 * It the caller Evaluation plugin?
 	 */
 	private boolean isEvaluation = false;
+	
+	private String repoURL = "";
 
 	public LogRejuvenatingProcessor(final CodeGenerationSettings settings) {
 		super(settings);
@@ -207,6 +209,7 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 				mylynProvider = new MylynGitPredictionProvider(this.NToUseForCommits);
 				this.processGitHistory(mylynProvider, analyzer, jproj);
 				this.setCommits(mylynProvider.getCommits());
+				this.setRepoURL(mylynProvider.getRepoURL());
 			}
 
 			analyzer.analyze();
@@ -363,5 +366,13 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 
 	private void setCommits(LinkedList<Commit> commits) {
 		this.commits = commits;
+	}
+
+	public String getRepoURL() {
+		return repoURL;
+	}
+
+	public void setRepoURL(String repoURL) {
+		this.repoURL = repoURL;
 	}
 }

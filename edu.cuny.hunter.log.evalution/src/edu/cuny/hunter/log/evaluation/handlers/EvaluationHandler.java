@@ -86,9 +86,9 @@ public class EvaluationHandler extends AbstractHandler {
 			try {
 
 				CSVPrinter resultPrinter = Util.createCSVPrinter("result.csv",
-						new String[] { "sequence", "subject", "SHA-1 of head", "N for commits", "actual number of commits",
-								"input logging statements", "passing logging statements", "failures",
-								"transformed logging statements", "average Java lines added",
+						new String[] { "sequence", "repo URL", "subject", "SHA-1 of head", "N for commits",
+								"actual number of commits", "input logging statements", "passing logging statements",
+								"failures", "transformed logging statements", "average Java lines added",
 								"average Java lines removed", "use log category (SEVERE/WARNING/CONFIG)",
 								"use log category (CONFIG)", "not lower log levels of logs inside of catch blocks",
 								"time (s)" });
@@ -219,13 +219,15 @@ public class EvaluationHandler extends AbstractHandler {
 						});
 						resultCommit.setActualCommits(commits.size());
 						resultCommit.setHeadSha(commits.getLast().getSHA1());
+						resultCommit.setRepoURL(logRejuvenatingProcessor.getRepoURL());
 					}
 
-					resultPrinter.printRecord(sequence, project.getElementName(), resultCommit.getHeadSha(), NToUseCommit,
-							resultCommit.getActualCommits(), logInvocationSet.size(), passingLogInvocationSet.size(),
-							errorEntries.size(), transformedLogInvocationSet.size(),
-							resultCommit.getAverageJavaLinesAdded(), resultCommit.getAverageJavaLinesRemoved(),
-							this.useLogCategory(), this.useLogCategoryWithConfig(), this.notLowerLogLevelInCatchBlock(),
+					resultPrinter.printRecord(sequence, resultCommit.getRepoURL(), project.getElementName(),
+							resultCommit.getHeadSha(), NToUseCommit, resultCommit.getActualCommits(),
+							logInvocationSet.size(), passingLogInvocationSet.size(), errorEntries.size(),
+							transformedLogInvocationSet.size(), resultCommit.getAverageJavaLinesAdded(),
+							resultCommit.getAverageJavaLinesRemoved(), this.useLogCategory(),
+							this.useLogCategoryWithConfig(), this.notLowerLogLevelInCatchBlock(),
 							resultsTimeCollector.getCollectedTime());
 				}
 
