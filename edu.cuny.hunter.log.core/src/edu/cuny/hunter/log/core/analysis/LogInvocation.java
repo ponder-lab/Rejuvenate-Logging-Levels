@@ -31,12 +31,22 @@ import edu.cuny.hunter.log.core.utils.Util;
 
 @SuppressWarnings("restriction")
 public class LogInvocation {
+	/**
+	 * Transformation actions.
+	 */
+	private Action action;
 
+	/**
+	 * Current log level.
+	 */
 	private final Level logLevel;
+	
+	/**
+	 * Current log level.
+	 */
+	private Level newLogLevel;
 
 	private boolean inCatchBlock = false;
-	
-	private Action action;
 
 	private float degreeOfInterestValue;
 
@@ -63,8 +73,37 @@ public class LogInvocation {
 		this.updateDOI();
 	}
 
+	private void calculateNewLevel() {
+		switch (this.getAction()) {
+		case CONVERT_TO_FINEST:
+			this.newLogLevel = Level.FINEST;
+			break;
+		case CONVERT_TO_FINER:
+			this.newLogLevel = Level.FINER;
+			break;
+		case CONVERT_TO_FINE:
+			this.newLogLevel = Level.FINE;
+			break;
+		case CONVERT_TO_CONFIG:
+			this.newLogLevel = Level.CONFIG;
+			break;
+		case CONVERT_TO_INFO:
+			this.newLogLevel = Level.INFO;
+			break;
+		case CONVERT_TO_WARNING:
+			this.newLogLevel = Level.WARNING;
+			break;
+		case CONVERT_TO_SEVERE:
+			this.newLogLevel = Level.SEVERE;
+			break;
+		default:
+			break;
+		}
+	}
+
 	public void setAction(Action action) {
 		this.action = action;
+		this.calculateNewLevel();
 	}
 
 	public float getDegreeOfInterestValue() {
@@ -104,7 +143,7 @@ public class LogInvocation {
 	}
 
 	/**
-	 * Through the enclosing type, I can type FQN
+	 * Through the enclosing type, I can get type FQN
 	 */
 	public IType getEnclosingType() {
 		MethodDeclaration enclosingMethodDeclaration = getEnclosingMethodDeclaration();
@@ -199,9 +238,13 @@ public class LogInvocation {
 			return true;
 		return false;
 	}
-	
+
 	public boolean getInCatchBlock() {
 		return this.inCatchBlock;
+	}
+
+	public Level getNewLogLevel() {
+		return newLogLevel;
 	}
 
 	/**

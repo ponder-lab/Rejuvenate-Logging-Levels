@@ -94,7 +94,7 @@ public class EvaluationHandler extends AbstractHandler {
 								"time (s)" });
 				CSVPrinter actionPrinter = Util.createCSVPrinter("log_transformation_actions.csv",
 						new String[] { "sequence", "subject", "log expression", "start pos", "log level", "type FQN",
-								"enclosing method", "DOI value", "action", "transformation distance", "transformation direction"});
+								"enclosing method", "DOI value", "action", "new level"});
 				CSVPrinter inputLogInvPrinter = Util.createCSVPrinter("input_log_invocations.csv",
 						new String[] { "subject", "log expression", "start pos", "log level", "type FQN",
 								"enclosing method", "DOI value" });
@@ -179,7 +179,7 @@ public class EvaluationHandler extends AbstractHandler {
 								logInvocation.getStartPosition(), logInvocation.getLogLevel(),
 								logInvocation.getEnclosingType().getFullyQualifiedName(),
 								Util.getMethodIdentifier(logInvocation.getEnclosingEclipseMethod()), logInvocation.getDegreeOfInterestValue(),
-								logInvocation.getAction());
+								logInvocation.getAction(), logInvocation.getNewLogLevel());
 					}
 
 					LinkedList<Float> boundary = logRejuvenatingProcessor.getBoundary();
