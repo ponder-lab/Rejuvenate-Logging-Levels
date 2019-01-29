@@ -50,7 +50,8 @@ public class LogAnalyzer extends ASTVisitor {
 		return this.boundary;
 	}
 
-	public LogAnalyzer(boolean useConfigLogLevelCategory, boolean useLogLevelCategory, boolean notLowerLogLevelInCatchBlock) {
+	public LogAnalyzer(boolean useConfigLogLevelCategory, boolean useLogLevelCategory,
+			boolean notLowerLogLevelInCatchBlock) {
 		this.useLogCategoryWithConfig = useConfigLogLevelCategory;
 		this.useLogCategory = useLogLevelCategory;
 		this.notLowerLogLevelInCatchBlock = notLowerLogLevelInCatchBlock;
@@ -266,7 +267,8 @@ public class LogAnalyzer extends ASTVisitor {
 		}
 
 		if (logLevel != null)
-			this.createLogInvocation(node, logLevel, this.notLowerLogLevelInCatchBlock && this.checkLogInCatchBlock(node));
+			this.createLogInvocation(node, logLevel,
+					this.notLowerLogLevelInCatchBlock && this.checkLogInCatchBlock(node));
 
 		return super.visit(node);
 	}
