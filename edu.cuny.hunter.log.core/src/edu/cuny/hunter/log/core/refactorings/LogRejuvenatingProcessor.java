@@ -44,33 +44,48 @@ import edu.cuny.hunter.mylyngit.core.utils.Commit;
 @SuppressWarnings({ "restriction", "deprecation" })
 public class LogRejuvenatingProcessor extends RefactoringProcessor {
 
-	private IJavaProject[] javaProjects;
+	private static final Logger LOGGER = Logger.getLogger(LoggerNames.LOGGER_NAME);	
 
 	private Set<LogInvocation> logInvocationSet = new HashSet<>();
 
+	private LinkedList<Commit> commits = new LinkedList<>();
+	
+	private IJavaProject[] javaProjects;
+
+	/**
+	 * Boundary for DOI values of enclosing methods
+	 */
 	private LinkedList<Float> boundary;
 
-	private static final Logger LOGGER = Logger.getLogger(LoggerNames.LOGGER_NAME);
-
-	// Treat CONFIG as category
+	/**
+	 * Treat CONFIG as category
+	 */
 	private boolean useLogCategoryWithConfig = false;
 
-	// Treat CONFIG/WARNING/SEVERE log levels as category
+	/**
+	 * Treat CONFIG/WARNING/SEVERE log levels as category
+	 */
 	private boolean useLogCategory = false;
 
-	// Should we use git history to bump DOI values for all methods?
+	/**
+	 * Should we use git history to bump DOI values for all methods?
+	 */
 	private boolean useGitHistory = true;
 
-	// Should we consider logging statements in catch blocks?
+	/**
+	 * Should we consider logging statements in catch blocks?
+	 */
 	private boolean notLowerLogLevelInCatchBlock = true;
 
-	// Limit number of commits
+	/**
+	 * Limit number of commits
+	 */
 	private int NToUseForCommits = 100;
 
-	// It the caller Evaluation plugin?
+	/**
+	 * It the caller Evaluation plugin?
+	 */
 	private boolean isEvaluation = false;
-
-	private LinkedList<Commit> commits = new LinkedList<>();
 
 	public LogRejuvenatingProcessor(final CodeGenerationSettings settings) {
 		super(settings);
