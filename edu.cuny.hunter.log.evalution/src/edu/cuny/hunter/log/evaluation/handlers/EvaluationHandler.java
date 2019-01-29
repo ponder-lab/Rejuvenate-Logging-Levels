@@ -86,7 +86,7 @@ public class EvaluationHandler extends AbstractHandler {
 			try {
 
 				CSVPrinter resultPrinter = Util.createCSVPrinter("result.csv",
-						new String[] { "sequence", "repo URL", "subject", "SHA-1 of head", "N for commits",
+						new String[] { "sequence", "subject", "repo URL", "SHA-1 of head", "N for commits",
 								"actual number of commits", "input logging statements", "passing logging statements",
 								"failures", "transformed logging statements", "average Java lines added",
 								"average Java lines removed", "use log category (SEVERE/WARNING/CONFIG)",
@@ -178,8 +178,9 @@ public class EvaluationHandler extends AbstractHandler {
 						actionPrinter.printRecord(sequence, project.getElementName(), logInvocation.getExpression(),
 								logInvocation.getStartPosition(), logInvocation.getLogLevel(),
 								logInvocation.getEnclosingType().getFullyQualifiedName(),
-								Util.getMethodIdentifier(logInvocation.getEnclosingEclipseMethod()), logInvocation.getDegreeOfInterestValue(),
-								logInvocation.getAction(), logInvocation.getNewLogLevel());
+								Util.getMethodIdentifier(logInvocation.getEnclosingEclipseMethod()),
+								logInvocation.getDegreeOfInterestValue(), logInvocation.getAction(),
+								logInvocation.getNewLogLevel());
 					}
 
 					LinkedList<Float> boundary = logRejuvenatingProcessor.getBoundary();
@@ -210,7 +211,7 @@ public class EvaluationHandler extends AbstractHandler {
 						resultCommit.setRepoURL(logRejuvenatingProcessor.getRepoURL());
 					}
 
-					resultPrinter.printRecord(sequence, resultCommit.getRepoURL(), project.getElementName(),
+					resultPrinter.printRecord(sequence, project.getElementName(), resultCommit.getRepoURL(),
 							resultCommit.getHeadSha(), NToUseCommit, resultCommit.getActualCommits(),
 							logInvocationSet.size(), passingLogInvocationSet.size(), errorEntries.size(),
 							transformedLogInvocationSet.size(), resultCommit.getAverageJavaLinesAdded(),
