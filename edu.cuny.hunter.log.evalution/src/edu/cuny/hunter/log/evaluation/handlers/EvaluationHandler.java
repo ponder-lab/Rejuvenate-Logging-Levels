@@ -94,12 +94,9 @@ public class EvaluationHandler extends AbstractHandler {
 								"time (s)" });
 				CSVPrinter actionPrinter = Util.createCSVPrinter("log_transformation_actions.csv",
 						new String[] { "sequence", "subject", "log expression", "start pos", "log level", "type FQN",
-								"enclosing method", "action" });
+								"enclosing method", "DOI value", "action", "transformation distance", "transformation direction"});
 				CSVPrinter inputLogInvPrinter = Util.createCSVPrinter("input_log_invocations.csv",
 						new String[] { "subject", "log expression", "start pos", "log level", "type FQN",
-								"enclosing method", "DOI value" });
-				CSVPrinter transformedLogInvPrinter = Util.createCSVPrinter("transformed_log_invocations.csv",
-						new String[] { "sequence", "subject", "log expression", "start pos", "log level", "type FQN",
 								"enclosing method", "DOI value" });
 				CSVPrinter failurePrinter = Util.createCSVPrinter("failures.csv",
 						new String[] { "sequence", "subject", "log expression", "start pos", "log level", "type FQN",
@@ -177,20 +174,11 @@ public class EvaluationHandler extends AbstractHandler {
 					Set<LogInvocation> transformedLogInvocationSet = logRejuvenatingProcessor.getTransformedLog();
 
 					for (LogInvocation logInvocation : transformedLogInvocationSet) {
-						// print transformed log Invocations
-						transformedLogInvPrinter.printRecord(sequence, project.getElementName(),
-								logInvocation.getExpression(), logInvocation.getStartPosition(),
-								logInvocation.getLogLevel(), logInvocation.getEnclosingType().getFullyQualifiedName(),
-								Util.getMethodIdentifier(logInvocation.getEnclosingEclipseMethod()),
-								logInvocation.getDegreeOfInterestValue());
-					}
-
-					for (LogInvocation logInvocation : transformedLogInvocationSet) {
 						// print actions
 						actionPrinter.printRecord(sequence, project.getElementName(), logInvocation.getExpression(),
 								logInvocation.getStartPosition(), logInvocation.getLogLevel(),
 								logInvocation.getEnclosingType().getFullyQualifiedName(),
-								Util.getMethodIdentifier(logInvocation.getEnclosingEclipseMethod()),
+								Util.getMethodIdentifier(logInvocation.getEnclosingEclipseMethod()), logInvocation.getDegreeOfInterestValue(),
 								logInvocation.getAction());
 					}
 
@@ -238,7 +226,6 @@ public class EvaluationHandler extends AbstractHandler {
 				actionPrinter.close();
 				inputLogInvPrinter.close();
 				failurePrinter.close();
-				transformedLogInvPrinter.close();
 				doiPrinter.close();
 				gitCommitPrinter.close();
 			} catch (IOException e) {
