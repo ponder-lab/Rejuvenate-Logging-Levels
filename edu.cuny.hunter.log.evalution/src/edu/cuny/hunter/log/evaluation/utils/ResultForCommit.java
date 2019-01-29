@@ -3,6 +3,7 @@ package edu.cuny.hunter.log.evaluation.utils;
 import edu.cuny.hunter.mylyngit.core.utils.Commit;
 
 public class ResultForCommit {
+	private String headSha = "";
 	private long javaLinesAdded = 0;
 	private long javaLinesRemoved = 0;
 	private int actualCommits = 0;
@@ -48,5 +49,13 @@ public class ResultForCommit {
 
 	public void setJavaLinesRemoved(long javaLinesRemoved) {
 		this.javaLinesRemoved = javaLinesRemoved;
+	}
+
+	public String getHeadSha() {
+		return headSha;
+	}
+
+	public void setHeadSha(String headSha) {
+		this.headSha = headSha;
 	}
 }
