@@ -87,6 +87,11 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 	 */
 	private boolean isEvaluation = false;
 	
+	/**
+	 * Should we analyze same subprojects in a same repository?
+	 */
+	private boolean isSameRepo;
+	
 	private String repoURL = "";
 
 	public LogRejuvenatingProcessor(final CodeGenerationSettings settings) {
@@ -210,6 +215,7 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 				this.processGitHistory(mylynProvider, analyzer, jproj);
 				this.setCommits(mylynProvider.getCommits());
 				this.setRepoURL(mylynProvider.getRepoURL());
+				this.setSameRepo(mylynProvider.isSameRepo());
 			}
 
 			analyzer.analyze();
@@ -374,5 +380,13 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 
 	public void setRepoURL(String repoURL) {
 		this.repoURL = repoURL;
+	}
+
+	public boolean isSameRepo() {
+		return isSameRepo;
+	}
+
+	public void setSameRepo(boolean isSameRepo) {
+		this.isSameRepo = isSameRepo;
 	}
 }

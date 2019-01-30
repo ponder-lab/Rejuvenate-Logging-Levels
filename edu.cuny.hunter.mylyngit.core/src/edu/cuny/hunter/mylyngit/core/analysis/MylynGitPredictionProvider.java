@@ -39,6 +39,8 @@ public class MylynGitPredictionProvider extends AbstractJavaRelationProvider {
 	private static final String Name = "mylyn git";
 
 	private String repoURL = "";
+	
+	private boolean sameRepo;
 
 	public MylynGitPredictionProvider() {
 		super("java", ID);
@@ -133,6 +135,7 @@ public class MylynGitPredictionProvider extends AbstractJavaRelationProvider {
 		// store commits and remote URL of repository
 		this.setCommits(gitHistoryAnalyzer.getCommits());
 		this.setRepoURL(gitHistoryAnalyzer.getRepoURL());
+		this.setSameRepo(gitHistoryAnalyzer.isSameRepo());
 
 		LinkedList<GitMethod> gitMethods = gitHistoryAnalyzer.getGitMethods();
 		gitMethods.forEach(method -> {
@@ -273,5 +276,13 @@ public class MylynGitPredictionProvider extends AbstractJavaRelationProvider {
 
 	public void setRepoURL(String repoURL) {
 		this.repoURL = repoURL;
+	}
+
+	public boolean isSameRepo() {
+		return sameRepo;
+	}
+
+	public void setSameRepo(boolean sameRepo) {
+		this.sameRepo = sameRepo;
 	}
 }

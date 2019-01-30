@@ -110,12 +110,15 @@ public class EvaluationHandler extends AbstractHandler {
 						new String[] { "subject", "SHA1", "Java lines added", "Java lines removed", "methods found",
 								"interaction events", "run time (s)" });
 
-				String sequence = this.getRunId();
+				ResultForCommit resultCommit = new ResultForCommit();
 
-				// for each selected java project
-				for (IJavaProject project : javaProjectList) {
+				for (int i = 0; i < 6; ++i) {
 
-					for (int i = 0; i < 6; ++i) {
+					String sequence = this.getRunId();
+					
+					// for each selected java project
+					for (IJavaProject project : javaProjectList) {
+
 						this.loadSettings(i);
 
 						// collect running time.
@@ -138,14 +141,15 @@ public class EvaluationHandler extends AbstractHandler {
 						Set<LogInvocation> logInvocationSet = logRejuvenatingProcessor.getLogInvocationSet();
 
 						// print input log invocations
-						for (LogInvocation logInvocation : logInvocationSet) {
-							// Print input log invocations
-							inputLogInvPrinter.printRecord(project.getElementName(), logInvocation.getExpression(),
-									logInvocation.getStartPosition(), logInvocation.getLogLevel(),
-									logInvocation.getEnclosingType().getFullyQualifiedName(),
-									Util.getMethodIdentifier(logInvocation.getEnclosingEclipseMethod()),
-									logInvocation.getDegreeOfInterestValue());
-						}
+						if (!logRejuvenatingProcessor.isSameRepo())
+							for (LogInvocation logInvocation : logInvocationSet) {
+								// Print input log invocations
+								inputLogInvPrinter.printRecord(project.getElementName(), logInvocation.getExpression(),
+										logInvocation.getStartPosition(), logInvocation.getLogLevel(),
+										logInvocation.getEnclosingType().getFullyQualifiedName(),
+										Util.getMethodIdentifier(logInvocation.getEnclosingEclipseMethod()),
+										logInvocation.getDegreeOfInterestValue());
+							}
 
 						// get the difference of log invocations and passing log invocations
 						HashSet<LogInvocation> failures = new HashSet<LogInvocation>();
@@ -201,7 +205,7 @@ public class EvaluationHandler extends AbstractHandler {
 								this.printBoundaryDefault(sequence, project.getElementName(), boundary, doiPrinter);
 							}
 
-						ResultForCommit resultCommit = new ResultForCommit();
+						resultCommit.clear();
 						if (this.getValueOfUseGitHistory()) {
 							LinkedList<Commit> commits = logRejuvenatingProcessor.getCommits();
 							commits.forEach(c -> {
@@ -228,10 +232,9 @@ public class EvaluationHandler extends AbstractHandler {
 								this.isUseLogCategoryWithConfig(), this.isNotLowerLogLevel(),
 								resultsTimeCollector.getCollectedTime());
 					}
+					// Clear intermediate data for mylyn-git plug-in.
+					MylynGitPredictionProvider.clearMappingData();
 				}
-
-				// Clear intermediate data for mylyn-git plug-in.
-				MylynGitPredictionProvider.clearMappingData();
 
 				resultPrinter.close();
 				actionPrinter.close();
@@ -254,7 +257,6 @@ public class EvaluationHandler extends AbstractHandler {
 	 * option. We need triple-digit binary. This option is the second digit.
 	 */
 	private boolean computeLogCategoryWithConfig(int i) {
-		System.out.println(i / 2);
 		if ((i / 2) % 2 == 1)
 			return true;
 		return false;

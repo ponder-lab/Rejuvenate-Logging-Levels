@@ -91,6 +91,8 @@ public class GitHistoryAnalyzer {
 	// -----------------------------------------------------------------------------
 
 	private LinkedList<Commit> commits = new LinkedList<Commit>();
+	
+	private boolean sameRepo;
 
 	// the file index
 	private int commitIndex;
@@ -116,8 +118,8 @@ public class GitHistoryAnalyzer {
 	 */
 	public GitHistoryAnalyzer(File repoFile, int NToUseForCommits) throws GitAPIException, IOException {
 		try (Git git = preProcessGitHistory(repoFile, NToUseForCommits)) {
-			// Already evaluated before
-			if (git == null)
+			// Already evaluated before or no repo
+			if (git == null) 
 				return;
 
 			this.setRepoURL(git.getRepository().getConfig().getString( "remote", "origin", "url" ));
@@ -421,6 +423,7 @@ public class GitHistoryAnalyzer {
 		if (repoFile != null) {
 			String repoPath = repoFile.getAbsolutePath();
 			if (repoToGitMethods.containsKey(repoPath) && repoToRenaming.containsKey(repoPath)) {
+				this.setSameRepo(true);
 				this.gitMethods = repoToGitMethods.get(repoPath);
 				this.renaming = repoToRenaming.get(repoPath);
 				return null;
@@ -1028,6 +1031,14 @@ public class GitHistoryAnalyzer {
 
 	private void setRepoURL(String repoURL) {
 		this.repoURL = repoURL;
+	}
+
+	public boolean isSameRepo() {
+		return sameRepo;
+	}
+
+	public void setSameRepo(boolean sameRepo) {
+		this.sameRepo = sameRepo;
 	}
 
 }
