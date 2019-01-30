@@ -90,16 +90,20 @@ public class GitHistoryAnalyzer {
 	private static HashMap<String, Graph> repoToRenaming = new HashMap<>();
 	// -----------------------------------------------------------------------------
 
+	// For printing commits.
 	private LinkedList<Commit> commits = new LinkedList<Commit>();
-	
+
 	private boolean sameRepo;
 
 	// the file index
 	private int commitIndex;
 
 	private String repoPath;
-	
+
 	private String repoURL;
+
+	// Map repo path to URL
+	private static HashMap<String, String> pathToURL = new HashMap<>();
 
 	// -------------------------- data for one commit ------------------------------
 	private int javaLinesAdded;
@@ -119,11 +123,9 @@ public class GitHistoryAnalyzer {
 	public GitHistoryAnalyzer(File repoFile, int NToUseForCommits) throws GitAPIException, IOException {
 		try (Git git = preProcessGitHistory(repoFile, NToUseForCommits)) {
 			// Already evaluated before or no repo
-			if (git == null) 
+			if (git == null)
 				return;
 
-			this.setRepoURL(git.getRepository().getConfig().getString( "remote", "origin", "url" ));
-			
 			// from the earliest commit to the current commit
 			for (RevCommit currentCommit : this.commitList) {
 
@@ -152,7 +154,7 @@ public class GitHistoryAnalyzer {
 				this.commitIndex++;
 				this.resetDataForOneCommit();
 			}
-			this.storeMappingData();
+			this.storeMappingData(git);
 		}
 	}
 
@@ -182,9 +184,12 @@ public class GitHistoryAnalyzer {
 		this.interactionEvent = 0;
 	}
 
-	private void storeMappingData() {
+	private void storeMappingData(Git git) {
 		repoToGitMethods.put(this.repoPath, this.gitMethods);
 		repoToRenaming.put(this.repoPath, this.renaming);
+		// store remote URL of repository
+		this.setRepoURL(git.getRepository().getConfig().getString("remote", "origin", "url"));
+		pathToURL.put(this.repoPath, this.repoURL);
 	}
 
 	/**
@@ -307,8 +312,8 @@ public class GitHistoryAnalyzer {
 		}
 		HashSet<DiffEntry> removeFiles = new HashSet<DiffEntry>();
 		inputFiles.forEach(file -> {
-			if (file.getChangeType().equals(ChangeType.RENAME)
-					|| renamingFilePaths.contains(file.getOldPath()) || renamingFilePaths.contains(file.getNewPath()))
+			if (file.getChangeType().equals(ChangeType.RENAME) || renamingFilePaths.contains(file.getOldPath())
+					|| renamingFilePaths.contains(file.getNewPath()))
 				removeFiles.add(file);
 		});
 		inputFiles.removeAll(removeFiles);
@@ -339,9 +344,9 @@ public class GitHistoryAnalyzer {
 		List<DiffEntry> files = rd.compute();
 		List<DiffEntry> renameFiles = new LinkedList<>();
 		files.forEach(file -> {
-		    if (file.getScore() >= rd.getRenameScore()) {
-		    	renameFiles.add(file);
-		    }
+			if (file.getScore() >= rd.getRenameScore()) {
+				renameFiles.add(file);
+			}
 		});
 		inputFiles = files;
 		return renameFiles;
@@ -426,6 +431,9 @@ public class GitHistoryAnalyzer {
 				this.setSameRepo(true);
 				this.gitMethods = repoToGitMethods.get(repoPath);
 				this.renaming = repoToRenaming.get(repoPath);
+				// print repo path
+				if (pathToURL.keySet().contains(repoPath))
+					this.setRepoURL(pathToURL.get(repoPath));
 				return null;
 			}
 			this.repoPath = repoPath;
@@ -1007,6 +1015,7 @@ public class GitHistoryAnalyzer {
 	public static void clearMappingData() {
 		repoToGitMethods.clear();
 		repoToRenaming.clear();
+		pathToURL.clear();
 	}
 
 	public int getJavaLinesRemoved() {

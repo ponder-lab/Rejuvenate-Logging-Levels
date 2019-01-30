@@ -3,8 +3,7 @@ package edu.cuny.hunter.log.evaluation.utils;
 import edu.cuny.hunter.mylyngit.core.utils.Commit;
 
 public class ResultForCommit {
-	
-	private String repoURL = "";
+
 	private String headSha = "";
 	private long javaLinesAdded = 0;
 	private long javaLinesRemoved = 0;
@@ -54,14 +53,6 @@ public class ResultForCommit {
 
 	public void setHeadSha(String headSha) {
 		this.headSha = headSha;
-	}
-
-	public String getRepoURL() {
-		return repoURL;
-	}
-
-	public void setRepoURL(String repoURL) {
-		this.repoURL = repoURL;
 	}
 	
 	public void clear() {

@@ -205,6 +205,7 @@ public class EvaluationHandler extends AbstractHandler {
 							}
 
 						resultCommit.clear();
+
 						if (this.getValueOfUseGitHistory()) {
 							LinkedList<Commit> commits = logRejuvenatingProcessor.getCommits();
 							commits.forEach(c -> {
@@ -220,15 +221,15 @@ public class EvaluationHandler extends AbstractHandler {
 							resultCommit.setActualCommits(commits.size());
 							if (!commits.isEmpty())
 								resultCommit.setHeadSha(commits.getLast().getSHA1());
-							resultCommit.setRepoURL(logRejuvenatingProcessor.getRepoURL());
+
 						}
 
-						resultPrinter.printRecord(sequence, project.getElementName(), resultCommit.getRepoURL(),
-								resultCommit.getHeadSha(), NToUseCommit, resultCommit.getActualCommits(),
-								logInvocationSet.size(), passingLogInvocationSet.size(), errorEntries.size(),
-								transformedLogInvocationSet.size(), resultCommit.getAverageJavaLinesAdded(),
-								resultCommit.getAverageJavaLinesRemoved(), this.isUseLogCategory(),
-								this.isUseLogCategoryWithConfig(), this.isNotLowerLogLevel(),
+						resultPrinter.printRecord(sequence, project.getElementName(),
+								logRejuvenatingProcessor.getRepoURL(), resultCommit.getHeadSha(), NToUseCommit,
+								resultCommit.getActualCommits(), logInvocationSet.size(),
+								passingLogInvocationSet.size(), errorEntries.size(), transformedLogInvocationSet.size(),
+								resultCommit.getAverageJavaLinesAdded(), resultCommit.getAverageJavaLinesRemoved(),
+								this.isUseLogCategory(), this.isUseLogCategoryWithConfig(), this.isNotLowerLogLevel(),
 								resultsTimeCollector.getCollectedTime());
 					}
 				}
