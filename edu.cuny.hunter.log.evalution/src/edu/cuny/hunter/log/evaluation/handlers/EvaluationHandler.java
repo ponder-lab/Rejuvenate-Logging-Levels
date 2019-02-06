@@ -113,8 +113,8 @@ public class EvaluationHandler extends AbstractHandler {
 				ResultForCommit resultCommit = new ResultForCommit();
 
 				// for each selected java project
-				for (IJavaProject project : javaProjectList) {
-					for (int i = 0; i < 6; ++i) {
+				for (int i = 0; i < 6; ++i) {
+					for (IJavaProject project : javaProjectList) {
 
 						String sequence = this.getRunId();
 
@@ -232,10 +232,10 @@ public class EvaluationHandler extends AbstractHandler {
 								this.isUseLogCategory(), this.isUseLogCategoryWithConfig(), this.isNotLowerLogLevel(),
 								resultsTimeCollector.getCollectedTime());
 					}
-				}
 
-				// Clear intermediate data for mylyn-git plug-in.
-				MylynGitPredictionProvider.clearMappingData();
+					// Clear intermediate data for mylyn-git plug-in.
+					MylynGitPredictionProvider.clearMappingData();
+				}
 
 				resultPrinter.close();
 				actionPrinter.close();
