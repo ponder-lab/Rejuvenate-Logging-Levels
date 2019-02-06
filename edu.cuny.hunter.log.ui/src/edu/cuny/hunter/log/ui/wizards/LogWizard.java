@@ -176,9 +176,9 @@ public class LogWizard extends RefactoringWizard {
 		}
 
 		private void loadSettings() {
-			IDialogSettings sections = this.getDialogSettings().getSection(DIALOG_SETTING_SECTION);
-			if (this.settings == null && sections != null) {
-				this.settings = sections;
+			this.settings = this.getDialogSettings().getSection(DIALOG_SETTING_SECTION);
+			if (this.settings == null) {
+				this.settings = this.getDialogSettings().addNewSection(DIALOG_SETTING_SECTION);
 				this.settings.put(USE_LOG_CATEGORY_CONFIG, this.getProcessor().getParticularConfigLogLevel());
 				this.settings.put(USE_LOG_CATEGORY, this.getProcessor().getParticularLogLevel());
 				this.settings.put(USE_GIT_HISTORY, this.getProcessor().getGitHistory());
