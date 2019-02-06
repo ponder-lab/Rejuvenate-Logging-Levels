@@ -114,9 +114,9 @@ public class EvaluationHandler extends AbstractHandler {
 
 				// for each selected java project
 				for (int i = 0; i < 6; ++i) {
+					String sequence = this.getRunId();
+					
 					for (IJavaProject project : javaProjectList) {
-
-						String sequence = this.getRunId();
 
 						this.loadSettings(i);
 
