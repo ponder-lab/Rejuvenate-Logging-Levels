@@ -14,6 +14,7 @@ import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.ASTVisitor;
 import org.eclipse.jdt.core.dom.CatchClause;
 import org.eclipse.jdt.core.dom.CompilationUnit;
+import org.eclipse.jdt.core.dom.IMethodBinding;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.MethodInvocation;
 import org.eclipse.mylyn.context.core.IDegreeOfInterest;
@@ -296,9 +297,11 @@ public class LogAnalyzer extends ASTVisitor {
 
 	public void collectDOIValues(HashSet<MethodDeclaration> methods) {
 		methods.forEach(m -> {
-			IDegreeOfInterest degreeOfInterest = Util
-					.getDegreeOfInterest((IMethod) m.resolveBinding().getJavaElement());
-			this.DOIValues.add(Util.getDOIValue(degreeOfInterest));
+			IMethodBinding methodBinding = m.resolveBinding();
+			if (methodBinding != null) {
+				IDegreeOfInterest degreeOfInterest = Util.getDegreeOfInterest((IMethod) methodBinding.getJavaElement());
+				this.DOIValues.add(Util.getDOIValue(degreeOfInterest));
+			}
 		});
 	}
 

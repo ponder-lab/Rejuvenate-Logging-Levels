@@ -78,14 +78,16 @@ public class EvaluationHandler extends AbstractHandler {
 					HashSet<MethodDeclaration> methods = provider.getMethods();
 					for (MethodDeclaration m : methods) {
 						IMethodBinding methodBinding = m.resolveBinding();
-						IMethod iMethod = (IMethod) methodBinding.getJavaElement();
-						// Work around DOI values
-						float doiValue = Util.getDOIValue(iMethod);
-						if (!(Float.compare(0, doiValue) == 0)) {
-							resultPrinter.printRecord(javaProject.getElementName(), NToUseForCommit,
-									((IType) methodBinding.getDeclaringClass().getJavaElement())
-											.getFullyQualifiedName(),
-									Util.getMethodSignature(m), doiValue);
+						if (methodBinding != null) {
+							IMethod iMethod = (IMethod) methodBinding.getJavaElement();
+							// Work around DOI values
+							float doiValue = Util.getDOIValue(iMethod);
+							if (!(Float.compare(0, doiValue) == 0)) {
+								resultPrinter.printRecord(javaProject.getElementName(), NToUseForCommit,
+										((IType) methodBinding.getDeclaringClass().getJavaElement())
+												.getFullyQualifiedName(),
+										Util.getMethodSignature(m), doiValue);
+							}
 						}
 					}
 					provider.clearTaskContext();

@@ -15,6 +15,7 @@ import org.eclipse.jdt.core.dom.AST;
 import org.eclipse.jdt.core.dom.ASTParser;
 import org.eclipse.jdt.core.dom.ASTVisitor;
 import org.eclipse.jdt.core.dom.CompilationUnit;
+import org.eclipse.jdt.core.dom.IMethodBinding;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.api.errors.NoHeadException;
@@ -39,7 +40,7 @@ public class MylynGitPredictionProvider extends AbstractJavaRelationProvider {
 	private static final String Name = "mylyn git";
 
 	private String repoURL = "";
-	
+
 	private boolean sameRepo;
 
 	public MylynGitPredictionProvider() {
@@ -87,7 +88,9 @@ public class MylynGitPredictionProvider extends AbstractJavaRelationProvider {
 		});
 
 		this.methodDeclarations.forEach(m -> {
-			this.methodDecToIMethod.put(m, (IMethod) m.resolveBinding().getJavaElement());
+			IMethodBinding methodBinding = m.resolveBinding();
+			if (methodBinding != null)
+				this.methodDecToIMethod.put(m, (IMethod) methodBinding.getJavaElement());
 		});
 		this.bumpDOIValuesForAllGitMethods(javaProject);
 	}
