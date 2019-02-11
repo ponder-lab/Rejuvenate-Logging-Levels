@@ -93,8 +93,6 @@ public class GitHistoryAnalyzer {
 	// For printing commits.
 	private LinkedList<Commit> commits = new LinkedList<Commit>();
 
-	private boolean sameRepo;
-
 	// the file index
 	private int commitIndex;
 
@@ -428,7 +426,6 @@ public class GitHistoryAnalyzer {
 		if (repoFile != null) {
 			String repoPath = repoFile.getAbsolutePath();
 			if (repoToGitMethods.containsKey(repoPath) && repoToRenaming.containsKey(repoPath)) {
-				this.setSameRepo(true);
 				this.gitMethods = repoToGitMethods.get(repoPath);
 				this.renaming = repoToRenaming.get(repoPath);
 				// print repo path
@@ -1040,14 +1037,6 @@ public class GitHistoryAnalyzer {
 
 	private void setRepoURL(String repoURL) {
 		this.repoURL = repoURL;
-	}
-
-	public boolean isSameRepo() {
-		return sameRepo;
-	}
-
-	public void setSameRepo(boolean sameRepo) {
-		this.sameRepo = sameRepo;
 	}
 
 }

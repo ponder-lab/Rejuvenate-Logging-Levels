@@ -115,7 +115,7 @@ public class EvaluationHandler extends AbstractHandler {
 				// for each selected java project
 				for (int i = 0; i < 6; ++i) {
 					String sequence = this.getRunId();
-					
+
 					for (IJavaProject project : javaProjectList) {
 
 						this.loadSettings(i);
@@ -139,8 +139,9 @@ public class EvaluationHandler extends AbstractHandler {
 
 						Set<LogInvocation> logInvocationSet = logRejuvenatingProcessor.getLogInvocationSet();
 
-						// print input log invocations
-						if (!logRejuvenatingProcessor.isSameRepo())
+						// Just print once.
+						if (i == 0)
+							// print input log invocations
 							for (LogInvocation logInvocation : logInvocationSet) {
 								// Print input log invocations
 								inputLogInvPrinter.printRecord(project.getElementName(), logInvocation.getExpression(),
@@ -206,7 +207,7 @@ public class EvaluationHandler extends AbstractHandler {
 
 						resultCommit.clear();
 
-						if (this.getValueOfUseGitHistory()) {
+						if (i == 0 && this.getValueOfUseGitHistory()) {
 							LinkedList<Commit> commits = logRejuvenatingProcessor.getCommits();
 							commits.forEach(c -> {
 								try {

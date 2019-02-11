@@ -215,7 +215,6 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 				this.processGitHistory(mylynProvider, analyzer, jproj);
 				this.setCommits(mylynProvider.getCommits());
 				this.setRepoURL(mylynProvider.getRepoURL());
-				this.setSameRepo(mylynProvider.isSameRepo());
 			}
 
 			analyzer.analyze();
@@ -382,11 +381,4 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 		this.repoURL = repoURL;
 	}
 
-	public boolean isSameRepo() {
-		return isSameRepo;
-	}
-
-	public void setSameRepo(boolean isSameRepo) {
-		this.isSameRepo = isSameRepo;
-	}
 }
