@@ -207,18 +207,20 @@ public class EvaluationHandler extends AbstractHandler {
 
 						resultCommit.clear();
 
-						if (i == 0 && this.getValueOfUseGitHistory()) {
+						if (this.getValueOfUseGitHistory()) {
 							LinkedList<Commit> commits = logRejuvenatingProcessor.getCommits();
-							commits.forEach(c -> {
-								try {
-									gitCommitPrinter.printRecord(project.getElementName(), c.getSHA1(),
-											c.getJavaLinesAdded(), c.getJavaLinesRemoved(), c.getMethodFound(),
-											c.getInteractionEvents(), c.getRunTime());
-								} catch (IOException e) {
-									LOGGER.warning("Cannot print commits correctly.");
-								}
-								resultCommit.computLines(c);
-							});
+							// We only need to print once.
+							if (i == 0)
+								commits.forEach(c -> {
+									try {
+										gitCommitPrinter.printRecord(project.getElementName(), c.getSHA1(),
+												c.getJavaLinesAdded(), c.getJavaLinesRemoved(), c.getMethodFound(),
+												c.getInteractionEvents(), c.getRunTime());
+									} catch (IOException e) {
+										LOGGER.warning("Cannot print commits correctly.");
+									}
+									resultCommit.computLines(c);
+								});
 							resultCommit.setActualCommits(commits.size());
 							if (!commits.isEmpty())
 								resultCommit.setHeadSha(commits.getLast().getSHA1());
