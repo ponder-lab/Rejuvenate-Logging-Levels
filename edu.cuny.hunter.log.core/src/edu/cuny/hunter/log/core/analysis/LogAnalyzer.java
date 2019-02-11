@@ -101,6 +101,9 @@ public class LogAnalyzer extends ASTVisitor {
 
 		Level currentLogLevel = logInvocation.getLogLevel();
 		Level rejuvenatedLogLevel = getRejuvenatedLogLevel(this.boundary, logInvocation);
+		
+		if (rejuvenatedLogLevel == null || currentLogLevel == null)
+			return false;
 
 		if ((currentLogLevel == rejuvenatedLogLevel) // current log level is same to transformed log level
 
@@ -117,9 +120,6 @@ public class LogAnalyzer extends ASTVisitor {
 			logInvocation.setAction(Action.NONE, null);
 			return false;
 		}
-
-		if (rejuvenatedLogLevel == null || currentLogLevel == null)
-			return false;
 
 		if (rejuvenatedLogLevel == Level.FINEST)
 			logInvocation.setAction(Action.CONVERT_TO_FINEST, Level.FINEST);
