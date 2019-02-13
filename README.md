@@ -4,7 +4,8 @@
 
 ## Introduction
 
-<img src="https://github.com/ponder-lab/Logging-Level-Evolution-Plugin/blob/master/edu.cuny.hunter.log.ui/icons/icon.png" alt="Icon" align="left"/> Developers usually choose log levels to filter information they would like to print. However, developers cannot well estimate the cost and benefit for each log level, and log levels may change overtime with requirements. Our tools consist of logging plugin and mylyngit plugin which help developers adjust and rejuvenate log levels by using Degree of Interests (DOI) model.
+<img src="https://github.com/ponder-lab/Logging-Level-Evolution-Plugin/blob/master/edu.cuny.hunter.log.ui/icons/icon.png" alt="Icon" align="left"/> Developers usually choose log levels to filter information they would like to print. However, developers may not well estimate the cost and benefit for each log level, and log levels may change overtime with requirements. Our tools consist of Eclipse plugins which help developers adjust and rejuvenate log levels by using Degree of Interests (DOI) model. DOI value is a kind of real number for a program element which shows how developers are interested in it. It is computed from the interaction events between developer and element, such as developer edits the element. Transformation decision is made by analyzing the DOI values of enclosing methods for logging invocations.
+
 
 ## Screenshot
 
