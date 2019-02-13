@@ -4,7 +4,7 @@
 
 ## Introduction
 
-Developers usually choose log levels to filter information they would like to print. However, developers cannot well estimate the cost and benefit for each log level, and log levels may change overtime with requirements. Our tools consist of logging plugin and mylyngit plugin which help developers adjust and rejuvenate log levels by using Degree of Interests (DOI) model.
+<img src="https://raw.githubusercontent.com/ponder-lab/Logging-Level-Evolution-Plugin/master/edu.cuny.hunter.log.ui/icons/icon.png" alt="Icon" align="left"/> Developers usually choose log levels to filter information they would like to print. However, developers cannot well estimate the cost and benefit for each log level, and log levels may change overtime with requirements. Our tools consist of logging plugin and mylyngit plugin which help developers adjust and rejuvenate log levels by using Degree of Interests (DOI) model.
 
 ## Screenshot
 
