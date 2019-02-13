@@ -8,9 +8,18 @@
 
 
 ## Screenshot
-<img src="https://github.com/ponder-lab/Logging-Level-Evolution-Plugin/blob/master/edu.cuny.hunter.log.ui/icons/screenshot.png" alt="Screenshot"/>
+<img src="https://github.com/ponder-lab/Logging-Level-Evolution-Plugin/blob/master/edu.cuny.hunter.log.ui/icons/screenshot.png" alt="Screenshot" width=500px/>
 
 ## Usage
+
+
+## Options
+We have four categories of option settings:
+
+- Whether treat some log levels as a category not traditional log levels?
+- Whether use git history?
+- Wheher lower log levels of logging statements in catch blocks.
+- Limit the maximum number of git commits.
 
 ## Installation
 
@@ -29,3 +38,7 @@ JGit: http://download.eclipse.org/egit/updates-nightly <br/>
 
 The Common Refactoring Framework that the current tool uses requires Eclipse SDK, Eclipse SDK Tests, and Eclipse testing framework. Input 
 "<b>The Eclipse Project Updates - http://download.eclipse.org/eclipse/updates/4.9 </b>" in the field of "Work with" after you clicked on the "Install New Software..." menu option under "Help" in Eclipse, then please check and install the three software mentioned above.
+
+## Limitations
+
+There are some issues that we are still seeking for solutions. Our tool may miss log levels when log levels are passed via variables because we are not using data flow analysis [issue 47](https://github.com/ponder-lab/Logging-Level-Evolution-Plugin/issues/47). We are also dealing with other issues: [list of issues](https://github.com/ponder-lab/Logging-Level-Evolution-Plugin/issues).
