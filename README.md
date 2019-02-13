@@ -12,6 +12,23 @@
 
 ## Usage
 
+Our tool could be run in three different purposes. For each purpose, it could be run in two ways.
+
+**Purposes**:
+
+- Running transformation.
+  - The command: "rejunvenate a log level".
+- Running evaluator for log level rejuvenation.
+  - The command: "evaluate log projects".
+- Running evaluator for extract method changes from git history.
+  - The command: "evaluate mylyngit projects".
+
+**Two ways**:
+
+- Select projects -> Right click -> Choose "Refactor" -> Choose the command by different purpose you run the tool.
+
+- Quick Assess -> Choose command.
+
 
 ## Options
 We have four categories of option settings:
@@ -45,4 +62,4 @@ There are some issues that we are still seeking for solutions. Our tool may miss
 
 ## Further information
 
-Please see [wiki](https://github.com/ponder-lab/Logging-Level-Evolution-Plugin/wiki)
+Please see [wiki](https://github.com/ponder-lab/Logging-Level-Evolution-Plugin/wiki).
