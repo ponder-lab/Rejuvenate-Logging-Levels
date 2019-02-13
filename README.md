@@ -2,7 +2,19 @@
 
 [![Build Status](https://travis-ci.com/ponder-lab/Logging-Level-Evolution-Plugin.svg?token=gywSHb5G1W81zrovzorQ&branch=master)](https://travis-ci.com/ponder-lab/Logging-Level-Evolution-Plugin) [![Coverage Status](https://coveralls.io/repos/github/ponder-lab/Logging-Level-Evolution-Plugin/badge.svg?branch=master&t=SHx1bW)](https://coveralls.io/github/ponder-lab/Logging-Level-Evolution-Plugin?branch=master) [![Java profiler](https://www.ej-technologies.com/images/product_banners/jprofiler_small.png)](https://www.ej-technologies.com/products/jprofiler/overview.html)
 
-It's an eclipse plugin which researches logging level.
+## Introduction
+
+Developers usually choose log levels to filter information they would like to print. However, developers cannot well estimate the cost and benefit for each log level, and log levels may change overtime with requirements. Our tools consist of logging plugin and mylyngit plugin which help developers adjust and rejuvenate log levels by using Degree of Interests (DOI) model.
+
+## Screenshot
+
+## Usage
+
+## Installation
+
+TODO
+
+## Development platform
 
 It is developed on Eclipse for RCP and RAP, and its version is 2018-09. The download page: https://www.eclipse.org/downloads/packages/release/kepler/sr2/eclipse-rcp-and-rap-developers 
 
