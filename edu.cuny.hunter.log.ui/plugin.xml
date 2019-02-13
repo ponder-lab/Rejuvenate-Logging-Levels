@@ -33,31 +33,27 @@
    <extension
          point="org.eclipse.ui.menus">
       <menuContribution
-            locationURI="menu:org.eclipse.ui.main.menu?after=additions">
-         <menu
-               label="Sample Menu"
-               mnemonic="M"
-               id="edu.cuny.hunter.log.ui.menus.sampleMenu">
-            <command
-                  commandId="edu.cuny.hunter.log.ui.commands.sampleCommand"
-                  mnemonic="S"
-                  id="edu.cuny.hunter.log.ui.menus.sampleCommand">
-            </command>
-         </menu>
+            locationURI="menu:org.eclipse.jdt.ui.refactoring.menu?after=additions">
+         <command
+               commandId="edu.cuny.hunter.log.ui.commands.sampleCommand"
+               label="Rejuvenate log level."
+               style="push">
+            <visibleWhen
+                  checkEnabled="false">
+               <with
+                     variable="selection">
+                  <iterate
+                        ifEmpty="false"
+                        operator="or">
+                     <instanceof
+                           value="org.eclipse.jdt.core.IJavaProject">
+                     </instanceof>
+                  </iterate>
+               </with>
+            </visibleWhen>
+         </command>
       </menuContribution>
-      <menuContribution
-            locationURI="toolbar:org.eclipse.ui.main.toolbar?after=additions">
-         <toolbar
-               id="edu.cuny.hunter.log.ui.toolbars.sampleToolbar">
-            <command
-                  commandId="edu.cuny.hunter.log.ui.commands.sampleCommand"
-                  icon="icons/sample.png"
-                  tooltip="Say hello world"
-                  id="edu.cuny.hunter.log.ui.toolbars.sampleCommand">
-            </command>
-         </toolbar>
-      </menuContribution>
-      <menuContribution
+            <menuContribution
             allPopups="false"
             locationURI="popup:org.eclipse.jdt.ui.refactoring.menu?after=additions">
          <command

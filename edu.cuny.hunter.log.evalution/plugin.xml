@@ -33,32 +33,27 @@
    <extension
          point="org.eclipse.ui.menus">
       <menuContribution
-            locationURI="menu:org.eclipse.ui.main.menu?after=additions">
-         <menu
-               label="Sample Menu"
-               mnemonic="M"
-               id="edu.hunter.log.evaluation.menus.sampleMenu">
-            <command
-                  commandId="edu.hunter.log.evaluation.commands.sampleCommand"
-                  mnemonic="S"
-                  id="edu.hunter.log.evaluation.menus.sampleCommand">
-            </command>
-         </menu>
+            locationURI="menu:org.eclipse.jdt.ui.refactoring.menu?after=additions">
+         <command
+               commandId="edu.hunter.log.evaluation.commands.sampleCommand"
+               label="Evaluate log projects."
+               style="push">
+            <visibleWhen
+                  checkEnabled="false">
+               <with
+                     variable="selection">
+                  <iterate
+                        ifEmpty="false"
+                        operator="or">
+                     <instanceof
+                           value="org.eclipse.jdt.core.IJavaProject">
+                     </instanceof>
+                  </iterate>
+               </with>
+            </visibleWhen>
+         </command>
       </menuContribution>
       <menuContribution
-            locationURI="toolbar:org.eclipse.ui.main.toolbar?after=additions">
-         <toolbar
-               id="edu.hunter.log.evaluation.toolbars.sampleToolbar">
-            <command
-                  commandId="edu.hunter.log.evaluation.commands.sampleCommand"
-                  icon="icons/sample.png"
-                  tooltip="Say hello world"
-                  id="edu.hunter.log.evaluation.toolbars.sampleCommand">
-            </command>
-         </toolbar>
-      </menuContribution>
-      <menuContribution
-            allPopups="false"
             locationURI="popup:org.eclipse.jdt.ui.refactoring.menu?after=additions">
          <command
                commandId="edu.hunter.log.evaluation.commands.sampleCommand"
@@ -79,6 +74,7 @@
             </visibleWhen>
          </command>
       </menuContribution>
+
    </extension>
 
 </plugin>
