@@ -58,7 +58,7 @@ The Common Refactoring Framework that the current tool uses requires Eclipse SDK
 
 ## Limitations
 
-There are some issues that we are still seeking for solutions. Our tool may miss log levels when log levels are passed via variables because we are not using data flow analysis [issue 47](https://github.com/ponder-lab/Logging-Level-Evolution-Plugin/issues/47). We are also dealing with other issues: [list of issues](https://github.com/ponder-lab/Logging-Level-Evolution-Plugin/issues).
+Our tool may miss log levels when log levels are passed via parameters due to the current lack of data flow analysis [issue 47](https://github.com/ponder-lab/Logging-Level-Evolution-Plugin/issues/47).
 
 ## Further information
 
