@@ -87,11 +87,6 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 	 */
 	private boolean isEvaluation = false;
 	
-	/**
-	 * Should we analyze same subprojects in a same repository?
-	 */
-	private boolean isSameRepo;
-	
 	private String repoURL = "";
 
 	public LogRejuvenatingProcessor(final CodeGenerationSettings settings) {
