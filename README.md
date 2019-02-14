@@ -17,10 +17,10 @@ Our tool could be run in three different purposes. For each purpose, it could be
 **Purposes**:
 
 - Running transformation.
-  - The command: "rejunvenate a log level".
+  - The command: "rejuvenate a log level".
 - Running evaluator for log level rejuvenation.
   - The command: "evaluate log projects".
-- Running evaluator for extract method changes from git history.
+- Running evaluator for extracting method changes from git history.
   - The command: "evaluate mylyngit projects".
 
 **Two ways**:
@@ -35,7 +35,7 @@ We have four categories of option settings:
 
 - Whether treat some log levels as a category not traditional log levels?
 - Whether use git history?
-- Wheher lower log levels of logging statements in catch blocks.
+- Whether lower log levels of logging statements in catch blocks.
 - Limit the maximum number of git commits.
 
 ## Installation
@@ -48,7 +48,7 @@ It is developed on Eclipse for RCP and RAP, and its version is 2018-09. The down
 
 ## Dependencies
 
-Tycho: right click on the compliation error, then click on "discover m2e connectors". You need to install all four tycho plugins.
+Tycho: right click on the compilation error, then click on "discover m2e connectors". You need to install all four Tycho plugins.
 
 Mylyn: http://download.eclipse.org/mylyn/releases/3.23 <br/>
 JGit: http://download.eclipse.org/egit/updates-nightly <br/>
