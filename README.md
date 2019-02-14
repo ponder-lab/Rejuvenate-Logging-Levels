@@ -1,6 +1,6 @@
 # Logging-Level-Evolution-Plugin
 
-[![Build Status](https://travis-ci.com/ponder-lab/Logging-Level-Evolution-Plugin.svg?token=gywSHb5G1W81zrovzorQ&branch=master)](https://travis-ci.com/ponder-lab/Logging-Level-Evolution-Plugin) [![Coverage Status](https://coveralls.io/repos/github/ponder-lab/Logging-Level-Evolution-Plugin/badge.svg?branch=master&t=SHx1bW)](https://coveralls.io/github/ponder-lab/Logging-Level-Evolution-Plugin?branch=master) [![Java profiler](https://www.ej-technologies.com/images/product_banners/jprofiler_small.png)](https://www.ej-technologies.com/products/jprofiler/overview.html)
+[![Build Status](https://travis-ci.com/ponder-lab/Logging-Level-Evolution-Plugin.svg?token=gywSHb5G1W81zrovzorQ&branch=master)](https://travis-ci.com/ponder-lab/Logging-Level-Evolution-Plugin) [![Coverage Status](https://coveralls.io/repos/github/ponder-lab/Logging-Level-Evolution-Plugin/badge.svg?branch=master&t=SHx1bW)](https://coveralls.io/github/ponder-lab/Logging-Level-Evolution-Plugin?branch=master)[![GitHub license](https://img.shields.io/badge/license-Eclipse-blue.svg)](https://github.com/ponder-lab/Logging-Level-Evolution-Plugin/blob/master/LICENSE.txt) [![Java profiler](https://www.ej-technologies.com/images/product_banners/jprofiler_small.png)](https://www.ej-technologies.com/products/jprofiler/overview.html)
 
 ## Introduction
 
@@ -12,13 +12,30 @@
 
 ## Usage
 
+Our tool could be run in three different purposes. For each purpose, it could be run in two ways.
+
+**Purposes**:
+
+- Running transformation.
+  - The command: "rejuvenate a log level".
+- Running evaluator for log level rejuvenation.
+  - The command: "evaluate log projects".
+- Running evaluator for extracting method changes from git history.
+  - The command: "evaluate mylyngit projects".
+
+**Two ways**:
+
+- Select projects -> Right click -> Choose "Refactor" -> Choose the command by different purpose you run the tool.
+
+- Quick Assess -> Choose command.
+
 
 ## Options
 We have four categories of option settings:
 
 - Whether treat some log levels as a category not traditional log levels?
 - Whether use git history?
-- Wheher lower log levels of logging statements in catch blocks.
+- Whether lower log levels of logging statements in catch blocks.
 - Limit the maximum number of git commits.
 
 ## Installation
@@ -31,7 +48,7 @@ It is developed on Eclipse for RCP and RAP, and its version is 2018-09. The down
 
 ## Dependencies
 
-Tycho: right click on the compliation error, then click on "discover m2e connectors". You need to install all four tycho plugins.
+Tycho: right click on the compilation error, then click on "discover m2e connectors". You need to install all four Tycho plugins.
 
 Mylyn: http://download.eclipse.org/mylyn/releases/3.23 <br/>
 JGit: http://download.eclipse.org/egit/updates-nightly <br/>
@@ -41,8 +58,8 @@ The Common Refactoring Framework that the current tool uses requires Eclipse SDK
 
 ## Limitations
 
-There are some issues that we are still seeking for solutions. Our tool may miss log levels when log levels are passed via variables because we are not using data flow analysis [issue 47](https://github.com/ponder-lab/Logging-Level-Evolution-Plugin/issues/47). We are also dealing with other issues: [list of issues](https://github.com/ponder-lab/Logging-Level-Evolution-Plugin/issues).
+Our tool may miss log levels when log levels are passed via parameters due to the current lack of data flow analysis [issue 47](https://github.com/ponder-lab/Logging-Level-Evolution-Plugin/issues/47).
 
 ## Further information
 
-Please see [wiki](https://github.com/ponder-lab/Logging-Level-Evolution-Plugin/wiki)
+Please see [wiki](https://github.com/ponder-lab/Logging-Level-Evolution-Plugin/wiki).
