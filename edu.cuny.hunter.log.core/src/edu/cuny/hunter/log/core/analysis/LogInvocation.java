@@ -196,8 +196,12 @@ public class LogInvocation {
 					if (qualifier.isQualifiedName())
 						newParaName = ast
 								.newQualifiedName(
-										ast.newQualifiedName(ast.newQualifiedName(ast.newSimpleName("java"),
-												ast.newSimpleName("util")), ast.newSimpleName("Level")),
+										ast.newQualifiedName(
+												ast.newQualifiedName(
+														ast.newQualifiedName(ast.newSimpleName("java"),
+																ast.newSimpleName("util")),
+														ast.newSimpleName("logging")),
+												ast.newSimpleName("Level")),
 										ast.newSimpleName(targetLogLevel));
 					if (qualifier.isSimpleName()) {
 						newParaName = ast.newQualifiedName(ast.newSimpleName("Level"),
