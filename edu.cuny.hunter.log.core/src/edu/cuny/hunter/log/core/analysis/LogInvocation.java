@@ -13,6 +13,7 @@ import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.IMethodBinding;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.MethodInvocation;
+import org.eclipse.jdt.core.dom.Name;
 import org.eclipse.jdt.core.dom.QualifiedName;
 import org.eclipse.jdt.core.dom.SimpleName;
 import org.eclipse.jdt.core.dom.TypeDeclaration;
@@ -40,7 +41,7 @@ public class LogInvocation {
 	 * Current log level.
 	 */
 	private final Level logLevel;
-	
+
 	/**
 	 * Current log level.
 	 */
@@ -184,9 +185,24 @@ public class LogInvocation {
 
 				} else // The parameters (e.g., log(Level.WARNING) -> log(Level.CRITICAL).
 				if (isLogMethod(identifier)) {
-					ASTNode argument = (ASTNode) expression.arguments().get(0);
-					QualifiedName newParaName = ast.newQualifiedName(ast.newSimpleName("Level"),
-							ast.newSimpleName(targetLogLevel));
+					QualifiedName argument = (QualifiedName) expression.arguments().get(0);
+					Name qualifier = argument.getQualifier();
+
+					if (qualifier == null) {
+						astRewrite.replace(argument, ast.newSimpleName(targetLogLevel), null);
+					}
+
+					QualifiedName newParaName = null;
+					if (qualifier.isQualifiedName())
+						newParaName = ast
+								.newQualifiedName(
+										ast.newQualifiedName(ast.newQualifiedName(ast.newSimpleName("java"),
+												ast.newSimpleName("util")), ast.newSimpleName("Level")),
+										ast.newSimpleName(targetLogLevel));
+					if (qualifier.isSimpleName()) {
+						newParaName = ast.newQualifiedName(ast.newSimpleName("Level"),
+								ast.newSimpleName(targetLogLevel));
+					}
 					astRewrite.replace(argument, newParaName, null);
 				}
 			}
