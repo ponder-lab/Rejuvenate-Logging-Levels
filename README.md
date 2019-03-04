@@ -6,8 +6,8 @@
 
 <img src="https://github.com/ponder-lab/Logging-Level-Evolution-Plugin/blob/master/edu.cuny.hunter.log.ui/icons/icon.png" alt="Icon" align="left"/> Developers usually choose log levels to filter information they would like to print. However, developers may not well estimate the cost and benefit for each log level, and log levels may change overtime with requirements. Our tools consist of Eclipse plugins which help developers adjust and rejuvenate log levels by using Degree of Interests (DOI) model. DOI value is a kind of real number for a program element which shows how developers are interested in it. It is computed from the interaction events between developer and element, such as developer edits the element. Transformation decision is made by analyzing the DOI values of enclosing methods for logging invocations.
 
-
 ## Screenshot
+
 <img src="https://github.com/ponder-lab/Logging-Level-Evolution-Plugin/blob/master/edu.cuny.hunter.log.ui/icons/screenshot.png" alt="Screenshot" width=500px/>
 
 ## Usage
@@ -29,8 +29,8 @@ Our tool could be run in three different purposes. For each purpose, it could be
 
 - Quick Assess -> Choose command.
 
-
 ## Options
+
 We have four categories of option settings:
 
 - Whether treat some log levels as a category not traditional log levels?
@@ -40,11 +40,13 @@ We have four categories of option settings:
 
 ## Installation
 
-TODO
+### Update Site
+
+Our tool can be installed via Eclipse Update Site at [https://raw.githubusercontent.com/ponder-lab/Logging-Level-Evolution-Plugin/master/edu.cuny.hunter.log.updatesite](https://raw.githubusercontent.com/ponder-lab/Logging-Level-Evolution-Plugin/master/edu.cuny.hunter.log.updatesite)
 
 ## Development platform
 
-It is developed on Eclipse for RCP and RAP, and its version is 2018-09. The download page: https://www.eclipse.org/downloads/packages/release/kepler/sr2/eclipse-rcp-and-rap-developers 
+It is developed on Eclipse for RCP and RAP, and its version is 2018-09. The download page: https://www.eclipse.org/downloads/packages/release/kepler/sr2/eclipse-rcp-and-rap-developers
 
 ## Dependencies
 
@@ -53,7 +55,7 @@ Tycho: right click on the compilation error, then click on "discover m2e connect
 Mylyn: http://download.eclipse.org/mylyn/releases/3.23 <br/>
 JGit: http://download.eclipse.org/egit/updates-nightly <br/>
 
-The Common Refactoring Framework that the current tool uses requires Eclipse SDK, Eclipse SDK Tests, and Eclipse testing framework. Input 
+The Common Refactoring Framework that the current tool uses requires Eclipse SDK, Eclipse SDK Tests, and Eclipse testing framework. Input
 "<b>The Eclipse Project Updates - http://download.eclipse.org/eclipse/updates/4.9 </b>" in the field of "Work with" after you clicked on the "Install New Software..." menu option under "Help" in Eclipse, then please check and install the three software mentioned above.
 
 ## Limitations
