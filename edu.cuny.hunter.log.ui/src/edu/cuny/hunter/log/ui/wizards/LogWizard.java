@@ -52,6 +52,8 @@ public class LogWizard extends RefactoringWizard {
 
 		private static final String NOT_LOWER_LOG_LEVEL_CATCH_BLOCK = "notLowerLogLevelInCatchBlock";
 
+		private static final String CHECK_IF_CONDITION = "checkIfCondition";
+
 		private LogRejuvenatingProcessor processor;
 
 		private IDialogSettings settings;
@@ -104,10 +106,12 @@ public class LogWizard extends RefactoringWizard {
 			// set up buttons.
 			this.addBooleanButton("Treat CONFIG log level as a category and not a traditional level.",
 					USE_LOG_CATEGORY_CONFIG, this.getProcessor()::setParticularConfigLogLevel, result, SWT.RADIO);
+			button.setSelection(false);
 
 			// set up buttons.
 			this.addBooleanButton("Treat CONFIG/WARNING/SEVERE log levels as category and not traditional levels.",
 					USE_LOG_CATEGORY, this.getProcessor()::setParticularLogLevel, result, SWT.RADIO);
+			button.setSelection(false);
 
 			Label separator = new Label(result, SWT.SEPARATOR | SWT.SHADOW_OUT | SWT.HORIZONTAL);
 			separator.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
@@ -126,9 +130,16 @@ public class LogWizard extends RefactoringWizard {
 
 			// set up buttons.
 			Button checkButton2 = this.addBooleanButton(
-					"Never lower the logging level of logging statements within catch blocks.", USE_GIT_HISTORY,
-					this.getProcessor()::setNotLowerLogLevelInCatchBlock, result, SWT.CHECK);
+					"Never lower the logging level of logging statements within catch blocks.",
+					NOT_LOWER_LOG_LEVEL_CATCH_BLOCK, this.getProcessor()::setNotLowerLogLevelInCatchBlock, result,
+					SWT.CHECK);
 			checkButton2.setSelection(true);
+
+			// set up buttons.
+			Button checkButton3 = this.addBooleanButton(
+					"Keep log level inside if statement consistent with if condition.", CHECK_IF_CONDITION,
+					this.getProcessor()::setCheckIfCondition, result, SWT.CHECK);
+			checkButton3.setSelection(true);
 
 			Label separator3 = new Label(result, SWT.SEPARATOR | SWT.SHADOW_OUT | SWT.HORIZONTAL);
 			separator3.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
@@ -183,13 +194,16 @@ public class LogWizard extends RefactoringWizard {
 				this.settings.put(USE_LOG_CATEGORY, this.getProcessor().getParticularLogLevel());
 				this.settings.put(USE_GIT_HISTORY, this.getProcessor().getGitHistory());
 				this.settings.put(N_TO_USE_FOR_COMMITS, this.getProcessor().getNToUseForCommits());
-				this.settings.put(NOT_LOWER_LOG_LEVEL_CATCH_BLOCK, this.getProcessor().getNotLowerLogLevelInCatchBlock());
+				this.settings.put(NOT_LOWER_LOG_LEVEL_CATCH_BLOCK,
+						this.getProcessor().getNotLowerLogLevelInCatchBlock());
+				this.settings.put(CHECK_IF_CONDITION, this.getProcessor().isCheckIfCondition());
 			}
 			this.processor.setParticularConfigLogLevel(this.settings.getBoolean(USE_LOG_CATEGORY_CONFIG));
 			this.processor.setParticularLogLevel(this.settings.getBoolean(USE_LOG_CATEGORY));
 			this.processor.setUseGitHistory(this.settings.getBoolean(USE_GIT_HISTORY));
 			this.processor.setNToUseForCommits(this.settings.getInt(N_TO_USE_FOR_COMMITS));
 			this.processor.setNotLowerLogLevelInCatchBlock(this.settings.getBoolean(NOT_LOWER_LOG_LEVEL_CATCH_BLOCK));
+			this.processor.setCheckIfCondition(this.settings.getBoolean(CHECK_IF_CONDITION));
 		}
 
 		private void setProcessor(LogRejuvenatingProcessor processor) {
@@ -199,7 +213,7 @@ public class LogWizard extends RefactoringWizard {
 		private void updateStatus() {
 			this.setPageComplete(true);
 		}
-		
+
 	}
 
 	public static void startRefactoring(IJavaProject[] javaProjects, Shell shell, Optional<IProgressMonitor> monitor)

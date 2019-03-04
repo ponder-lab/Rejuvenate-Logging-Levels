@@ -81,6 +81,11 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 	 * Limit number of commits
 	 */
 	private int NToUseForCommits = 100;
+	
+	/**
+	 * Keep if condition and log levels inside if statement consistent
+	 */
+	private boolean checkIfCondition = false;
 
 	/**
 	 * It the caller Evaluation plugin?
@@ -186,7 +191,7 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 
 		for (IJavaProject jproj : this.getJavaProjects()) {
 			LogAnalyzer analyzer = new LogAnalyzer(this.useLogCategoryWithConfig, this.useLogCategory,
-					this.notLowerLogLevelInCatchBlock);
+					this.notLowerLogLevelInCatchBlock, this.checkIfCondition);
 
 			IPackageFragmentRoot[] roots = jproj.getPackageFragmentRoots();
 			for (IPackageFragmentRoot root : roots) {
@@ -374,6 +379,14 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 
 	public void setRepoURL(String repoURL) {
 		this.repoURL = repoURL;
+	}
+
+	public boolean isCheckIfCondition() {
+		return checkIfCondition;
+	}
+
+	public void setCheckIfCondition(boolean checkIfCondition) {
+		this.checkIfCondition = checkIfCondition;
 	}
 
 }
