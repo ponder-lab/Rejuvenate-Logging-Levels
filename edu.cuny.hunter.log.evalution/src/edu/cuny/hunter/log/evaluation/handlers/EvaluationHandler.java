@@ -55,15 +55,18 @@ public class EvaluationHandler extends AbstractHandler {
 	private static final String USE_LOG_CATEGORY_CONFIG_KEY = "edu.cuny.hunter.log.evaluation.useLogCategoryWithConfig";
 	private static final String USE_GIT_HISTORY_KEY = "edu.cuny.hunter.log.evaluation.useGitHistory";
 	private static final String NOT_LOWER_LOG_LEVEL_CATCH_BLOCK_KEY = "edu.cuny.hunter.log.evaluation.notLowerLogLevelInCatchBlock";
+	private static final String CHECK_IF_CONDITION_KEY = "edu.cuny.hunter.log. evaluation.checkIfCondition";
 	private static final String N_TO_USE_FOR_COMMITS_KEY = "NToUseForCommits";
 	private static final int N_TO_USE_FOR_COMMITS_DEFAULT = 100;
 	private static final boolean USE_LOG_CATEGORY_DEFAULT = false;
 	private static final boolean NOT_LOWER_LOG_LEVEL_CATCH_BLOCK_DEFAULT = false;
 	private static final boolean USE_LOG_CATEGORY_CONFIG_DEFAULT = false;
 	private static final boolean USE_GIT_HISTORY = false;
+	private static final boolean CHECK_IF_CONDITION_DEFAULT = false;
 	private boolean useLogCategory;
 	private boolean useLogCategoryWithConfig;
 	private boolean notLowerLogLevel;
+	private boolean checkIfCondtion;
 
 	@Override
 	public Object execute(ExecutionEvent event) throws ExecutionException {
@@ -130,7 +133,7 @@ public class EvaluationHandler extends AbstractHandler {
 						LogRejuvenatingProcessor logRejuvenatingProcessor = new LogRejuvenatingProcessor(
 								new IJavaProject[] { project }, this.isUseLogCategory(),
 								this.isUseLogCategoryWithConfig(), this.getValueOfUseGitHistory(),
-								this.isNotLowerLogLevel(), NToUseCommit, settings, monitor, true);
+								this.isNotLowerLogLevel(), this.checkIfCondtion, NToUseCommit, settings, monitor, true);
 
 						new ProcessorBasedRefactoring((RefactoringProcessor) logRejuvenatingProcessor)
 								.checkAllConditions(new NullProgressMonitor());
@@ -326,7 +329,7 @@ public class EvaluationHandler extends AbstractHandler {
 		this.setUseLogCategory(this.getValueOfUseLogCategory());
 		this.setUseLogCategoryWithConfig(this.getValueOfUseLogCategoryWithConfig());
 		this.setNotLowerLogLevel(this.getValueOfNotLowerLogLevelInCatchBlock());
-
+		this.setCheckIfCondition(this.getValueOfCheckIfCondition());
 	}
 
 	/**
@@ -336,6 +339,7 @@ public class EvaluationHandler extends AbstractHandler {
 		this.setUseLogCategory(this.computeLogCategory(i));
 		this.setUseLogCategoryWithConfig(this.computeLogCategoryWithConfig(i));
 		this.setNotLowerLogLevel(this.computeLowerLogLevelInCatchBlock(i));
+		this.setCheckIfCondition(this.getValueOfCheckIfCondition());
 	}
 
 	private boolean getValueOfUseLogCategory() {
@@ -374,6 +378,15 @@ public class EvaluationHandler extends AbstractHandler {
 			return Boolean.valueOf(notLowerLogLevelInCatchBlock);
 	}
 
+	private boolean getValueOfCheckIfCondition() {
+		String notLowerLogLevelInCatchBlock = System.getenv(CHECK_IF_CONDITION_KEY);
+
+		if (notLowerLogLevelInCatchBlock == null)
+			return CHECK_IF_CONDITION_DEFAULT;
+		else
+			return Boolean.valueOf(notLowerLogLevelInCatchBlock);
+	}
+
 	public boolean isUseLogCategory() {
 		return useLogCategory;
 	}
@@ -398,4 +411,7 @@ public class EvaluationHandler extends AbstractHandler {
 		this.notLowerLogLevel = notLowerLogLevel;
 	}
 
+	public void setCheckIfCondition(boolean checkIfCondition) {
+		this.checkIfCondtion = checkIfCondition;
+	}
 }

@@ -44,12 +44,12 @@ import edu.cuny.hunter.mylyngit.core.utils.Commit;
 @SuppressWarnings({ "restriction", "deprecation" })
 public class LogRejuvenatingProcessor extends RefactoringProcessor {
 
-	private static final Logger LOGGER = Logger.getLogger(LoggerNames.LOGGER_NAME);	
+	private static final Logger LOGGER = Logger.getLogger(LoggerNames.LOGGER_NAME);
 
 	private Set<LogInvocation> logInvocationSet = new HashSet<>();
 
 	private LinkedList<Commit> commits = new LinkedList<>();
-	
+
 	private IJavaProject[] javaProjects;
 
 	/**
@@ -81,7 +81,7 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 	 * Limit number of commits
 	 */
 	private int NToUseForCommits = 100;
-	
+
 	/**
 	 * Keep if condition and log levels inside if statement consistent
 	 */
@@ -91,7 +91,7 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 	 * It the caller Evaluation plugin?
 	 */
 	private boolean isEvaluation = false;
-	
+
 	private String repoURL = "";
 
 	public LogRejuvenatingProcessor(final CodeGenerationSettings settings) {
@@ -150,7 +150,8 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 
 	public LogRejuvenatingProcessor(IJavaProject[] javaProjects, boolean useLogLevelCategory,
 			boolean useConfigLogLevelCategory, boolean useGitHistory, boolean notLowerLogLevelInCatchBlock,
-			int NToUseForCommits, final CodeGenerationSettings settings, Optional<IProgressMonitor> monitor) {
+			boolean checkIfCondtion, int NToUseForCommits, final CodeGenerationSettings settings,
+			Optional<IProgressMonitor> monitor) {
 		super(settings);
 		try {
 			this.javaProjects = javaProjects;
@@ -158,6 +159,7 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 			this.useLogCategory = useLogLevelCategory;
 			this.useGitHistory = useGitHistory;
 			this.notLowerLogLevelInCatchBlock = notLowerLogLevelInCatchBlock;
+			this.checkIfCondition = checkIfCondtion;
 			this.NToUseForCommits = NToUseForCommits;
 		} finally {
 			monitor.ifPresent(IProgressMonitor::done);
@@ -166,10 +168,10 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 
 	public LogRejuvenatingProcessor(IJavaProject[] javaProjects, boolean useLogLevelCategory,
 			boolean useConfigLogLevelCategory, boolean useGitHistory, boolean notLowerLogLevelInCatchBlock,
-			int NToUseForCommits, final CodeGenerationSettings settings, Optional<IProgressMonitor> monitor,
-			boolean isEvaluation) {
+			boolean checkIfCondtion, int NToUseForCommits, final CodeGenerationSettings settings,
+			Optional<IProgressMonitor> monitor, boolean isEvaluation) {
 		this(javaProjects, useLogLevelCategory, useConfigLogLevelCategory, useGitHistory, notLowerLogLevelInCatchBlock,
-				NToUseForCommits, settings, monitor);
+				checkIfCondtion, NToUseForCommits, settings, monitor);
 		this.isEvaluation = isEvaluation;
 	}
 
