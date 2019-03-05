@@ -105,11 +105,20 @@ public class LogAnalyzer extends ASTVisitor {
 
 		Level currentLogLevel = logInvocation.getLogLevel();
 
-		Level rejuvenatedLogLevel = null;
+		/**
+		 * Do not change a log level in a logging statement if there exists an immediate
+		 * if statement whose condition contains a log level that matches the log level
+		 * of the logging statement in question.
+		 */
 		if (this.checkIfCondition) {
-			rejuvenatedLogLevel = this.checkIfBlock(logInvocation.getExpression());
-		} else
-			rejuvenatedLogLevel = getRejuvenatedLogLevel(this.boundary, logInvocation);
+			Level logLevelInIfCond = this.checkIfBlock(logInvocation.getExpression());
+			if (logLevelInIfCond == currentLogLevel) {
+				logInvocation.setAction(Action.NONE, null);
+				return false;
+			}
+		}
+
+		Level rejuvenatedLogLevel = getRejuvenatedLogLevel(this.boundary, logInvocation);
 
 		if (rejuvenatedLogLevel == null || currentLogLevel == null)
 			return false;
