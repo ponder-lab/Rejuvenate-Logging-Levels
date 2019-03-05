@@ -112,7 +112,7 @@ public class LogAnalyzer extends ASTVisitor {
 		 */
 		if (this.checkIfCondition) {
 			Level logLevelInIfCond = this.checkIfBlock(logInvocation.getExpression());
-			if (logLevelInIfCond == currentLogLevel) {
+			if ((logLevelInIfCond != null) && (logLevelInIfCond == currentLogLevel)) {
 				logInvocation.setAction(Action.NONE, null);
 				return false;
 			}

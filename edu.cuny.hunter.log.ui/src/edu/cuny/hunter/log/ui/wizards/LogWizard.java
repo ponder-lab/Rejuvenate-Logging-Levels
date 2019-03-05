@@ -137,7 +137,7 @@ public class LogWizard extends RefactoringWizard {
 
 			// set up buttons.
 			Button checkButton3 = this.addBooleanButton(
-					"Keep log level inside if statement consistent with if condition.", CHECK_IF_CONDITION,
+					"Do not change a log level if its if statement condition contains a log level that matches it.", CHECK_IF_CONDITION,
 					this.getProcessor()::setCheckIfCondition, result, SWT.CHECK);
 			checkButton3.setSelection(true);
 
