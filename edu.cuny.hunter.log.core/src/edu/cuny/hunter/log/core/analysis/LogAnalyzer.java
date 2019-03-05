@@ -101,6 +101,9 @@ public class LogAnalyzer extends ASTVisitor {
 		return true;
 	}
 
+	/**
+	 * Do transformation action.
+	 */
 	private boolean doAction(LogInvocation logInvocation) {
 
 		Level currentLogLevel = logInvocation.getLogLevel();

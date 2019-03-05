@@ -101,17 +101,14 @@ public class LogWizard extends RefactoringWizard {
 
 			Button button = new Button(result, SWT.RADIO);
 			button.setText("Defalut： traditional levels.");
-			button.setSelection(true);
 
 			// set up buttons.
 			this.addBooleanButton("Treat CONFIG log level as a category and not a traditional level.",
 					USE_LOG_CATEGORY_CONFIG, this.getProcessor()::setParticularConfigLogLevel, result, SWT.RADIO);
-			button.setSelection(false);
-
+			
 			// set up buttons.
 			this.addBooleanButton("Treat CONFIG/WARNING/SEVERE log levels as category and not traditional levels.",
 					USE_LOG_CATEGORY, this.getProcessor()::setParticularLogLevel, result, SWT.RADIO);
-			button.setSelection(false);
 
 			Label separator = new Label(result, SWT.SEPARATOR | SWT.SHADOW_OUT | SWT.HORIZONTAL);
 			separator.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
