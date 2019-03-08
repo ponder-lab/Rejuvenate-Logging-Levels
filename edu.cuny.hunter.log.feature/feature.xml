@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <feature
       id="edu.cuny.hunter.log.feature"
-      label="Feature"
+      label="Logging Level Evolution"
       version="0.1.0">
 
    <description>
@@ -301,6 +301,10 @@ version(s), and exceptions or additional permissions here}.&quot;
 
   You may add additional accurate notices of copyright ownership.
    </license>
+
+   <url>
+      <update label="Logging Level Evolution" url="https://raw.githubusercontent.com/ponder-lab/Logging-Level-Evolution-Plugin/master/edu.cuny.hunter.log.updatesite"/>
+   </url>
 
    <plugin
          id="edu.cuny.hunter.mylyngit.core"
