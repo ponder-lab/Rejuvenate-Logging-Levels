@@ -110,12 +110,11 @@ public class LogAnalyzer extends ASTVisitor {
 
 		/**
 		 * Do not change a log level in a logging statement if there exists an immediate
-		 * if statement whose condition contains a log level that matches the log level
-		 * of the logging statement in question.
+		 * if statement whose condition contains a log level.
 		 */
 		if (this.checkIfCondition) {
-			Level logLevelInIfCond = this.checkIfBlock(logInvocation.getExpression());
-			if ((logLevelInIfCond != null) && (logLevelInIfCond == currentLogLevel)) {
+			if (this.checkIfBlock(logInvocation.getExpression())) {
+				LOGGER.info("We meet a logging wrapping.");
 				logInvocation.setAction(Action.NONE, null);
 				return false;
 			}
@@ -309,28 +308,19 @@ public class LogAnalyzer extends ASTVisitor {
 	/**
 	 * Check if condition mentions log levels.
 	 */
-	private Level checkIfBlock(ASTNode node) {
+	private Boolean checkIfBlock(ASTNode node) {
 		while (node != null) {
 			if (node instanceof IfStatement) {
 				String condition = ((IfStatement) node).getExpression().toString();
-				if (condition.contains("CONFIG"))
-					return Level.CONFIG;
-				if (condition.contains("FINE"))
-					return Level.FINE;
-				if (condition.contains("FINER"))
-					return Level.FINER;
-				if (condition.contains("FINEST"))
-					return Level.FINEST;
-				if (condition.contains("SEVERE"))
-					return Level.SEVERE;
-				if (condition.contains("WARNING"))
-					return Level.WARNING;
-				if (condition.contains("INFO"))
-					return Level.INFO;
+				if (condition.contains("CONFIG") || condition.contains("FINE") || condition.contains("FINER")
+						|| condition.contains("FINEST") || condition.contains("SEVERE") || condition.contains("WARN")
+						|| condition.contains("INFO") || condition.contains("FATAL") || condition.contains("ERROR")
+						|| condition.contains("DEBUG") || condition.contains("TRACE"))
+					return true;
 			}
 			node = node.getParent();
 		}
-		return null;
+		return false;
 	}
 
 	/**
