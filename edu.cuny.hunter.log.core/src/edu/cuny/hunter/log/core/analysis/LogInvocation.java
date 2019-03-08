@@ -1,5 +1,6 @@
 package edu.cuny.hunter.log.core.analysis;
 
+import java.lang.module.ResolvedModule;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -11,6 +12,7 @@ import org.eclipse.jdt.core.dom.AST;
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.IMethodBinding;
+import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.MethodInvocation;
 import org.eclipse.jdt.core.dom.Name;
@@ -119,12 +121,8 @@ public class LogInvocation {
 	 * Through the enclosing type, I can get type FQN
 	 */
 	public IType getEnclosingType() {
-		MethodDeclaration enclosingMethodDeclaration = getEnclosingMethodDeclaration();
-
-		if (enclosingMethodDeclaration == null)
-			return null;
-
-		return (IType) enclosingMethodDeclaration.resolveBinding().getDeclaringClass().getJavaElement();
+		TypeDeclaration enclosingType = (TypeDeclaration) ASTNodes.getParent(this.getExpression(), ASTNode.TYPE_DECLARATION);
+		return (IType) enclosingType.resolveBinding().getJavaElement();
 	}
 
 	public IMethod getEnclosingEclipseMethod() {
