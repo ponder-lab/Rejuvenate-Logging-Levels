@@ -7,7 +7,6 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
-import java.util.Random;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -117,7 +116,7 @@ public class EvaluationHandler extends AbstractHandler {
 
 				// for each selected java project
 				for (int i = 0; i < 6; ++i) {
-					String sequence = this.getRunId();
+					long sequence = this.getRunId();
 
 					for (IJavaProject project : javaProjectList) {
 
@@ -290,16 +289,11 @@ public class EvaluationHandler extends AbstractHandler {
 	/**
 	 * Get id of run times.
 	 */
-	private String getRunId() {
-		Random random = new Random();
-		String id = "";
-		for (int i = 0; i < 10; ++i) {
-			id += random.nextInt(10);
-		}
-		return id;
+	private long getRunId() {
+		return System.currentTimeMillis();
 	}
 
-	private void printBoundaryLogCategory(String sequence, String subject, LinkedList<Float> boundary,
+	private void printBoundaryLogCategory(long sequence, String subject, LinkedList<Float> boundary,
 			CSVPrinter doiPrinter) throws IOException {
 		doiPrinter.printRecord(sequence, subject, "[" + boundary.get(0) + ", " + boundary.get(1) + ")", Level.FINEST);
 		doiPrinter.printRecord(sequence, subject, "[" + boundary.get(1) + ", " + boundary.get(2) + ")", Level.FINER);
@@ -307,14 +301,14 @@ public class EvaluationHandler extends AbstractHandler {
 		doiPrinter.printRecord(sequence, subject, "[" + boundary.get(3) + ", " + boundary.get(4) + ")", Level.INFO);
 	}
 
-	private void printBoundaryWithConfig(String sequence, String subject, LinkedList<Float> boundary,
+	private void printBoundaryWithConfig(long sequence, String subject, LinkedList<Float> boundary,
 			CSVPrinter doiPrinter) throws IOException {
 		this.printBoundaryLogCategory(sequence, subject, boundary, doiPrinter);
 		doiPrinter.printRecord(sequence, subject, "[" + boundary.get(4) + ", " + boundary.get(5) + ")", Level.WARNING);
 		doiPrinter.printRecord(sequence, subject, "[" + boundary.get(5) + ", " + boundary.get(6) + ")", Level.SEVERE);
 	}
 
-	private void printBoundaryDefault(String sequence, String subject, LinkedList<Float> boundary,
+	private void printBoundaryDefault(long sequence, String subject, LinkedList<Float> boundary,
 			CSVPrinter doiPrinter) throws IOException {
 		doiPrinter.printRecord(sequence, subject, "[" + boundary.get(0) + ", " + boundary.get(1) + ")", Level.FINEST);
 		doiPrinter.printRecord(sequence, subject, "[" + boundary.get(1) + ", " + boundary.get(2) + ")", Level.FINER);
