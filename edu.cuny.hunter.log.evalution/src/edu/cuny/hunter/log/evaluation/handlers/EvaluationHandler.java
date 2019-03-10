@@ -91,12 +91,14 @@ public class EvaluationHandler extends AbstractHandler {
 			try {
 
 				CSVPrinter resultPrinter = Util.createCSVPrinter("result.csv",
-						new String[] { "sequence", "subject", "repo URL", "SHA-1 of head", "N for commits",
-								"actual number of commits", "input logging statements", "passing logging statements",
-								"failures", "transformed logging statements", "average Java lines added",
-								"average Java lines removed", "use log category (SEVERE/WARNING/CONFIG)",
-								"use log category (CONFIG)", "not lower log levels of logs inside of catch blocks",
-								"time (s)" });
+						new String[] { "sequence", "subject", "repo URL", "input logging statements",
+								"passing logging statements", "failures", "transformed logging statements",
+								"average Java lines added", "average Java lines removed",
+								"use log category (SEVERE/WARNING/CONFIG)", "use log category (CONFIG)",
+								"not lower log levels of logs inside of catch blocks", "time (s)" });
+				CSVPrinter repoPrinter = Util.createCSVPrinter("repos.csv",
+						new String[] { "repo URL", "SHA-1 of head", "N for commits", "actual number of commits" });
+
 				CSVPrinter actionPrinter = Util.createCSVPrinter("log_transformation_actions.csv",
 						new String[] { "sequence", "subject", "log expression", "start pos", "log level", "type FQN",
 								"enclosing method", "DOI value", "action", "new level" });
@@ -230,12 +232,13 @@ public class EvaluationHandler extends AbstractHandler {
 						}
 
 						resultPrinter.printRecord(sequence, project.getElementName(),
-								logRejuvenatingProcessor.getRepoURL(), resultCommit.getHeadSha(), NToUseCommit,
-								resultCommit.getActualCommits(), logInvocationSet.size(),
+								logRejuvenatingProcessor.getRepoURL(), logInvocationSet.size(),
 								passingLogInvocationSet.size(), errorEntries.size(), transformedLogInvocationSet.size(),
 								resultCommit.getAverageJavaLinesAdded(), resultCommit.getAverageJavaLinesRemoved(),
 								this.isUseLogCategory(), this.isUseLogCategoryWithConfig(), this.isNotLowerLogLevel(),
 								resultsTimeCollector.getCollectedTime());
+						repoPrinter.printRecord(logRejuvenatingProcessor.getRepoURL(), resultCommit.getHeadSha(),
+								NToUseCommit, resultCommit.getActualCommits());
 					}
 
 					// Clear intermediate data for mylyn-git plug-in.
@@ -243,6 +246,7 @@ public class EvaluationHandler extends AbstractHandler {
 				}
 
 				resultPrinter.close();
+				repoPrinter.close();
 				actionPrinter.close();
 				inputLogInvPrinter.close();
 				failurePrinter.close();
@@ -308,8 +312,8 @@ public class EvaluationHandler extends AbstractHandler {
 		doiPrinter.printRecord(sequence, subject, "[" + boundary.get(5) + ", " + boundary.get(6) + ")", Level.SEVERE);
 	}
 
-	private void printBoundaryDefault(long sequence, String subject, LinkedList<Float> boundary,
-			CSVPrinter doiPrinter) throws IOException {
+	private void printBoundaryDefault(long sequence, String subject, LinkedList<Float> boundary, CSVPrinter doiPrinter)
+			throws IOException {
 		doiPrinter.printRecord(sequence, subject, "[" + boundary.get(0) + ", " + boundary.get(1) + ")", Level.FINEST);
 		doiPrinter.printRecord(sequence, subject, "[" + boundary.get(1) + ", " + boundary.get(2) + ")", Level.FINER);
 		doiPrinter.printRecord(sequence, subject, "[" + boundary.get(2) + ", " + boundary.get(3) + ")", Level.FINE);
