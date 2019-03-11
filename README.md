@@ -29,6 +29,9 @@ Our tool could be run in three different purposes. For each purpose, it could be
 
 - Quick Assess -> Choose command.
 
+**Notice**:
+Make sure there must be an **active Mylyn task** before running tool.
+
 ## Options
 
 We have four categories of option settings:
