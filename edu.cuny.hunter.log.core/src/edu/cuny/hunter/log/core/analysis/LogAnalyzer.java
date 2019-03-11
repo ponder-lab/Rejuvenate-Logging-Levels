@@ -315,7 +315,7 @@ public class LogAnalyzer extends ASTVisitor {
 						|| condition.contains("FINEST") || condition.contains("SEVERE") || condition.contains("WARN")
 						|| condition.contains("INFO") || condition.contains("FATAL") || condition.contains("ERROR")
 						|| condition.contains("DEBUG") || condition.contains("TRACE")) {
-					LOGGER.info("We meet a logging wrapping: " + node);
+					LOGGER.info("We meet a logging wrapping: \n" + node);
 					return true;
 				}
 			}
