@@ -96,8 +96,8 @@ public class EvaluationHandler extends AbstractHandler {
 								"average Java lines added", "average Java lines removed",
 								"use log category (SEVERE/WARNING/CONFIG)", "use log category (CONFIG)",
 								"not lower log levels of logs inside of catch blocks", "time (s)" });
-				CSVPrinter repoPrinter = Util.createCSVPrinter("repos.csv",
-						new String[] { "repo URL", "SHA-1 of head", "N for commits", "actual number of commits" });
+				CSVPrinter repoPrinter = Util.createCSVPrinter("repos.csv", new String[] { "sequence", "repo URL",
+						"SHA-1 of head", "N for commits", "actual number of commits" });
 
 				CSVPrinter actionPrinter = Util.createCSVPrinter("log_transformation_actions.csv",
 						new String[] { "sequence", "subject", "log expression", "start pos", "log level", "type FQN",
@@ -237,8 +237,8 @@ public class EvaluationHandler extends AbstractHandler {
 								resultCommit.getAverageJavaLinesAdded(), resultCommit.getAverageJavaLinesRemoved(),
 								this.isUseLogCategory(), this.isUseLogCategoryWithConfig(), this.isNotLowerLogLevel(),
 								resultsTimeCollector.getCollectedTime());
-						repoPrinter.printRecord(logRejuvenatingProcessor.getRepoURL(), resultCommit.getHeadSha(),
-								NToUseCommit, resultCommit.getActualCommits());
+						repoPrinter.printRecord(sequence, logRejuvenatingProcessor.getRepoURL(),
+								resultCommit.getHeadSha(), NToUseCommit, resultCommit.getActualCommits());
 					}
 
 					// Clear intermediate data for mylyn-git plug-in.
