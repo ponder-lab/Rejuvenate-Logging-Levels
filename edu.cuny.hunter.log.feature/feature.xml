@@ -303,8 +303,8 @@ version(s), and exceptions or additional permissions here}.&quot;
    </license>
 
    <url>
-   		<discovery label="Logging Level Evolution" url="https://raw.githubusercontent.com/ponder-lab/Logging-Level-Evolution-Plugin/master/edu.cuny.hunter.log.updatesite"/>
      	<update label="Logging Level Evolution Update Site" url="https://raw.githubusercontent.com/ponder-lab/Logging-Level-Evolution-Plugin/master/edu.cuny.hunter.log.updatesite"/>
+      <discovery label="Common Eclipse Java Refactoring Framework" url="https://raw.githubusercontent.com/ponder-lab/Common-Eclipse-Java-Refactoring-Framework/master/edu.cuny.citytech.refactoring.common.updatesite"/>
    </url>
 
    <plugin
