@@ -2,7 +2,7 @@
 <feature
       id="edu.cuny.hunter.log.feature"
       label="Logging Level Evolution"
-      version="0.1.0">
+      version="0.2.0">
 
    <description>
       Developers usually choose log levels to filter information they
@@ -303,7 +303,8 @@ version(s), and exceptions or additional permissions here}.&quot;
    </license>
 
    <url>
-      <update label="Logging Level Evolution" url="https://raw.githubusercontent.com/ponder-lab/Logging-Level-Evolution-Plugin/master/edu.cuny.hunter.log.updatesite"/>
+   		<discovery label="Logging Level Evolution" url="https://raw.githubusercontent.com/ponder-lab/Logging-Level-Evolution-Plugin/master/edu.cuny.hunter.log.updatesite"/>
+     	<update label="Logging Level Evolution Update Site" url="https://raw.githubusercontent.com/ponder-lab/Logging-Level-Evolution-Plugin/master/edu.cuny.hunter.log.updatesite"/>
    </url>
 
    <plugin
@@ -322,6 +323,20 @@ version(s), and exceptions or additional permissions here}.&quot;
 
    <plugin
          id="edu.cuny.hunter.log.core"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="edu.cuny.citytech.refactoring.common.core"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="edu.cuny.citytech.refactoring.common.ui"
          download-size="0"
          install-size="0"
          version="0.0.0"
