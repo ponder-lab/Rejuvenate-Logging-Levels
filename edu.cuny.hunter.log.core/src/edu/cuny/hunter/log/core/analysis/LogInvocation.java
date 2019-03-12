@@ -119,7 +119,8 @@ public class LogInvocation {
 	 * Through the enclosing type, I can get type FQN
 	 */
 	public IType getEnclosingType() {
-		TypeDeclaration enclosingType = (TypeDeclaration) ASTNodes.getParent(this.getExpression(), ASTNode.TYPE_DECLARATION);
+		TypeDeclaration enclosingType = (TypeDeclaration) ASTNodes.getParent(this.getExpression(),
+				ASTNode.TYPE_DECLARATION);
 		return (IType) enclosingType.resolveBinding().getJavaElement();
 	}
 

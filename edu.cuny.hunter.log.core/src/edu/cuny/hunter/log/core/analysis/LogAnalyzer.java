@@ -283,6 +283,7 @@ public class LogAnalyzer extends ASTVisitor {
 		} catch (IllegalStateException e) {
 			LOGGER.warning("Need to process the variable of logging level or LogRecord!");
 			this.createLogInvocation(node, null, false);
+			return super.visit(node);
 		}
 
 		if (logLevel != null)
