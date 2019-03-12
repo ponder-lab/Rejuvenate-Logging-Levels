@@ -221,8 +221,9 @@ public class LogInvocation {
 	 * Check whether the logging method contains logging level
 	 */
 	private static boolean isLoggingLevelMethod(String methodName) {
-		if (methodName.equals("config") || methodName.equals("fine") || methodName.equals("finest")
-				|| methodName.equals("info") || methodName.equals("severe") || methodName.equals("warning"))
+		if (methodName.equals("config") || methodName.equals("fine") || methodName.equals("finer")
+				|| methodName.equals("finest") || methodName.equals("info") || methodName.equals("severe")
+				|| methodName.equals("warning"))
 			return true;
 		return false;
 	}
