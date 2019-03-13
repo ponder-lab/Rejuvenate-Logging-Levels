@@ -30,7 +30,7 @@ Our tool could be run in three different purposes. For each purpose, it could be
 - Quick Assess -> Choose command.
 
 **Notice**:
-Make sure there must be an **active Mylyn task** before running tool.
+Make sure there must be an **active Mylyn task** before running tool. **Do not use a real Mylyn task** as the plug-in just uses this task for bookkeeping purposes. Please make a separate (fake) task for this purpose. We will integrate this process in the future.
 
 ## Options
 
