@@ -8,7 +8,6 @@ public class ResultForCommit {
 	private long javaLinesAdded = 0;
 	private long javaLinesRemoved = 0;
 	private int actualCommits = 0;
-	private boolean isSameRepo;
 
 	public void computLines(Commit commit) {
 		this.javaLinesAdded += commit.getJavaLinesAdded();
@@ -60,14 +59,6 @@ public class ResultForCommit {
 		this.javaLinesAdded = 0;
 		this.javaLinesRemoved = 0;
 		this.actualCommits = 0;
-		this.isSameRepo = false;
 	}
 
-	public boolean isSameRepo() {
-		return isSameRepo;
-	}
-
-	public void setSameRepo(boolean isSameRepo) {
-		this.isSameRepo = isSameRepo;
-	}
 }

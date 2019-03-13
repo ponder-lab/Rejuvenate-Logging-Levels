@@ -237,8 +237,10 @@ public class EvaluationHandler extends AbstractHandler {
 								resultCommit.getAverageJavaLinesAdded(), resultCommit.getAverageJavaLinesRemoved(),
 								this.isUseLogCategory(), this.isUseLogCategoryWithConfig(), this.isNotLowerLogLevel(),
 								resultsTimeCollector.getCollectedTime());
-						repoPrinter.printRecord(sequence, logRejuvenatingProcessor.getRepoURL(),
-								resultCommit.getHeadSha(), NToUseCommit, resultCommit.getActualCommits());
+						// Duplicate rows.
+						if (!resultCommit.getHeadSha().equals(""))
+							repoPrinter.printRecord(sequence, logRejuvenatingProcessor.getRepoURL(),
+									resultCommit.getHeadSha(), NToUseCommit, resultCommit.getActualCommits());
 					}
 
 					// Clear intermediate data for mylyn-git plug-in.
