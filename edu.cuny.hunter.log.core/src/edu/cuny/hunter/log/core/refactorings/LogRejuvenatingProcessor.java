@@ -194,7 +194,7 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 		for (IJavaProject jproj : this.getJavaProjects()) {
 			LogAnalyzer analyzer = new LogAnalyzer(this.useLogCategoryWithConfig, this.useLogCategory,
 					this.notLowerLogLevelInCatchBlock, this.checkIfCondition);
-
+			
 			IPackageFragmentRoot[] roots = jproj.getPackageFragmentRoots();
 			for (IPackageFragmentRoot root : roots) {
 				IJavaElement[] children = root.getChildren();

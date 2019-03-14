@@ -50,18 +50,18 @@ public class EvaluationHandler extends AbstractHandler {
 
 	private static final Logger LOGGER = Logger.getLogger(LoggerNames.LOGGER_NAME);
 	private static final String EVALUATION_PROPERTIES_FILE_NAME = "eval.properties";
-	private static final String USE_LOG_CATEGORY_KEY = "edu.cuny.hunter.log.evaluation.useLogCategory";
-	private static final String USE_LOG_CATEGORY_CONFIG_KEY = "edu.cuny.hunter.log.evaluation.useLogCategoryWithConfig";
-	private static final String USE_GIT_HISTORY_KEY = "edu.cuny.hunter.log.evaluation.useGitHistory";
 	private static final String NOT_LOWER_LOG_LEVEL_CATCH_BLOCK_KEY = "edu.cuny.hunter.log.evaluation.notLowerLogLevelInCatchBlock";
+	private static final String USE_LOG_CATEGORY_CONFIG_KEY = "edu.cuny.hunter.log.evaluation.useLogCategoryWithConfig";
 	private static final String CHECK_IF_CONDITION_KEY = "edu.cuny.hunter.log. evaluation.checkIfCondition";
+	private static final String USE_LOG_CATEGORY_KEY = "edu.cuny.hunter.log.evaluation.useLogCategory";
+	private static final String USE_GIT_HISTORY_KEY = "edu.cuny.hunter.log.evaluation.useGitHistory";
 	private static final String N_TO_USE_FOR_COMMITS_KEY = "NToUseForCommits";
 	private static final int N_TO_USE_FOR_COMMITS_DEFAULT = 100;
-	private static final boolean USE_LOG_CATEGORY_DEFAULT = false;
 	private static final boolean NOT_LOWER_LOG_LEVEL_CATCH_BLOCK_DEFAULT = false;
 	private static final boolean USE_LOG_CATEGORY_CONFIG_DEFAULT = false;
-	private static final boolean USE_GIT_HISTORY = false;
 	private static final boolean CHECK_IF_CONDITION_DEFAULT = false;
+	private static final boolean USE_LOG_CATEGORY_DEFAULT = false;
+	private static final boolean USE_GIT_HISTORY = false;
 	private boolean useLogCategory;
 	private boolean useLogCategoryWithConfig;
 	private boolean notLowerLogLevel;
