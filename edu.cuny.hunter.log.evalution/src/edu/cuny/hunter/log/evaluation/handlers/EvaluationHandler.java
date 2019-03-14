@@ -90,15 +90,14 @@ public class EvaluationHandler extends AbstractHandler {
 
 			try {
 
-				CSVPrinter resultPrinter = Util.createCSVPrinter("result.csv",
-						new String[] { "sequence", "subject", "repo URL", "input logging statements",
-								"passing logging statements", "failures", "transformed logging statements",
-								"average Java lines added", "average Java lines removed",
-								"use log category (SEVERE/WARNING/CONFIG)", "use log category (CONFIG)",
-								"not lower log levels of logs inside of catch blocks", "time (s)" });
+				CSVPrinter resultPrinter = Util.createCSVPrinter("result.csv", new String[] { "sequence", "subject",
+						"repo URL", "input logging statements", "passing logging statements", "failures",
+						"transformed logging statements", "average Java lines added", "average Java lines removed",
+						"log level not lowered in a catch block", "log level not transformed due to if condition",
+						"use log category (SEVERE/WARNING/CONFIG)", "use log category (CONFIG)",
+						"not lower log levels of logs inside of catch blocks", "time (s)" });
 				CSVPrinter repoPrinter = Util.createCSVPrinter("repos.csv", new String[] { "sequence", "repo URL",
 						"SHA-1 of head", "N for commits", "actual number of commits" });
-
 				CSVPrinter actionPrinter = Util.createCSVPrinter("log_transformation_actions.csv",
 						new String[] { "sequence", "subject", "log expression", "start pos", "log level", "type FQN",
 								"enclosing method", "DOI value", "action", "new level" });
@@ -235,7 +234,9 @@ public class EvaluationHandler extends AbstractHandler {
 								logRejuvenatingProcessor.getRepoURL(), logInvocationSet.size(),
 								passingLogInvocationSet.size(), errorEntries.size(), transformedLogInvocationSet.size(),
 								resultCommit.getAverageJavaLinesAdded(), resultCommit.getAverageJavaLinesRemoved(),
-								this.isUseLogCategory(), this.isUseLogCategoryWithConfig(), this.isNotLowerLogLevel(),
+								logRejuvenatingProcessor.getLogLevelNotLoweredInCatch(),
+								logRejuvenatingProcessor.getLogLevelNotTransformedInIf(), this.isUseLogCategory(),
+								this.isUseLogCategoryWithConfig(), this.isNotLowerLogLevel(),
 								resultsTimeCollector.getCollectedTime());
 						// Duplicate rows.
 						if (!resultCommit.getHeadSha().equals(""))
