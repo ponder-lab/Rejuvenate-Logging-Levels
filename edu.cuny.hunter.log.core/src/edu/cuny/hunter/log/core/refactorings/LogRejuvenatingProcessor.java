@@ -197,7 +197,15 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 		for (IJavaProject jproj : this.getJavaProjects()) {
 			LogAnalyzer analyzer = new LogAnalyzer(this.useLogCategoryWithConfig, this.useLogCategory,
 					this.notLowerLogLevelInCatchBlock, this.checkIfCondition);
-			
+
+			MylynGitPredictionProvider mylynProvider = null;
+
+			// If we are using the git history.
+			if (this.useGitHistory) {
+				// then, we must clear the context
+				analyzer.clearTaskContext(mylynProvider);
+			}
+
 			IPackageFragmentRoot[] roots = jproj.getPackageFragmentRoots();
 			for (IPackageFragmentRoot root : roots) {
 				IJavaElement[] children = root.getChildren();
@@ -211,8 +219,6 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 						}
 					}
 			}
-
-			MylynGitPredictionProvider mylynProvider = null;
 
 			if (this.useGitHistory) {
 				// Process git history.
