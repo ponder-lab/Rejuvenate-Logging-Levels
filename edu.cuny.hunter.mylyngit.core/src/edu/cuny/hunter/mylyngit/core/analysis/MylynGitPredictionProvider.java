@@ -72,6 +72,7 @@ public class MylynGitPredictionProvider extends AbstractJavaRelationProvider {
 	 * @throws NoHeadException
 	 */
 	public void processProjects() throws NoHeadException, IOException, GitAPIException {
+		this.clearTaskContext();
 		for (IJavaProject javaProject : javaProjects) {
 			this.processOneProject(javaProject);
 			this.clearTaskContext();
