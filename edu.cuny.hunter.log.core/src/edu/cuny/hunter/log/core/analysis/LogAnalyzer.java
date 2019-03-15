@@ -40,6 +40,10 @@ public class LogAnalyzer extends ASTVisitor {
 
 	private boolean useLogCategory = false;
 
+	private int logLevelNotTransformedInIf;
+
+	private int logLevelNotLoweredInCatch;
+
 	private HashSet<Float> DOIValues = new HashSet<>();
 
 	private LinkedList<Float> boundary;
@@ -107,6 +111,9 @@ public class LogAnalyzer extends ASTVisitor {
 	private boolean doAction(LogInvocation logInvocation) {
 
 		Level currentLogLevel = logInvocation.getLogLevel();
+		// Cannot get valid log level from log invocations.
+		if (currentLogLevel == null)
+			return false;
 
 		/**
 		 * Do not change a log level in a logging statement if there exists an immediate
@@ -115,14 +122,22 @@ public class LogAnalyzer extends ASTVisitor {
 		if (this.checkIfCondition) {
 			if (this.checkIfBlock(logInvocation.getExpression())) {
 				logInvocation.setAction(Action.NONE, null);
+				this.logLevelNotTransformedInIf++;
 				return false;
 			}
 		}
 
 		Level rejuvenatedLogLevel = getRejuvenatedLogLevel(this.boundary, logInvocation);
 
-		if (rejuvenatedLogLevel == null || currentLogLevel == null)
+		if (rejuvenatedLogLevel == null)
 			return false;
+
+		if (logInvocation.getInCatchBlock() // process not lower log levels in catch blocks
+				&& (currentLogLevel.intValue() > rejuvenatedLogLevel.intValue())) {
+			this.logLevelNotLoweredInCatch++;
+			logInvocation.setAction(Action.NONE, null);
+			return false;
+		}
 
 		if ((currentLogLevel == rejuvenatedLogLevel) // current log level is same to transformed log level
 
@@ -132,9 +147,7 @@ public class LogAnalyzer extends ASTVisitor {
 						|| currentLogLevel == Level.SEVERE)) // process log category (CONFIG/WARNING/SERVRE)
 
 				|| (this.useLogCategoryWithConfig && (currentLogLevel == Level.CONFIG)) // process log category (CONFIG)
-
-				|| (logInvocation.getInCatchBlock() // process not lower log levels in catch blocks
-						&& (currentLogLevel.intValue() > rejuvenatedLogLevel.intValue()))) {
+		) {
 			logInvocation.setAction(Action.NONE, null);
 			return false;
 		}
@@ -397,6 +410,14 @@ public class LogAnalyzer extends ASTVisitor {
 		this.getLogInvocationSet().forEach(inv -> {
 			inv.updateDOI();
 		});
+	}
+
+	public int getLogLevelNotTransformedInIf() {
+		return this.logLevelNotTransformedInIf;
+	}
+	
+	public int getLogLevelNotLoweredInCatch() {
+		return this.logLevelNotLoweredInCatch;
 	}
 
 }

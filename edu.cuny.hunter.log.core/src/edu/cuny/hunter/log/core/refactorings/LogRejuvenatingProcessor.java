@@ -91,6 +91,9 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 	 * It the caller Evaluation plugin?
 	 */
 	private boolean isEvaluation = false;
+	
+	private int logLevelNotTransformedInIf;
+	private int logLevelNotLoweredInCatch;
 
 	private String repoURL = "";
 
@@ -194,7 +197,7 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 		for (IJavaProject jproj : this.getJavaProjects()) {
 			LogAnalyzer analyzer = new LogAnalyzer(this.useLogCategoryWithConfig, this.useLogCategory,
 					this.notLowerLogLevelInCatchBlock, this.checkIfCondition);
-
+			
 			IPackageFragmentRoot[] roots = jproj.getPackageFragmentRoots();
 			for (IPackageFragmentRoot root : roots) {
 				IJavaElement[] children = root.getChildren();
@@ -219,7 +222,10 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 				this.setRepoURL(mylynProvider.getRepoURL());
 			}
 
-			analyzer.analyze();
+			analyzer.analyze();	
+			
+			this.setLogLevelNotLoweredInCatch(analyzer.getLogLevelNotLoweredInCatch());
+			this.setLogLevelNotTransformedInIf(analyzer.getLogLevelNotTransformedInIf());
 
 			// Get boundary
 			this.boundary = analyzer.getBoundary();
@@ -389,6 +395,22 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 
 	public void setCheckIfCondition(boolean checkIfCondition) {
 		this.checkIfCondition = checkIfCondition;
+	}
+
+	public int getLogLevelNotTransformedInIf() {
+		return this.logLevelNotTransformedInIf;
+	}
+
+	public void setLogLevelNotTransformedInIf(int logLevelNotTransformedInIf) {
+		this.logLevelNotTransformedInIf = logLevelNotTransformedInIf;
+	}
+
+	public int getLogLevelNotLoweredInCatch() {
+		return this.logLevelNotLoweredInCatch;
+	}
+
+	public void setLogLevelNotLoweredInCatch(int logLevelNotLoweredInCatch) {
+		this.logLevelNotLoweredInCatch = logLevelNotLoweredInCatch;
 	}
 
 }
