@@ -105,7 +105,7 @@ public class LogWizard extends RefactoringWizard {
 			// set up buttons.
 			this.addBooleanButton("Treat CONFIG log level as a category and not a traditional level.",
 					USE_LOG_CATEGORY_CONFIG, this.getProcessor()::setParticularConfigLogLevel, result, SWT.RADIO);
-			
+
 			// set up buttons.
 			this.addBooleanButton("Treat CONFIG/WARNING/SEVERE log levels as a category and not traditional levels.",
 					USE_LOG_CATEGORY, this.getProcessor()::setParticularLogLevel, result, SWT.RADIO);
