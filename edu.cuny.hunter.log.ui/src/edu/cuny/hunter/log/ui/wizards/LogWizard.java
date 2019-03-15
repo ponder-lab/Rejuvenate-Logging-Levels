@@ -100,22 +100,21 @@ public class LogWizard extends RefactoringWizard {
 			logLable.setText("Choose the log level style:");
 
 			Button button = new Button(result, SWT.RADIO);
-			button.setText("Defalut： traditional levels.");
+			button.setText("Default： traditional levels.");
 
 			// set up buttons.
 			this.addBooleanButton("Treat CONFIG log level as a category and not a traditional level.",
 					USE_LOG_CATEGORY_CONFIG, this.getProcessor()::setParticularConfigLogLevel, result, SWT.RADIO);
 			
 			// set up buttons.
-			this.addBooleanButton("Treat CONFIG/WARNING/SEVERE log levels as category and not traditional levels.",
+			this.addBooleanButton("Treat CONFIG/WARNING/SEVERE log levels as a category and not traditional levels.",
 					USE_LOG_CATEGORY, this.getProcessor()::setParticularLogLevel, result, SWT.RADIO);
 
 			Label separator = new Label(result, SWT.SEPARATOR | SWT.SHADOW_OUT | SWT.HORIZONTAL);
 			separator.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
 
 			Label gitLabel = new Label(result, SWT.NONE);
-			gitLabel.setText(
-					"Check the option below if you would like to use git history to " + "rejuvenate log levels.");
+			gitLabel.setText("Check the option below if you would like to use git history to rejuvenate log levels.");
 
 			// set up buttons.
 			Button checkButton = this.addBooleanButton("Traverse git history to rejuvenate log levels.",
@@ -134,14 +133,14 @@ public class LogWizard extends RefactoringWizard {
 
 			// set up buttons.
 			Button checkButton3 = this.addBooleanButton(
-					"Do not change a log level if its if statement condition contains a log level that matches it.", CHECK_IF_CONDITION,
+					"Do not change a log level if its if statement condition contains a log level.", CHECK_IF_CONDITION,
 					this.getProcessor()::setCheckIfCondition, result, SWT.CHECK);
 			checkButton3.setSelection(true);
 
 			Label separator3 = new Label(result, SWT.SEPARATOR | SWT.SHADOW_OUT | SWT.HORIZONTAL);
 			separator3.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
 
-			this.addIntegerButton("N values used to limit number of commits: ", N_TO_USE_FOR_COMMITS,
+			this.addIntegerButton("N values used to limit the number of commits: ", N_TO_USE_FOR_COMMITS,
 					this.getProcessor()::setNToUseForCommits, this.addIntegerButton(result));
 
 			this.updateStatus();
