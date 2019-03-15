@@ -38,6 +38,7 @@ import edu.cuny.hunter.log.core.analysis.LogInvocation;
 import edu.cuny.hunter.log.core.descriptors.LogDescriptor;
 import edu.cuny.hunter.log.core.messages.Messages;
 import edu.cuny.hunter.log.core.utils.LoggerNames;
+import edu.cuny.hunter.log.core.utils.Util;
 import edu.cuny.hunter.mylyngit.core.analysis.MylynGitPredictionProvider;
 import edu.cuny.hunter.mylyngit.core.utils.Commit;
 
@@ -199,12 +200,9 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 			LogAnalyzer analyzer = new LogAnalyzer(this.useLogCategoryWithConfig, this.useLogCategory,
 					this.notLowerLogLevelInCatchBlock, this.checkIfCondition);
 
-			MylynGitPredictionProvider mylynProvider = null;
-
 			// If we are using the git history.
 			if (this.useGitHistory) {
-				// then, we must clear the context
-				analyzer.clearTaskContext(mylynProvider);
+				Util.clearTaskContext();
 			}
 
 			IPackageFragmentRoot[] roots = jproj.getPackageFragmentRoots();
@@ -220,6 +218,8 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 						}
 					}
 			}
+			
+			MylynGitPredictionProvider mylynProvider = null;
 
 			if (this.useGitHistory) {
 				// Process git history.
@@ -242,7 +242,7 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 			// If we are using the git history.
 			if (this.useGitHistory) {
 				// then, we must clear the context
-				analyzer.clearTaskContext(mylynProvider);
+				Util.clearTaskContext();
 			}
 		}
 

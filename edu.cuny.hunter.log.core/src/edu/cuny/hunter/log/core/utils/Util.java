@@ -24,6 +24,7 @@ import org.eclipse.mylyn.context.core.IDegreeOfInterest;
 import org.eclipse.mylyn.context.core.IInteractionElement;
 
 import edu.cuny.hunter.log.core.refactorings.LogRejuvenatingProcessor;
+import edu.cuny.hunter.mylyngit.core.analysis.MylynGitPredictionProvider;
 
 @SuppressWarnings("restriction")
 public final class Util {
@@ -81,6 +82,13 @@ public final class Util {
 		if (method != null)
 			return ContextCore.getContextManager().getElement(method.getHandleIdentifier());
 		return null;
+	}
+	
+	/**
+	 * Clear the active task context.
+	 */
+	public static void clearTaskContext() {
+		MylynGitPredictionProvider.clearTaskContext();
 	}
 
 	/**

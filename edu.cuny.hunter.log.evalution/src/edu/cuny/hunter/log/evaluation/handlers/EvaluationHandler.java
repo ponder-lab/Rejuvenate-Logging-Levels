@@ -107,11 +107,6 @@ public class EvaluationHandler extends AbstractHandler {
 
 				ResultForCommit resultCommit = new ResultForCommit();
 
-				// for each selected java project
-
-				// Clear intermediate data for mylyn-git plug-in.
-				MylynGitPredictionProvider.clearMappingData();
-
 				for (int i = 0; i < 6; ++i) {
 					long sequence = this.getRunId();
 

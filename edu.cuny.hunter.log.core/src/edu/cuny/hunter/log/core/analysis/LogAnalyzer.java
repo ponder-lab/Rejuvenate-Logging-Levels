@@ -399,13 +399,6 @@ public class LogAnalyzer extends ASTVisitor {
 		this.getLogInvocationSet().add(logInvocation);
 	}
 
-	/**
-	 * Clear the active task context.
-	 */
-	public void clearTaskContext(MylynGitPredictionProvider mylynProvider) {
-		mylynProvider.clearTaskContext();
-	}
-
 	public void updateDOI() {
 		this.getLogInvocationSet().forEach(inv -> {
 			inv.updateDOI();

@@ -249,7 +249,7 @@ public class MylynGitPredictionProvider extends AbstractJavaRelationProvider {
 		return this.methodDeclarations;
 	}
 
-	public void clearTaskContext() {
+	public static void clearTaskContext() {
 		Util.clearTaskContext();
 	}
 
