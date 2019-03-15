@@ -2,15 +2,23 @@ package edu.cuny.hunter.log.evaluation.utils;
 
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.List;
 
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
+import org.eclipse.core.commands.ExecutionEvent;
+import org.eclipse.core.commands.ExecutionException;
+import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.ILocalVariable;
 import org.eclipse.jdt.core.IMethod;
 import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.core.Signature;
+import org.eclipse.jdt.internal.ui.util.SelectionUtil;
+import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.ui.handlers.HandlerUtil;
 
+@SuppressWarnings("restriction")
 public class Util {
 
 	/**
@@ -82,4 +90,12 @@ public class Util {
 		return fullName;
 	}
 
+	public static IJavaProject[] getSelectedJavaProjectsFromEvent(ExecutionEvent event) throws ExecutionException {
+		ISelection currentSelection = HandlerUtil.getCurrentSelectionChecked(event);
+		List<?> list = SelectionUtil.toList(currentSelection);
+		IJavaProject[] javaProjects = list.stream().filter(e -> e instanceof IJavaProject)
+				.toArray(length -> new IJavaProject[length]);
+
+		return javaProjects;
+	}
 }

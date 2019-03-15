@@ -5,7 +5,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.logging.Level;
@@ -16,16 +15,17 @@ import org.apache.commons.csv.CSVPrinter;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
-import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.NullProgressMonitor;
-import org.eclipse.core.runtime.OperationCanceledException;
-import org.eclipse.jdt.core.IJavaElement;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.internal.corext.codemanipulation.CodeGenerationSettings;
 import org.eclipse.jdt.internal.ui.preferences.JavaPreferencesSettings;
-import org.eclipse.jdt.internal.ui.util.SelectionUtil;
-import org.eclipse.ui.handlers.HandlerUtil;
+import org.eclipse.ltk.core.refactoring.RefactoringStatusEntry;
+import org.eclipse.ltk.core.refactoring.participants.ProcessorBasedRefactoring;
+import org.osgi.framework.FrameworkUtil;
+
 import edu.cuny.citytech.refactoring.common.core.RefactoringProcessor;
 import edu.cuny.hunter.log.core.analysis.LogInvocation;
 import edu.cuny.hunter.log.core.refactorings.LogRejuvenatingProcessor;
@@ -34,10 +34,6 @@ import edu.cuny.hunter.log.evaluation.utils.ResultForCommit;
 import edu.cuny.hunter.log.evaluation.utils.Util;
 import edu.cuny.hunter.mylyngit.core.analysis.MylynGitPredictionProvider;
 import edu.cuny.hunter.mylyngit.core.utils.Commit;
-
-import org.eclipse.jface.viewers.ISelection;
-import org.eclipse.ltk.core.refactoring.RefactoringStatusEntry;
-import org.eclipse.ltk.core.refactoring.participants.ProcessorBasedRefactoring;
 
 /**
  * Our sample handler extends AbstractHandler, an IHandler base class.
@@ -69,58 +65,58 @@ public class EvaluationHandler extends AbstractHandler {
 
 	@Override
 	public Object execute(ExecutionEvent event) throws ExecutionException {
-		Optional<IProgressMonitor> monitor = Optional.empty();
-		ISelection currentSelection = HandlerUtil.getCurrentSelectionChecked(event);
-		List<?> list = SelectionUtil.toList(currentSelection);
-
-		List<IJavaProject> javaProjectList = new LinkedList<IJavaProject>();
-
-		if (list != null) {
-
-			for (Object obj : list)
-				if (obj instanceof IJavaElement) {
-					IJavaElement jElem = (IJavaElement) obj;
-					switch (jElem.getElementType()) {
-					case IJavaElement.JAVA_PROJECT:
-						javaProjectList.add((IJavaProject) jElem);
-						break;
-					}
-				}
-			CodeGenerationSettings settings = JavaPreferencesSettings.getCodeGenerationSettings(javaProjectList.get(0));
+		Job.create("Evaluating log level rejuventation ...", monitor -> {
+			CSVPrinter resultPrinter = null;
+			CSVPrinter repoPrinter = null;
+			CSVPrinter actionPrinter = null;
+			CSVPrinter inputLogInvPrinter = null;
+			CSVPrinter failurePrinter = null;
+			CSVPrinter doiPrinter = null;
+			CSVPrinter gitCommitPrinter = null;
 
 			try {
+				IJavaProject[] javaProjects = Util.getSelectedJavaProjectsFromEvent(event);
 
-				CSVPrinter resultPrinter = Util.createCSVPrinter("result.csv",
+				if (javaProjects.length == 0)
+					return new Status(IStatus.ERROR, FrameworkUtil.getBundle(this.getClass()).getSymbolicName(),
+							"No Java projects selected");
+
+				CodeGenerationSettings settings = JavaPreferencesSettings.getCodeGenerationSettings(javaProjects[0]);
+
+				resultPrinter = Util.createCSVPrinter("result.csv",
 						new String[] { "sequence", "subject", "repo URL", "input logging statements",
 								"passing logging statements", "failures", "transformed logging statements",
 								"average Java lines added", "average Java lines removed",
 								"use log category (SEVERE/WARNING/CONFIG)", "use log category (CONFIG)",
 								"not lower log levels of logs inside of catch blocks", "time (s)" });
-				CSVPrinter repoPrinter = Util.createCSVPrinter("repos.csv", new String[] { "sequence", "repo URL",
-						"SHA-1 of head", "N for commits", "actual number of commits" });
+				repoPrinter = Util.createCSVPrinter("repos.csv", new String[] { "sequence", "repo URL", "SHA-1 of head",
+						"N for commits", "actual number of commits" });
 
-				CSVPrinter actionPrinter = Util.createCSVPrinter("log_transformation_actions.csv",
+				actionPrinter = Util.createCSVPrinter("log_transformation_actions.csv",
 						new String[] { "sequence", "subject", "log expression", "start pos", "log level", "type FQN",
 								"enclosing method", "DOI value", "action", "new level" });
-				CSVPrinter inputLogInvPrinter = Util.createCSVPrinter("input_log_invocations.csv",
-						new String[] { "subject", "log expression", "start pos", "log level", "type FQN",
-								"enclosing method", "DOI value" });
-				CSVPrinter failurePrinter = Util.createCSVPrinter("failures.csv",
+				inputLogInvPrinter = Util.createCSVPrinter("input_log_invocations.csv", new String[] { "subject",
+						"log expression", "start pos", "log level", "type FQN", "enclosing method", "DOI value" });
+				failurePrinter = Util.createCSVPrinter("failures.csv",
 						new String[] { "sequence", "subject", "log expression", "start pos", "log level", "type FQN",
 								"enclosing method", "code", "message" });
-				CSVPrinter doiPrinter = Util.createCSVPrinter("DOI_boundaries.csv",
+				doiPrinter = Util.createCSVPrinter("DOI_boundaries.csv",
 						new String[] { "sequence", "subject", "DOI boundary", "log level" });
-				CSVPrinter gitCommitPrinter = Util.createCSVPrinter("git_commits.csv",
+				gitCommitPrinter = Util.createCSVPrinter("git_commits.csv",
 						new String[] { "subject", "SHA1", "Java lines added", "Java lines removed", "methods found",
 								"interaction events", "run time (s)" });
 
 				ResultForCommit resultCommit = new ResultForCommit();
 
 				// for each selected java project
+
+				// Clear intermediate data for mylyn-git plug-in.
+				MylynGitPredictionProvider.clearMappingData();
+
 				for (int i = 0; i < 6; ++i) {
 					long sequence = this.getRunId();
 
-					for (IJavaProject project : javaProjectList) {
+					for (IJavaProject project : javaProjects) {
 
 						this.loadSettings(i);
 
@@ -134,7 +130,8 @@ public class EvaluationHandler extends AbstractHandler {
 						LogRejuvenatingProcessor logRejuvenatingProcessor = new LogRejuvenatingProcessor(
 								new IJavaProject[] { project }, this.isUseLogCategory(),
 								this.isUseLogCategoryWithConfig(), this.getValueOfUseGitHistory(),
-								this.isNotLowerLogLevel(), this.checkIfCondtion, NToUseCommit, settings, monitor, true);
+								this.isNotLowerLogLevel(), this.checkIfCondtion, NToUseCommit, settings,
+								Optional.ofNullable(monitor), true);
 
 						new ProcessorBasedRefactoring((RefactoringProcessor) logRejuvenatingProcessor)
 								.checkAllConditions(new NullProgressMonitor());
@@ -155,7 +152,8 @@ public class EvaluationHandler extends AbstractHandler {
 										logInvocation.getDegreeOfInterestValue());
 							}
 
-						// get the difference of log invocations and passing log invocations
+						// get the difference of log invocations and passing log
+						// invocations
 						HashSet<LogInvocation> failures = new HashSet<LogInvocation>();
 						failures.addAll(logInvocationSet);
 						HashSet<LogInvocation> passingLogInvocationSet = logRejuvenatingProcessor
@@ -203,9 +201,13 @@ public class EvaluationHandler extends AbstractHandler {
 						if (boundary != null && boundary.size() > 0)
 							if (this.isUseLogCategory()) {
 								this.printBoundaryLogCategory(sequence, project.getElementName(), boundary, doiPrinter);
-							} else if (this.isUseLogCategoryWithConfig()) { // Do not consider config
+							} else if (this.isUseLogCategoryWithConfig()) { // Do
+																			// not
+																			// consider
+																			// config
 								this.printBoundaryWithConfig(sequence, project.getElementName(), boundary, doiPrinter);
-							} else {// Treat log levels as traditional log levels
+							} else {// Treat log levels as traditional log
+									// levels
 								this.printBoundaryDefault(sequence, project.getElementName(), boundary, doiPrinter);
 							}
 
@@ -215,16 +217,12 @@ public class EvaluationHandler extends AbstractHandler {
 							LinkedList<Commit> commits = logRejuvenatingProcessor.getCommits();
 							// We only need to print once.
 							if (i == 0)
-								commits.forEach(c -> {
-									try {
-										gitCommitPrinter.printRecord(project.getElementName(), c.getSHA1(),
-												c.getJavaLinesAdded(), c.getJavaLinesRemoved(), c.getMethodFound(),
-												c.getInteractionEvents(), c.getRunTime());
-									} catch (IOException e) {
-										LOGGER.warning("Cannot print commits correctly.");
-									}
+								for (Commit c : commits) {
+									gitCommitPrinter.printRecord(project.getElementName(), c.getSHA1(),
+											c.getJavaLinesAdded(), c.getJavaLinesRemoved(), c.getMethodFound(),
+											c.getInteractionEvents(), c.getRunTime());
 									resultCommit.computLines(c);
-								});
+								}
 							resultCommit.setActualCommits(commits.size());
 							if (!commits.isEmpty())
 								resultCommit.setHeadSha(commits.getLast().getSHA1());
@@ -241,25 +239,32 @@ public class EvaluationHandler extends AbstractHandler {
 						if (!resultCommit.getHeadSha().equals(""))
 							repoPrinter.printRecord(sequence, logRejuvenatingProcessor.getRepoURL(),
 									resultCommit.getHeadSha(), NToUseCommit, resultCommit.getActualCommits());
-					}
 
+					}
 					// Clear intermediate data for mylyn-git plug-in.
 					MylynGitPredictionProvider.clearMappingData();
 				}
-
-				resultPrinter.close();
-				repoPrinter.close();
-				actionPrinter.close();
-				inputLogInvPrinter.close();
-				failurePrinter.close();
-				doiPrinter.close();
-				gitCommitPrinter.close();
-			} catch (IOException e) {
-				LOGGER.severe("Cannot create printer.");
-			} catch (OperationCanceledException | CoreException e) {
-				LOGGER.severe("Cannot pass all conditions.");
+			} catch (Exception e) {
+				return new Status(IStatus.ERROR, FrameworkUtil.getBundle(this.getClass()).getSymbolicName(),
+						"Encountered exception during evaluation", e);
+			} finally {
+				try {
+					resultPrinter.close();
+					repoPrinter.close();
+					actionPrinter.close();
+					inputLogInvPrinter.close();
+					failurePrinter.close();
+					doiPrinter.close();
+					gitCommitPrinter.close();
+				} catch (IOException e) {
+					return new Status(IStatus.ERROR, FrameworkUtil.getBundle(this.getClass()).getSymbolicName(),
+							"Encountered exception during file closing", e);
+				}
 			}
-		}
+			LOGGER.info("Evaluation complete.");
+			return new Status(IStatus.OK, FrameworkUtil.getBundle(this.getClass()).getSymbolicName(),
+					"Evaluation successful.");
+		}).schedule();
 
 		return null;
 	}
@@ -325,6 +330,7 @@ public class EvaluationHandler extends AbstractHandler {
 		doiPrinter.printRecord(sequence, subject, "[" + boundary.get(6) + ", " + boundary.get(7) + ")", Level.SEVERE);
 	}
 
+	@SuppressWarnings("unused")
 	private void loadSettings() {
 		this.setUseLogCategory(this.getValueOfUseLogCategory());
 		this.setUseLogCategoryWithConfig(this.getValueOfUseLogCategoryWithConfig());
