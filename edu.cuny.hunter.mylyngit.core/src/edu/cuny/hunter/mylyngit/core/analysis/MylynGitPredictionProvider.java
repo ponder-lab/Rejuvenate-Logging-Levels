@@ -41,8 +41,6 @@ public class MylynGitPredictionProvider extends AbstractJavaRelationProvider {
 
 	private String repoURL = "";
 
-	private boolean sameRepo;
-
 	public MylynGitPredictionProvider() {
 		super("java", ID);
 	}

@@ -91,7 +91,7 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 	 * It the caller Evaluation plugin?
 	 */
 	private boolean isEvaluation = false;
-	
+
 	private int logLevelNotTransformedInIf;
 	private int logLevelNotLoweredInCatch;
 
@@ -195,6 +195,7 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 		final RefactoringStatus status = new RefactoringStatus();
 
 		for (IJavaProject jproj : this.getJavaProjects()) {
+
 			LogAnalyzer analyzer = new LogAnalyzer(this.useLogCategoryWithConfig, this.useLogCategory,
 					this.notLowerLogLevelInCatchBlock, this.checkIfCondition);
 
@@ -228,8 +229,8 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 				this.setRepoURL(mylynProvider.getRepoURL());
 			}
 
-			analyzer.analyze();	
-			
+			analyzer.analyze();
+
 			this.setLogLevelNotLoweredInCatch(analyzer.getLogLevelNotLoweredInCatch());
 			this.setLogLevelNotTransformedInIf(analyzer.getLogLevelNotTransformedInIf());
 
