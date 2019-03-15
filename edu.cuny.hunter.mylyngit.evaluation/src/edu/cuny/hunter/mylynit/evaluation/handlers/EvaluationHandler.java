@@ -90,7 +90,7 @@ public class EvaluationHandler extends AbstractHandler {
 							}
 						}
 					}
-					provider.clearTaskContext();
+					MylynGitPredictionProvider.clearTaskContext();
 				}
 				MylynGitPredictionProvider.clearMappingData();
 				resultPrinter.close();

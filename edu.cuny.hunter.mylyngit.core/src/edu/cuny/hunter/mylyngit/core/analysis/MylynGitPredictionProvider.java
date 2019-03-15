@@ -70,10 +70,10 @@ public class MylynGitPredictionProvider extends AbstractJavaRelationProvider {
 	 * @throws NoHeadException
 	 */
 	public void processProjects() throws NoHeadException, IOException, GitAPIException {
-		this.clearTaskContext();
+		clearTaskContext();
 		for (IJavaProject javaProject : javaProjects) {
 			this.processOneProject(javaProject);
-			this.clearTaskContext();
+			clearTaskContext();
 		}
 	}
 
@@ -112,7 +112,6 @@ public class MylynGitPredictionProvider extends AbstractJavaRelationProvider {
 		ASTParser parser = ASTParser.newParser(AST.JLS8);
 		parser.setResolveBindings(true);
 		parser.setSource(unit);
-
 		return (CompilationUnit) parser.createAST(null);
 	}
 
@@ -121,6 +120,8 @@ public class MylynGitPredictionProvider extends AbstractJavaRelationProvider {
 	 */
 	public void bumpDOI(IMethod method) {
 		IInteractionContext activeContext = ContextCore.getContextManager().getActiveContext();
+		if (activeContext == null)
+			throw new RuntimeException("No active context while bumping DOI!");
 		ContextCorePlugin.getContextManager().processInteractionEvent(method, Kind.EDIT, ID, activeContext);
 	}
 

@@ -83,7 +83,7 @@ public final class Util {
 			return ContextCore.getContextManager().getElement(method.getHandleIdentifier());
 		return null;
 	}
-	
+
 	/**
 	 * Clear the active task context.
 	 */
