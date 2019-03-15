@@ -53,13 +53,8 @@ It is developed on Eclipse for RCP and RAP, and its version is 2018-09. The down
 
 ## Dependencies
 
-Tycho: right click on the compilation error, then click on "discover m2e connectors". You need to install all four Tycho plugins.
-
-Mylyn: http://download.eclipse.org/mylyn/releases/3.23 <br/>
-JGit: http://download.eclipse.org/egit/updates-nightly <br/>
-
 The Common Refactoring Framework that the current tool uses requires Eclipse SDK, Eclipse SDK Tests, and Eclipse testing framework. Input
-"<b>The Eclipse Project Updates - http://download.eclipse.org/eclipse/updates/4.9 </b>" in the field of "Work with" after you clicked on the "Install New Software..." menu option under "Help" in Eclipse, then please check and install the three software mentioned above.
+"<b>The Eclipse Project Updates - http://download.eclipse.org/eclipse/updates/4.10 </b>" in the field of "Work with" after you clicked on the "Install New Software..." menu option under "Help" in Eclipse, then please check and install the three software mentioned above.
 
 ## Limitations
 
