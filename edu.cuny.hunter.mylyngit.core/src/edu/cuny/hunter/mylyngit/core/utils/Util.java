@@ -70,7 +70,8 @@ public class Util {
 					IJavaElement[] javaElements = fragment.getChildren();
 					for (int k = 0; k < javaElements.length; k++) {
 						IJavaElement javaElement = javaElements[k];
-						if (javaElement.getElementType() == IJavaElement.COMPILATION_UNIT) {
+						if (javaElement.getElementType() == IJavaElement.COMPILATION_UNIT
+								&& javaElement.getJavaProject().equals(javaProject)) {
 							units.add((ICompilationUnit) javaElement);
 						}
 					}
