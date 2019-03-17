@@ -381,7 +381,7 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 	}
 
 	public LinkedList<Commit> getCommits() {
-		return commits;
+		return this.commits;
 	}
 
 	private void setCommits(LinkedList<Commit> commits) {

@@ -120,8 +120,6 @@ public class MylynGitPredictionProvider extends AbstractJavaRelationProvider {
 	 */
 	public void bumpDOI(IMethod method) {
 		IInteractionContext activeContext = ContextCore.getContextManager().getActiveContext();
-		if (activeContext == null)
-			throw new RuntimeException("No active context while bumping DOI!");
 		ContextCorePlugin.getContextManager().processInteractionEvent(method, Kind.EDIT, ID, activeContext);
 	}
 

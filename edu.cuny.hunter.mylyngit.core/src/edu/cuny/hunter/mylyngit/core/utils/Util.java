@@ -130,8 +130,7 @@ public class Util {
 		}
 	}
 
-	private static File findEvaluationPropertiesFile(IJavaProject project, String fileName)
-			throws JavaModelException {
+	private static File findEvaluationPropertiesFile(IJavaProject project, String fileName) throws JavaModelException {
 		IPath location = project.getCorrespondingResource().getLocation();
 		return findEvaluationPropertiesFile(location.toFile(), fileName);
 	}
