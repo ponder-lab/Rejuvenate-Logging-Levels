@@ -3,8 +3,7 @@ package edu.cuny.hunter.log.core.analysis;
 public enum Failure {
 
 	/**
-	 * Log invocations could be detected, but their log levels cannot be detected. 
-	 * This could be from several reasons. 
+	 * The issues that currently are not handled.
 	 * The most common reason is that our tool is missing data flow analysis.
 	 */
 	CURRENTLY_NOT_HANDLED(1),

@@ -108,6 +108,11 @@ public class LogAnalyzer extends ASTVisitor {
 	 * Do transformation action.
 	 */
 	private boolean doAction(LogInvocation logInvocation) {
+		// No enclosing method.
+		if (logInvocation.getEnclosingEclipseMethod() == null) {
+			logInvocation.addStatusEntry(Failure.CURRENTLY_NOT_HANDLED,
+					logInvocation.getExpression() + " has no enclosing method.");
+		}
 
 		Level currentLogLevel = logInvocation.getLogLevel();
 		// Cannot get valid log level from log invocations.
@@ -407,7 +412,7 @@ public class LogAnalyzer extends ASTVisitor {
 	public int getLogLevelNotTransformedInIf() {
 		return this.logLevelNotTransformedInIf;
 	}
-	
+
 	public int getLogLevelNotLoweredInCatch() {
 		return this.logLevelNotLoweredInCatch;
 	}
