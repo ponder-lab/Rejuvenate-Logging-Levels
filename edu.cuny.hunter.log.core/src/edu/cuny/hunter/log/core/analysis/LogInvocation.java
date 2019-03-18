@@ -182,29 +182,34 @@ public class LogInvocation {
 
 				} else // The parameters (e.g., log(Level.WARNING) -> log(Level.CRITICAL).
 				if (isLogMethod(identifier)) {
-					QualifiedName argument = (QualifiedName) expression.arguments().get(0);
-					Name qualifier = argument.getQualifier();
+					Name firstArgument = (Name) expression.arguments().get(0);
+					// log(WARNING, ...)
+					if (firstArgument.isSimpleName()) {
+						astRewrite.replace(firstArgument, ast.newSimpleName(targetLogLevel), null);
+					} else {
 
-					if (qualifier == null) {
-						astRewrite.replace(argument, ast.newSimpleName(targetLogLevel), null);
-					}
+						QualifiedName argument = (QualifiedName) firstArgument;
+						Name qualifier = argument.getQualifier();
 
-					QualifiedName newParaName = null;
-					if (qualifier.isQualifiedName())
-						newParaName = ast
-								.newQualifiedName(
-										ast.newQualifiedName(
-												ast.newQualifiedName(
-														ast.newQualifiedName(ast.newSimpleName("java"),
-																ast.newSimpleName("util")),
-														ast.newSimpleName("logging")),
-												ast.newSimpleName("Level")),
-										ast.newSimpleName(targetLogLevel));
-					if (qualifier.isSimpleName()) {
-						newParaName = ast.newQualifiedName(ast.newSimpleName("Level"),
-								ast.newSimpleName(targetLogLevel));
+						QualifiedName newParaName = null;
+						// log(java.util.logging.Level.warning, ...)
+						if (qualifier.isQualifiedName())
+							newParaName = ast
+									.newQualifiedName(
+											ast.newQualifiedName(
+													ast.newQualifiedName(
+															ast.newQualifiedName(ast.newSimpleName("java"),
+																	ast.newSimpleName("util")),
+															ast.newSimpleName("logging")),
+													ast.newSimpleName("Level")),
+											ast.newSimpleName(targetLogLevel));
+						// log(Level.warning,...)
+						if (qualifier.isSimpleName()) {
+							newParaName = ast.newQualifiedName(ast.newSimpleName("Level"),
+									ast.newSimpleName(targetLogLevel));
+						}
+						astRewrite.replace(argument, newParaName, null);
 					}
-					astRewrite.replace(argument, newParaName, null);
 				}
 			}
 	}
