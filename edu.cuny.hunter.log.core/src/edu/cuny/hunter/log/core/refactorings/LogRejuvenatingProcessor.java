@@ -325,6 +325,8 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 
 			pm.beginTask("Transforming logging levels ...", transformedLogs.size());
 			for (LogInvocation logInvocation : transformedLogs) {
+				// Don't transform log level without enclosing method.
+				if (logInvocation.getEnclosingEclipseMethod() == null) continue;
 				CompilationUnitRewrite rewrite = this.getCompilationUnitRewrite(
 						logInvocation.getEnclosingEclipseMethod().getCompilationUnit(),
 						logInvocation.getEnclosingCompilationUnit());
