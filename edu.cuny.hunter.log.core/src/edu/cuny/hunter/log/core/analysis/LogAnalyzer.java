@@ -112,6 +112,7 @@ public class LogAnalyzer extends ASTVisitor {
 		if (logInvocation.getEnclosingEclipseMethod() == null) {
 			logInvocation.addStatusEntry(Failure.CURRENTLY_NOT_HANDLED,
 					logInvocation.getExpression() + " has no enclosing method.");
+			return false;
 		}
 
 		Level currentLogLevel = logInvocation.getLogLevel();
