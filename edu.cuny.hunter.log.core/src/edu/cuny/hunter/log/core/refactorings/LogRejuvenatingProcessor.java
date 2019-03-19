@@ -291,7 +291,8 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 	public Set<LogInvocation> getTransformedLog() {
 		HashSet<LogInvocation> transformedSet = new HashSet<>();
 		for (LogInvocation logInvocation : this.logInvocationSet) {
-			if (logInvocation.getAction() != null && !logInvocation.getAction().equals(Action.NONE))
+			if (logInvocation.getAction() != null && !logInvocation.getAction().equals(Action.NONE)
+					&& logInvocation.getStatus().isOK())
 				transformedSet.add(logInvocation);
 		}
 		return transformedSet;
