@@ -19,6 +19,7 @@ import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.jdt.core.IPackageFragmentRoot;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.core.dom.CompilationUnit;
+import org.eclipse.jdt.core.dom.Name;
 import org.eclipse.ltk.core.refactoring.Change;
 import org.eclipse.ltk.core.refactoring.RefactoringDescriptor;
 import org.eclipse.ltk.core.refactoring.RefactoringStatus;
@@ -29,6 +30,7 @@ import org.eclipse.jdt.internal.corext.codemanipulation.CodeGenerationSettings;
 import org.eclipse.jdt.internal.corext.refactoring.changes.DynamicValidationRefactoringChange;
 import org.eclipse.jdt.internal.corext.refactoring.structure.CompilationUnitRewrite;
 import org.eclipse.jdt.internal.corext.refactoring.util.TextEditBasedChangeManager;
+import org.eclipse.jdt.internal.corext.refactoring.structure.ImportRewriteUtil;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.api.errors.JGitInternalException;
 import edu.cuny.citytech.refactoring.common.core.RefactoringProcessor;
@@ -218,7 +220,7 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 						}
 					}
 			}
-			
+
 			MylynGitPredictionProvider mylynProvider = null;
 
 			if (this.useGitHistory) {
@@ -331,6 +333,11 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 						logInvocation.getEnclosingCompilationUnit());
 				logInvocation.transform(rewrite);
 				pm.worked(1);
+
+				// deal with imports.
+				ImportRewriteUtil.addImports(rewrite, null, logInvocation.getExpression(), new HashMap<Name, String>(),
+						new HashMap<Name, String>(), false);
+				rewrite.getImportRemover().registerRemovedNode(logInvocation.getExpression());
 			}
 
 			// save the source changes.
