@@ -335,9 +335,9 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 				pm.worked(1);
 
 				// deal with imports.
-				ImportRewriteUtil.addImports(rewrite, null, logInvocation.getExpression(), new HashMap<Name, String>(),
-						new HashMap<Name, String>(), false);
-				rewrite.getImportRemover().registerRemovedNode(logInvocation.getExpression());
+				ImportRewriteUtil.addImports(rewrite, null, logInvocation.getNewTargetName(),
+						new HashMap<Name, String>(), new HashMap<Name, String>(), false);
+				rewrite.getImportRemover().registerRemovedNode(logInvocation.getReplacedName());
 			}
 
 			// save the source changes.
