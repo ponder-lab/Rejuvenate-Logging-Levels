@@ -19,7 +19,6 @@ import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.jdt.core.IPackageFragmentRoot;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.core.dom.CompilationUnit;
-import org.eclipse.jdt.core.dom.Name;
 import org.eclipse.ltk.core.refactoring.Change;
 import org.eclipse.ltk.core.refactoring.RefactoringDescriptor;
 import org.eclipse.ltk.core.refactoring.RefactoringStatus;
@@ -30,7 +29,6 @@ import org.eclipse.jdt.internal.corext.codemanipulation.CodeGenerationSettings;
 import org.eclipse.jdt.internal.corext.refactoring.changes.DynamicValidationRefactoringChange;
 import org.eclipse.jdt.internal.corext.refactoring.structure.CompilationUnitRewrite;
 import org.eclipse.jdt.internal.corext.refactoring.util.TextEditBasedChangeManager;
-import org.eclipse.jdt.internal.corext.refactoring.structure.ImportRewriteUtil;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.api.errors.JGitInternalException;
 import edu.cuny.citytech.refactoring.common.core.RefactoringProcessor;
@@ -334,10 +332,11 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 				logInvocation.transform(rewrite);
 				pm.worked(1);
 
-				// deal with imports.
-				ImportRewriteUtil.addImports(rewrite, null, logInvocation.getNewTargetName(),
-						new HashMap<Name, String>(), new HashMap<Name, String>(), false);
 				rewrite.getImportRemover().registerRemovedNode(logInvocation.getReplacedName());
+
+				// deal with imports.
+				rewrite.getImportRewrite().addStaticImport("java.util.logging.Level",
+						logInvocation.getNewLogLevel().getName(), true);
 			}
 
 			// save the source changes.

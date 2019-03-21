@@ -52,8 +52,6 @@ public class LogInvocation {
 	private float degreeOfInterestValue;
 
 	private Name replacedName;
-	
-	private Name newTargetName;
 
 	private IDegreeOfInterest degreeOfInterest;
 
@@ -174,7 +172,7 @@ public class LogInvocation {
 			if (expression.getNodeType() == ASTNode.METHOD_INVOCATION) {
 
 				String identifier = expression.getName().getIdentifier();
-				AST ast = logExpression.getAST();
+				AST ast = expression.getAST();
 
 				ASTRewrite astRewrite = rewrite.getASTRewrite();
 
@@ -183,15 +181,14 @@ public class LogInvocation {
 
 					SimpleName newMethodName = ast.newSimpleName(target);
 					astRewrite.replace(expression.getName(), newMethodName, null);
-					this.setName(expression.getName(), newMethodName);
-
+					this.setReplacedName(expression.getName());
 				} else // The parameters (e.g., log(Level.WARNING) -> log(Level.CRITICAL).
 				if (isLogMethod(identifier)) {
 					Name firstArgument = (Name) expression.arguments().get(0);
 					// log(WARNING, ...)
 					if (firstArgument.isSimpleName()) {
 						astRewrite.replace(firstArgument, ast.newSimpleName(targetLogLevel), null);
-						this.setName(firstArgument, ast.newSimpleName(targetLogLevel));
+						this.setReplacedName(firstArgument);
 					} else {
 
 						QualifiedName argument = (QualifiedName) firstArgument;
@@ -215,21 +212,11 @@ public class LogInvocation {
 									ast.newSimpleName(targetLogLevel));
 						}
 						astRewrite.replace(argument, newParaName, null);
-						this.setName(argument, newParaName);
+						this.setReplacedName(argument);
 					}
 				}
 
 			}
-	}
-	
-	/**
-	 * Set names for replaced node and new node.
-	 * @param replacedName
-	 * @param newName
-	 */
-	private void setName(Name replacedName, Name newName) {
-		this.setReplacedName(replacedName);
-		this.setNewTargetName(newName);
 	}
 
 	/**
@@ -330,19 +317,11 @@ public class LogInvocation {
 	}
 
 	public Name getReplacedName() {
-		return replacedName;
+		return this.replacedName;
 	}
 
 	public void setReplacedName(Name replacedName) {
 		this.replacedName = replacedName;
-	}
-
-	public Name getNewTargetName() {
-		return newTargetName;
-	}
-
-	public void setNewTargetName(Name newTargetName) {
-		this.newTargetName = newTargetName;
 	}
 
 }
