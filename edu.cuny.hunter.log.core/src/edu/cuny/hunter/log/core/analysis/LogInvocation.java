@@ -50,7 +50,7 @@ public class LogInvocation {
 	private boolean inCatchBlock = false;
 
 	private float degreeOfInterestValue;
-	
+
 	private Name replacedName;
 	
 	private Name newTargetName;
@@ -218,6 +218,7 @@ public class LogInvocation {
 						this.setName(argument, newParaName);
 					}
 				}
+
 			}
 	}
 	
@@ -298,7 +299,6 @@ public class LogInvocation {
 
 	private void convertToSevere(CompilationUnitRewrite rewrite) {
 		convert("severe", "SEVERE", rewrite);
-
 	}
 
 	private void convertToWarning(CompilationUnitRewrite rewrite) {
@@ -307,22 +307,18 @@ public class LogInvocation {
 
 	private void convertToConfig(CompilationUnitRewrite rewrite) {
 		convert("config", "CONFIG", rewrite);
-
 	}
 
 	private void convertToInfo(CompilationUnitRewrite rewrite) {
 		convert("info", "INFO", rewrite);
-
 	}
 
 	private void convertToFine(CompilationUnitRewrite rewrite) {
 		convert("fine", "FINE", rewrite);
-
 	}
 
 	private void convertToFiner(CompilationUnitRewrite rewrite) {
 		convert("finer", "FINER", rewrite);
-
 	}
 
 	/**
