@@ -22,6 +22,9 @@ import org.eclipse.jdt.core.IMethod;
 import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.jdt.core.IPackageFragmentRoot;
 import org.eclipse.jdt.core.JavaModelException;
+import org.eclipse.jdt.core.dom.AST;
+import org.eclipse.jdt.core.dom.ASTParser;
+import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.SingleVariableDeclaration;
 import org.eclipse.mylyn.context.core.ContextCore;
@@ -138,6 +141,17 @@ public class Util {
 		IPath location = project.getCorrespondingResource().getLocation();
 		return findEvaluationPropertiesFile(location.toFile(), fileName);
 	}
+	
+	/**
+	 * Create CompilationUnit from ICompilationUnit.
+	 */
+	public static CompilationUnit getCompilationUnit(ICompilationUnit unit) {
+		ASTParser parser = ASTParser.newParser(AST.JLS8);
+		parser.setResolveBindings(true);
+		parser.setSource(unit);
+		return (CompilationUnit) parser.createAST(null);
+	}
+
 
 	private static File findEvaluationPropertiesFile(File directory, String fileName) {
 		if (directory == null)

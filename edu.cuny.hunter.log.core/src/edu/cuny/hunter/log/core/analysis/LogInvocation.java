@@ -23,10 +23,11 @@ import org.eclipse.jdt.internal.corext.refactoring.structure.CompilationUnitRewr
 import org.eclipse.jdt.internal.corext.refactoring.util.JavaStatusContext;
 import org.eclipse.ltk.core.refactoring.RefactoringStatus;
 import org.eclipse.ltk.core.refactoring.RefactoringStatusContext;
-import org.osgi.framework.FrameworkUtil;
 import org.eclipse.mylyn.context.core.IDegreeOfInterest;
 import org.eclipse.mylyn.internal.tasks.core.TaskList;
 import org.eclipse.mylyn.internal.tasks.ui.TasksUiPlugin;
+import org.osgi.framework.FrameworkUtil;
+
 import edu.cuny.hunter.log.core.utils.LoggerNames;
 import edu.cuny.hunter.log.core.utils.Util;
 
@@ -50,6 +51,10 @@ public class LogInvocation {
 	private boolean inCatchBlock = false;
 
 	private float degreeOfInterestValue;
+
+	private Name replacedName;
+	
+	private Name newTargetName;
 
 	private IDegreeOfInterest degreeOfInterest;
 
@@ -170,7 +175,7 @@ public class LogInvocation {
 			if (expression.getNodeType() == ASTNode.METHOD_INVOCATION) {
 
 				String identifier = expression.getName().getIdentifier();
-				AST ast = logExpression.getAST();
+				AST ast = expression.getAST();
 
 				ASTRewrite astRewrite = rewrite.getASTRewrite();
 
@@ -179,13 +184,17 @@ public class LogInvocation {
 
 					SimpleName newMethodName = ast.newSimpleName(target);
 					astRewrite.replace(expression.getName(), newMethodName, null);
-
+					this.setReplacedName(expression.getName());
+					this.setNewTargetName(newMethodName);
 				} else // The parameters (e.g., log(Level.WARNING) -> log(Level.CRITICAL).
 				if (isLogMethod(identifier)) {
 					Name firstArgument = (Name) expression.arguments().get(0);
 					// log(WARNING, ...)
 					if (firstArgument.isSimpleName()) {
-						astRewrite.replace(firstArgument, ast.newSimpleName(targetLogLevel), null);
+						Name newLevelName = ast.newSimpleName(targetLogLevel);
+						astRewrite.replace(firstArgument, newLevelName, null);
+						this.setReplacedName(firstArgument);
+						this.setNewTargetName(newLevelName);
 					} else {
 
 						QualifiedName argument = (QualifiedName) firstArgument;
@@ -209,8 +218,11 @@ public class LogInvocation {
 									ast.newSimpleName(targetLogLevel));
 						}
 						astRewrite.replace(argument, newParaName, null);
+						this.setReplacedName(argument);
+						this.setNewTargetName(newParaName);
 					}
 				}
+
 			}
 	}
 
@@ -281,7 +293,6 @@ public class LogInvocation {
 
 	private void convertToSevere(CompilationUnitRewrite rewrite) {
 		convert("severe", "SEVERE", rewrite);
-
 	}
 
 	private void convertToWarning(CompilationUnitRewrite rewrite) {
@@ -290,22 +301,18 @@ public class LogInvocation {
 
 	private void convertToConfig(CompilationUnitRewrite rewrite) {
 		convert("config", "CONFIG", rewrite);
-
 	}
 
 	private void convertToInfo(CompilationUnitRewrite rewrite) {
 		convert("info", "INFO", rewrite);
-
 	}
 
 	private void convertToFine(CompilationUnitRewrite rewrite) {
 		convert("fine", "FINE", rewrite);
-
 	}
 
 	private void convertToFiner(CompilationUnitRewrite rewrite) {
 		convert("finer", "FINER", rewrite);
-
 	}
 
 	/**
@@ -314,6 +321,22 @@ public class LogInvocation {
 	public void updateDOI() {
 		this.degreeOfInterest = Util.getDegreeOfInterest(this.getEnclosingEclipseMethod());
 		this.degreeOfInterestValue = Util.getDOIValue(this.degreeOfInterest);
+	}
+
+	public Name getReplacedName() {
+		return this.replacedName;
+	}
+
+	public void setReplacedName(Name replacedName) {
+		this.replacedName = replacedName;
+	}
+
+	public Name getNewTargetName() {
+		return newTargetName;
+	}
+
+	public void setNewTargetName(Name newTargetName) {
+		this.newTargetName = newTargetName;
 	}
 
 }

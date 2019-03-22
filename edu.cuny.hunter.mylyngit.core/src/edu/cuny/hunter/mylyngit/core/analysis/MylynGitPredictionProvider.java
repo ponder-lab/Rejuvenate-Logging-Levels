@@ -11,8 +11,6 @@ import java.util.Set;
 import org.eclipse.jdt.core.ICompilationUnit;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IMethod;
-import org.eclipse.jdt.core.dom.AST;
-import org.eclipse.jdt.core.dom.ASTParser;
 import org.eclipse.jdt.core.dom.ASTVisitor;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.IMethodBinding;
@@ -105,16 +103,6 @@ public class MylynGitPredictionProvider extends AbstractJavaRelationProvider {
 
 	public void setJavaProjects(IJavaProject[] javaProjects) {
 		this.javaProjects = javaProjects;
-	}
-
-	/**
-	 * Create CompilationUnit from ICompilationUnit.
-	 */
-	protected CompilationUnit getCompilationUnit(ICompilationUnit unit) {
-		ASTParser parser = ASTParser.newParser(AST.JLS8);
-		parser.setResolveBindings(true);
-		parser.setSource(unit);
-		return (CompilationUnit) parser.createAST(null);
 	}
 
 	/**
@@ -229,7 +217,7 @@ public class MylynGitPredictionProvider extends AbstractJavaRelationProvider {
 
 	private HashSet<MethodDeclaration> getIMethodsInSouceCode(ICompilationUnit icu) {
 		HashSet<MethodDeclaration> methodDecs = new HashSet<>();
-		final CompilationUnit cu = this.getCompilationUnit(icu);
+		final CompilationUnit cu = Util.getCompilationUnit(icu);
 
 		cu.accept(new ASTVisitor() {
 			@Override
