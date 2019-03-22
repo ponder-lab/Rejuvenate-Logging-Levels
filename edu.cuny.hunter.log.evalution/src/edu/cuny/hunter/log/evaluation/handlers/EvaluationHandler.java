@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.logging.Level;
@@ -111,6 +112,11 @@ public class EvaluationHandler extends AbstractHandler {
 					long sequence = this.getRunId();
 
 					for (IJavaProject project : javaProjects) {
+						List<Integer> nsToUse = edu.cuny.hunter.mylyngit.core.utils.Util.getNToUseForCommits(project,
+								N_TO_USE_FOR_COMMITS_KEY, N_TO_USE_FOR_COMMITS_DEFAULT,
+								EVALUATION_PROPERTIES_FILE_NAME);;
+						
+						for (int NToUseCommit : nsToUse) {
 
 						this.loadSettings(i);
 
@@ -118,9 +124,6 @@ public class EvaluationHandler extends AbstractHandler {
 						edu.cuny.hunter.mylyngit.core.utils.TimeCollector resultsTimeCollector = new edu.cuny.hunter.mylyngit.core.utils.TimeCollector();
 						resultsTimeCollector.start();
 
-						int NToUseCommit = edu.cuny.hunter.mylyngit.core.utils.Util.getNToUseForCommits(project,
-								N_TO_USE_FOR_COMMITS_KEY, N_TO_USE_FOR_COMMITS_DEFAULT,
-								EVALUATION_PROPERTIES_FILE_NAME);
 						LogRejuvenatingProcessor logRejuvenatingProcessor = new LogRejuvenatingProcessor(
 								new IJavaProject[] { project }, this.isUseLogCategory(),
 								this.isUseLogCategoryWithConfig(), this.getValueOfUseGitHistory(),
@@ -236,6 +239,7 @@ public class EvaluationHandler extends AbstractHandler {
 							repoPrinter.printRecord(sequence, logRejuvenatingProcessor.getRepoURL(),
 									resultCommit.getHeadSha(), NToUseCommit, resultCommit.getActualCommits());
 
+					}
 					}
 					// Clear intermediate data for mylyn-git plug-in.
 					MylynGitPredictionProvider.clearMappingData();

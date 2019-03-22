@@ -4,12 +4,15 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.Reader;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.jdt.core.ICompilationUnit;
@@ -151,7 +154,7 @@ public class Util {
 			return findEvaluationPropertiesFile(directory.getParentFile(), fileName);
 	}
 
-	public static int getNToUseForCommits(IJavaProject project, String key, int value, String fileName)
+	public static List<Integer> getNToUseForCommits(IJavaProject project, String key, int value, String fileName)
 			throws IOException, JavaModelException {
 		Properties properties = new Properties();
 		File file = findEvaluationPropertiesFile(project, fileName);
@@ -163,17 +166,18 @@ public class Util {
 				String nToUseForStreams = properties.getProperty(key);
 
 				if (nToUseForStreams == null) {
-					int ret = value;
+					List<Integer> ret = Stream.of(value).collect(Collectors.toList());
 					LOGGER.info("Using default N for commit number: " + ret + ".");
 					return ret;
 				} else {
-					int ret = Integer.valueOf(nToUseForStreams);
+					String[] strings = nToUseForStreams.split(",");
+					List<Integer> ret = Arrays.stream(strings).map(Integer::parseInt).collect(Collectors.toList());
 					LOGGER.info("Using properties file N for commit number: " + ret + ".");
 					return ret;
 				}
 			}
 		else {
-			int ret = value;
+			List<Integer> ret = Stream.of(value).collect(Collectors.toList());
 			LOGGER.info("Using default N for commit number: " + ret + ".");
 			return ret;
 		}

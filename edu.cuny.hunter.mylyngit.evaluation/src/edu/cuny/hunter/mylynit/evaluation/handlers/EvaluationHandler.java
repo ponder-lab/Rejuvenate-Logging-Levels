@@ -70,8 +70,9 @@ public class EvaluationHandler extends AbstractHandler {
 						new String[] { "subject", "N for commits", "TypeFQN", "methods", "DOI values" });
 
 				for (IJavaProject javaProject : javaProjectList) {
-					int NToUseForCommit = Util.getNToUseForCommits(javaProject, N_TO_USE_FOR_COMMITS_KEY,
+					List<Integer> nsToUse = Util.getNToUseForCommits(javaProject, N_TO_USE_FOR_COMMITS_KEY,
 							N_TO_USE_FOR_COMMITS_DEFAULT, EVALUATION_PROPERTIES_FILE_NAME);
+					for (Integer NToUseForCommit : nsToUse){
 
 					MylynGitPredictionProvider provider = new MylynGitPredictionProvider(NToUseForCommit);
 					provider.processOneProject(javaProject);
@@ -91,6 +92,7 @@ public class EvaluationHandler extends AbstractHandler {
 						}
 					}
 					MylynGitPredictionProvider.clearTaskContext();
+				}
 				}
 				MylynGitPredictionProvider.clearMappingData();
 				resultPrinter.close();
