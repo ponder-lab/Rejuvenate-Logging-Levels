@@ -350,15 +350,18 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 				// add static imports if necessary.
 				// for each import statement in the enclosing compilation unit.
 				List<?> imports = logInvocation.getEnclosingCompilationUnit().imports();
-				for (Object obj: imports) {
+				for (Object obj : imports) {
 					ImportDeclaration importDeclaration = (ImportDeclaration) obj;
-					// if the import is static (this is the only case we need to worry about).
+					// if the import is static (this is the only case we need to
+					// worry about).
 					if (importDeclaration.isStatic()) {
 						Name name = importDeclaration.getName();
-						String matchName = "java.util.logging.Level." + logInvocation.getReplacedName().getFullyQualifiedName();
+						String matchName = "java.util.logging.Level."
+								+ logInvocation.getReplacedName().getFullyQualifiedName();
 
 						if (name.getFullyQualifiedName().equals(matchName))
-							// we are replacing a log level that has been statically imported.
+							// we are replacing a log level that has been
+							// statically imported.
 							// then, add a static import for new log level.
 							rewrite.getImportRewrite().addStaticImport("java.util.logging.Level",
 									logInvocation.getNewTargetName().getFullyQualifiedName(), true, context);
