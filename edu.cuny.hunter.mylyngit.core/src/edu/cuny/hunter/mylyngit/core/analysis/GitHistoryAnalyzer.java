@@ -99,6 +99,8 @@ public class GitHistoryAnalyzer {
 	private String repoPath;
 
 	private String repoURL;
+	
+	private int actualNumberOfCommits;
 
 	// Map repo path to URL
 	private static HashMap<String, String> pathToURL = new HashMap<>();
@@ -402,7 +404,9 @@ public class GitHistoryAnalyzer {
 				this.commitList.addFirst(commit);
 			commitNumber++;
 		}
-
+		
+		this.setActualNumberOfCommits(commitNumber);
+		
 		return git;
 	}
 
@@ -1037,6 +1041,14 @@ public class GitHistoryAnalyzer {
 
 	private void setRepoURL(String repoURL) {
 		this.repoURL = repoURL;
+	}
+
+	public int getActualNumberOfCommits() {
+		return actualNumberOfCommits;
+	}
+
+	public void setActualNumberOfCommits(int actualNumberOfCommits) {
+		this.actualNumberOfCommits = actualNumberOfCommits;
 	}
 
 }

@@ -39,6 +39,8 @@ public class MylynGitPredictionProvider extends AbstractJavaRelationProvider {
 
 	private static final String Name = "mylyn git";
 
+	private int actualNumberOfCommits;
+
 	private String repoURL = "";
 
 	public MylynGitPredictionProvider() {
@@ -136,6 +138,7 @@ public class MylynGitPredictionProvider extends AbstractJavaRelationProvider {
 		// store commits and remote URL of repository
 		this.setCommits(gitHistoryAnalyzer.getCommits());
 		this.setRepoURL(gitHistoryAnalyzer.getRepoURL());
+		this.setActualNumberOfCommits(gitHistoryAnalyzer.getActualNumberOfCommits());
 
 		LinkedList<GitMethod> gitMethods = gitHistoryAnalyzer.getGitMethods();
 		gitMethods.forEach(method -> {
@@ -276,6 +279,14 @@ public class MylynGitPredictionProvider extends AbstractJavaRelationProvider {
 
 	public void setRepoURL(String repoURL) {
 		this.repoURL = repoURL;
+	}
+
+	public int getActualNumberOfCommits() {
+		return actualNumberOfCommits;
+	}
+
+	public void setActualNumberOfCommits(int actualNumberOfCommits) {
+		this.actualNumberOfCommits = actualNumberOfCommits;
 	}
 
 }

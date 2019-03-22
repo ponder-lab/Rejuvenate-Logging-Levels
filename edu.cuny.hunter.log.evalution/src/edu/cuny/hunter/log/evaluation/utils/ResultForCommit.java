@@ -7,27 +7,27 @@ public class ResultForCommit {
 	private String headSha = "";
 	private long javaLinesAdded = 0;
 	private long javaLinesRemoved = 0;
-	private int actualCommits = 0;
+	private int commitsProcessed = 0;
 
 	public void computLines(Commit commit) {
 		this.javaLinesAdded += commit.getJavaLinesAdded();
 		this.javaLinesRemoved += commit.getJavaLinesRemoved();
 	}
 
-	public int getActualCommits() {
-		return actualCommits;
+	public int getCommitsProcessed() {
+		return commitsProcessed;
 	}
 
-	public void setActualCommits(int actualCommits) {
-		this.actualCommits = actualCommits;
+	public void setActualCommits(int commitsProcessed) {
+		this.commitsProcessed = commitsProcessed;
 	}
 
 	public float getAverageJavaLinesAdded() {
-		return this.actualCommits == 0 ? 0 : this.javaLinesAdded / this.actualCommits;
+		return this.commitsProcessed == 0 ? 0 : this.javaLinesAdded / this.commitsProcessed;
 	}
 
 	public float getAverageJavaLinesRemoved() {
-		return this.actualCommits == 0 ? 0 : this.javaLinesRemoved / this.actualCommits;
+		return this.commitsProcessed == 0 ? 0 : this.javaLinesRemoved / this.commitsProcessed;
 	}
 
 	public long getJavaLinesAdded() {
@@ -58,7 +58,7 @@ public class ResultForCommit {
 		this.headSha = "";
 		this.javaLinesAdded = 0;
 		this.javaLinesRemoved = 0;
-		this.actualCommits = 0;
+		this.commitsProcessed = 0;
 	}
 
 }

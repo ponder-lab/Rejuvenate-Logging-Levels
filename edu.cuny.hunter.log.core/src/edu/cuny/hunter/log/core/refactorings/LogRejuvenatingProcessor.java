@@ -84,6 +84,11 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 	private int NToUseForCommits = 100;
 
 	/**
+	 * The actual number of commits in repo.
+	 */
+	private int actualNumberOfCommits;
+
+	/**
 	 * Keep if condition and log levels inside if statement consistent
 	 */
 	private boolean checkIfCondition = false;
@@ -218,13 +223,14 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 						}
 					}
 			}
-			
+
 			MylynGitPredictionProvider mylynProvider = null;
 
 			if (this.useGitHistory) {
 				// Process git history.
 				mylynProvider = new MylynGitPredictionProvider(this.NToUseForCommits);
 				this.processGitHistory(mylynProvider, analyzer, jproj);
+				this.setActualNumberOfCommits(mylynProvider.getActualNumberOfCommits());
 				this.setCommits(mylynProvider.getCommits());
 				this.setRepoURL(mylynProvider.getRepoURL());
 			}
@@ -419,6 +425,14 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 
 	public void setLogLevelNotLoweredInCatch(int logLevelNotLoweredInCatch) {
 		this.logLevelNotLoweredInCatch = logLevelNotLoweredInCatch;
+	}
+
+	public int getActualNumberOfCommits() {
+		return actualNumberOfCommits;
+	}
+
+	public void setActualNumberOfCommits(int actualNumberOfCommits) {
+		this.actualNumberOfCommits = actualNumberOfCommits;
 	}
 
 }
