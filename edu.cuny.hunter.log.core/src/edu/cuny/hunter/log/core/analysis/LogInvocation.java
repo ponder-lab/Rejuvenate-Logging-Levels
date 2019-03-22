@@ -184,8 +184,7 @@ public class LogInvocation {
 
 					SimpleName newMethodName = ast.newSimpleName(target);
 					astRewrite.replace(expression.getName(), newMethodName, null);
-					this.setReplacedName(expression.getName());
-					this.setNewTargetName(newMethodName);
+					this.setNames(expression.getName(), newMethodName);
 				} else // The parameters (e.g., log(Level.WARNING) -> log(Level.CRITICAL).
 				if (isLogMethod(identifier)) {
 					Name firstArgument = (Name) expression.arguments().get(0);
@@ -193,8 +192,7 @@ public class LogInvocation {
 					if (firstArgument.isSimpleName()) {
 						Name newLevelName = ast.newSimpleName(targetLogLevel);
 						astRewrite.replace(firstArgument, newLevelName, null);
-						this.setReplacedName(firstArgument);
-						this.setNewTargetName(newLevelName);
+						this.setNames(firstArgument, newLevelName);
 					} else {
 
 						QualifiedName argument = (QualifiedName) firstArgument;
@@ -218,12 +216,21 @@ public class LogInvocation {
 									ast.newSimpleName(targetLogLevel));
 						}
 						astRewrite.replace(argument, newParaName, null);
-						this.setReplacedName(argument);
-						this.setNewTargetName(newParaName);
+						this.setNames(argument, newParaName);
 					}
 				}
 
 			}
+	}
+	
+	/**
+	 * Set names.
+	 * @param oldName
+	 * @param newLevelName
+	 */
+	private void setNames(Name oldName, Name newLevelName) {
+		this.setReplacedName(oldName);
+		this.setNewTargetName(newLevelName);
 	}
 
 	/**
