@@ -52,6 +52,8 @@ public class LogInvocation {
 	private float degreeOfInterestValue;
 
 	private Name replacedName;
+	
+	private Name newTargetName;
 
 	private IDegreeOfInterest degreeOfInterest;
 
@@ -182,6 +184,7 @@ public class LogInvocation {
 					SimpleName newMethodName = ast.newSimpleName(target);
 					astRewrite.replace(expression.getName(), newMethodName, null);
 					this.setReplacedName(expression.getName());
+					this.setNewTargetName(newMethodName);
 				} else // The parameters (e.g., log(Level.WARNING) -> log(Level.CRITICAL).
 				if (isLogMethod(identifier)) {
 					Name firstArgument = (Name) expression.arguments().get(0);
@@ -189,6 +192,7 @@ public class LogInvocation {
 					if (firstArgument.isSimpleName()) {
 						astRewrite.replace(firstArgument, ast.newSimpleName(targetLogLevel), null);
 						this.setReplacedName(firstArgument);
+						this.setNewTargetName(ast.newSimpleName(targetLogLevel));
 					} else {
 
 						QualifiedName argument = (QualifiedName) firstArgument;
@@ -213,6 +217,7 @@ public class LogInvocation {
 						}
 						astRewrite.replace(argument, newParaName, null);
 						this.setReplacedName(argument);
+						this.setNewTargetName(newParaName);
 					}
 				}
 
@@ -322,6 +327,14 @@ public class LogInvocation {
 
 	public void setReplacedName(Name replacedName) {
 		this.replacedName = replacedName;
+	}
+
+	public Name getNewTargetName() {
+		return newTargetName;
+	}
+
+	public void setNewTargetName(Name newTargetName) {
+		this.newTargetName = newTargetName;
 	}
 
 }
