@@ -23,10 +23,11 @@ import org.eclipse.jdt.internal.corext.refactoring.structure.CompilationUnitRewr
 import org.eclipse.jdt.internal.corext.refactoring.util.JavaStatusContext;
 import org.eclipse.ltk.core.refactoring.RefactoringStatus;
 import org.eclipse.ltk.core.refactoring.RefactoringStatusContext;
-import org.osgi.framework.FrameworkUtil;
 import org.eclipse.mylyn.context.core.IDegreeOfInterest;
 import org.eclipse.mylyn.internal.tasks.core.TaskList;
 import org.eclipse.mylyn.internal.tasks.ui.TasksUiPlugin;
+import org.osgi.framework.FrameworkUtil;
+
 import edu.cuny.hunter.log.core.utils.LoggerNames;
 import edu.cuny.hunter.log.core.utils.Util;
 
@@ -190,9 +191,10 @@ public class LogInvocation {
 					Name firstArgument = (Name) expression.arguments().get(0);
 					// log(WARNING, ...)
 					if (firstArgument.isSimpleName()) {
-						astRewrite.replace(firstArgument, ast.newSimpleName(targetLogLevel), null);
+						Name newLevelName = ast.newSimpleName(targetLogLevel);
+						astRewrite.replace(firstArgument, newLevelName, null);
 						this.setReplacedName(firstArgument);
-						this.setNewTargetName(ast.newSimpleName(targetLogLevel));
+						this.setNewTargetName(newLevelName);
 					} else {
 
 						QualifiedName argument = (QualifiedName) firstArgument;

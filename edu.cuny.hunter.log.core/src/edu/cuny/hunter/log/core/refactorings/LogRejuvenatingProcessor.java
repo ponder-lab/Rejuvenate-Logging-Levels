@@ -1,13 +1,15 @@
 package edu.cuny.hunter.log.core.refactorings;
 
-import java.util.Optional;
-import java.util.Set;
-import java.util.logging.Logger;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.logging.Logger;
+
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.OperationCanceledException;
@@ -19,18 +21,23 @@ import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.jdt.core.IPackageFragmentRoot;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.core.dom.CompilationUnit;
+import org.eclipse.jdt.core.dom.ImportDeclaration;
+import org.eclipse.jdt.core.dom.Name;
+import org.eclipse.jdt.core.dom.rewrite.ImportRewrite.ImportRewriteContext;
+import org.eclipse.jdt.internal.corext.codemanipulation.CodeGenerationSettings;
+import org.eclipse.jdt.internal.corext.codemanipulation.ContextSensitiveImportRewriteContext;
+import org.eclipse.jdt.internal.corext.refactoring.changes.DynamicValidationRefactoringChange;
+import org.eclipse.jdt.internal.corext.refactoring.structure.CompilationUnitRewrite;
+import org.eclipse.jdt.internal.corext.refactoring.util.TextEditBasedChangeManager;
+import org.eclipse.jgit.api.errors.GitAPIException;
+import org.eclipse.jgit.api.errors.JGitInternalException;
 import org.eclipse.ltk.core.refactoring.Change;
 import org.eclipse.ltk.core.refactoring.RefactoringDescriptor;
 import org.eclipse.ltk.core.refactoring.RefactoringStatus;
 import org.eclipse.ltk.core.refactoring.participants.CheckConditionsContext;
 import org.eclipse.ltk.core.refactoring.participants.RefactoringParticipant;
 import org.eclipse.ltk.core.refactoring.participants.SharableParticipants;
-import org.eclipse.jdt.internal.corext.codemanipulation.CodeGenerationSettings;
-import org.eclipse.jdt.internal.corext.refactoring.changes.DynamicValidationRefactoringChange;
-import org.eclipse.jdt.internal.corext.refactoring.structure.CompilationUnitRewrite;
-import org.eclipse.jdt.internal.corext.refactoring.util.TextEditBasedChangeManager;
-import org.eclipse.jgit.api.errors.GitAPIException;
-import org.eclipse.jgit.api.errors.JGitInternalException;
+
 import edu.cuny.citytech.refactoring.common.core.RefactoringProcessor;
 import edu.cuny.hunter.log.core.analysis.Action;
 import edu.cuny.hunter.log.core.analysis.LogAnalyzer;
@@ -329,14 +336,34 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 				CompilationUnitRewrite rewrite = this.getCompilationUnitRewrite(
 						logInvocation.getEnclosingEclipseMethod().getCompilationUnit(),
 						logInvocation.getEnclosingCompilationUnit());
+
+				ImportRewriteContext context = new ContextSensitiveImportRewriteContext(
+						logInvocation.getEnclosingCompilationUnit(), rewrite.getImportRewrite());
+
 				logInvocation.transform(rewrite);
 				pm.worked(1);
 
+				// deal with imports.
+				// register the removed name.
 				rewrite.getImportRemover().registerRemovedNode(logInvocation.getReplacedName());
 
-				// deal with imports.
-				rewrite.getImportRewrite().addStaticImport("java.util.logging.Level",
-						logInvocation.getNewLogLevel().getName(), true);
+				// add static imports if necessary.
+				// for each import statement in the enclosing compilation unit.
+				List<?> imports = logInvocation.getEnclosingCompilationUnit().imports();
+				for (Object obj: imports) {
+					ImportDeclaration importDeclaration = (ImportDeclaration) obj;
+					// if the import is static (this is the only case we need to worry about).
+					if (importDeclaration.isStatic()) {
+						Name name = importDeclaration.getName();
+						String matchName = "java.util.logging.Level." + logInvocation.getReplacedName().getFullyQualifiedName();
+
+						if (name.getFullyQualifiedName().equals(matchName))
+							// we are replacing a log level that has been statically imported.
+							// then, add a static import for new log level.
+							rewrite.getImportRewrite().addStaticImport("java.util.logging.Level",
+									logInvocation.getNewTargetName().getFullyQualifiedName(), true, context);
+					}
+				}
 			}
 
 			// save the source changes.
