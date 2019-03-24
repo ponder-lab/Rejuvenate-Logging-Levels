@@ -349,10 +349,6 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 				logInvocation.transform(rewrite);
 				pm.worked(1);
 
-				// deal with imports.
-				// register the removed name.
-				rewrite.getImportRemover().registerRemovedNode(logInvocation.getReplacedName());
-
 				// add static imports if necessary.
 				// for each import statement in the enclosing compilation unit.
 				List<?> imports = logInvocation.getEnclosingCompilationUnit().imports();
@@ -365,12 +361,17 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 						String matchName = "java.util.logging.Level."
 								+ logInvocation.getReplacedName().getFullyQualifiedName();
 
-						if (name.getFullyQualifiedName().equals(matchName))
+						if (name.getFullyQualifiedName().equals(matchName)) {
+							// deal with imports.
+							// register the removed name.
+							rewrite.getImportRemover().registerRemovedNode(logInvocation.getReplacedName());
+
 							// we are replacing a log level that has been
 							// statically imported.
 							// then, add a static import for new log level.
 							rewrite.getImportRewrite().addStaticImport("java.util.logging.Level",
 									logInvocation.getNewTargetName().getFullyQualifiedName(), true, context);
+						}
 					}
 				}
 			}
