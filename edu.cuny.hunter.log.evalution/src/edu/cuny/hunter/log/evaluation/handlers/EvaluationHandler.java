@@ -95,9 +95,8 @@ public class EvaluationHandler extends AbstractHandler {
 				actionPrinter = Util.createCSVPrinter("log_transformation_actions.csv",
 						new String[] { "sequence", "subject", "log expression", "start pos", "log level", "type FQN",
 								"enclosing method", "DOI value", "action", "new level" });
-				inputLogInvPrinter = Util.createCSVPrinter("input_log_invocations.csv",
-						new String[] { "sequence", "subject", "log expression", "start pos", "log level", "type FQN",
-								"enclosing method", "DOI value" });
+				inputLogInvPrinter = Util.createCSVPrinter("input_log_invocations.csv", new String[] { "subject",
+						"log expression", "start pos", "log level", "type FQN", "enclosing method", "DOI value" });
 				failurePrinter = Util.createCSVPrinter("failures.csv",
 						new String[] { "sequence", "subject", "log expression", "start pos", "log level", "type FQN",
 								"enclosing method", "code", "message" });
@@ -139,16 +138,18 @@ public class EvaluationHandler extends AbstractHandler {
 
 							Set<LogInvocation> logInvocationSet = logRejuvenatingProcessor.getLogInvocationSet();
 
-							// print input log invocations
-							for (LogInvocation logInvocation : logInvocationSet) {
-								// Print input log invocations
-								inputLogInvPrinter.printRecord(sequence, project.getElementName(),
-										logInvocation.getExpression(), logInvocation.getStartPosition(),
-										logInvocation.getLogLevel(),
-										logInvocation.getEnclosingType().getFullyQualifiedName(),
-										Util.getMethodIdentifier(logInvocation.getEnclosingEclipseMethod()),
-										logInvocation.getDegreeOfInterestValue());
-							}
+							// Just print once.
+							if (i == 0)
+								// print input log invocations
+								for (LogInvocation logInvocation : logInvocationSet) {
+									// Print input log invocations
+									inputLogInvPrinter.printRecord(project.getElementName(),
+											logInvocation.getExpression(), logInvocation.getStartPosition(),
+											logInvocation.getLogLevel(),
+											logInvocation.getEnclosingType().getFullyQualifiedName(),
+											Util.getMethodIdentifier(logInvocation.getEnclosingEclipseMethod()),
+											logInvocation.getDegreeOfInterestValue());
+								}
 
 							// get the difference of log invocations and passing log
 							// invocations
