@@ -109,6 +109,7 @@ public class EvaluationHandler extends AbstractHandler {
 
 				ResultForCommit resultCommit = new ResultForCommit();
 
+				// we are using 6 settings
 				for (int i = 0; i < 6; ++i) {
 					long sequence = this.getRunId();
 
