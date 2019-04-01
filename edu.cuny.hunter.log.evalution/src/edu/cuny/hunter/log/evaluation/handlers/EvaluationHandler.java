@@ -1,5 +1,7 @@
 package edu.cuny.hunter.log.evaluation.handlers;
 
+import static edu.cuny.hunter.mylyngit.core.utils.Util.getNToUseForCommits;
+
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
@@ -35,6 +37,7 @@ import edu.cuny.hunter.log.evaluation.utils.ResultForCommit;
 import edu.cuny.hunter.log.evaluation.utils.Util;
 import edu.cuny.hunter.mylyngit.core.analysis.MylynGitPredictionProvider;
 import edu.cuny.hunter.mylyngit.core.utils.Commit;
+import edu.cuny.hunter.mylyngit.core.utils.TimeCollector;
 
 /**
  * Our sample handler extends AbstractHandler, an IHandler base class.
@@ -113,7 +116,7 @@ public class EvaluationHandler extends AbstractHandler {
 					long sequence = this.getRunId();
 
 					for (IJavaProject project : javaProjects) {
-						List<Integer> nsToUse = edu.cuny.hunter.mylyngit.core.utils.Util.getNToUseForCommits(project,
+						List<Integer> nsToUse = getNToUseForCommits(project,
 								N_TO_USE_FOR_COMMITS_KEY, N_TO_USE_FOR_COMMITS_DEFAULT,
 								EVALUATION_PROPERTIES_FILE_NAME);
 
@@ -122,7 +125,7 @@ public class EvaluationHandler extends AbstractHandler {
 							this.loadSettings(i);
 
 							// collect running time.
-							edu.cuny.hunter.mylyngit.core.utils.TimeCollector resultsTimeCollector = new edu.cuny.hunter.mylyngit.core.utils.TimeCollector();
+							TimeCollector resultsTimeCollector = new TimeCollector();
 							resultsTimeCollector.start();
 
 							LogRejuvenatingProcessor logRejuvenatingProcessor = new LogRejuvenatingProcessor(
