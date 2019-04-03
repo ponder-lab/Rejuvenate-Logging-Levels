@@ -1,10 +1,9 @@
 package edu.cuny.hunter.log.evaluation.handlers;
 
-import static edu.cuny.hunter.mylyngit.core.utils.Util.getNToUseForCommits;
-
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -49,14 +48,13 @@ import edu.cuny.hunter.mylyngit.core.utils.TimeCollector;
 public class EvaluationHandler extends AbstractHandler {
 
 	private static final Logger LOGGER = Logger.getLogger(LoggerNames.LOGGER_NAME);
-	private static final String EVALUATION_PROPERTIES_FILE_NAME = "eval.properties";
 	private static final String NOT_LOWER_LOG_LEVEL_CATCH_BLOCK_KEY = "edu.cuny.hunter.log.evaluation.notLowerLogLevelInCatchBlock";
 	private static final String USE_LOG_CATEGORY_CONFIG_KEY = "edu.cuny.hunter.log.evaluation.useLogCategoryWithConfig";
 	private static final String CHECK_IF_CONDITION_KEY = "edu.cuny.hunter.log. evaluation.checkIfCondition";
 	private static final String USE_LOG_CATEGORY_KEY = "edu.cuny.hunter.log.evaluation.useLogCategory";
 	private static final String USE_GIT_HISTORY_KEY = "edu.cuny.hunter.log.evaluation.useGitHistory";
-	private static final String N_TO_USE_FOR_COMMITS_KEY = "NToUseForCommits";
-	private static final int N_TO_USE_FOR_COMMITS_DEFAULT = 100;
+	private static final String N_TO_USE_FOR_COMMITS_KEY = "edu.cuny.hunter.log.evaluation.NToUseForCommits";
+	private static final long N_TO_USE_FOR_COMMITS_DEFAULT = 100;
 	private static final boolean NOT_LOWER_LOG_LEVEL_CATCH_BLOCK_DEFAULT = false;
 	private static final boolean USE_LOG_CATEGORY_CONFIG_DEFAULT = false;
 	private static final boolean CHECK_IF_CONDITION_DEFAULT = false;
@@ -111,17 +109,13 @@ public class EvaluationHandler extends AbstractHandler {
 
 				ResultForCommit resultCommit = new ResultForCommit();
 
-				// we are using 6 settings
-				for (int i = 0; i < 6; ++i) {
-					long sequence = this.getRunId();
+				for (Long NToUseCommit : getNumberOfCommitsFromHeadToConsider()) {
 
-					for (IJavaProject project : javaProjects) {
-						List<Integer> nsToUse = getNToUseForCommits(project,
-								N_TO_USE_FOR_COMMITS_KEY, N_TO_USE_FOR_COMMITS_DEFAULT,
-								EVALUATION_PROPERTIES_FILE_NAME);
+					// we are using 6 settings
+					for (int i = 0; i < 6; ++i) {
+						long sequence = this.getRunId();
 
-						for (int NToUseCommit : nsToUse) {
-
+						for (IJavaProject project : javaProjects) {
 							this.loadSettings(i);
 
 							// collect running time.
@@ -251,9 +245,9 @@ public class EvaluationHandler extends AbstractHandler {
 										logRejuvenatingProcessor.getActualNumberOfCommits());
 
 						}
+						// Clear intermediate data for mylyn-git plug-in.
+						MylynGitPredictionProvider.clearMappingData();
 					}
-					// Clear intermediate data for mylyn-git plug-in.
-					MylynGitPredictionProvider.clearMappingData();
 				}
 			} catch (Exception e) {
 				return new Status(IStatus.ERROR, FrameworkUtil.getBundle(this.getClass()).getSymbolicName(),
@@ -384,6 +378,21 @@ public class EvaluationHandler extends AbstractHandler {
 			return USE_GIT_HISTORY;
 		else
 			return Boolean.valueOf(useGitHistory);
+	}
+
+	private static Collection<Long> getNumberOfCommitsFromHeadToConsider() {
+		String n = System.getenv(N_TO_USE_FOR_COMMITS_KEY);
+
+		if (n == null) {
+			long ret = N_TO_USE_FOR_COMMITS_DEFAULT;
+			LOGGER.info("Using default N for number of commits from HEAD to consider: " + ret + ".");
+			return Collections.singleton(ret);
+		} else {
+			String[] strings = n.split(",");
+			List<Long> ret = Arrays.stream(strings).map(Long::parseLong).collect(Collectors.toList());
+			LOGGER.info("Using N for number of commits from HEAD to consider: " + ret + ".");
+			return ret;
+		}
 	}
 
 	private boolean getValueOfNotLowerLogLevelInCatchBlock() {

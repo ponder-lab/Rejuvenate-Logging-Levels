@@ -100,7 +100,7 @@ public class GitHistoryAnalyzer {
 
 	private String repoURL;
 	
-	private int actualNumberOfCommits;
+	private long actualNumberOfCommits;
 
 	// Map repo path to URL
 	private static HashMap<String, String> pathToURL = new HashMap<>();
@@ -120,7 +120,7 @@ public class GitHistoryAnalyzer {
 	 * @throws IOException
 	 * @throws NoHeadException
 	 */
-	public GitHistoryAnalyzer(File repoFile, int NToUseForCommits) throws GitAPIException, IOException {
+	public GitHistoryAnalyzer(File repoFile, long NToUseForCommits) throws GitAPIException, IOException {
 		try (Git git = preProcessGitHistory(repoFile, NToUseForCommits)) {
 			// Already evaluated before or no repo
 			if (git == null)
@@ -392,15 +392,15 @@ public class GitHistoryAnalyzer {
 	 * 
 	 * @throws GitAPIException
 	 */
-	private Git tryPreProcessGitHistory(File repoFile, int NToUseForCommits) throws NoHeadException, GitAPIException {
+	private Git tryPreProcessGitHistory(File repoFile, long nToUseForCommits) throws NoHeadException, GitAPIException {
 		Git git = Git.init().setDirectory(repoFile).call();
 
 		Iterable<RevCommit> log = git.log().call();
 
 		// Limit number of commits.
-		int commitNumber = 0;
+		long commitNumber = 0;
 		for (RevCommit commit : log) {
-			if (commitNumber < NToUseForCommits)
+			if (commitNumber < nToUseForCommits)
 				this.commitList.addFirst(commit);
 			commitNumber++;
 		}
@@ -416,11 +416,11 @@ public class GitHistoryAnalyzer {
 	 * @param repoFile
 	 * @return
 	 */
-	private Git preProcessGitHistory(File repoFile, int NToUseForCommits) {
+	private Git preProcessGitHistory(File repoFile, long nToUseForCommits) {
 		Git git = null;
 		while (repoFile != null) {
 			try {
-				git = tryPreProcessGitHistory(repoFile, NToUseForCommits);
+				git = tryPreProcessGitHistory(repoFile, nToUseForCommits);
 				break;
 			} catch (GitAPIException e) {
 				repoFile = repoFile.getParentFile();
@@ -1043,12 +1043,12 @@ public class GitHistoryAnalyzer {
 		this.repoURL = repoURL;
 	}
 
-	public int getActualNumberOfCommits() {
+	public long getActualNumberOfCommits() {
 		return actualNumberOfCommits;
 	}
 
-	public void setActualNumberOfCommits(int actualNumberOfCommits) {
-		this.actualNumberOfCommits = actualNumberOfCommits;
+	public void setActualNumberOfCommits(long commitNumber) {
+		this.actualNumberOfCommits = commitNumber;
 	}
 
 }

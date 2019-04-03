@@ -2,11 +2,16 @@ package edu.cuny.hunter.mylynit.evaluation.handlers;
 
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
+
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
 import org.eclipse.core.commands.AbstractHandler;
@@ -17,7 +22,6 @@ import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IMethod;
 import org.eclipse.jdt.core.IType;
-import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.core.dom.IMethodBinding;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.internal.ui.util.SelectionUtil;
@@ -40,9 +44,7 @@ public class EvaluationHandler extends AbstractHandler {
 
 	private static final Logger LOGGER = Logger.getLogger(Util.LOGGER_NAME);
 
-	private static final String EVALUATION_PROPERTIES_FILE_NAME = "eval.properties";
-
-	private static final String N_TO_USE_FOR_COMMITS_KEY = "NToUseForCommits";
+	private static final String N_TO_USE_FOR_COMMITS_KEY = "edu.cuny.hunter.log.evaluation.NToUseForCommits";
 	private static final int N_TO_USE_FOR_COMMITS_DEFAULT = 100;
 
 	@Override
@@ -69,41 +71,35 @@ public class EvaluationHandler extends AbstractHandler {
 				resultPrinter = this.createCSVPrinter("DOI_Values.csv",
 						new String[] { "subject", "N for commits", "TypeFQN", "methods", "DOI values" });
 
-				for (IJavaProject javaProject : javaProjectList) {
-					List<Integer> nsToUse = Util.getNToUseForCommits(javaProject, N_TO_USE_FOR_COMMITS_KEY,
-							N_TO_USE_FOR_COMMITS_DEFAULT, EVALUATION_PROPERTIES_FILE_NAME);
-					for (Integer NToUseForCommit : nsToUse){
-
-					MylynGitPredictionProvider provider = new MylynGitPredictionProvider(NToUseForCommit);
-					provider.processOneProject(javaProject);
-					HashSet<MethodDeclaration> methods = provider.getMethods();
-					for (MethodDeclaration m : methods) {
-						IMethodBinding methodBinding = m.resolveBinding();
-						if (methodBinding != null) {
-							IMethod iMethod = (IMethod) methodBinding.getJavaElement();
-							// Work around DOI values
-							float doiValue = Util.getDOIValue(iMethod);
-							if (!(Float.compare(0, doiValue) == 0)) {
-								resultPrinter.printRecord(javaProject.getElementName(), NToUseForCommit,
-										((IType) methodBinding.getDeclaringClass().getJavaElement())
-												.getFullyQualifiedName(),
-										Util.getMethodSignature(m), doiValue);
+				for (Long NToUseForCommit : this.getNumberOfCommitsFromHeadToConsider()) {
+					for (IJavaProject javaProject : javaProjectList) {
+						MylynGitPredictionProvider provider = new MylynGitPredictionProvider(NToUseForCommit);
+						provider.processOneProject(javaProject);
+						HashSet<MethodDeclaration> methods = provider.getMethods();
+						for (MethodDeclaration m : methods) {
+							IMethodBinding methodBinding = m.resolveBinding();
+							if (methodBinding != null) {
+								IMethod iMethod = (IMethod) methodBinding.getJavaElement();
+								// Work around DOI values
+								float doiValue = Util.getDOIValue(iMethod);
+								if (!(Float.compare(0, doiValue) == 0)) {
+									resultPrinter.printRecord(javaProject.getElementName(), NToUseForCommit,
+											((IType) methodBinding.getDeclaringClass().getJavaElement())
+													.getFullyQualifiedName(),
+											Util.getMethodSignature(m), doiValue);
+								}
 							}
 						}
+						MylynGitPredictionProvider.clearTaskContext();
 					}
-					MylynGitPredictionProvider.clearTaskContext();
+					MylynGitPredictionProvider.clearMappingData();
 				}
-				}
-				MylynGitPredictionProvider.clearMappingData();
 				resultPrinter.close();
 			} catch (IOException e) {
 				LOGGER.info("Cannot print info correctly or cannot process git commits.");
 			} catch (GitAPIException e) {
 				LOGGER.info("Cannot get valid git object or process commits.");
-			} catch (JavaModelException e) {
-				LOGGER.warning("Cannot find evaluation property file!");
-			}
-
+			} 
 		}
 
 		return null;
@@ -111,5 +107,20 @@ public class EvaluationHandler extends AbstractHandler {
 
 	public CSVPrinter createCSVPrinter(String fileName, String[] header) throws IOException {
 		return new CSVPrinter(new FileWriter(fileName, true), CSVFormat.EXCEL.withHeader(header));
+	}
+	
+	private Collection<Long> getNumberOfCommitsFromHeadToConsider() {
+		String n = System.getenv(N_TO_USE_FOR_COMMITS_KEY);
+
+		if (n == null) {
+			long ret = N_TO_USE_FOR_COMMITS_DEFAULT;
+			LOGGER.info("Using default N for number of commits from HEAD to consider: " + ret + ".");
+			return Collections.singleton(ret);
+		} else {
+			String[] strings = n.split(",");
+			List<Long> ret = Arrays.stream(strings).map(Long::parseLong).collect(Collectors.toList());
+			LOGGER.info("Using N for number of commits from HEAD to consider: " + ret + ".");
+			return ret;
+		}
 	}
 }

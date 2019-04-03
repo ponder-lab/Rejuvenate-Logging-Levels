@@ -88,12 +88,12 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 	/**
 	 * Limit number of commits
 	 */
-	private int NToUseForCommits = 100;
+	private long NToUseForCommits = 100;
 
 	/**
 	 * The actual number of commits in repo.
 	 */
-	private int actualNumberOfCommits;
+	private long actualNumberOfCommits;
 
 	/**
 	 * Keep if condition and log levels inside if statement consistent
@@ -126,7 +126,7 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 		this.useLogCategory = useLogLevelCategory;
 	}
 
-	public void setNToUseForCommits(int NToUseForCommits) {
+	public void setNToUseForCommits(long NToUseForCommits) {
 		this.NToUseForCommits = NToUseForCommits;
 	}
 
@@ -134,7 +134,7 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 		this.notLowerLogLevelInCatchBlock = notLowerLogLevelInCatchBlock;
 	}
 
-	public int getNToUseForCommits() {
+	public long getNToUseForCommits() {
 		return this.NToUseForCommits;
 	}
 
@@ -166,7 +166,7 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 
 	public LogRejuvenatingProcessor(IJavaProject[] javaProjects, boolean useLogLevelCategory,
 			boolean useConfigLogLevelCategory, boolean useGitHistory, boolean notLowerLogLevelInCatchBlock,
-			boolean checkIfCondtion, int NToUseForCommits, final CodeGenerationSettings settings,
+			boolean checkIfCondtion, long NToUseForCommits, final CodeGenerationSettings settings,
 			Optional<IProgressMonitor> monitor) {
 		super(settings);
 		try {
@@ -184,7 +184,7 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 
 	public LogRejuvenatingProcessor(IJavaProject[] javaProjects, boolean useLogLevelCategory,
 			boolean useConfigLogLevelCategory, boolean useGitHistory, boolean notLowerLogLevelInCatchBlock,
-			boolean checkIfCondtion, int NToUseForCommits, final CodeGenerationSettings settings,
+			boolean checkIfCondtion, long NToUseForCommits, final CodeGenerationSettings settings,
 			Optional<IProgressMonitor> monitor, boolean isEvaluation) {
 		this(javaProjects, useLogLevelCategory, useConfigLogLevelCategory, useGitHistory, notLowerLogLevelInCatchBlock,
 				checkIfCondtion, NToUseForCommits, settings, monitor);
@@ -464,12 +464,12 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 		this.logLevelNotLoweredInCatch = logLevelNotLoweredInCatch;
 	}
 
-	public int getActualNumberOfCommits() {
+	public long getActualNumberOfCommits() {
 		return actualNumberOfCommits;
 	}
 
-	public void setActualNumberOfCommits(int actualNumberOfCommits) {
-		this.actualNumberOfCommits = actualNumberOfCommits;
+	public void setActualNumberOfCommits(long l) {
+		this.actualNumberOfCommits = l;
 	}
 
 }

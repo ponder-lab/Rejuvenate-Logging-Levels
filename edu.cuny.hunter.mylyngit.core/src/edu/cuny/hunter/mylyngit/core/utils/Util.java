@@ -1,27 +1,17 @@
 package edu.cuny.hunter.mylyngit.core.utils;
 
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.Reader;
-import java.util.Arrays;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
-import org.eclipse.core.runtime.IPath;
 import org.eclipse.jdt.core.ICompilationUnit;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IMethod;
 import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.jdt.core.IPackageFragmentRoot;
-import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.core.dom.AST;
 import org.eclipse.jdt.core.dom.ASTParser;
 import org.eclipse.jdt.core.dom.CompilationUnit;
@@ -137,11 +127,6 @@ public class Util {
 		}
 	}
 
-	private static File findEvaluationPropertiesFile(IJavaProject project, String fileName) throws JavaModelException {
-		IPath location = project.getCorrespondingResource().getLocation();
-		return findEvaluationPropertiesFile(location.toFile(), fileName);
-	}
-	
 	/**
 	 * Create CompilationUnit from ICompilationUnit.
 	 */
@@ -150,50 +135,5 @@ public class Util {
 		parser.setResolveBindings(true);
 		parser.setSource(unit);
 		return (CompilationUnit) parser.createAST(null);
-	}
-
-
-	private static File findEvaluationPropertiesFile(File directory, String fileName) {
-		if (directory == null)
-			return null;
-
-		if (!directory.isDirectory())
-			throw new IllegalArgumentException("Expecting directory: " + directory + ".");
-
-		File evaluationFile = directory.toPath().resolve(fileName).toFile();
-
-		if (evaluationFile != null && evaluationFile.exists())
-			return evaluationFile;
-		else
-			return findEvaluationPropertiesFile(directory.getParentFile(), fileName);
-	}
-
-	public static List<Integer> getNToUseForCommits(IJavaProject project, String key, int value, String fileName)
-			throws IOException, JavaModelException {
-		Properties properties = new Properties();
-		File file = findEvaluationPropertiesFile(project, fileName);
-
-		if (file != null && file.exists())
-			try (Reader reader = new FileReader(file)) {
-				properties.load(reader);
-
-				String nToUseForStreams = properties.getProperty(key);
-
-				if (nToUseForStreams == null) {
-					List<Integer> ret = Stream.of(value).collect(Collectors.toList());
-					LOGGER.info("Using default N for commit number: " + ret + ".");
-					return ret;
-				} else {
-					String[] strings = nToUseForStreams.split(",");
-					List<Integer> ret = Arrays.stream(strings).map(Integer::parseInt).collect(Collectors.toList());
-					LOGGER.info("Using properties file N for commit number: " + ret + ".");
-					return ret;
-				}
-			}
-		else {
-			List<Integer> ret = Stream.of(value).collect(Collectors.toList());
-			LOGGER.info("Using default N for commit number: " + ret + ".");
-			return ret;
-		}
 	}
 }

@@ -37,7 +37,7 @@ public class MylynGitPredictionProvider extends AbstractJavaRelationProvider {
 
 	private static final String Name = "mylyn git";
 
-	private int actualNumberOfCommits;
+	private long actualNumberOfCommits;
 
 	private String repoURL = "";
 
@@ -45,12 +45,12 @@ public class MylynGitPredictionProvider extends AbstractJavaRelationProvider {
 		super("java", ID);
 	}
 
-	public MylynGitPredictionProvider(int N) {
+	public MylynGitPredictionProvider(long N) {
 		this();
 		NToUseForCommits = N;
 	}
 
-	private static int NToUseForCommits;
+	private static long NToUseForCommits;
 
 	private IJavaProject[] javaProjects;
 
@@ -269,12 +269,12 @@ public class MylynGitPredictionProvider extends AbstractJavaRelationProvider {
 		this.repoURL = repoURL;
 	}
 
-	public int getActualNumberOfCommits() {
+	public long getActualNumberOfCommits() {
 		return actualNumberOfCommits;
 	}
 
-	public void setActualNumberOfCommits(int actualNumberOfCommits) {
-		this.actualNumberOfCommits = actualNumberOfCommits;
+	public void setActualNumberOfCommits(long l) {
+		this.actualNumberOfCommits = l;
 	}
 
 }
