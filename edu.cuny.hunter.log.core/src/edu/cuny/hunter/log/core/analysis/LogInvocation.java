@@ -157,11 +157,7 @@ public class LogInvocation {
 	}
 
 	public CompilationUnit getEnclosingCompilationUnit() {
-		return (CompilationUnit) ASTNodes.getParent(this.getEnclosingTypeDeclaration(), ASTNode.COMPILATION_UNIT);
-	}
-
-	private ASTNode getEnclosingTypeDeclaration() {
-		return (TypeDeclaration) ASTNodes.getParent(this.getExpression(), ASTNode.TYPE_DECLARATION);
+		return (CompilationUnit) ASTNodes.getParent(this.getExpression(), ASTNode.COMPILATION_UNIT);
 	}
 
 	/**
