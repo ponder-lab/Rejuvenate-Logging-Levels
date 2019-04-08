@@ -48,6 +48,7 @@ import edu.cuny.hunter.log.core.utils.LoggerNames;
 import edu.cuny.hunter.log.core.utils.Util;
 import edu.cuny.hunter.mylyngit.core.analysis.MylynGitPredictionProvider;
 import edu.cuny.hunter.mylyngit.core.utils.Commit;
+import edu.cuny.hunter.mylyngit.core.utils.NonActiveMylynTaskException;
 
 @SuppressWarnings({ "restriction", "deprecation" })
 public class LogRejuvenatingProcessor extends RefactoringProcessor {
@@ -214,7 +215,12 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 
 			// If we are using the git history.
 			if (this.useGitHistory) {
-				Util.clearTaskContext();
+				try {
+					Util.clearTaskContext();
+				} catch (NonActiveMylynTaskException e) {
+					status.addFatalError("No active Mylyn task found.");
+					return status;
+				}
 			}
 
 			IPackageFragmentRoot[] roots = jproj.getPackageFragmentRoots();
@@ -255,7 +261,12 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 			// If we are using the git history.
 			if (this.useGitHistory) {
 				// then, we must clear the context
-				Util.clearTaskContext();
+				try {
+					Util.clearTaskContext();
+				} catch (NonActiveMylynTaskException e) {
+					status.addFatalError("No active Mylyn task found.");
+					return status;
+				}
 			}
 		}
 
@@ -275,7 +286,6 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 		}
 
 		return status;
-
 	}
 
 	/**

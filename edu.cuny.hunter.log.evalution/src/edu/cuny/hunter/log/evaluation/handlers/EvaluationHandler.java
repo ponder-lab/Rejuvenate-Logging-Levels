@@ -25,6 +25,7 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.internal.corext.codemanipulation.CodeGenerationSettings;
 import org.eclipse.jdt.internal.ui.preferences.JavaPreferencesSettings;
+import org.eclipse.ltk.core.refactoring.RefactoringStatus;
 import org.eclipse.ltk.core.refactoring.RefactoringStatusEntry;
 import org.eclipse.ltk.core.refactoring.participants.ProcessorBasedRefactoring;
 import org.osgi.framework.FrameworkUtil;
@@ -134,8 +135,12 @@ public class EvaluationHandler extends AbstractHandler {
 									this.isNotLowerLogLevel(), this.checkIfCondtion, NToUseCommit, settings,
 									Optional.ofNullable(monitor), true);
 
-							new ProcessorBasedRefactoring((RefactoringProcessor) logRejuvenatingProcessor)
+							RefactoringStatus status = new ProcessorBasedRefactoring((RefactoringProcessor) logRejuvenatingProcessor)
 									.checkAllConditions(new NullProgressMonitor());
+
+							if (status.hasFatalError())
+								return new Status(IStatus.ERROR, FrameworkUtil.getBundle(this.getClass()).getSymbolicName(),
+										"Fatal error encountered during evaluation: " + status.getMessageMatchingSeverity(RefactoringStatus.FATAL));
 
 							resultsTimeCollector.stop();
 

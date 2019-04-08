@@ -25,6 +25,7 @@ import org.eclipse.mylyn.context.core.IInteractionElement;
 
 import edu.cuny.hunter.log.core.refactorings.LogRejuvenatingProcessor;
 import edu.cuny.hunter.mylyngit.core.analysis.MylynGitPredictionProvider;
+import edu.cuny.hunter.mylyngit.core.utils.NonActiveMylynTaskException;
 
 @SuppressWarnings("restriction")
 public final class Util {
@@ -86,8 +87,9 @@ public final class Util {
 
 	/**
 	 * Clear the active task context.
+	 * @throws NonActiveMylynTaskException 
 	 */
-	public static void clearTaskContext() {
+	public static void clearTaskContext() throws NonActiveMylynTaskException {
 		MylynGitPredictionProvider.clearTaskContext();
 	}
 
