@@ -10,6 +10,7 @@ import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.dom.AST;
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.CompilationUnit;
+import org.eclipse.jdt.core.dom.EnumDeclaration;
 import org.eclipse.jdt.core.dom.IMethodBinding;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.MethodInvocation;
@@ -53,7 +54,7 @@ public class LogInvocation {
 	private float degreeOfInterestValue;
 
 	private Name replacedName;
-	
+
 	private Name newTargetName;
 
 	private IDegreeOfInterest degreeOfInterest;
@@ -126,7 +127,12 @@ public class LogInvocation {
 	public IType getEnclosingType() {
 		TypeDeclaration enclosingType = (TypeDeclaration) ASTNodes.getParent(this.getExpression(),
 				ASTNode.TYPE_DECLARATION);
-		return (IType) enclosingType.resolveBinding().getJavaElement();
+		if (enclosingType != null)
+			return (IType) enclosingType.resolveBinding().getJavaElement();
+
+		EnumDeclaration enumDeclaration = (EnumDeclaration) ASTNodes.getParent(this.getExpression(),
+				ASTNode.ENUM_DECLARATION);
+		return (IType) enumDeclaration.resolveBinding().getJavaElement();
 	}
 
 	public IMethod getEnclosingEclipseMethod() {
@@ -222,9 +228,10 @@ public class LogInvocation {
 
 			}
 	}
-	
+
 	/**
 	 * Set names.
+	 * 
 	 * @param oldName
 	 * @param newLevelName
 	 */
