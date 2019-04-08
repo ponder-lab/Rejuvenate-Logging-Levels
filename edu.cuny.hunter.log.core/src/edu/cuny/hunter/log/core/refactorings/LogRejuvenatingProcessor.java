@@ -242,7 +242,14 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 			if (this.useGitHistory) {
 				// Process git history.
 				mylynProvider = new MylynGitPredictionProvider(this.NToUseForCommits);
-				this.processGitHistory(mylynProvider, analyzer, jproj);
+
+				try {
+					this.processGitHistory(mylynProvider, analyzer, jproj);
+				} catch (JGitInternalException | GitAPIException | IOException e) {
+					status.addFatalError("Error reading git repository.");
+					return status;
+				}
+
 				this.setActualNumberOfCommits(mylynProvider.getActualNumberOfCommits());
 				this.setCommits(mylynProvider.getCommits());
 				this.setRepoURL(mylynProvider.getRepoURL());
@@ -295,16 +302,18 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 	 * @param analyzer
 	 * @param jproj
 	 */
-	private void processGitHistory(MylynGitPredictionProvider mylynProvider, LogAnalyzer analyzer, IJavaProject jproj) {
+	private void processGitHistory(MylynGitPredictionProvider mylynProvider, LogAnalyzer analyzer, IJavaProject jproj) throws GitAPIException, JGitInternalException, IOException {
 		try {
 			if (this.useGitHistory) {
 				mylynProvider.processOneProject(jproj);
 				analyzer.updateDOI();
 			}
 		} catch (GitAPIException | JGitInternalException e) {
-			LOGGER.info("Cannot get valid git object! May not a valid git repo.");
+			LOGGER.severe("Cannot get valid git object! May not a valid git repo.");
+			throw e;
 		} catch (IOException e) {
-			LOGGER.info("Cannot process git commits.");
+			LOGGER.severe("Cannot process git commits.");
+			throw e;
 		}
 	}
 
