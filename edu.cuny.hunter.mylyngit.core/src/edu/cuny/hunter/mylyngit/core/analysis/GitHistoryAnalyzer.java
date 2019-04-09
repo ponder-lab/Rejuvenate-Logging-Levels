@@ -989,6 +989,7 @@ public class GitHistoryAnalyzer {
 	/**
 	 * Parse a Java file, and let visitor to visit declaring methods.
 	 */
+	@SuppressWarnings("deprecation")
 	private void parseJavaFile(String fileContent, String newDirectory) throws IOException {
 		ASTParser parser = ASTParser.newParser(AST.JLS8);
 		parser.setResolveBindings(true);

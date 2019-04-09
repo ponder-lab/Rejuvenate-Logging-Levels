@@ -73,6 +73,7 @@ public class LogEvolutionRejuvenatingTest extends RefactoringTest {
 		return unit;
 	}
 
+	@SuppressWarnings("deprecation")
 	private void helper(LogInvocationExpectedResult... expectedResults) throws Exception {
 
 		// compute the actual results.

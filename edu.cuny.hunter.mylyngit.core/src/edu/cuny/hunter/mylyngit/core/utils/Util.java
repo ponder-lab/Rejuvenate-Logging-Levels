@@ -148,6 +148,7 @@ public class Util {
 	/**
 	 * Create CompilationUnit from ICompilationUnit.
 	 */
+	@SuppressWarnings("deprecation")
 	public static CompilationUnit getCompilationUnit(ICompilationUnit unit) {
 		ASTParser parser = ASTParser.newParser(AST.JLS8);
 		parser.setResolveBindings(true);
