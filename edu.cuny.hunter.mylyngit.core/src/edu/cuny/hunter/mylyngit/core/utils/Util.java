@@ -149,7 +149,7 @@ public class Util {
 	 * Create CompilationUnit from ICompilationUnit.
 	 */
 	public static CompilationUnit getCompilationUnit(ICompilationUnit unit) {
-		ASTParser parser = ASTParser.newParser(AST.JLS11);
+		ASTParser parser = ASTParser.newParser(AST.JLS8);
 		parser.setResolveBindings(true);
 		parser.setSource(unit);
 		return (CompilationUnit) parser.createAST(null);
