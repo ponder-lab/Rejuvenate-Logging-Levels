@@ -990,7 +990,7 @@ public class GitHistoryAnalyzer {
 	 * Parse a Java file, and let visitor to visit declaring methods.
 	 */
 	private void parseJavaFile(String fileContent, String newDirectory) throws IOException {
-		ASTParser parser = ASTParser.newParser(AST.JLS8);
+		ASTParser parser = ASTParser.newParser(AST.JLS11);
 		parser.setResolveBindings(true);
 		parser.setSource(fileContent.toCharArray());
 
