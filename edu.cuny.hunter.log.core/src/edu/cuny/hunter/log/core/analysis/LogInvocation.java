@@ -9,6 +9,7 @@ import org.eclipse.jdt.core.IMethod;
 import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.dom.AST;
 import org.eclipse.jdt.core.dom.ASTNode;
+import org.eclipse.jdt.core.dom.AbstractTypeDeclaration;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.EnumDeclaration;
 import org.eclipse.jdt.core.dom.IMethodBinding;
@@ -125,14 +126,9 @@ public class LogInvocation {
 	 * Through the enclosing type, I can get type FQN
 	 */
 	public IType getEnclosingType() {
-		TypeDeclaration enclosingType = (TypeDeclaration) ASTNodes.getParent(this.getExpression(),
-				ASTNode.TYPE_DECLARATION);
-		if (enclosingType != null)
-			return (IType) enclosingType.resolveBinding().getJavaElement();
-
-		EnumDeclaration enumDeclaration = (EnumDeclaration) ASTNodes.getParent(this.getExpression(),
-				ASTNode.ENUM_DECLARATION);
-		return (IType) enumDeclaration.resolveBinding().getJavaElement();
+		AbstractTypeDeclaration enclosingType = (AbstractTypeDeclaration) ASTNodes.getParent(this.getExpression(),
+				AbstractTypeDeclaration.class);
+		return (IType) enclosingType.resolveBinding().getJavaElement();
 	}
 
 	public IMethod getEnclosingEclipseMethod() {
