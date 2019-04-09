@@ -9,7 +9,9 @@ import org.eclipse.jdt.core.IMethod;
 import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.dom.AST;
 import org.eclipse.jdt.core.dom.ASTNode;
+import org.eclipse.jdt.core.dom.AbstractTypeDeclaration;
 import org.eclipse.jdt.core.dom.CompilationUnit;
+import org.eclipse.jdt.core.dom.EnumDeclaration;
 import org.eclipse.jdt.core.dom.IMethodBinding;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.MethodInvocation;
@@ -53,7 +55,7 @@ public class LogInvocation {
 	private float degreeOfInterestValue;
 
 	private Name replacedName;
-	
+
 	private Name newTargetName;
 
 	private IDegreeOfInterest degreeOfInterest;
@@ -124,8 +126,8 @@ public class LogInvocation {
 	 * Through the enclosing type, I can get type FQN
 	 */
 	public IType getEnclosingType() {
-		TypeDeclaration enclosingType = (TypeDeclaration) ASTNodes.getParent(this.getExpression(),
-				ASTNode.TYPE_DECLARATION);
+		AbstractTypeDeclaration enclosingType = (AbstractTypeDeclaration) ASTNodes.getParent(this.getExpression(),
+				AbstractTypeDeclaration.class);
 		return (IType) enclosingType.resolveBinding().getJavaElement();
 	}
 
@@ -157,11 +159,7 @@ public class LogInvocation {
 	}
 
 	public CompilationUnit getEnclosingCompilationUnit() {
-		return (CompilationUnit) ASTNodes.getParent(this.getEnclosingTypeDeclaration(), ASTNode.COMPILATION_UNIT);
-	}
-
-	private ASTNode getEnclosingTypeDeclaration() {
-		return (TypeDeclaration) ASTNodes.getParent(this.getExpression(), ASTNode.TYPE_DECLARATION);
+		return (CompilationUnit) ASTNodes.getParent(this.getExpression(), ASTNode.COMPILATION_UNIT);
 	}
 
 	/**
@@ -222,9 +220,10 @@ public class LogInvocation {
 
 			}
 	}
-	
+
 	/**
 	 * Set names.
+	 * 
 	 * @param oldName
 	 * @param newLevelName
 	 */

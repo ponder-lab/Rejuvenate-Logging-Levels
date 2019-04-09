@@ -1,5 +1,7 @@
 package edu.cuny.hunter.log.evaluation.handlers;
 
+import static edu.cuny.hunter.mylyngit.core.utils.Util.getNToUseForCommits;
+
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
@@ -23,6 +25,7 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.internal.corext.codemanipulation.CodeGenerationSettings;
 import org.eclipse.jdt.internal.ui.preferences.JavaPreferencesSettings;
+import org.eclipse.ltk.core.refactoring.RefactoringStatus;
 import org.eclipse.ltk.core.refactoring.RefactoringStatusEntry;
 import org.eclipse.ltk.core.refactoring.participants.ProcessorBasedRefactoring;
 import org.osgi.framework.FrameworkUtil;
@@ -35,6 +38,7 @@ import edu.cuny.hunter.log.evaluation.utils.ResultForCommit;
 import edu.cuny.hunter.log.evaluation.utils.Util;
 import edu.cuny.hunter.mylyngit.core.analysis.MylynGitPredictionProvider;
 import edu.cuny.hunter.mylyngit.core.utils.Commit;
+import edu.cuny.hunter.mylyngit.core.utils.TimeCollector;
 
 /**
  * Our sample handler extends AbstractHandler, an IHandler base class.
@@ -113,7 +117,7 @@ public class EvaluationHandler extends AbstractHandler {
 					long sequence = this.getRunId();
 
 					for (IJavaProject project : javaProjects) {
-						List<Integer> nsToUse = edu.cuny.hunter.mylyngit.core.utils.Util.getNToUseForCommits(project,
+						List<Integer> nsToUse = getNToUseForCommits(project,
 								N_TO_USE_FOR_COMMITS_KEY, N_TO_USE_FOR_COMMITS_DEFAULT,
 								EVALUATION_PROPERTIES_FILE_NAME);
 
@@ -122,7 +126,7 @@ public class EvaluationHandler extends AbstractHandler {
 							this.loadSettings(i);
 
 							// collect running time.
-							edu.cuny.hunter.mylyngit.core.utils.TimeCollector resultsTimeCollector = new edu.cuny.hunter.mylyngit.core.utils.TimeCollector();
+							TimeCollector resultsTimeCollector = new TimeCollector();
 							resultsTimeCollector.start();
 
 							LogRejuvenatingProcessor logRejuvenatingProcessor = new LogRejuvenatingProcessor(
@@ -131,8 +135,12 @@ public class EvaluationHandler extends AbstractHandler {
 									this.isNotLowerLogLevel(), this.checkIfCondtion, NToUseCommit, settings,
 									Optional.ofNullable(monitor), true);
 
-							new ProcessorBasedRefactoring((RefactoringProcessor) logRejuvenatingProcessor)
+							RefactoringStatus status = new ProcessorBasedRefactoring((RefactoringProcessor) logRejuvenatingProcessor)
 									.checkAllConditions(new NullProgressMonitor());
+
+							if (status.hasFatalError())
+								return new Status(IStatus.ERROR, FrameworkUtil.getBundle(this.getClass()).getSymbolicName(),
+										"Fatal error encountered during evaluation: " + status.getMessageMatchingSeverity(RefactoringStatus.FATAL));
 
 							resultsTimeCollector.stop();
 

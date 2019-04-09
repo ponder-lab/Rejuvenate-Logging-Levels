@@ -124,8 +124,9 @@ public class Util {
 	/**
 	 * This method is used to clear mylyn task context. It should be called after
 	 * processing one project.
+	 * @throws NonActiveMylynTaskException When the task is not active.
 	 */
-	public static void clearTaskContext() {
+	public static void clearTaskContext() throws NonActiveMylynTaskException {
 		IInteractionContextManager contextManager = ContextCore.getContextManager();
 		String handleIdentifier = contextManager.getActiveContext().getHandleIdentifier();
 
@@ -133,7 +134,8 @@ public class Util {
 		try {
 			contextManager.deleteContext(handleIdentifier);
 		} catch (Exception e) {
-			LOGGER.log(Level.WARNING, "Context may not active.");
+			LOGGER.log(Level.SEVERE, "Context may not active.");
+			throw new NonActiveMylynTaskException("Mylyn task being considered is not active.");
 		}
 	}
 

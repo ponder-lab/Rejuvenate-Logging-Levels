@@ -24,6 +24,7 @@ import org.eclipse.jdt.internal.ui.util.SelectionUtil;
 import org.eclipse.ui.handlers.HandlerUtil;
 
 import edu.cuny.hunter.mylyngit.core.analysis.MylynGitPredictionProvider;
+import edu.cuny.hunter.mylyngit.core.utils.NonActiveMylynTaskException;
 import edu.cuny.hunter.mylyngit.core.utils.Util;
 
 import org.eclipse.jface.viewers.ISelection;
@@ -102,8 +103,9 @@ public class EvaluationHandler extends AbstractHandler {
 				LOGGER.info("Cannot get valid git object or process commits.");
 			} catch (JavaModelException e) {
 				LOGGER.warning("Cannot find evaluation property file!");
+			} catch (NonActiveMylynTaskException e) {
+				throw new ExecutionException("No active Mylyn task.", e);
 			}
-
 		}
 
 		return null;

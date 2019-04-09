@@ -25,6 +25,7 @@ import org.eclipse.mylyn.monitor.core.InteractionEvent.Kind;
 
 import edu.cuny.hunter.mylyngit.core.utils.Commit;
 import edu.cuny.hunter.mylyngit.core.utils.GitMethod;
+import edu.cuny.hunter.mylyngit.core.utils.NonActiveMylynTaskException;
 import edu.cuny.hunter.mylyngit.core.utils.Util;
 import edu.cuny.hunter.mylyngit.core.utils.Vertex;
 
@@ -68,8 +69,9 @@ public class MylynGitPredictionProvider extends AbstractJavaRelationProvider {
 	 * @throws GitAPIException
 	 * @throws IOException
 	 * @throws NoHeadException
+	 * @throws NonActiveMylynTaskException 
 	 */
-	public void processProjects() throws NoHeadException, IOException, GitAPIException {
+	public void processProjects() throws NoHeadException, IOException, GitAPIException, NonActiveMylynTaskException {
 		clearTaskContext();
 		for (IJavaProject javaProject : javaProjects) {
 			this.processOneProject(javaProject);
@@ -239,7 +241,7 @@ public class MylynGitPredictionProvider extends AbstractJavaRelationProvider {
 		return this.methodDeclarations;
 	}
 
-	public static void clearTaskContext() {
+	public static void clearTaskContext() throws NonActiveMylynTaskException {
 		Util.clearTaskContext();
 	}
 
