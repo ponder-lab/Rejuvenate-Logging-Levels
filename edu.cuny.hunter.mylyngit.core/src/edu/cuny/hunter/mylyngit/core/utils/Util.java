@@ -40,6 +40,7 @@ public class Util {
 	/**
 	 * Return a method signature
 	 */
+	@SuppressWarnings("unchecked")
 	public static String getMethodSignature(MethodDeclaration methodDeclaration) {
 		String signature = "";
 		signature += methodDeclaration.getName() + "(";
