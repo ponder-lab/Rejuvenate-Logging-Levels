@@ -43,13 +43,13 @@
 		<dependency>
 			<groupId>edu.cuny.hunter.log</groupId>
 			<artifactId>edu.cuny.hunter.log.core</artifactId>
-			<version>1.0.0-SNAPSHOT</version>
+			<version>1.1.0-SNAPSHOT</version>
 			<scope>compile</scope>
 		</dependency>
 		<dependency>
 			<groupId>edu.cuny.hunter.log</groupId>
 			<artifactId>edu.cuny.hunter.log.ui</artifactId>
-			<version>1.1.0-SNAPSHOT</version>
+			<version>1.2.0-SNAPSHOT</version>
 			<scope>compile</scope>
 		</dependency>
 		<dependency>
