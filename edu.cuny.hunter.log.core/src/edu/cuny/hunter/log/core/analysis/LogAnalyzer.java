@@ -121,8 +121,8 @@ public class LogAnalyzer extends ASTVisitor {
 			return false;
 
 		/**
-		 * Do not change a log level in a logging statement if there exists an
-		 * immediate if statement whose condition contains a log level.
+		 * Do not change a log level in a logging statement if there exists an immediate
+		 * if statement whose condition contains a log level.
 		 */
 		if (this.checkIfCondition) {
 			if (this.checkIfBlock(logInvocation.getExpression())) {
@@ -137,33 +137,21 @@ public class LogAnalyzer extends ASTVisitor {
 		if (rejuvenatedLogLevel == null)
 			return false;
 
-		if (logInvocation.getInCatchBlock() // process not lower log levels in
-											// catch blocks
+		if (logInvocation.getInCatchBlock() // process not lower log levels in catch blocks
 				&& (currentLogLevel.intValue() > rejuvenatedLogLevel.intValue())) {
 			this.logLevelNotLoweredInCatch++;
 			logInvocation.setAction(Action.NONE, null);
 			return false;
 		}
 
-		if ((currentLogLevel == rejuvenatedLogLevel) // current log level is
-														// same to transformed
-														// log level
+		if ((currentLogLevel == rejuvenatedLogLevel) // current log level is same to transformed log level
 
-				|| (currentLogLevel == Level.ALL || currentLogLevel == Level.OFF) // not
-																					// consider
-																					// all
-																					// and
-																					// off
+				|| (currentLogLevel == Level.ALL || currentLogLevel == Level.OFF) // not consider all and off
 
 				|| (this.useLogCategory && (currentLogLevel == Level.CONFIG || currentLogLevel == Level.WARNING
-						|| currentLogLevel == Level.SEVERE)) // process log
-																// category
-																// (CONFIG/WARNING/SERVRE)
+						|| currentLogLevel == Level.SEVERE)) // process log category (CONFIG/WARNING/SERVRE)
 
-				|| (this.useLogCategoryWithConfig && (currentLogLevel == Level.CONFIG)) // process
-																						// log
-																						// category
-																						// (CONFIG)
+				|| (this.useLogCategoryWithConfig && (currentLogLevel == Level.CONFIG)) // process log category (CONFIG)
 		) {
 			logInvocation.setAction(Action.NONE, null);
 			return false;
@@ -244,8 +232,8 @@ public class LogAnalyzer extends ASTVisitor {
 	}
 
 	/**
-	 * Build a list of boundary. The DOI values could be divided into 7 groups
-	 * by this boundary. 7 groups are corresponding to 7 logging levels
+	 * Build a list of boundary. The DOI values could be divided into 7 groups by
+	 * this boundary. 7 groups are corresponding to 7 logging levels
 	 * 
 	 * @param degreeOfInterests
 	 * @return a list of boundary
@@ -274,6 +262,7 @@ public class LogAnalyzer extends ASTVisitor {
 				float interval = (max - min) / 7;
 				IntStream.range(0, 8).forEach(i -> boundary.add(min + i * interval));
 			}
+
 			return boundary;
 		} else
 			return null;
