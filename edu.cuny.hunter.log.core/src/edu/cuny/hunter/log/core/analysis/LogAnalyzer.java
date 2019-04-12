@@ -243,21 +243,12 @@ public class LogAnalyzer extends ASTVisitor {
 		float max = getMaxDOI(degreeOfInterests);
 		LinkedList<Float> boundary = new LinkedList<>();
 		if (min < max) {
-			if (this.useLogCategory || this.useLogCategoryWithConfig) {
-				// The DOI boundaries should be built as if the "treat CONFIG as
-				// a log category" was selected. This will produce a boundaries
-				// table that includes the levels FINEST, FINER, FINE, INFO,
-				// WARNING, and SEVERE #185.
+			if (this.useLogCategory) {
+				float interval = (max - min) / 4;
+				IntStream.range(0, 5).forEach(i -> boundary.add(min + i * interval));
+			} else if (this.useLogCategoryWithConfig) {
 				float interval = (max - min) / 6;
 				IntStream.range(0, 7).forEach(i -> boundary.add(min + i * interval));
-
-				if (this.useLogCategory) {
-					// The DOI boundaries should then be *modified* to *remove*
-					// the boundaries for WARNING and SEVERE #185.
-					LOGGER.info(() -> "Original boundaries are: " + boundary);
-					IntStream.range(0, 2).forEach(i -> boundary.remove(boundary.size() - 1));
-					LOGGER.info(() -> "New boundaries are: " + boundary);
-				}
 			} else {
 				float interval = (max - min) / 7;
 				IntStream.range(0, 8).forEach(i -> boundary.add(min + i * interval));
