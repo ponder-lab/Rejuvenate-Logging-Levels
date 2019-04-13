@@ -79,7 +79,7 @@ public class LogEvolutionRejuvenatingTest extends RefactoringTest {
 		// compute the actual results.
 		ICompilationUnit cu = this.createCUfromTestFile(this.getPackageP(), "A");
 
-		ASTParser parser = ASTParser.newParser(AST.JLS8);
+		ASTParser parser = ASTParser.newParser(AST.JLS10);
 		parser.setResolveBindings(true);
 		parser.setSource(cu);
 		parser.setKind(ASTParser.K_COMPILATION_UNIT);

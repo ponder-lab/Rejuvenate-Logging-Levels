@@ -991,7 +991,7 @@ public class GitHistoryAnalyzer {
 	 */
 	@SuppressWarnings("deprecation")
 	private void parseJavaFile(String fileContent, String newDirectory) throws IOException {
-		ASTParser parser = ASTParser.newParser(AST.JLS8);
+		ASTParser parser = ASTParser.newParser(AST.JLS10);
 		parser.setResolveBindings(true);
 		parser.setSource(fileContent.toCharArray());
 
