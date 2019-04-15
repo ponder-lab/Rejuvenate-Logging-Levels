@@ -288,7 +288,7 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 
 		if (!status.hasFatalError()) {
 			if (logInvocationSet.isEmpty()) {
-				status.addFatalError(Messages.NoInputLogInvs);
+				status.addWarning(Messages.NoInputLogInvs);
 			}
 		}
 
