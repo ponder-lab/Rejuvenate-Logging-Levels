@@ -132,6 +132,12 @@ public class LogAnalyzer extends ASTVisitor {
 			}
 		}
 
+		// DOI not in intervals
+		if ((this.useLogCategory && (logInvocation.getDegreeOfInterestValue() > this.boundary.get(4)))) {
+			logInvocation.setAction(Action.NONE, null);
+			return false;
+		}
+
 		Level rejuvenatedLogLevel = getRejuvenatedLogLevel(this.boundary, logInvocation);
 
 		if (rejuvenatedLogLevel == null)
