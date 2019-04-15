@@ -89,6 +89,7 @@ public class Graph {
 		return this.headVertices;
 	}
 
+	@SuppressWarnings("unused")
 	private Set<Vertex> getHeadVertices() {
 		return this.headVertices;
 	}
