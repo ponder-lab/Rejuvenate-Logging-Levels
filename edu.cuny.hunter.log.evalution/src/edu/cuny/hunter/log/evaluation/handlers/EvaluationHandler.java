@@ -165,13 +165,15 @@ public class EvaluationHandler extends AbstractHandler {
 											logInvocation.getLogLevel(),
 											logInvocation.getEnclosingType().getFullyQualifiedName(),
 											Util.getMethodIdentifier(logInvocation.getEnclosingEclipseMethod()),
-											logRejuvenatingProcessor.getLogLevelNotLoweredInCatch().contains(logInvocation),
-											logRejuvenatingProcessor.getLogLevelNotTransformedInIf().contains(logInvocation),
+											logRejuvenatingProcessor.getLogLevelNotLoweredInCatch()
+													.contains(logInvocation),
+											logRejuvenatingProcessor.getLogLevelNotTransformedInIf()
+													.contains(logInvocation),
 											logInvocation.getDegreeOfInterestValue());
 								}
 
-							// get the difference of log invocations and passing log
-							// invocations
+							// get the difference of log invocations and passing
+							// log invocations
 							HashSet<LogInvocation> failures = new HashSet<LogInvocation>();
 							failures.addAll(logInvocationSet);
 							HashSet<LogInvocation> passingLogInvocationSet = logRejuvenatingProcessor
@@ -240,7 +242,7 @@ public class EvaluationHandler extends AbstractHandler {
 								if (i == 0) {
 									linesAdded = 0;
 									linesRemoved = 0;
-									for (Commit c : commits){
+									for (Commit c : commits) {
 										gitCommitPrinter.printRecord(project.getElementName(), c.getSHA1(),
 												c.getJavaLinesAdded(), c.getJavaLinesRemoved(), c.getMethodFound(),
 												c.getInteractionEvents(), c.getRunTime());
