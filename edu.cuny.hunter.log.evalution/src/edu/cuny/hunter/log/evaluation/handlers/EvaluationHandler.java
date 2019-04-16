@@ -117,8 +117,6 @@ public class EvaluationHandler extends AbstractHandler {
 						new String[] { "subject", "SHA1", "Java lines added", "Java lines removed", "methods found",
 								"interaction events", "run time (s)" });
 
-				ResultForCommit resultCommit = new ResultForCommit();
-
 				// we are using 6 settings
 				for (int i = 0; i < 6; ++i) {
 					long sequence = this.getRunId();
@@ -236,9 +234,9 @@ public class EvaluationHandler extends AbstractHandler {
 									this.printBoundaryDefault(sequence, project.getElementName(), boundary, doiPrinter);
 								}
 
-							resultCommit.clear();
 							if (this.getValueOfUseGitHistory()) {
 								LinkedList<Commit> commits = logRejuvenatingProcessor.getCommits();
+
 								// We only need to print once.
 								if (i == 0) {
 									linesAdded = 0;
@@ -251,13 +249,25 @@ public class EvaluationHandler extends AbstractHandler {
 										linesRemoved += c.getJavaLinesRemoved();
 									}
 								}
+
+								ResultForCommit resultCommit = new ResultForCommit();
+
 								resultCommit.setActualCommits(commits.size());
 								resultCommit.setJavaLinesAdded(resultCommit.getCommitsProcessed() == 0 ? 0
 										: linesAdded / resultCommit.getCommitsProcessed());
 								resultCommit.setJavaLinesRemoved(resultCommit.getCommitsProcessed() == 0 ? 0
 										: linesRemoved / resultCommit.getCommitsProcessed());
+
 								if (!commits.isEmpty())
 									resultCommit.setHeadSha(commits.getLast().getSHA1());
+
+								// Prevent duplicate rows.
+								if (!resultCommit.getHeadSha().equals(""))
+									repoPrinter.printRecord(sequence, logRejuvenatingProcessor.getRepoURL(),
+											resultCommit.getHeadSha(), NToUseCommit, resultCommit.getCommitsProcessed(),
+											logRejuvenatingProcessor.getActualNumberOfCommits(),
+											resultCommit.getAverageJavaLinesAdded(),
+											resultCommit.getAverageJavaLinesRemoved());
 							}
 
 							resultPrinter.printRecord(sequence, project.getElementName(),
@@ -268,14 +278,6 @@ public class EvaluationHandler extends AbstractHandler {
 									logRejuvenatingProcessor.getLogLevelNotTransformedInIf().size(),
 									this.isUseLogCategory(), this.isUseLogCategoryWithConfig(),
 									this.isNotLowerLogLevel(), resultsTimeCollector.getCollectedTime());
-							// Duplicate rows.
-							if (!resultCommit.getHeadSha().equals(""))
-								repoPrinter.printRecord(sequence, logRejuvenatingProcessor.getRepoURL(),
-										resultCommit.getHeadSha(), NToUseCommit, resultCommit.getCommitsProcessed(),
-										logRejuvenatingProcessor.getActualNumberOfCommits(),
-										resultCommit.getAverageJavaLinesAdded(),
-										resultCommit.getAverageJavaLinesRemoved());
-
 						}
 					}
 					// Clear intermediate data for mylyn-git plug-in.

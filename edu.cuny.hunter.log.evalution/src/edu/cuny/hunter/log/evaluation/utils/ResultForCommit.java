@@ -53,12 +53,4 @@ public class ResultForCommit {
 	public void setHeadSha(String headSha) {
 		this.headSha = headSha;
 	}
-	
-	public void clear() {
-		this.headSha = "";
-		this.averageJavaLinesAdded = 0;
-		this.averageJavaLinesRemoved = 0;
-		this.commitsProcessed = 0;
-	}
-
 }
