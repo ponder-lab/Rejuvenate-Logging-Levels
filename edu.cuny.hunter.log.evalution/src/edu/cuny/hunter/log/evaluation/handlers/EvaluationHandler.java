@@ -78,8 +78,6 @@ public class EvaluationHandler extends AbstractHandler {
 			CSVPrinter failurePrinter = null;
 			CSVPrinter doiPrinter = null;
 			CSVPrinter gitCommitPrinter = null;
-			long linesAdded = 0;
-			long linesRemoved = 0;
 
 			try {
 				IJavaProject[] javaProjects = Util.getSelectedJavaProjectsFromEvent(event);
@@ -117,168 +115,165 @@ public class EvaluationHandler extends AbstractHandler {
 						new String[] { "subject", "SHA1", "Java lines added", "Java lines removed", "methods found",
 								"interaction events", "run time (s)" });
 
-				// we are using 6 settings
-				for (int i = 0; i < 6; ++i) {
-					long sequence = this.getRunId();
+				for (IJavaProject project : javaProjects) {
 
-					for (IJavaProject project : javaProjects) {
+					// we are using 6 settings
+					for (int i = 0; i < 6; ++i) {
+						long sequence = this.getRunId();
+						int javaLinesAdded = 0;
+						int javaLinesRemoved = 0;
+
 						List<Integer> nsToUse = getNToUseForCommits(project, N_TO_USE_FOR_COMMITS_KEY,
 								N_TO_USE_FOR_COMMITS_DEFAULT, EVALUATION_PROPERTIES_FILE_NAME);
 
-						for (int NToUseCommit : nsToUse) {
+						int NToUseCommit = nsToUse.get(0);
+						this.loadSettings(i);
 
-							this.loadSettings(i);
+						// collect running time.
+						TimeCollector resultsTimeCollector = new TimeCollector();
+						resultsTimeCollector.start();
 
-							// collect running time.
-							TimeCollector resultsTimeCollector = new TimeCollector();
-							resultsTimeCollector.start();
+						LogRejuvenatingProcessor logRejuvenatingProcessor = new LogRejuvenatingProcessor(
+								new IJavaProject[] { project }, this.isUseLogCategory(),
+								this.isUseLogCategoryWithConfig(), this.getValueOfUseGitHistory(),
+								this.isNotLowerLogLevel(), this.checkIfCondtion, NToUseCommit, settings,
+								Optional.ofNullable(monitor), true);
 
-							LogRejuvenatingProcessor logRejuvenatingProcessor = new LogRejuvenatingProcessor(
-									new IJavaProject[] { project }, this.isUseLogCategory(),
-									this.isUseLogCategoryWithConfig(), this.getValueOfUseGitHistory(),
-									this.isNotLowerLogLevel(), this.checkIfCondtion, NToUseCommit, settings,
-									Optional.ofNullable(monitor), true);
+						RefactoringStatus status = new ProcessorBasedRefactoring(
+								(RefactoringProcessor) logRejuvenatingProcessor)
+										.checkAllConditions(new NullProgressMonitor());
 
-							RefactoringStatus status = new ProcessorBasedRefactoring(
-									(RefactoringProcessor) logRejuvenatingProcessor)
-											.checkAllConditions(new NullProgressMonitor());
+						if (status.hasFatalError())
+							return new Status(IStatus.ERROR, FrameworkUtil.getBundle(this.getClass()).getSymbolicName(),
+									"Fatal error encountered during evaluation: "
+											+ status.getMessageMatchingSeverity(RefactoringStatus.FATAL));
 
-							if (status.hasFatalError())
-								return new Status(IStatus.ERROR,
-										FrameworkUtil.getBundle(this.getClass()).getSymbolicName(),
-										"Fatal error encountered during evaluation: "
-												+ status.getMessageMatchingSeverity(RefactoringStatus.FATAL));
+						resultsTimeCollector.stop();
 
-							resultsTimeCollector.stop();
+						Set<LogInvocation> logInvocationSet = logRejuvenatingProcessor.getLogInvocationSet();
 
-							Set<LogInvocation> logInvocationSet = logRejuvenatingProcessor.getLogInvocationSet();
-
-							// Just print once.
-							// Using 1 here because both settings are enabled for this index.
-							if (i == 1)
-								// print input log invocations
-								for (LogInvocation logInvocation : logInvocationSet) {
-									// Print input log invocations
-									inputLogInvPrinter.printRecord(project.getElementName(),
-											logInvocation.getExpression(), logInvocation.getStartPosition(),
-											logInvocation.getLogLevel(),
-											logInvocation.getEnclosingType().getFullyQualifiedName(),
-											Util.getMethodIdentifier(logInvocation.getEnclosingEclipseMethod()),
-											logRejuvenatingProcessor.getLogLevelNotLoweredInCatch()
-													.contains(logInvocation),
-											logRejuvenatingProcessor.getLogLevelNotTransformedInIf()
-													.contains(logInvocation),
-											logInvocation.getDegreeOfInterestValue());
-								}
-
-							// get the difference of log invocations and passing
-							// log invocations
-							HashSet<LogInvocation> failures = new HashSet<LogInvocation>();
-							failures.addAll(logInvocationSet);
-							HashSet<LogInvocation> passingLogInvocationSet = logRejuvenatingProcessor
-									.getPassingLogInvocation();
-							failures.removeAll(passingLogInvocationSet);
-
-							// failures.
-							Collection<RefactoringStatusEntry> errorEntries = failures.parallelStream()
-									.map(LogInvocation::getStatus).flatMap(s -> Arrays.stream(s.getEntries()))
-									.filter(RefactoringStatusEntry::isError).collect(Collectors.toSet());
-
-							// print failures.
-							for (RefactoringStatusEntry entry : errorEntries)
-								if (!entry.isFatalError()) {
-									Object correspondingElement = entry.getData();
-
-									if (!(correspondingElement instanceof LogInvocation))
-										throw new IllegalStateException("The element: " + correspondingElement
-												+ " corresponding to a failure is not a log inovation."
-												+ correspondingElement.getClass());
-
-									LogInvocation failedLogInvocation = (LogInvocation) correspondingElement;
-
-									failurePrinter.printRecord(sequence, project.getElementName(),
-											failedLogInvocation.getExpression(), failedLogInvocation.getStartPosition(),
-											failedLogInvocation.getLogLevel(),
-											failedLogInvocation.getEnclosingType().getFullyQualifiedName(),
-											Util.getMethodIdentifier(failedLogInvocation.getEnclosingEclipseMethod()),
-											entry.getCode(), entry.getMessage());
-								}
-
-							Set<LogInvocation> transformedLogInvocationSet = logRejuvenatingProcessor
-									.getTransformedLog();
-
-							for (LogInvocation logInvocation : transformedLogInvocationSet) {
-								// print actions
-								actionPrinter.printRecord(sequence, project.getElementName(),
-										logInvocation.getExpression(), logInvocation.getStartPosition(),
-										logInvocation.getLogLevel(),
+						// Just print once.
+						// Using 1 here because both settings are enabled for
+						// this index.
+						if (i == 1)
+							// print input log invocations
+							for (LogInvocation logInvocation : logInvocationSet) {
+								// Print input log invocations
+								inputLogInvPrinter.printRecord(project.getElementName(), logInvocation.getExpression(),
+										logInvocation.getStartPosition(), logInvocation.getLogLevel(),
 										logInvocation.getEnclosingType().getFullyQualifiedName(),
 										Util.getMethodIdentifier(logInvocation.getEnclosingEclipseMethod()),
-										logInvocation.getDegreeOfInterestValue(), logInvocation.getAction(),
-										logInvocation.getNewLogLevel());
+										logRejuvenatingProcessor.getLogLevelNotLoweredInCatch().contains(logInvocation),
+										logRejuvenatingProcessor.getLogLevelNotTransformedInIf()
+												.contains(logInvocation),
+										logInvocation.getDegreeOfInterestValue());
 							}
 
-							LinkedList<Float> boundary = logRejuvenatingProcessor.getBoundary();
-							if (boundary != null && boundary.size() > 0)
-								if (this.isUseLogCategory()) {
-									this.printBoundaryLogCategory(sequence, project.getElementName(), boundary,
-											doiPrinter);
-								} else if (this.isUseLogCategoryWithConfig()) { // Do
-																				// not
-																				// consider
-																				// config
-									this.printBoundaryWithConfig(sequence, project.getElementName(), boundary,
-											doiPrinter);
-								} else {// Treat log levels as traditional log
-										// levels
-									this.printBoundaryDefault(sequence, project.getElementName(), boundary, doiPrinter);
-								}
+						// get the difference of log invocations and passing
+						// log invocations
+						HashSet<LogInvocation> failures = new HashSet<LogInvocation>();
+						failures.addAll(logInvocationSet);
+						HashSet<LogInvocation> passingLogInvocationSet = logRejuvenatingProcessor
+								.getPassingLogInvocation();
+						failures.removeAll(passingLogInvocationSet);
 
-							if (this.getValueOfUseGitHistory()) {
-								LinkedList<Commit> commits = logRejuvenatingProcessor.getCommits();
+						// failures.
+						Collection<RefactoringStatusEntry> errorEntries = failures.parallelStream()
+								.map(LogInvocation::getStatus).flatMap(s -> Arrays.stream(s.getEntries()))
+								.filter(RefactoringStatusEntry::isError).collect(Collectors.toSet());
 
-								// We only need to print once.
-								if (i == 0) {
-									linesAdded = 0;
-									linesRemoved = 0;
-									for (Commit c : commits) {
-										gitCommitPrinter.printRecord(project.getElementName(), c.getSHA1(),
-												c.getJavaLinesAdded(), c.getJavaLinesRemoved(), c.getMethodFound(),
-												c.getInteractionEvents(), c.getRunTime());
-										linesAdded += c.getJavaLinesAdded();
-										linesRemoved += c.getJavaLinesRemoved();
-									}
-								}
+						// print failures.
+						for (RefactoringStatusEntry entry : errorEntries)
+							if (!entry.isFatalError()) {
+								Object correspondingElement = entry.getData();
 
-								ResultForCommit resultCommit = new ResultForCommit();
+								if (!(correspondingElement instanceof LogInvocation))
+									throw new IllegalStateException("The element: " + correspondingElement
+											+ " corresponding to a failure is not a log inovation."
+											+ correspondingElement.getClass());
 
-								resultCommit.setActualCommits(commits.size());
-								resultCommit.setJavaLinesAdded(resultCommit.getCommitsProcessed() == 0 ? 0
-										: linesAdded / resultCommit.getCommitsProcessed());
-								resultCommit.setJavaLinesRemoved(resultCommit.getCommitsProcessed() == 0 ? 0
-										: linesRemoved / resultCommit.getCommitsProcessed());
+								LogInvocation failedLogInvocation = (LogInvocation) correspondingElement;
 
-								if (!commits.isEmpty())
-									resultCommit.setHeadSha(commits.getLast().getSHA1());
-
-								// Prevent duplicate rows.
-								if (!resultCommit.getHeadSha().equals(""))
-									repoPrinter.printRecord(sequence, logRejuvenatingProcessor.getRepoURL(),
-											resultCommit.getHeadSha(), NToUseCommit, resultCommit.getCommitsProcessed(),
-											logRejuvenatingProcessor.getActualNumberOfCommits(),
-											resultCommit.getAverageJavaLinesAdded(),
-											resultCommit.getAverageJavaLinesRemoved());
+								failurePrinter.printRecord(sequence, project.getElementName(),
+										failedLogInvocation.getExpression(), failedLogInvocation.getStartPosition(),
+										failedLogInvocation.getLogLevel(),
+										failedLogInvocation.getEnclosingType().getFullyQualifiedName(),
+										Util.getMethodIdentifier(failedLogInvocation.getEnclosingEclipseMethod()),
+										entry.getCode(), entry.getMessage());
 							}
 
-							resultPrinter.printRecord(sequence, project.getElementName(),
-									logRejuvenatingProcessor.getRepoURL(), logInvocationSet.size(),
-									passingLogInvocationSet.size(), errorEntries.size(),
-									transformedLogInvocationSet.size(),
-									logRejuvenatingProcessor.getLogLevelNotLoweredInCatch().size(),
-									logRejuvenatingProcessor.getLogLevelNotTransformedInIf().size(),
-									this.isUseLogCategory(), this.isUseLogCategoryWithConfig(),
-									this.isNotLowerLogLevel(), resultsTimeCollector.getCollectedTime());
+						Set<LogInvocation> transformedLogInvocationSet = logRejuvenatingProcessor.getTransformedLog();
+
+						for (LogInvocation logInvocation : transformedLogInvocationSet) {
+							// print actions
+							actionPrinter.printRecord(sequence, project.getElementName(), logInvocation.getExpression(),
+									logInvocation.getStartPosition(), logInvocation.getLogLevel(),
+									logInvocation.getEnclosingType().getFullyQualifiedName(),
+									Util.getMethodIdentifier(logInvocation.getEnclosingEclipseMethod()),
+									logInvocation.getDegreeOfInterestValue(), logInvocation.getAction(),
+									logInvocation.getNewLogLevel());
 						}
+
+						LinkedList<Float> boundary = logRejuvenatingProcessor.getBoundary();
+						if (boundary != null && boundary.size() > 0)
+							if (this.isUseLogCategory()) {
+								this.printBoundaryLogCategory(sequence, project.getElementName(), boundary, doiPrinter);
+							} else if (this.isUseLogCategoryWithConfig()) { // Do
+																			// not
+																			// consider
+																			// config
+								this.printBoundaryWithConfig(sequence, project.getElementName(), boundary, doiPrinter);
+							} else {// Treat log levels as traditional log
+									// levels
+								this.printBoundaryDefault(sequence, project.getElementName(), boundary, doiPrinter);
+							}
+
+						if (this.getValueOfUseGitHistory()) {
+							LinkedList<Commit> commits = logRejuvenatingProcessor.getCommits();
+
+							// We only need to print once.
+							if (i == 0) {
+								for (Commit c : commits) {
+									gitCommitPrinter.printRecord(project.getElementName(), c.getSHA1(),
+											c.getJavaLinesAdded(), c.getJavaLinesRemoved(), c.getMethodFound(),
+											c.getInteractionEvents(), c.getRunTime());
+
+									// line statistics for this project in the
+									// first setting.
+									javaLinesAdded += c.getJavaLinesAdded();
+									javaLinesRemoved += c.getJavaLinesRemoved();
+								}
+							}
+
+							ResultForCommit resultCommit = new ResultForCommit();
+
+							resultCommit.setActualCommits(commits.size());
+
+							resultCommit.setAverageJavaLinesAdded(resultCommit.getCommitsProcessed() == 0 ? 0
+									: ((double) javaLinesAdded) / resultCommit.getCommitsProcessed());
+
+							resultCommit.setAverageJavaLinesRemoved(resultCommit.getCommitsProcessed() == 0 ? 0
+									: ((double) javaLinesRemoved) / resultCommit.getCommitsProcessed());
+
+							if (!commits.isEmpty())
+								resultCommit.setHeadSha(commits.getLast().getSHA1());
+
+							// Prevent duplicate rows.
+							if (resultCommit.getHeadSha() != null)
+								repoPrinter.printRecord(sequence, logRejuvenatingProcessor.getRepoURL(),
+										resultCommit.getHeadSha(), NToUseCommit, resultCommit.getCommitsProcessed(),
+										logRejuvenatingProcessor.getActualNumberOfCommits(),
+										resultCommit.getAverageJavaLinesAdded(),
+										resultCommit.getAverageJavaLinesRemoved());
+						}
+
+						resultPrinter.printRecord(sequence, project.getElementName(),
+								logRejuvenatingProcessor.getRepoURL(), logInvocationSet.size(),
+								passingLogInvocationSet.size(), errorEntries.size(), transformedLogInvocationSet.size(),
+								logRejuvenatingProcessor.getLogLevelNotLoweredInCatch().size(),
+								logRejuvenatingProcessor.getLogLevelNotTransformedInIf().size(),
+								this.isUseLogCategory(), this.isUseLogCategoryWithConfig(), this.isNotLowerLogLevel(),
+								resultsTimeCollector.getCollectedTime());
 					}
 					// Clear intermediate data for mylyn-git plug-in.
 					MylynGitPredictionProvider.clearMappingData();
