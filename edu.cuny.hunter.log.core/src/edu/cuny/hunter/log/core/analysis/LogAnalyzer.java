@@ -133,7 +133,8 @@ public class LogAnalyzer extends ASTVisitor {
 		}
 
 		// DOI not in intervals
-		if ((this.useLogCategory && (logInvocation.getDegreeOfInterestValue() > this.boundary.get(4)))) {
+		if ((this.useLogCategory
+				&& (logInvocation.getDegreeOfInterestValue() > this.boundary.get(this.boundary.size() - 1)))) {
 			logInvocation.setAction(Action.NONE, null);
 			return false;
 		}
