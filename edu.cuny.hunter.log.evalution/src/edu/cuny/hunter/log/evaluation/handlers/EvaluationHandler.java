@@ -104,8 +104,8 @@ public class EvaluationHandler extends AbstractHandler {
 				failurePrinter = Util.createCSVPrinter("failures.csv",
 						new String[] { "sequence", "subject", "log expression", "start pos", "log level", "type FQN",
 								"enclosing method", "code", "message" });
-				doiPrinter = Util.createCSVPrinter("DOI_boundaries.csv",
-						new String[] { "sequence", "subject", "DOI boundary", "log level" });
+				doiPrinter = Util.createCSVPrinter("DOI_boundaries.csv", new String[] { "sequence", "subject",
+						"low boundary inclusive", "high boundary exclusive", "log level" });
 				gitCommitPrinter = Util.createCSVPrinter("git_commits.csv",
 						new String[] { "subject", "SHA1", "Java lines added", "Java lines removed", "methods found",
 								"interaction events", "run time (s)" });
@@ -322,28 +322,28 @@ public class EvaluationHandler extends AbstractHandler {
 
 	private void printBoundaryLogCategory(long sequence, String subject, LinkedList<Float> boundary,
 			CSVPrinter doiPrinter) throws IOException {
-		doiPrinter.printRecord(sequence, subject, "[" + boundary.get(0) + ", " + boundary.get(1) + ")", Level.FINEST);
-		doiPrinter.printRecord(sequence, subject, "[" + boundary.get(1) + ", " + boundary.get(2) + ")", Level.FINER);
-		doiPrinter.printRecord(sequence, subject, "[" + boundary.get(2) + ", " + boundary.get(3) + ")", Level.FINE);
-		doiPrinter.printRecord(sequence, subject, "[" + boundary.get(3) + ", " + boundary.get(4) + ")", Level.INFO);
+		doiPrinter.printRecord(sequence, subject, boundary.get(0), boundary.get(1), Level.FINEST);
+		doiPrinter.printRecord(sequence, subject, boundary.get(1), boundary.get(2), Level.FINER);
+		doiPrinter.printRecord(sequence, subject, boundary.get(2), boundary.get(3), Level.FINE);
+		doiPrinter.printRecord(sequence, subject, boundary.get(3), boundary.get(4), Level.INFO);
 	}
 
 	private void printBoundaryWithConfig(long sequence, String subject, LinkedList<Float> boundary,
 			CSVPrinter doiPrinter) throws IOException {
 		this.printBoundaryLogCategory(sequence, subject, boundary, doiPrinter);
-		doiPrinter.printRecord(sequence, subject, "[" + boundary.get(4) + ", " + boundary.get(5) + ")", Level.WARNING);
-		doiPrinter.printRecord(sequence, subject, "[" + boundary.get(5) + ", " + boundary.get(6) + ")", Level.SEVERE);
+		doiPrinter.printRecord(sequence, subject, boundary.get(4), boundary.get(5), Level.WARNING);
+		doiPrinter.printRecord(sequence, subject, boundary.get(5), boundary.get(6), Level.SEVERE);
 	}
 
 	private void printBoundaryDefault(long sequence, String subject, LinkedList<Float> boundary, CSVPrinter doiPrinter)
 			throws IOException {
-		doiPrinter.printRecord(sequence, subject, "[" + boundary.get(0) + ", " + boundary.get(1) + ")", Level.FINEST);
-		doiPrinter.printRecord(sequence, subject, "[" + boundary.get(1) + ", " + boundary.get(2) + ")", Level.FINER);
-		doiPrinter.printRecord(sequence, subject, "[" + boundary.get(2) + ", " + boundary.get(3) + ")", Level.FINE);
-		doiPrinter.printRecord(sequence, subject, "[" + boundary.get(3) + ", " + boundary.get(4) + ")", Level.CONFIG);
-		doiPrinter.printRecord(sequence, subject, "[" + boundary.get(4) + ", " + boundary.get(5) + ")", Level.INFO);
-		doiPrinter.printRecord(sequence, subject, "[" + boundary.get(5) + ", " + boundary.get(6) + ")", Level.WARNING);
-		doiPrinter.printRecord(sequence, subject, "[" + boundary.get(6) + ", " + boundary.get(7) + ")", Level.SEVERE);
+		doiPrinter.printRecord(sequence, subject, boundary.get(0), boundary.get(1), Level.FINEST);
+		doiPrinter.printRecord(sequence, subject, boundary.get(1), boundary.get(2), Level.FINER);
+		doiPrinter.printRecord(sequence, subject, boundary.get(2), boundary.get(3), Level.FINE);
+		doiPrinter.printRecord(sequence, subject, boundary.get(3), boundary.get(4), Level.CONFIG);
+		doiPrinter.printRecord(sequence, subject, boundary.get(4), boundary.get(5), Level.INFO);
+		doiPrinter.printRecord(sequence, subject, boundary.get(5), boundary.get(6), Level.WARNING);
+		doiPrinter.printRecord(sequence, subject, boundary.get(6), boundary.get(7), Level.SEVERE);
 	}
 
 	@SuppressWarnings("unused")
