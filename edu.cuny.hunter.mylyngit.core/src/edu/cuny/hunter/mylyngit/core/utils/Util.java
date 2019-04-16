@@ -40,6 +40,7 @@ public class Util {
 	/**
 	 * Return a method signature
 	 */
+	@SuppressWarnings("unchecked")
 	public static String getMethodSignature(MethodDeclaration methodDeclaration) {
 		String signature = "";
 		signature += methodDeclaration.getName() + "(";
@@ -147,8 +148,9 @@ public class Util {
 	/**
 	 * Create CompilationUnit from ICompilationUnit.
 	 */
+	@SuppressWarnings("deprecation")
 	public static CompilationUnit getCompilationUnit(ICompilationUnit unit) {
-		ASTParser parser = ASTParser.newParser(AST.JLS8);
+		ASTParser parser = ASTParser.newParser(AST.JLS10);
 		parser.setResolveBindings(true);
 		parser.setSource(unit);
 		return (CompilationUnit) parser.createAST(null);

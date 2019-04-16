@@ -886,6 +886,7 @@ public class GitHistoryAnalyzer {
 	/**
 	 * Check whether the two methods have the same parameter types.
 	 */
+	@SuppressWarnings("unchecked")
 	private boolean isSameParameterType(MethodDeclaration methodA, MethodDeclaration methodB) {
 		List<SingleVariableDeclaration> parametersA = methodA.parameters();
 		List<SingleVariableDeclaration> parametersB = methodB.parameters();
@@ -988,8 +989,9 @@ public class GitHistoryAnalyzer {
 	/**
 	 * Parse a Java file, and let visitor to visit declaring methods.
 	 */
+	@SuppressWarnings("deprecation")
 	private void parseJavaFile(String fileContent, String newDirectory) throws IOException {
-		ASTParser parser = ASTParser.newParser(AST.JLS8);
+		ASTParser parser = ASTParser.newParser(AST.JLS10);
 		parser.setResolveBindings(true);
 		parser.setSource(fileContent.toCharArray());
 

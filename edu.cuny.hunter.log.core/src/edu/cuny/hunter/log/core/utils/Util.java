@@ -103,6 +103,7 @@ public final class Util {
 	 * @return logging level
 	 */
 	// if isTest == 1, then it is junit test
+	@SuppressWarnings("unchecked")
 	public static Level isLogExpression(MethodInvocation node, boolean isTest) {
 		if (!isTest) {
 			IMethodBinding methodBinding = node.resolveMethodBinding();

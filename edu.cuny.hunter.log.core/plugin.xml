@@ -2,4 +2,12 @@
 <?eclipse version="3.4"?>
 <plugin>
 
+   <extension
+         point="org.eclipse.ltk.core.refactoring.refactoringContributions">
+      <contribution
+            class="edu.cuny.hunter.log.core.contributions.LogRejuvenationContributions"
+            id="org.eclipse.log.rejuvenation.contribution">
+      </contribution>
+   </extension>
+
 </plugin>
