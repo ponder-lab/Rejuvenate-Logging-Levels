@@ -255,9 +255,9 @@ public class EvaluationHandler extends AbstractHandler {
 									transformedLogInvocationSet.size(), resultCommit.getAverageJavaLinesAdded(),
 									resultCommit.getAverageJavaLinesRemoved(),
 									logRejuvenatingProcessor.getLogInvsNotLoweredInCatch().size(),
-									logRejuvenatingProcessor.getLogInvsNotTransformedInIf().size(), this.isUseLogCategory(),
-									this.isUseLogCategoryWithConfig(), this.isNotLowerLogLevel(),
-									resultsTimeCollector.getCollectedTime());
+									logRejuvenatingProcessor.getLogInvsNotTransformedInIf().size(),
+									this.isUseLogCategory(), this.isUseLogCategoryWithConfig(),
+									this.isNotLowerLogLevel(), resultsTimeCollector.getCollectedTime());
 							// Duplicate rows.
 							if (!resultCommit.getHeadSha().equals(""))
 								repoPrinter.printRecord(sequence, logRejuvenatingProcessor.getRepoURL(),
