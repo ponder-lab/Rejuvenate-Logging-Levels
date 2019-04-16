@@ -152,6 +152,7 @@ public class EvaluationHandler extends AbstractHandler {
 							Set<LogInvocation> logInvocationSet = logRejuvenatingProcessor.getLogInvocationSet();
 
 							// Just print once.
+                            // Using 1 here because both settings are enabled for this index.
 							if (i == 1)
 								// print input log invocations
 								for (LogInvocation logInvocation : logInvocationSet) {
