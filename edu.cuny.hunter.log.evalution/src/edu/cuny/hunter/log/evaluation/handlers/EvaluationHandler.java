@@ -78,6 +78,8 @@ public class EvaluationHandler extends AbstractHandler {
 			CSVPrinter failurePrinter = null;
 			CSVPrinter doiPrinter = null;
 			CSVPrinter gitCommitPrinter = null;
+			long linesAdded = 0;
+			long linesRemoved = 0;
 
 			try {
 				IJavaProject[] javaProjects = Util.getSelectedJavaProjectsFromEvent(event);
@@ -228,21 +230,27 @@ public class EvaluationHandler extends AbstractHandler {
 								}
 
 							resultCommit.clear();
-
 							if (this.getValueOfUseGitHistory()) {
 								LinkedList<Commit> commits = logRejuvenatingProcessor.getCommits();
 								// We only need to print once.
-								if (i == 0)
-									for (Commit c : commits) {
+								if (i == 0) {
+									linesAdded = 0;
+									linesRemoved = 0;
+									for (Commit c : commits){
 										gitCommitPrinter.printRecord(project.getElementName(), c.getSHA1(),
 												c.getJavaLinesAdded(), c.getJavaLinesRemoved(), c.getMethodFound(),
 												c.getInteractionEvents(), c.getRunTime());
-										resultCommit.computLines(c);
+										linesAdded += c.getJavaLinesAdded();
+										linesRemoved += c.getJavaLinesRemoved();
 									}
+								}
 								resultCommit.setActualCommits(commits.size());
+								resultCommit.setJavaLinesAdded(resultCommit.getCommitsProcessed() == 0 ? 0
+										: linesAdded / resultCommit.getCommitsProcessed());
+								resultCommit.setJavaLinesRemoved(resultCommit.getCommitsProcessed() == 0 ? 0
+										: linesRemoved / resultCommit.getCommitsProcessed());
 								if (!commits.isEmpty())
 									resultCommit.setHeadSha(commits.getLast().getSHA1());
-
 							}
 
 							resultPrinter.printRecord(sequence, project.getElementName(),
