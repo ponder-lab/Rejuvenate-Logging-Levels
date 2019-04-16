@@ -165,13 +165,8 @@ public class EvaluationHandler extends AbstractHandler {
 											logInvocation.getLogLevel(),
 											logInvocation.getEnclosingType().getFullyQualifiedName(),
 											Util.getMethodIdentifier(logInvocation.getEnclosingEclipseMethod()),
-
-											logRejuvenatingProcessor.getLogLevelNotLoweredInCatch()
-													.contains(logInvocation) ? true : false,
-
-											logRejuvenatingProcessor.getLogLevelNotTransformedInIf()
-													.contains(logInvocation) ? true : false,
-
+											logRejuvenatingProcessor.getLogLevelNotLoweredInCatch().contains(logInvocation),
+											logRejuvenatingProcessor.getLogLevelNotTransformedInIf().contains(logInvocation),
 											logInvocation.getDegreeOfInterestValue());
 								}
 
