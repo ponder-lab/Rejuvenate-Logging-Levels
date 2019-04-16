@@ -56,4 +56,12 @@ public class Vertex {
 	public String getMethod() {
 		return method;
 	}
+
+	public int getCommit() {
+		return commit;
+	}
+
+	public void setCommit(int commit) {
+		this.commit = commit;
+	}
 }
