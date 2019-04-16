@@ -120,9 +120,8 @@ public class EvaluationHandler extends AbstractHandler {
 					long sequence = this.getRunId();
 
 					for (IJavaProject project : javaProjects) {
-						List<Integer> nsToUse = getNToUseForCommits(project,
-								N_TO_USE_FOR_COMMITS_KEY, N_TO_USE_FOR_COMMITS_DEFAULT,
-								EVALUATION_PROPERTIES_FILE_NAME);
+						List<Integer> nsToUse = getNToUseForCommits(project, N_TO_USE_FOR_COMMITS_KEY,
+								N_TO_USE_FOR_COMMITS_DEFAULT, EVALUATION_PROPERTIES_FILE_NAME);
 
 						for (int NToUseCommit : nsToUse) {
 
@@ -138,12 +137,15 @@ public class EvaluationHandler extends AbstractHandler {
 									this.isNotLowerLogLevel(), this.checkIfCondtion, NToUseCommit, settings,
 									Optional.ofNullable(monitor), true);
 
-							RefactoringStatus status = new ProcessorBasedRefactoring((RefactoringProcessor) logRejuvenatingProcessor)
-									.checkAllConditions(new NullProgressMonitor());
+							RefactoringStatus status = new ProcessorBasedRefactoring(
+									(RefactoringProcessor) logRejuvenatingProcessor)
+											.checkAllConditions(new NullProgressMonitor());
 
 							if (status.hasFatalError())
-								return new Status(IStatus.ERROR, FrameworkUtil.getBundle(this.getClass()).getSymbolicName(),
-										"Fatal error encountered during evaluation: " + status.getMessageMatchingSeverity(RefactoringStatus.FATAL));
+								return new Status(IStatus.ERROR,
+										FrameworkUtil.getBundle(this.getClass()).getSymbolicName(),
+										"Fatal error encountered during evaluation: "
+												+ status.getMessageMatchingSeverity(RefactoringStatus.FATAL));
 
 							resultsTimeCollector.stop();
 
