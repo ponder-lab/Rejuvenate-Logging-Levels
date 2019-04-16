@@ -106,8 +106,8 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 	 */
 	private boolean isEvaluation = false;
 
-	private int logLevelNotTransformedInIf;
-	private int logLevelNotLoweredInCatch;
+	private HashSet<LogInvocation> logLevelNotTransformedInIf = new HashSet<LogInvocation>();
+	private HashSet<LogInvocation> logLevelNotLoweredInCatch = new HashSet<LogInvocation>();
 
 	private String repoURL = "";
 
@@ -302,7 +302,8 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 	 * @param analyzer
 	 * @param jproj
 	 */
-	private void processGitHistory(MylynGitPredictionProvider mylynProvider, LogAnalyzer analyzer, IJavaProject jproj) throws GitAPIException, JGitInternalException, IOException {
+	private void processGitHistory(MylynGitPredictionProvider mylynProvider, LogAnalyzer analyzer, IJavaProject jproj)
+			throws GitAPIException, JGitInternalException, IOException {
 		try {
 			if (this.useGitHistory) {
 				mylynProvider.processOneProject(jproj);
@@ -467,19 +468,19 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 		this.checkIfCondition = checkIfCondition;
 	}
 
-	public int getLogLevelNotTransformedInIf() {
+	public HashSet<LogInvocation> getLogLevelNotTransformedInIf() {
 		return this.logLevelNotTransformedInIf;
 	}
 
-	public void setLogLevelNotTransformedInIf(int logLevelNotTransformedInIf) {
+	public void setLogLevelNotTransformedInIf(HashSet<LogInvocation> logLevelNotTransformedInIf) {
 		this.logLevelNotTransformedInIf = logLevelNotTransformedInIf;
 	}
 
-	public int getLogLevelNotLoweredInCatch() {
+	public HashSet<LogInvocation> getLogLevelNotLoweredInCatch() {
 		return this.logLevelNotLoweredInCatch;
 	}
 
-	public void setLogLevelNotLoweredInCatch(int logLevelNotLoweredInCatch) {
+	public void setLogLevelNotLoweredInCatch(HashSet<LogInvocation> logLevelNotLoweredInCatch) {
 		this.logLevelNotLoweredInCatch = logLevelNotLoweredInCatch;
 	}
 

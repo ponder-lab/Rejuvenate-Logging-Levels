@@ -104,8 +104,10 @@ public class EvaluationHandler extends AbstractHandler {
 				actionPrinter = Util.createCSVPrinter("log_transformation_actions.csv",
 						new String[] { "sequence", "subject", "log expression", "start pos", "log level", "type FQN",
 								"enclosing method", "DOI value", "action", "new level" });
-				inputLogInvPrinter = Util.createCSVPrinter("input_log_invocations.csv", new String[] { "subject",
-						"log expression", "start pos", "log level", "type FQN", "enclosing method", "DOI value" });
+				inputLogInvPrinter = Util.createCSVPrinter("input_log_invocations.csv",
+						new String[] { "subject", "log expression", "start pos", "log level", "type FQN",
+								"enclosing method", "not lower log levels of logs inside of catch blocks",
+								"log level not transformed due to if condition", "DOI value" });
 				failurePrinter = Util.createCSVPrinter("failures.csv",
 						new String[] { "sequence", "subject", "log expression", "start pos", "log level", "type FQN",
 								"enclosing method", "code", "message" });
@@ -154,7 +156,7 @@ public class EvaluationHandler extends AbstractHandler {
 							Set<LogInvocation> logInvocationSet = logRejuvenatingProcessor.getLogInvocationSet();
 
 							// Just print once.
-							if (i == 0)
+							if (i == 1)
 								// print input log invocations
 								for (LogInvocation logInvocation : logInvocationSet) {
 									// Print input log invocations
@@ -163,6 +165,13 @@ public class EvaluationHandler extends AbstractHandler {
 											logInvocation.getLogLevel(),
 											logInvocation.getEnclosingType().getFullyQualifiedName(),
 											Util.getMethodIdentifier(logInvocation.getEnclosingEclipseMethod()),
+											
+											logRejuvenatingProcessor.getLogLevelNotLoweredInCatch()
+													.contains(logInvocation) ? true : false,
+
+											logRejuvenatingProcessor.getLogLevelNotTransformedInIf()
+													.contains(logInvocation) ? true : false,
+
 											logInvocation.getDegreeOfInterestValue());
 								}
 
@@ -257,10 +266,10 @@ public class EvaluationHandler extends AbstractHandler {
 									logRejuvenatingProcessor.getRepoURL(), logInvocationSet.size(),
 									passingLogInvocationSet.size(), errorEntries.size(),
 									transformedLogInvocationSet.size(),
-									logRejuvenatingProcessor.getLogLevelNotLoweredInCatch(),
-									logRejuvenatingProcessor.getLogLevelNotTransformedInIf(), this.isUseLogCategory(),
-									this.isUseLogCategoryWithConfig(), this.isNotLowerLogLevel(),
-									resultsTimeCollector.getCollectedTime());
+									logRejuvenatingProcessor.getLogLevelNotLoweredInCatch().size(),
+									logRejuvenatingProcessor.getLogLevelNotTransformedInIf().size(),
+									this.isUseLogCategory(), this.isUseLogCategoryWithConfig(),
+									this.isNotLowerLogLevel(), resultsTimeCollector.getCollectedTime());
 							// Duplicate rows.
 							if (!resultCommit.getHeadSha().equals(""))
 								repoPrinter.printRecord(sequence, logRejuvenatingProcessor.getRepoURL(),
