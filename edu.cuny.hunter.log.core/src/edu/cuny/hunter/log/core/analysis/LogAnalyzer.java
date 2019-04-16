@@ -121,8 +121,8 @@ public class LogAnalyzer extends ASTVisitor {
 			return false;
 
 		/**
-		 * Do not change a log level in a logging statement if there exists an immediate
-		 * if statement whose condition contains a log level.
+		 * Do not change a log level in a logging statement if there exists an
+		 * immediate if statement whose condition contains a log level.
 		 */
 		if (this.checkIfCondition) {
 			if (this.checkIfBlock(logInvocation.getExpression())) {
@@ -132,26 +132,44 @@ public class LogAnalyzer extends ASTVisitor {
 			}
 		}
 
+		// DOI not in intervals
+		if (logInvocation.getDegreeOfInterestValue() < this.boundary.get(0) || logInvocation.getDegreeOfInterestValue() > this.boundary.get(this.boundary.size() - 1)) {
+			logInvocation.setAction(Action.NONE, null);
+			return false;
+		}
+
 		Level rejuvenatedLogLevel = getRejuvenatedLogLevel(this.boundary, logInvocation);
 
 		if (rejuvenatedLogLevel == null)
 			return false;
 
-		if (logInvocation.getInCatchBlock() // process not lower log levels in catch blocks
+		if (logInvocation.getInCatchBlock() // process not lower log levels in
+											// catch blocks
 				&& (currentLogLevel.intValue() > rejuvenatedLogLevel.intValue())) {
 			this.logLevelNotLoweredInCatch++;
 			logInvocation.setAction(Action.NONE, null);
 			return false;
 		}
 
-		if ((currentLogLevel == rejuvenatedLogLevel) // current log level is same to transformed log level
+		if ((currentLogLevel == rejuvenatedLogLevel) // current log level is
+														// same to transformed
+														// log level
 
-				|| (currentLogLevel == Level.ALL || currentLogLevel == Level.OFF) // not consider all and off
+				|| (currentLogLevel == Level.ALL || currentLogLevel == Level.OFF) // not
+																					// consider
+																					// all
+																					// and
+																					// off
 
 				|| (this.useLogCategory && (currentLogLevel == Level.CONFIG || currentLogLevel == Level.WARNING
-						|| currentLogLevel == Level.SEVERE)) // process log category (CONFIG/WARNING/SERVRE)
+						|| currentLogLevel == Level.SEVERE)) // process log
+																// category
+																// (CONFIG/WARNING/SERVRE)
 
-				|| (this.useLogCategoryWithConfig && (currentLogLevel == Level.CONFIG)) // process log category (CONFIG)
+				|| (this.useLogCategoryWithConfig && (currentLogLevel == Level.CONFIG)) // process
+																						// log
+																						// category
+																						// (CONFIG)
 		) {
 			logInvocation.setAction(Action.NONE, null);
 			return false;
@@ -232,8 +250,8 @@ public class LogAnalyzer extends ASTVisitor {
 	}
 
 	/**
-	 * Build a list of boundary. The DOI values could be divided into 7 groups by
-	 * this boundary. 7 groups are corresponding to 7 logging levels
+	 * Build a list of boundary. The DOI values could be divided into 7 groups
+	 * by this boundary. 7 groups are corresponding to 7 logging levels
 	 * 
 	 * @param degreeOfInterests
 	 * @return a list of boundary
@@ -243,17 +261,25 @@ public class LogAnalyzer extends ASTVisitor {
 		float max = getMaxDOI(degreeOfInterests);
 		LinkedList<Float> boundary = new LinkedList<>();
 		if (min < max) {
-			if (this.useLogCategory) {
-				float interval = (max - min) / 4;
-				IntStream.range(0, 5).forEach(i -> boundary.add(min + i * interval));
-			} else if (this.useLogCategoryWithConfig) {
+			if (this.useLogCategory || this.useLogCategoryWithConfig) {
+				// The DOI boundaries should be built as if the "treat CONFIG as
+				// a log category" was selected. This will produce a boundaries
+				// table that includes the levels FINEST, FINER, FINE, INFO,
+				// WARNING, and SEVERE #185.
 				float interval = (max - min) / 6;
 				IntStream.range(0, 7).forEach(i -> boundary.add(min + i * interval));
+
+				if (this.useLogCategory) {
+					// The DOI boundaries should then be *modified* to *remove*
+					// the boundaries for WARNING and SEVERE #185.
+					LOGGER.info(() -> "Original boundaries are: " + boundary);
+					IntStream.range(0, 2).forEach(i -> boundary.remove(boundary.size() - 1));
+					LOGGER.info(() -> "New boundaries are: " + boundary);
+				}
 			} else {
 				float interval = (max - min) / 7;
 				IntStream.range(0, 8).forEach(i -> boundary.add(min + i * interval));
 			}
-
 			return boundary;
 		} else
 			return null;
