@@ -26,7 +26,7 @@ import edu.cuny.hunter.log.core.utils.Util;
 public class LogAnalyzer extends ASTVisitor {
 
 	private static final Logger LOGGER = Logger.getLogger(LoggerNames.LOGGER_NAME);
-	
+
 	/**
 	 * Set of log invocations not transformed due to if condition.
 	 */
@@ -127,8 +127,8 @@ public class LogAnalyzer extends ASTVisitor {
 			return false;
 
 		/**
-		 * Do not change a log level in a logging statement if there exists an
-		 * immediate if statement whose condition contains a log level.
+		 * Do not change a log level in a logging statement if there exists an immediate
+		 * if statement whose condition contains a log level.
 		 */
 		if (this.checkIfCondition) {
 			if (this.checkIfBlock(logInvocation.getExpression())) {
@@ -139,7 +139,8 @@ public class LogAnalyzer extends ASTVisitor {
 		}
 
 		// DOI not in intervals
-		if (logInvocation.getDegreeOfInterestValue() < this.boundary.get(0) || logInvocation.getDegreeOfInterestValue() > this.boundary.get(this.boundary.size() - 1)) {
+		if (logInvocation.getDegreeOfInterestValue() < this.boundary.get(0)
+				|| logInvocation.getDegreeOfInterestValue() > this.boundary.get(this.boundary.size() - 1)) {
 			logInvocation.setAction(Action.NONE, null);
 			return false;
 		}
@@ -256,8 +257,8 @@ public class LogAnalyzer extends ASTVisitor {
 	}
 
 	/**
-	 * Build a list of boundary. The DOI values could be divided into 7 groups
-	 * by this boundary. 7 groups are corresponding to 7 logging levels
+	 * Build a list of boundary. The DOI values could be divided into 7 groups by
+	 * this boundary. 7 groups are corresponding to 7 logging levels
 	 * 
 	 * @param degreeOfInterests
 	 * @return a list of boundary
