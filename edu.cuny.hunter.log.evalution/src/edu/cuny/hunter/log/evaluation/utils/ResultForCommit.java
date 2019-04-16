@@ -4,10 +4,10 @@ import edu.cuny.hunter.mylyngit.core.utils.Commit;
 
 public class ResultForCommit {
 
-	private String headSha = "";
-	private long javaLinesAdded = 0;
-	private long javaLinesRemoved = 0;
-	private int commitsProcessed = 0;
+	private String headSha;
+	private long javaLinesAdded;
+	private long javaLinesRemoved;
+	private int commitsProcessed;
 
 	public void computLines(Commit commit) {
 		this.javaLinesAdded += commit.getJavaLinesAdded();
@@ -20,14 +20,6 @@ public class ResultForCommit {
 
 	public void setActualCommits(int commitsProcessed) {
 		this.commitsProcessed = commitsProcessed;
-	}
-
-	public float getAverageJavaLinesAdded() {
-		return this.commitsProcessed == 0 ? 0 : this.javaLinesAdded / this.commitsProcessed;
-	}
-
-	public float getAverageJavaLinesRemoved() {
-		return this.commitsProcessed == 0 ? 0 : this.javaLinesRemoved / this.commitsProcessed;
 	}
 
 	public long getJavaLinesAdded() {
