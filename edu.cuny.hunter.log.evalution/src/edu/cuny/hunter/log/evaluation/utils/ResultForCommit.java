@@ -5,13 +5,13 @@ import edu.cuny.hunter.mylyngit.core.utils.Commit;
 public class ResultForCommit {
 
 	private String headSha = "";
-	private long javaLinesAdded = 0;
-	private long javaLinesRemoved = 0;
+	private long averageJavaLinesAdded = 0;
+	private long averageJavaLinesRemoved = 0;
 	private int commitsProcessed = 0;
 
 	public void computLines(Commit commit) {
-		this.javaLinesAdded += commit.getJavaLinesAdded();
-		this.javaLinesRemoved += commit.getJavaLinesRemoved();
+		this.averageJavaLinesAdded += commit.getJavaLinesAdded();
+		this.averageJavaLinesRemoved += commit.getJavaLinesRemoved();
 	}
 
 	public int getCommitsProcessed() {
@@ -23,27 +23,27 @@ public class ResultForCommit {
 	}
 
 	public float getAverageJavaLinesAdded() {
-		return this.commitsProcessed == 0 ? 0 : this.javaLinesAdded / this.commitsProcessed;
+		return this.averageJavaLinesAdded;
 	}
 
 	public float getAverageJavaLinesRemoved() {
-		return this.commitsProcessed == 0 ? 0 : this.javaLinesRemoved / this.commitsProcessed;
+		return this.averageJavaLinesRemoved;
 	}
 
 	public long getJavaLinesAdded() {
-		return javaLinesAdded;
+		return averageJavaLinesAdded;
 	}
 
 	public void setJavaLinesAdded(long javaLinesAdded) {
-		this.javaLinesAdded = javaLinesAdded;
+		this.averageJavaLinesAdded = javaLinesAdded;
 	}
 
 	public long getJavaLinesRemoved() {
-		return javaLinesRemoved;
+		return averageJavaLinesRemoved;
 	}
 
 	public void setJavaLinesRemoved(long javaLinesRemoved) {
-		this.javaLinesRemoved = javaLinesRemoved;
+		this.averageJavaLinesRemoved = javaLinesRemoved;
 	}
 
 	public String getHeadSha() {
@@ -56,8 +56,8 @@ public class ResultForCommit {
 	
 	public void clear() {
 		this.headSha = "";
-		this.javaLinesAdded = 0;
-		this.javaLinesRemoved = 0;
+		this.averageJavaLinesAdded = 0;
+		this.averageJavaLinesRemoved = 0;
 		this.commitsProcessed = 0;
 	}
 
