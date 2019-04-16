@@ -99,8 +99,11 @@ public class EvaluationHandler extends AbstractHandler {
 				actionPrinter = Util.createCSVPrinter("log_transformation_actions.csv",
 						new String[] { "sequence", "subject", "log expression", "start pos", "log level", "type FQN",
 								"enclosing method", "DOI value", "action", "new level" });
-				inputLogInvPrinter = Util.createCSVPrinter("input_log_invocations.csv", new String[] { "subject",
-						"log expression", "start pos", "log level", "type FQN", "enclosing method", "DOI value" });
+				inputLogInvPrinter = Util.createCSVPrinter("input_log_invocations.csv",
+						new String[] { "subject", "log expression", "start pos", "log level", "type FQN",
+								"enclosing method", "enclosing method",
+								"not lower log levels inside of catch blocks (setting is turned on)",
+								"log level not transformed due to if condition (setting is turned on)", "DOI value" });
 				failurePrinter = Util.createCSVPrinter("failures.csv",
 						new String[] { "sequence", "subject", "log expression", "start pos", "log level", "type FQN",
 								"enclosing method", "code", "message" });
@@ -117,9 +120,8 @@ public class EvaluationHandler extends AbstractHandler {
 					long sequence = this.getRunId();
 
 					for (IJavaProject project : javaProjects) {
-						List<Integer> nsToUse = getNToUseForCommits(project,
-								N_TO_USE_FOR_COMMITS_KEY, N_TO_USE_FOR_COMMITS_DEFAULT,
-								EVALUATION_PROPERTIES_FILE_NAME);
+						List<Integer> nsToUse = getNToUseForCommits(project, N_TO_USE_FOR_COMMITS_KEY,
+								N_TO_USE_FOR_COMMITS_DEFAULT, EVALUATION_PROPERTIES_FILE_NAME);
 
 						for (int NToUseCommit : nsToUse) {
 
@@ -135,19 +137,22 @@ public class EvaluationHandler extends AbstractHandler {
 									this.isNotLowerLogLevel(), this.checkIfCondtion, NToUseCommit, settings,
 									Optional.ofNullable(monitor), true);
 
-							RefactoringStatus status = new ProcessorBasedRefactoring((RefactoringProcessor) logRejuvenatingProcessor)
-									.checkAllConditions(new NullProgressMonitor());
+							RefactoringStatus status = new ProcessorBasedRefactoring(
+									(RefactoringProcessor) logRejuvenatingProcessor)
+											.checkAllConditions(new NullProgressMonitor());
 
 							if (status.hasFatalError())
-								return new Status(IStatus.ERROR, FrameworkUtil.getBundle(this.getClass()).getSymbolicName(),
-										"Fatal error encountered during evaluation: " + status.getMessageMatchingSeverity(RefactoringStatus.FATAL));
+								return new Status(IStatus.ERROR,
+										FrameworkUtil.getBundle(this.getClass()).getSymbolicName(),
+										"Fatal error encountered during evaluation: "
+												+ status.getMessageMatchingSeverity(RefactoringStatus.FATAL));
 
 							resultsTimeCollector.stop();
 
 							Set<LogInvocation> logInvocationSet = logRejuvenatingProcessor.getLogInvocationSet();
 
 							// Just print once.
-							if (i == 0)
+							if (i == 1)
 								// print input log invocations
 								for (LogInvocation logInvocation : logInvocationSet) {
 									// Print input log invocations
@@ -156,6 +161,10 @@ public class EvaluationHandler extends AbstractHandler {
 											logInvocation.getLogLevel(),
 											logInvocation.getEnclosingType().getFullyQualifiedName(),
 											Util.getMethodIdentifier(logInvocation.getEnclosingEclipseMethod()),
+											logRejuvenatingProcessor.getLogInvsNotLoweredInCatch()
+													.contains(logInvocation),
+											logRejuvenatingProcessor.getLogInvsNotTransformedInIf()
+													.contains(logInvocation),
 											logInvocation.getDegreeOfInterestValue());
 								}
 
@@ -245,8 +254,8 @@ public class EvaluationHandler extends AbstractHandler {
 									passingLogInvocationSet.size(), errorEntries.size(),
 									transformedLogInvocationSet.size(), resultCommit.getAverageJavaLinesAdded(),
 									resultCommit.getAverageJavaLinesRemoved(),
-									logRejuvenatingProcessor.getLogLevelNotLoweredInCatch(),
-									logRejuvenatingProcessor.getLogLevelNotTransformedInIf(), this.isUseLogCategory(),
+									logRejuvenatingProcessor.getLogInvsNotLoweredInCatch().size(),
+									logRejuvenatingProcessor.getLogInvsNotTransformedInIf().size(), this.isUseLogCategory(),
 									this.isUseLogCategoryWithConfig(), this.isNotLowerLogLevel(),
 									resultsTimeCollector.getCollectedTime());
 							// Duplicate rows.
