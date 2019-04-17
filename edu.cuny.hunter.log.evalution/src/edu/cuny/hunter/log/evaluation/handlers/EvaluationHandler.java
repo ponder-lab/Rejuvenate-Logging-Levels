@@ -128,6 +128,10 @@ public class EvaluationHandler extends AbstractHandler {
 					for (IJavaProject project : javaProjects) {
 						List<Integer> nsToUse = getNToUseForCommits(project, N_TO_USE_FOR_COMMITS_KEY,
 								N_TO_USE_FOR_COMMITS_DEFAULT, EVALUATION_PROPERTIES_FILE_NAME);
+						
+						if (nsToUse.size() > 1)
+							throw new IllegalStateException("Using more than one N value is currently unsupported: " +
+								nsToUse.size() + ".");
 
 						for (int NToUseCommit : nsToUse) {
 
