@@ -9,6 +9,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.logging.Level;
@@ -52,8 +53,8 @@ public class EvaluationHandler extends AbstractHandler {
 
 	private static final Logger LOGGER = Logger.getLogger(LoggerNames.LOGGER_NAME);
 
-	private HashMap<String, Double> repoToLinesAdded = new HashMap<String, Double>();
-	private HashMap<String, Double> repoToLinesRemoved = new HashMap<String, Double>();
+	private Map<String, Double> repoToLinesAdded = new HashMap<String, Double>();
+	private Map<String, Double> repoToLinesRemoved = new HashMap<String, Double>();
 
 	private static final String EVALUATION_PROPERTIES_FILE_NAME = "eval.properties";
 	private static final String NOT_LOWER_LOG_LEVEL_CATCH_BLOCK_KEY = "edu.cuny.hunter.log.evaluation.notLowerLogLevelInCatchBlock";
