@@ -94,13 +94,12 @@ public class EvaluationHandler extends AbstractHandler {
 
 				CodeGenerationSettings settings = JavaPreferencesSettings.getCodeGenerationSettings(javaProjects[0]);
 
-				resultPrinter = Util.createCSVPrinter("result.csv",
-						new String[] { "sequence", "subject", "repo URL", "input logging statements",
-								"passing logging statements", "failures", "transformed logging statements",
-								"log level not lowered in a catch block",
-								"log level not transformed due to if condition",
-								"use log category (SEVERE/WARNING/CONFIG)", "use log category (CONFIG)",
-								"not lower log levels of logs inside of catch blocks", "time (s)" });
+				resultPrinter = Util.createCSVPrinter("result.csv", new String[] { "sequence", "subject", "repo URL",
+						"input logging statements", "passing logging statements", "failures",
+						"transformed logging statements", "log level not lowered in a catch block",
+						"log level not transformed due to if condition", "use log category (SEVERE/WARNING/CONFIG)",
+						"use log category (CONFIG)", "not lower log levels of logs inside of catch blocks",
+						"consider if condition", "time (s)" });
 				repoPrinter = Util.createCSVPrinter("repos.csv",
 						new String[] { "sequence", "repo URL", "SHA-1 of head", "N for commits",
 								"number of commits processed", "actual number of commits", "average Java lines added",
@@ -128,10 +127,10 @@ public class EvaluationHandler extends AbstractHandler {
 					for (IJavaProject project : javaProjects) {
 						List<Integer> nsToUse = getNToUseForCommits(project, N_TO_USE_FOR_COMMITS_KEY,
 								N_TO_USE_FOR_COMMITS_DEFAULT, EVALUATION_PROPERTIES_FILE_NAME);
-						
+
 						if (nsToUse.size() > 1)
-							throw new IllegalStateException("Using more than one N value is currently unsupported: " +
-								nsToUse.size() + ".");
+							throw new IllegalStateException(
+									"Using more than one N value is currently unsupported: " + nsToUse.size() + ".");
 
 						for (int NToUseCommit : nsToUse) {
 
@@ -280,7 +279,8 @@ public class EvaluationHandler extends AbstractHandler {
 									logRejuvenatingProcessor.getLogInvsNotLoweredInCatch().size(),
 									logRejuvenatingProcessor.getLogInvsNotTransformedInIf().size(),
 									this.isUseLogCategory(), this.isUseLogCategoryWithConfig(),
-									this.isNotLowerLogLevel(), resultsTimeCollector.getCollectedTime());
+									this.isNotLowerLogLevel(), this.getValueOfCheckIfCondition(),
+									resultsTimeCollector.getCollectedTime());
 
 						}
 					}
