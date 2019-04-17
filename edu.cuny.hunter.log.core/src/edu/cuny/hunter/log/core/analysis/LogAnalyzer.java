@@ -27,6 +27,16 @@ public class LogAnalyzer extends ASTVisitor {
 
 	private static final Logger LOGGER = Logger.getLogger(LoggerNames.LOGGER_NAME);
 
+	/**
+	 * Set of log invocations not transformed due to if condition.
+	 */
+	private HashSet<LogInvocation> logInvsNotTransformedInIf = new HashSet<LogInvocation>();
+
+	/**
+	 * Set of log invocations that their log levels are not lower in catch blocks
+	 */
+	private HashSet<LogInvocation> logInvsNotLoweredInCatch = new HashSet<LogInvocation>();
+
 	private HashSet<MethodDeclaration> methodDeclarations = new HashSet<>();
 
 	private Set<LogInvocation> logInvocationSet = new HashSet<>();
@@ -38,10 +48,6 @@ public class LogAnalyzer extends ASTVisitor {
 	private boolean checkIfCondition = false;
 
 	private boolean useLogCategory = false;
-
-	private int logLevelNotTransformedInIf;
-
-	private int logLevelNotLoweredInCatch;
 
 	private HashSet<Float> DOIValues = new HashSet<>();
 
@@ -121,19 +127,20 @@ public class LogAnalyzer extends ASTVisitor {
 			return false;
 
 		/**
-		 * Do not change a log level in a logging statement if there exists an
-		 * immediate if statement whose condition contains a log level.
+		 * Do not change a log level in a logging statement if there exists an immediate
+		 * if statement whose condition contains a log level.
 		 */
 		if (this.checkIfCondition) {
 			if (this.checkIfBlock(logInvocation.getExpression())) {
 				logInvocation.setAction(Action.NONE, null);
-				this.logLevelNotTransformedInIf++;
+				this.logInvsNotTransformedInIf.add(logInvocation);
 				return false;
 			}
 		}
 
 		// DOI not in intervals
-		if (logInvocation.getDegreeOfInterestValue() < this.boundary.get(0) || logInvocation.getDegreeOfInterestValue() > this.boundary.get(this.boundary.size() - 1)) {
+		if (logInvocation.getDegreeOfInterestValue() < this.boundary.get(0)
+				|| logInvocation.getDegreeOfInterestValue() > this.boundary.get(this.boundary.size() - 1)) {
 			logInvocation.setAction(Action.NONE, null);
 			return false;
 		}
@@ -146,7 +153,7 @@ public class LogAnalyzer extends ASTVisitor {
 		if (logInvocation.getInCatchBlock() // process not lower log levels in
 											// catch blocks
 				&& (currentLogLevel.intValue() > rejuvenatedLogLevel.intValue())) {
-			this.logLevelNotLoweredInCatch++;
+			this.logInvsNotLoweredInCatch.add(logInvocation);
 			logInvocation.setAction(Action.NONE, null);
 			return false;
 		}
@@ -250,8 +257,8 @@ public class LogAnalyzer extends ASTVisitor {
 	}
 
 	/**
-	 * Build a list of boundary. The DOI values could be divided into 7 groups
-	 * by this boundary. 7 groups are corresponding to 7 logging levels
+	 * Build a list of boundary. The DOI values could be divided into 7 groups by
+	 * this boundary. 7 groups are corresponding to 7 logging levels
 	 * 
 	 * @param degreeOfInterests
 	 * @return a list of boundary
@@ -436,12 +443,12 @@ public class LogAnalyzer extends ASTVisitor {
 		});
 	}
 
-	public int getLogLevelNotTransformedInIf() {
-		return this.logLevelNotTransformedInIf;
+	public HashSet<LogInvocation> getLogInvsNotTransformedInIf() {
+		return this.logInvsNotTransformedInIf;
 	}
 
-	public int getLogLevelNotLoweredInCatch() {
-		return this.logLevelNotLoweredInCatch;
+	public HashSet<LogInvocation> getLogInvsNotLoweredInCatch() {
+		return this.logInvsNotLoweredInCatch;
 	}
 
 }

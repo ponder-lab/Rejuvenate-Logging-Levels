@@ -5,9 +5,11 @@ import static edu.cuny.hunter.mylyngit.core.utils.Util.getNToUseForCommits;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.logging.Level;
@@ -50,6 +52,10 @@ import edu.cuny.hunter.mylyngit.core.utils.TimeCollector;
 public class EvaluationHandler extends AbstractHandler {
 
 	private static final Logger LOGGER = Logger.getLogger(LoggerNames.LOGGER_NAME);
+
+	private Map<String, Double> repoToLinesAdded = new HashMap<String, Double>();
+	private Map<String, Double> repoToLinesRemoved = new HashMap<String, Double>();
+
 	private static final String EVALUATION_PROPERTIES_FILE_NAME = "eval.properties";
 	private static final String NOT_LOWER_LOG_LEVEL_CATCH_BLOCK_KEY = "edu.cuny.hunter.log.evaluation.notLowerLogLevelInCatchBlock";
 	private static final String USE_LOG_CATEGORY_CONFIG_KEY = "edu.cuny.hunter.log.evaluation.useLogCategoryWithConfig";
@@ -88,38 +94,44 @@ public class EvaluationHandler extends AbstractHandler {
 
 				CodeGenerationSettings settings = JavaPreferencesSettings.getCodeGenerationSettings(javaProjects[0]);
 
-				resultPrinter = Util.createCSVPrinter("result.csv", new String[] { "sequence", "subject", "repo URL",
-						"input logging statements", "passing logging statements", "failures",
-						"transformed logging statements", "average Java lines added", "average Java lines removed",
-						"log level not lowered in a catch block", "log level not transformed due to if condition",
-						"use log category (SEVERE/WARNING/CONFIG)", "use log category (CONFIG)",
-						"not lower log levels of logs inside of catch blocks", "time (s)" });
-				repoPrinter = Util.createCSVPrinter("repos.csv", new String[] { "sequence", "repo URL", "SHA-1 of head",
-						"N for commits", "number of commits processed", "actual number of commits" });
+				resultPrinter = Util.createCSVPrinter("result.csv",
+						new String[] { "sequence", "subject", "repo URL", "input logging statements",
+								"passing logging statements", "failures", "transformed logging statements",
+								"log level not lowered in a catch block",
+								"log level not transformed due to if condition",
+								"use log category (SEVERE/WARNING/CONFIG)", "use log category (CONFIG)",
+								"not lower log levels of logs inside of catch blocks", "time (s)" });
+				repoPrinter = Util.createCSVPrinter("repos.csv",
+						new String[] { "sequence", "repo URL", "SHA-1 of head", "N for commits",
+								"number of commits processed", "actual number of commits", "average Java lines added",
+								"average Java lines removed" });
 				actionPrinter = Util.createCSVPrinter("log_transformation_actions.csv",
 						new String[] { "sequence", "subject", "log expression", "start pos", "log level", "type FQN",
 								"enclosing method", "DOI value", "action", "new level" });
-				inputLogInvPrinter = Util.createCSVPrinter("input_log_invocations.csv", new String[] { "subject",
-						"log expression", "start pos", "log level", "type FQN", "enclosing method", "DOI value" });
+				inputLogInvPrinter = Util.createCSVPrinter("input_log_invocations.csv",
+						new String[] { "subject", "log expression", "start pos", "log level", "type FQN",
+								"enclosing method", "not lower log levels of logs inside of catch blocks",
+								"log level not transformed due to if condition", "DOI value" });
 				failurePrinter = Util.createCSVPrinter("failures.csv",
 						new String[] { "sequence", "subject", "log expression", "start pos", "log level", "type FQN",
 								"enclosing method", "code", "message" });
-				doiPrinter = Util.createCSVPrinter("DOI_boundaries.csv",
-						new String[] { "sequence", "subject", "DOI boundary", "log level" });
+				doiPrinter = Util.createCSVPrinter("DOI_boundaries.csv", new String[] { "sequence", "subject",
+						"low boundary inclusive", "high boundary exclusive", "log level" });
 				gitCommitPrinter = Util.createCSVPrinter("git_commits.csv",
 						new String[] { "subject", "SHA1", "Java lines added", "Java lines removed", "methods found",
 								"interaction events", "run time (s)" });
-
-				ResultForCommit resultCommit = new ResultForCommit();
 
 				// we are using 6 settings
 				for (int i = 0; i < 6; ++i) {
 					long sequence = this.getRunId();
 
 					for (IJavaProject project : javaProjects) {
-						List<Integer> nsToUse = getNToUseForCommits(project,
-								N_TO_USE_FOR_COMMITS_KEY, N_TO_USE_FOR_COMMITS_DEFAULT,
-								EVALUATION_PROPERTIES_FILE_NAME);
+						List<Integer> nsToUse = getNToUseForCommits(project, N_TO_USE_FOR_COMMITS_KEY,
+								N_TO_USE_FOR_COMMITS_DEFAULT, EVALUATION_PROPERTIES_FILE_NAME);
+						
+						if (nsToUse.size() > 1)
+							throw new IllegalStateException("Using more than one N value is currently unsupported: " +
+								nsToUse.size() + ".");
 
 						for (int NToUseCommit : nsToUse) {
 
@@ -135,19 +147,23 @@ public class EvaluationHandler extends AbstractHandler {
 									this.isNotLowerLogLevel(), this.checkIfCondtion, NToUseCommit, settings,
 									Optional.ofNullable(monitor), true);
 
-							RefactoringStatus status = new ProcessorBasedRefactoring((RefactoringProcessor) logRejuvenatingProcessor)
-									.checkAllConditions(new NullProgressMonitor());
+							RefactoringStatus status = new ProcessorBasedRefactoring(
+									(RefactoringProcessor) logRejuvenatingProcessor)
+											.checkAllConditions(new NullProgressMonitor());
 
 							if (status.hasFatalError())
-								return new Status(IStatus.ERROR, FrameworkUtil.getBundle(this.getClass()).getSymbolicName(),
-										"Fatal error encountered during evaluation: " + status.getMessageMatchingSeverity(RefactoringStatus.FATAL));
+								return new Status(IStatus.ERROR,
+										FrameworkUtil.getBundle(this.getClass()).getSymbolicName(),
+										"Fatal error encountered during evaluation: "
+												+ status.getMessageMatchingSeverity(RefactoringStatus.FATAL));
 
 							resultsTimeCollector.stop();
 
 							Set<LogInvocation> logInvocationSet = logRejuvenatingProcessor.getLogInvocationSet();
 
 							// Just print once.
-							if (i == 0)
+							// Using 1 here because both settings are enabled for this index.
+							if (i == 1)
 								// print input log invocations
 								for (LogInvocation logInvocation : logInvocationSet) {
 									// Print input log invocations
@@ -156,6 +172,10 @@ public class EvaluationHandler extends AbstractHandler {
 											logInvocation.getLogLevel(),
 											logInvocation.getEnclosingType().getFullyQualifiedName(),
 											Util.getMethodIdentifier(logInvocation.getEnclosingEclipseMethod()),
+											logRejuvenatingProcessor.getLogInvsNotLoweredInCatch()
+													.contains(logInvocation),
+											logRejuvenatingProcessor.getLogInvsNotTransformedInIf()
+													.contains(logInvocation),
 											logInvocation.getDegreeOfInterestValue());
 								}
 
@@ -222,38 +242,45 @@ public class EvaluationHandler extends AbstractHandler {
 									this.printBoundaryDefault(sequence, project.getElementName(), boundary, doiPrinter);
 								}
 
-							resultCommit.clear();
-
+							ResultForCommit resultCommit = new ResultForCommit();
+							String repoURL = logRejuvenatingProcessor.getRepoURL();
 							if (this.getValueOfUseGitHistory()) {
 								LinkedList<Commit> commits = logRejuvenatingProcessor.getCommits();
 								// We only need to print once.
-								if (i == 0)
+								if (i == 0) {
 									for (Commit c : commits) {
 										gitCommitPrinter.printRecord(project.getElementName(), c.getSHA1(),
 												c.getJavaLinesAdded(), c.getJavaLinesRemoved(), c.getMethodFound(),
 												c.getInteractionEvents(), c.getRunTime());
 										resultCommit.computLines(c);
 									}
+									this.repoToLinesAdded.put(repoURL, commits.size() == 0 ? 0
+											: ((double) resultCommit.getJavaLinesAdded()) / commits.size());
+									this.repoToLinesRemoved.put(repoURL, commits.size() == 0 ? 0
+											: ((double) resultCommit.getJavaLinesRemoved()) / commits.size());
+								}
 								resultCommit.setActualCommits(commits.size());
 								if (!commits.isEmpty())
 									resultCommit.setHeadSha(commits.getLast().getSHA1());
+
+								// Duplicate rows.
+								// For memoization checking.
+								if (resultCommit.getHeadSha() != null)
+									repoPrinter.printRecord(sequence, repoURL, resultCommit.getHeadSha(), NToUseCommit,
+											resultCommit.getCommitsProcessed(),
+											logRejuvenatingProcessor.getActualNumberOfCommits(),
+											repoToLinesAdded.get(repoURL), repoToLinesRemoved.get(repoURL));
 
 							}
 
 							resultPrinter.printRecord(sequence, project.getElementName(),
 									logRejuvenatingProcessor.getRepoURL(), logInvocationSet.size(),
 									passingLogInvocationSet.size(), errorEntries.size(),
-									transformedLogInvocationSet.size(), resultCommit.getAverageJavaLinesAdded(),
-									resultCommit.getAverageJavaLinesRemoved(),
-									logRejuvenatingProcessor.getLogLevelNotLoweredInCatch(),
-									logRejuvenatingProcessor.getLogLevelNotTransformedInIf(), this.isUseLogCategory(),
-									this.isUseLogCategoryWithConfig(), this.isNotLowerLogLevel(),
-									resultsTimeCollector.getCollectedTime());
-							// Duplicate rows.
-							if (!resultCommit.getHeadSha().equals(""))
-								repoPrinter.printRecord(sequence, logRejuvenatingProcessor.getRepoURL(),
-										resultCommit.getHeadSha(), NToUseCommit, resultCommit.getCommitsProcessed(),
-										logRejuvenatingProcessor.getActualNumberOfCommits());
+									transformedLogInvocationSet.size(),
+									logRejuvenatingProcessor.getLogInvsNotLoweredInCatch().size(),
+									logRejuvenatingProcessor.getLogInvsNotTransformedInIf().size(),
+									this.isUseLogCategory(), this.isUseLogCategoryWithConfig(),
+									this.isNotLowerLogLevel(), resultsTimeCollector.getCollectedTime());
 
 						}
 					}
@@ -322,28 +349,28 @@ public class EvaluationHandler extends AbstractHandler {
 
 	private void printBoundaryLogCategory(long sequence, String subject, LinkedList<Float> boundary,
 			CSVPrinter doiPrinter) throws IOException {
-		doiPrinter.printRecord(sequence, subject, "[" + boundary.get(0) + ", " + boundary.get(1) + ")", Level.FINEST);
-		doiPrinter.printRecord(sequence, subject, "[" + boundary.get(1) + ", " + boundary.get(2) + ")", Level.FINER);
-		doiPrinter.printRecord(sequence, subject, "[" + boundary.get(2) + ", " + boundary.get(3) + ")", Level.FINE);
-		doiPrinter.printRecord(sequence, subject, "[" + boundary.get(3) + ", " + boundary.get(4) + ")", Level.INFO);
+		doiPrinter.printRecord(sequence, subject, boundary.get(0), boundary.get(1), Level.FINEST);
+		doiPrinter.printRecord(sequence, subject, boundary.get(1), boundary.get(2), Level.FINER);
+		doiPrinter.printRecord(sequence, subject, boundary.get(2), boundary.get(3), Level.FINE);
+		doiPrinter.printRecord(sequence, subject, boundary.get(3), boundary.get(4), Level.INFO);
 	}
 
 	private void printBoundaryWithConfig(long sequence, String subject, LinkedList<Float> boundary,
 			CSVPrinter doiPrinter) throws IOException {
 		this.printBoundaryLogCategory(sequence, subject, boundary, doiPrinter);
-		doiPrinter.printRecord(sequence, subject, "[" + boundary.get(4) + ", " + boundary.get(5) + ")", Level.WARNING);
-		doiPrinter.printRecord(sequence, subject, "[" + boundary.get(5) + ", " + boundary.get(6) + ")", Level.SEVERE);
+		doiPrinter.printRecord(sequence, subject, boundary.get(4), boundary.get(5), Level.WARNING);
+		doiPrinter.printRecord(sequence, subject, boundary.get(5), boundary.get(6), Level.SEVERE);
 	}
 
 	private void printBoundaryDefault(long sequence, String subject, LinkedList<Float> boundary, CSVPrinter doiPrinter)
 			throws IOException {
-		doiPrinter.printRecord(sequence, subject, "[" + boundary.get(0) + ", " + boundary.get(1) + ")", Level.FINEST);
-		doiPrinter.printRecord(sequence, subject, "[" + boundary.get(1) + ", " + boundary.get(2) + ")", Level.FINER);
-		doiPrinter.printRecord(sequence, subject, "[" + boundary.get(2) + ", " + boundary.get(3) + ")", Level.FINE);
-		doiPrinter.printRecord(sequence, subject, "[" + boundary.get(3) + ", " + boundary.get(4) + ")", Level.CONFIG);
-		doiPrinter.printRecord(sequence, subject, "[" + boundary.get(4) + ", " + boundary.get(5) + ")", Level.INFO);
-		doiPrinter.printRecord(sequence, subject, "[" + boundary.get(5) + ", " + boundary.get(6) + ")", Level.WARNING);
-		doiPrinter.printRecord(sequence, subject, "[" + boundary.get(6) + ", " + boundary.get(7) + ")", Level.SEVERE);
+		doiPrinter.printRecord(sequence, subject, boundary.get(0), boundary.get(1), Level.FINEST);
+		doiPrinter.printRecord(sequence, subject, boundary.get(1), boundary.get(2), Level.FINER);
+		doiPrinter.printRecord(sequence, subject, boundary.get(2), boundary.get(3), Level.FINE);
+		doiPrinter.printRecord(sequence, subject, boundary.get(3), boundary.get(4), Level.CONFIG);
+		doiPrinter.printRecord(sequence, subject, boundary.get(4), boundary.get(5), Level.INFO);
+		doiPrinter.printRecord(sequence, subject, boundary.get(5), boundary.get(6), Level.WARNING);
+		doiPrinter.printRecord(sequence, subject, boundary.get(6), boundary.get(7), Level.SEVERE);
 	}
 
 	@SuppressWarnings("unused")
