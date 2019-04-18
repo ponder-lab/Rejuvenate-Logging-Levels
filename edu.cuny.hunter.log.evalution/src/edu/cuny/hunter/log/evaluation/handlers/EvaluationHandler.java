@@ -428,12 +428,12 @@ public class EvaluationHandler extends AbstractHandler {
 	}
 
 	private boolean getValueOfCheckIfCondition() {
-		String notLowerLogLevelInCatchBlock = System.getenv(CHECK_IF_CONDITION_KEY);
+		String considerIfCondition = System.getenv(CHECK_IF_CONDITION_KEY);
 
-		if (notLowerLogLevelInCatchBlock == null)
+		if (considerIfCondition == null)
 			return CHECK_IF_CONDITION_DEFAULT;
 		else
-			return Boolean.valueOf(notLowerLogLevelInCatchBlock);
+			return Boolean.valueOf(considerIfCondition);
 	}
 
 	public boolean isUseLogCategory() {
