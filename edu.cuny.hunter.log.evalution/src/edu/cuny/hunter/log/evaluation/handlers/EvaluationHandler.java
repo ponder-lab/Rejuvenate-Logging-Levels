@@ -143,7 +143,7 @@ public class EvaluationHandler extends AbstractHandler {
 							LogRejuvenatingProcessor logRejuvenatingProcessor = new LogRejuvenatingProcessor(
 									new IJavaProject[] { project }, this.isUseLogCategory(),
 									this.isUseLogCategoryWithConfig(), this.getValueOfUseGitHistory(),
-									this.isNotLowerLogLevel(), this.checkIfCondtion, NToUseCommit, settings,
+									this.isNotLowerLogLevel(), this.isCheckIfCondition(), NToUseCommit, settings,
 									Optional.ofNullable(monitor), true);
 
 							RefactoringStatus status = new ProcessorBasedRefactoring(
