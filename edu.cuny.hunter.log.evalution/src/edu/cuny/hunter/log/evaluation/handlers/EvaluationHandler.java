@@ -94,12 +94,14 @@ public class EvaluationHandler extends AbstractHandler {
 
 				CodeGenerationSettings settings = JavaPreferencesSettings.getCodeGenerationSettings(javaProjects[0]);
 
-				resultPrinter = Util.createCSVPrinter("result.csv", new String[] { "sequence", "subject", "repo URL",
-						"input logging statements", "passing logging statements", "failures",
-						"transformed logging statements", "log level not lowered in a catch block",
-						"log level not transformed due to if condition", "use log category (SEVERE/WARNING/CONFIG)",
-						"use log category (CONFIG)", "not lower log levels of logs inside of catch blocks",
-						"consider if condition", "time (s)" });
+				resultPrinter = Util.createCSVPrinter("result.csv",
+						new String[] { "sequence", "subject", "repo URL", "input logging statements",
+								"candidate logging statements", "passing logging statements", "failures",
+								"transformed logging statements", "log level not lowered in a catch block",
+								"log level not transformed due to if condition",
+								"use log category (SEVERE/WARNING/CONFIG)", "use log category (CONFIG)",
+								"not lower log levels of logs inside of catch blocks", "time (s)" });
+				
 				repoPrinter = Util.createCSVPrinter("repos.csv",
 						new String[] { "sequence", "repo URL", "SHA-1 of head", "N for commits",
 								"number of commits processed", "actual number of commits", "average Java lines added",
@@ -275,8 +277,8 @@ public class EvaluationHandler extends AbstractHandler {
 
 							resultPrinter.printRecord(sequence, project.getElementName(),
 									logRejuvenatingProcessor.getRepoURL(), logInvocationSet.size(),
-									passingLogInvocationSet.size(), errorEntries.size(),
-									transformedLogInvocationSet.size(),
+									computeCandidateLogs(logInvocationSet), passingLogInvocationSet.size(),
+									errorEntries.size(), transformedLogInvocationSet.size(),
 									logRejuvenatingProcessor.getLogInvsNotLoweredInCatch().size(),
 									logRejuvenatingProcessor.getLogInvsNotTransformedInIf().size(),
 									this.isUseLogCategory(), this.isUseLogCategoryWithConfig(),
@@ -311,6 +313,32 @@ public class EvaluationHandler extends AbstractHandler {
 		}).schedule();
 
 		return null;
+	}
+
+	/**
+	 * @return Number of candidate logging statements.
+	 */
+	private int computeCandidateLogs(Set<LogInvocation> logInvocationSet) {
+
+		if (!this.isUseLogCategory() && !this.isUseLogCategoryWithConfig())
+			return logInvocationSet.size();
+
+		// number of candidate logging statements
+		int candidates = 0;
+
+		if (this.isUseLogCategory()) {
+			for (LogInvocation inv : logInvocationSet)
+				if (!inv.getLogLevel().equals(Level.CONFIG))
+					candidates++;
+		}
+
+		if (this.isUseLogCategoryWithConfig()) {
+			for (LogInvocation inv : logInvocationSet)
+				if (!(inv.getLogLevel().equals(Level.CONFIG) || inv.getLogLevel().equals(Level.WARNING)
+						|| inv.getLogLevel().equals(Level.SEVERE)))
+					candidates++;
+		}
+		return candidates;
 	}
 
 	/**
@@ -390,6 +418,8 @@ public class EvaluationHandler extends AbstractHandler {
 		this.setUseLogCategoryWithConfig(this.computeLogCategoryWithConfig(i));
 		this.setNotLowerLogLevel(this.computeLowerLogLevelInCatchBlock(i));
 		this.setCheckIfCondition(this.getValueOfCheckIfCondition());
+		if (this.isUseLogCategory() && this.isUseLogCategoryWithConfig())
+			throw new IllegalStateException("You cannot choose two log categories in the same time");
 	}
 
 	private boolean getValueOfUseLogCategory() {
