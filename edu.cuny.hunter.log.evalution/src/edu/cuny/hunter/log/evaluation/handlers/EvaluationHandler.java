@@ -94,14 +94,13 @@ public class EvaluationHandler extends AbstractHandler {
 
 				CodeGenerationSettings settings = JavaPreferencesSettings.getCodeGenerationSettings(javaProjects[0]);
 
-				resultPrinter = Util.createCSVPrinter("result.csv",
-						new String[] { "sequence", "subject", "repo URL", "input logging statements",
-								"candidate logging statements", "passing logging statements", "failures",
-								"transformed logging statements", "log level not lowered in a catch block",
-								"log level not transformed due to if condition",
-								"use log category (SEVERE/WARNING/CONFIG)", "use log category (CONFIG)",
-								"not lower log levels of logs inside of catch blocks", "time (s)" });
-				
+				resultPrinter = Util.createCSVPrinter("result.csv", new String[] { "sequence", "subject", "repo URL",
+						"input logging statements", "candidate logging statements", "passing logging statements",
+						"failures", "transformed logging statements", "log level not lowered in a catch block",
+						"log level not transformed due to if condition", "use log category (SEVERE/WARNING/CONFIG)",
+						"use log category (CONFIG)", "not lower log levels of logs inside of catch blocks",
+						"consider if condition", "time (s)" });
+
 				repoPrinter = Util.createCSVPrinter("repos.csv",
 						new String[] { "sequence", "repo URL", "SHA-1 of head", "N for commits",
 								"number of commits processed", "actual number of commits", "average Java lines added",
