@@ -94,13 +94,12 @@ public class EvaluationHandler extends AbstractHandler {
 
 				CodeGenerationSettings settings = JavaPreferencesSettings.getCodeGenerationSettings(javaProjects[0]);
 
-				resultPrinter = Util.createCSVPrinter("result.csv",
-						new String[] { "sequence", "subject", "repo URL", "input logging statements",
-								"passing logging statements", "failures", "transformed logging statements",
-								"log level not lowered in a catch block",
-								"log level not transformed due to if condition",
-								"use log category (SEVERE/WARNING/CONFIG)", "use log category (CONFIG)",
-								"not lower log levels of logs inside of catch blocks", "time (s)" });
+				resultPrinter = Util.createCSVPrinter("result.csv", new String[] { "sequence", "subject", "repo URL",
+						"input logging statements", "passing logging statements", "failures",
+						"transformed logging statements", "log level not lowered in a catch block",
+						"log level not transformed due to if condition", "use log category (SEVERE/WARNING/CONFIG)",
+						"use log category (CONFIG)", "not lower log levels of logs inside of catch blocks",
+						"consider if condition", "time (s)" });
 				repoPrinter = Util.createCSVPrinter("repos.csv",
 						new String[] { "sequence", "repo URL", "SHA-1 of head", "N for commits",
 								"number of commits processed", "actual number of commits", "average Java lines added",
@@ -128,10 +127,10 @@ public class EvaluationHandler extends AbstractHandler {
 					for (IJavaProject project : javaProjects) {
 						List<Integer> nsToUse = getNToUseForCommits(project, N_TO_USE_FOR_COMMITS_KEY,
 								N_TO_USE_FOR_COMMITS_DEFAULT, EVALUATION_PROPERTIES_FILE_NAME);
-						
+
 						if (nsToUse.size() > 1)
-							throw new IllegalStateException("Using more than one N value is currently unsupported: " +
-								nsToUse.size() + ".");
+							throw new IllegalStateException(
+									"Using more than one N value is currently unsupported: " + nsToUse.size() + ".");
 
 						for (int NToUseCommit : nsToUse) {
 
@@ -144,7 +143,7 @@ public class EvaluationHandler extends AbstractHandler {
 							LogRejuvenatingProcessor logRejuvenatingProcessor = new LogRejuvenatingProcessor(
 									new IJavaProject[] { project }, this.isUseLogCategory(),
 									this.isUseLogCategoryWithConfig(), this.getValueOfUseGitHistory(),
-									this.isNotLowerLogLevel(), this.checkIfCondtion, NToUseCommit, settings,
+									this.isNotLowerLogLevel(), this.isCheckIfCondition(), NToUseCommit, settings,
 									Optional.ofNullable(monitor), true);
 
 							RefactoringStatus status = new ProcessorBasedRefactoring(
@@ -162,7 +161,8 @@ public class EvaluationHandler extends AbstractHandler {
 							Set<LogInvocation> logInvocationSet = logRejuvenatingProcessor.getLogInvocationSet();
 
 							// Just print once.
-							// Using 1 here because both settings are enabled for this index.
+							// Using 1 here because both settings are enabled
+							// for this index.
 							if (i == 1)
 								// print input log invocations
 								for (LogInvocation logInvocation : logInvocationSet) {
@@ -179,8 +179,8 @@ public class EvaluationHandler extends AbstractHandler {
 											logInvocation.getDegreeOfInterestValue());
 								}
 
-							// get the difference of log invocations and passing log
-							// invocations
+							// get the difference of log invocations and passing
+							// log invocations
 							HashSet<LogInvocation> failures = new HashSet<LogInvocation>();
 							failures.addAll(logInvocationSet);
 							HashSet<LogInvocation> passingLogInvocationSet = logRejuvenatingProcessor
@@ -280,7 +280,8 @@ public class EvaluationHandler extends AbstractHandler {
 									logRejuvenatingProcessor.getLogInvsNotLoweredInCatch().size(),
 									logRejuvenatingProcessor.getLogInvsNotTransformedInIf().size(),
 									this.isUseLogCategory(), this.isUseLogCategoryWithConfig(),
-									this.isNotLowerLogLevel(), resultsTimeCollector.getCollectedTime());
+									this.isNotLowerLogLevel(), this.isCheckIfCondition(),
+									resultsTimeCollector.getCollectedTime());
 
 						}
 					}
@@ -428,12 +429,12 @@ public class EvaluationHandler extends AbstractHandler {
 	}
 
 	private boolean getValueOfCheckIfCondition() {
-		String notLowerLogLevelInCatchBlock = System.getenv(CHECK_IF_CONDITION_KEY);
+		String considerIfCondition = System.getenv(CHECK_IF_CONDITION_KEY);
 
-		if (notLowerLogLevelInCatchBlock == null)
+		if (considerIfCondition == null)
 			return CHECK_IF_CONDITION_DEFAULT;
 		else
-			return Boolean.valueOf(notLowerLogLevelInCatchBlock);
+			return Boolean.valueOf(considerIfCondition);
 	}
 
 	public boolean isUseLogCategory() {
@@ -462,5 +463,9 @@ public class EvaluationHandler extends AbstractHandler {
 
 	public void setCheckIfCondition(boolean checkIfCondition) {
 		this.checkIfCondtion = checkIfCondition;
+	}
+
+	public boolean isCheckIfCondition() {
+		return this.checkIfCondtion;
 	}
 }
