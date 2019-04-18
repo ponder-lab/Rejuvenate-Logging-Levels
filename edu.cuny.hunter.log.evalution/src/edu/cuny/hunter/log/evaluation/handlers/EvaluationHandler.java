@@ -279,7 +279,7 @@ public class EvaluationHandler extends AbstractHandler {
 									logRejuvenatingProcessor.getLogInvsNotLoweredInCatch().size(),
 									logRejuvenatingProcessor.getLogInvsNotTransformedInIf().size(),
 									this.isUseLogCategory(), this.isUseLogCategoryWithConfig(),
-									this.isNotLowerLogLevel(), this.getValueOfCheckIfCondition(),
+									this.isNotLowerLogLevel(), this.isCheckIfCondition(),
 									resultsTimeCollector.getCollectedTime());
 
 						}
@@ -462,5 +462,9 @@ public class EvaluationHandler extends AbstractHandler {
 
 	public void setCheckIfCondition(boolean checkIfCondition) {
 		this.checkIfCondtion = checkIfCondition;
+	}
+
+	public boolean isCheckIfCondition() {
+		return this.checkIfCondtion;
 	}
 }
