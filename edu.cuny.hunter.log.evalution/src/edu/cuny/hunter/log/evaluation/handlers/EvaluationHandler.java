@@ -334,13 +334,13 @@ public class EvaluationHandler extends AbstractHandler {
 		if (!this.isUseLogCategory() && !this.isUseLogCategoryWithConfig())
 			candidates.addAll(logInvocationSet);
 
-		if (this.isUseLogCategory()) {
+		if (this.isUseLogCategoryWithConfig()) {
 			for (LogInvocation inv : logInvocationSet)
 				if (!inv.getLogLevel().equals(Level.CONFIG))
 					candidates.add(inv);
 		}
 
-		if (this.isUseLogCategoryWithConfig()) {
+		if (this.isUseLogCategory()) {
 			for (LogInvocation inv : logInvocationSet)
 				if (!(inv.getLogLevel().equals(Level.CONFIG) || inv.getLogLevel().equals(Level.WARNING)
 						|| inv.getLogLevel().equals(Level.SEVERE)))
