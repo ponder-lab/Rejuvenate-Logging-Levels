@@ -161,7 +161,8 @@ public class EvaluationHandler extends AbstractHandler {
 							Set<LogInvocation> logInvocationSet = logRejuvenatingProcessor.getLogInvocationSet();
 
 							// Just print once.
-							// Using 1 here because both settings are enabled for this index.
+							// Using 1 here because both settings are enabled
+							// for this index.
 							if (i == 1)
 								// print input log invocations
 								for (LogInvocation logInvocation : logInvocationSet) {
@@ -178,8 +179,8 @@ public class EvaluationHandler extends AbstractHandler {
 											logInvocation.getDegreeOfInterestValue());
 								}
 
-							// get the difference of log invocations and passing log
-							// invocations
+							// get the difference of log invocations and passing
+							// log invocations
 							HashSet<LogInvocation> failures = new HashSet<LogInvocation>();
 							failures.addAll(logInvocationSet);
 							HashSet<LogInvocation> passingLogInvocationSet = logRejuvenatingProcessor
