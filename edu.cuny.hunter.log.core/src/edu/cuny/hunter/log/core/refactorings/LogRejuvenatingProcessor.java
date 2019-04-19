@@ -331,18 +331,6 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 		return transformedSet;
 	}
 
-	/**
-	 * Get passing log invocations.
-	 */
-	public HashSet<LogInvocation> getPassingLogInvocation() {
-		HashSet<LogInvocation> passingLogInvocations = new HashSet<>();
-		this.logInvocationSet.forEach(inv -> {
-			if (inv.getAction() != null)
-				passingLogInvocations.add(inv);
-		});
-		return passingLogInvocations;
-	}
-
 	private IJavaProject[] getJavaProjects() {
 		return this.javaProjects;
 	}

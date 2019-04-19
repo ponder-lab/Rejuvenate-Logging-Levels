@@ -183,12 +183,19 @@ public class EvaluationHandler extends AbstractHandler {
 											logInvocation.getDegreeOfInterestValue());
 								}
 
+							Set<LogInvocation> candidates = computeCandidateLogs(logInvocationSet);
+
+							for (LogInvocation logInvocation : candidates)
+								candidatePrinter.printRecord(sequence, logInvocation.getExpression(),
+										logInvocation.getStartPosition(), logInvocation.getLogLevel(),
+										logInvocation.getEnclosingType().getFullyQualifiedName(),
+										Util.getMethodIdentifier(logInvocation.getEnclosingEclipseMethod()));
+
 							// get the difference of log invocations and passing
 							// log invocations
 							HashSet<LogInvocation> failures = new HashSet<LogInvocation>();
-							failures.addAll(logInvocationSet);
-							HashSet<LogInvocation> passingLogInvocationSet = logRejuvenatingProcessor
-									.getPassingLogInvocation();
+							failures.addAll(candidates);
+							HashSet<LogInvocation> passingLogInvocationSet = this.getPassingLogInvocation(candidates);
 							failures.removeAll(passingLogInvocationSet);
 
 							// failures.
@@ -277,7 +284,6 @@ public class EvaluationHandler extends AbstractHandler {
 
 							}
 
-							Set<LogInvocation> candidates = computeCandidateLogs(logInvocationSet);
 							resultPrinter.printRecord(sequence, project.getElementName(),
 									logRejuvenatingProcessor.getRepoURL(), logInvocationSet.size(), candidates.size(),
 									passingLogInvocationSet.size(), errorEntries.size(),
@@ -288,12 +294,6 @@ public class EvaluationHandler extends AbstractHandler {
 									this.isNotLowerLogLevel(), this.isCheckIfCondition(),
 									resultsTimeCollector.getCollectedTime());
 
-							for (LogInvocation logInvocation : candidates) {
-								candidatePrinter.printRecord(sequence, logInvocation.getExpression(),
-										logInvocation.getStartPosition(), logInvocation.getLogLevel(),
-										logInvocation.getEnclosingType().getFullyQualifiedName(),
-										Util.getMethodIdentifier(logInvocation.getEnclosingEclipseMethod()));
-							}
 						}
 					}
 					// Clear intermediate data for mylyn-git plug-in.
@@ -323,6 +323,18 @@ public class EvaluationHandler extends AbstractHandler {
 		}).schedule();
 
 		return null;
+	}
+
+	/**
+	 * Get passing log invocations.
+	 */
+	public HashSet<LogInvocation> getPassingLogInvocation(Set<LogInvocation> candidates) {
+		HashSet<LogInvocation> passingLogInvocations = new HashSet<>();
+		candidates.forEach(inv -> {
+			if (inv.getAction() != null)
+				passingLogInvocations.add(inv);
+		});
+		return passingLogInvocations;
 	}
 
 	/**
