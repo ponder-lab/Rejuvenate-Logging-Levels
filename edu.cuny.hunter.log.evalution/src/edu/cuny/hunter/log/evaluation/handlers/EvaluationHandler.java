@@ -84,6 +84,7 @@ public class EvaluationHandler extends AbstractHandler {
 			CSVPrinter failurePrinter = null;
 			CSVPrinter doiPrinter = null;
 			CSVPrinter gitCommitPrinter = null;
+			CSVPrinter candidatePrinter = null;
 
 			try {
 				IJavaProject[] javaProjects = Util.getSelectedJavaProjectsFromEvent(event);
@@ -120,6 +121,8 @@ public class EvaluationHandler extends AbstractHandler {
 				gitCommitPrinter = Util.createCSVPrinter("git_commits.csv",
 						new String[] { "subject", "SHA1", "Java lines added", "Java lines removed", "methods found",
 								"interaction events", "run time (s)" });
+				candidatePrinter = Util.createCSVPrinter("candidate_log_invocations.csv", new String[] { "sequence",
+						"subject", "log expression", "start pos", "log level", "type FQN", "enclosing method" });
 
 				// we are using 6 settings
 				for (int i = 0; i < 6; ++i) {
@@ -274,16 +277,23 @@ public class EvaluationHandler extends AbstractHandler {
 
 							}
 
+							Set<LogInvocation> candidates = computeCandidateLogs(logInvocationSet);
 							resultPrinter.printRecord(sequence, project.getElementName(),
-									logRejuvenatingProcessor.getRepoURL(), logInvocationSet.size(),
-									computeCandidateLogs(logInvocationSet), passingLogInvocationSet.size(),
-									errorEntries.size(), transformedLogInvocationSet.size(),
+									logRejuvenatingProcessor.getRepoURL(), logInvocationSet.size(), candidates.size(),
+									passingLogInvocationSet.size(), errorEntries.size(),
+									transformedLogInvocationSet.size(),
 									logRejuvenatingProcessor.getLogInvsNotLoweredInCatch().size(),
 									logRejuvenatingProcessor.getLogInvsNotTransformedInIf().size(),
 									this.isUseLogCategory(), this.isUseLogCategoryWithConfig(),
 									this.isNotLowerLogLevel(), this.isCheckIfCondition(),
 									resultsTimeCollector.getCollectedTime());
 
+							for (LogInvocation logInvocation : candidates) {
+								candidatePrinter.printRecord(sequence, logInvocation.getExpression(),
+										logInvocation.getStartPosition(), logInvocation.getLogLevel(),
+										logInvocation.getEnclosingType().getFullyQualifiedName(),
+										Util.getMethodIdentifier(logInvocation.getEnclosingEclipseMethod()));
+							}
 						}
 					}
 					// Clear intermediate data for mylyn-git plug-in.
@@ -301,6 +311,7 @@ public class EvaluationHandler extends AbstractHandler {
 					failurePrinter.close();
 					doiPrinter.close();
 					gitCommitPrinter.close();
+					candidatePrinter.close();
 				} catch (IOException e) {
 					return new Status(IStatus.ERROR, FrameworkUtil.getBundle(this.getClass()).getSymbolicName(),
 							"Encountered exception during file closing", e);
@@ -317,25 +328,23 @@ public class EvaluationHandler extends AbstractHandler {
 	/**
 	 * @return Number of candidate logging statements.
 	 */
-	private int computeCandidateLogs(Set<LogInvocation> logInvocationSet) {
-
+	private Set<LogInvocation> computeCandidateLogs(Set<LogInvocation> logInvocationSet) {
+		// Set of candidate log invocations.
+		Set<LogInvocation> candidates = new HashSet<LogInvocation>();
 		if (!this.isUseLogCategory() && !this.isUseLogCategoryWithConfig())
-			return logInvocationSet.size();
-
-		// number of candidate logging statements
-		int candidates = 0;
+			candidates.addAll(logInvocationSet);
 
 		if (this.isUseLogCategory()) {
 			for (LogInvocation inv : logInvocationSet)
 				if (!inv.getLogLevel().equals(Level.CONFIG))
-					candidates++;
+					candidates.add(inv);
 		}
 
 		if (this.isUseLogCategoryWithConfig()) {
 			for (LogInvocation inv : logInvocationSet)
 				if (!(inv.getLogLevel().equals(Level.CONFIG) || inv.getLogLevel().equals(Level.WARNING)
 						|| inv.getLogLevel().equals(Level.SEVERE)))
-					candidates++;
+					candidates.add(inv);
 		}
 		return candidates;
 	}
