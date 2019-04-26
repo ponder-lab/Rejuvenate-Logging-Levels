@@ -377,7 +377,7 @@ public class LogAnalyzer extends ASTVisitor {
 	private boolean checkIfConditionHavingLevel(ASTNode node) {
 		while (node != null) {
 			if (node instanceof IfStatement) {
-				String condition = ((IfStatement) node).getExpression().toString();
+				String condition = ((IfStatement) node).getExpression().toString().toUpperCase();
 				if (condition.contains("CONFIG") || condition.contains("FINE") || condition.contains("FINER")
 						|| condition.contains("FINEST") || condition.contains("SEVERE") || condition.contains("WARN")
 						|| condition.contains("INFO") || condition.contains("FATAL") || condition.contains("ERROR")
