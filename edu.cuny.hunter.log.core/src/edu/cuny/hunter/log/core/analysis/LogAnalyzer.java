@@ -133,6 +133,13 @@ public class LogAnalyzer extends ASTVisitor {
 		if (currentLogLevel == null)
 			return false;
 
+		// DOI not in intervals
+		if (logInvocation.getDegreeOfInterestValue() < this.boundary.get(0)
+				|| logInvocation.getDegreeOfInterestValue() > this.boundary.get(this.boundary.size() - 1)) {
+			logInvocation.setAction(Action.NONE, null);
+			return false;
+		}
+
 		/**
 		 * Do not change a log level in a logging statement if there exists an
 		 * immediate if statement whose condition contains a log level.
@@ -145,17 +152,17 @@ public class LogAnalyzer extends ASTVisitor {
 			}
 		}
 
-		// DOI not in intervals
-		if (logInvocation.getDegreeOfInterestValue() < this.boundary.get(0)
-				|| logInvocation.getDegreeOfInterestValue() > this.boundary.get(this.boundary.size() - 1)) {
-			logInvocation.setAction(Action.NONE, null);
-			return false;
-		}
-
 		Level rejuvenatedLogLevel = getRejuvenatedLogLevel(this.boundary, logInvocation);
 
 		if (rejuvenatedLogLevel == null)
 			return false;
+
+		// process not lower log levels in catch blocks
+		if (logInvocation.getInCatchBlock() && (currentLogLevel.intValue() > rejuvenatedLogLevel.intValue())) {
+			this.logInvsNotLoweredInCatch.add(logInvocation);
+			logInvocation.setAction(Action.NONE, null);
+			return false;
+		}
 
 		if (this.notLowerLogLevelInIfStatement)
 			// process not lower log levels in if statements.
@@ -165,13 +172,6 @@ public class LogAnalyzer extends ASTVisitor {
 				logInvocation.setAction(Action.NONE, null);
 				return false;
 			}
-
-		// process not lower log levels in catch blocks
-		if (logInvocation.getInCatchBlock() && (currentLogLevel.intValue() > rejuvenatedLogLevel.intValue())) {
-			this.logInvsNotLoweredInCatch.add(logInvocation);
-			logInvocation.setAction(Action.NONE, null);
-			return false;
-		}
 
 		if ((currentLogLevel == rejuvenatedLogLevel) // current log level is
 														// same to transformed
