@@ -397,13 +397,13 @@ public class LogAnalyzer extends ASTVisitor {
          * and false otherwise.
 	 */
 	private boolean checkIfBlock(ASTNode loggingExpression) {
-        ASTNode loggingStatement = loggingExpression.getParent();
-        ASTNode parent = loggingStatement.getParent();
+            ASTNode loggingStatement = loggingExpression.getParent();
+            ASTNode parent = loggingStatement.getParent();
 
-        if (parent instanceof Block)
-            parent = parent.getParent();
+            if (parent instanceof Block)
+                parent = parent.getParent();
 
-        return parent instanceof IfStatement;
+            return parent instanceof IfStatement;
 	}
 
 	/**
