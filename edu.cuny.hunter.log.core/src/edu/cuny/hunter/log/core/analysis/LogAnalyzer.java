@@ -375,7 +375,6 @@ public class LogAnalyzer extends ASTVisitor {
 	 * Check if condition mentions log levels.
 	 */
 	private Boolean checkIfConditionHavingLevel(ASTNode node) {
-		boolean visitBlock = false;
 		while (node != null) {
 			if (node instanceof IfStatement) {
 				String condition = ((IfStatement) node).getExpression().toString();
@@ -385,12 +384,9 @@ public class LogAnalyzer extends ASTVisitor {
 						|| condition.contains("DEBUG") || condition.contains("TRACE")) {
 					LOGGER.info("We meet a logging wrapping: \n" + node);
 					return true;
-				}
-			} else if (visitBlock)
-				return false;
-
-			if (node instanceof Block)
-				visitBlock = true;
+				} else
+                    return false;
+			}
 			node = node.getParent();
 		}
 		return false;
