@@ -385,7 +385,7 @@ public class LogAnalyzer extends ASTVisitor {
 					LOGGER.info("We meet a logging wrapping: \n" + node);
 					return true;
 				} else
-                    return false;
+                                    return false;
 			}
 			node = node.getParent();
 		}
@@ -394,7 +394,7 @@ public class LogAnalyzer extends ASTVisitor {
 
 	/**
 	 * Returns true if the given logging expression is immediately contained within an if statement
-     * and false otherwise.
+         * and false otherwise.
 	 */
 	private boolean checkIfBlock(ASTNode loggingExpression) {
         ASTNode loggingStatement = loggingExpression.getParent();
