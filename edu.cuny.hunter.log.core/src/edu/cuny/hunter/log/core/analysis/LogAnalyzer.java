@@ -34,7 +34,8 @@ public class LogAnalyzer extends ASTVisitor {
 	private HashSet<LogInvocation> logInvsNotTransformedInIf = new HashSet<LogInvocation>();
 
 	/**
-	 * Set of log invocations that their log levels are not lower in catch blocks
+	 * Set of log invocations that their log levels are not lower in catch
+	 * blocks
 	 */
 	private HashSet<LogInvocation> logInvsNotLoweredInCatch = new HashSet<LogInvocation>();
 
@@ -133,8 +134,8 @@ public class LogAnalyzer extends ASTVisitor {
 			return false;
 
 		/**
-		 * Do not change a log level in a logging statement if there exists an immediate
-		 * if statement whose condition contains a log level.
+		 * Do not change a log level in a logging statement if there exists an
+		 * immediate if statement whose condition contains a log level.
 		 */
 		if (this.checkIfCondition) {
 			if (this.checkIfConditionHavingLevel(logInvocation.getExpression())) {
@@ -157,17 +158,16 @@ public class LogAnalyzer extends ASTVisitor {
 			return false;
 
 		if (this.notLowerLogLevelInIfStatement)
-			if (this.checkIfBlock(logInvocation.getExpression())// process not lower log levels in
-																// if statements
+			// process not lower log levels in if statements.
+			if (this.checkIfBlock(logInvocation.getExpression())
 					&& (currentLogLevel.intValue() > rejuvenatedLogLevel.intValue())) {
 				this.logInvsNotLoweredInIfStatement.add(logInvocation);
 				logInvocation.setAction(Action.NONE, null);
 				return false;
 			}
 
-		if (logInvocation.getInCatchBlock() // process not lower log levels in
-											// catch blocks
-				&& (currentLogLevel.intValue() > rejuvenatedLogLevel.intValue())) {
+		// process not lower log levels in catch blocks
+		if (logInvocation.getInCatchBlock() && (currentLogLevel.intValue() > rejuvenatedLogLevel.intValue())) {
 			this.logInvsNotLoweredInCatch.add(logInvocation);
 			logInvocation.setAction(Action.NONE, null);
 			return false;
@@ -272,8 +272,8 @@ public class LogAnalyzer extends ASTVisitor {
 	}
 
 	/**
-	 * Build a list of boundary. The DOI values could be divided into 7 groups by
-	 * this boundary. 7 groups are corresponding to 7 logging levels
+	 * Build a list of boundary. The DOI values could be divided into 7 groups
+	 * by this boundary. 7 groups are corresponding to 7 logging levels
 	 * 
 	 * @param degreeOfInterests
 	 * @return a list of boundary
@@ -392,17 +392,17 @@ public class LogAnalyzer extends ASTVisitor {
 	}
 
 	/**
-	 * Returns true if the given logging expression is immediately contained within an if statement
-         * and false otherwise.
+	 * Returns true if the given logging expression is immediately contained
+	 * within an if statement and false otherwise.
 	 */
 	private boolean checkIfBlock(ASTNode loggingExpression) {
-            ASTNode loggingStatement = loggingExpression.getParent();
-            ASTNode parent = loggingStatement.getParent();
+		ASTNode loggingStatement = loggingExpression.getParent();
+		ASTNode parent = loggingStatement.getParent();
 
-            if (parent instanceof Block)
-                parent = parent.getParent();
+		if (parent instanceof Block)
+			parent = parent.getParent();
 
-            return parent instanceof IfStatement;
+		return parent instanceof IfStatement;
 	}
 
 	/**
