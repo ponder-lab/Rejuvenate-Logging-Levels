@@ -384,8 +384,7 @@ public class LogAnalyzer extends ASTVisitor {
 						|| condition.contains("DEBUG") || condition.contains("TRACE")) {
 					LOGGER.info("We meet a logging wrapping: \n" + node);
 					return true;
-				} else
-                                    return false;
+				} 
 			}
 			node = node.getParent();
 		}
