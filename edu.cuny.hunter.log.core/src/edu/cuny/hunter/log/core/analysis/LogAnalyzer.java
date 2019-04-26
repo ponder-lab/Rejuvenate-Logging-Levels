@@ -374,7 +374,7 @@ public class LogAnalyzer extends ASTVisitor {
 	/**
 	 * Check if condition mentions log levels.
 	 */
-	private Boolean checkIfConditionHavingLevel(ASTNode node) {
+	private boolean checkIfConditionHavingLevel(ASTNode node) {
 		while (node != null) {
 			if (node instanceof IfStatement) {
 				String condition = ((IfStatement) node).getExpression().toString();
@@ -395,7 +395,7 @@ public class LogAnalyzer extends ASTVisitor {
 	/**
 	 * Check immediate if statement
 	 */
-	private Boolean checkIfBlock(ASTNode node) {
+	private boolean checkIfBlock(ASTNode node) {
 		boolean visitBlock = false;
 		while (node != null) {
 
