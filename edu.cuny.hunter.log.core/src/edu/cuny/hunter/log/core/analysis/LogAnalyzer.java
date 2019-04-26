@@ -19,6 +19,7 @@ import org.eclipse.jdt.core.dom.IMethodBinding;
 import org.eclipse.jdt.core.dom.IfStatement;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.MethodInvocation;
+import org.eclipse.jdt.core.dom.Statement;
 import org.eclipse.mylyn.context.core.IDegreeOfInterest;
 import edu.cuny.hunter.log.core.messages.Messages;
 import edu.cuny.hunter.log.core.utils.LoggerNames;
@@ -145,7 +146,7 @@ public class LogAnalyzer extends ASTVisitor {
 		 * immediate if statement whose condition contains a log level.
 		 */
 		if (this.checkIfCondition) {
-			if (this.checkIfConditionHavingLevel(logInvocation.getExpression())) {
+			if (checkIfConditionHavingLevel(logInvocation.getExpression())) {
 				logInvocation.setAction(Action.NONE, null);
 				this.logInvsNotTransformedInIf.add(logInvocation);
 				return false;
@@ -166,7 +167,7 @@ public class LogAnalyzer extends ASTVisitor {
 
 		if (this.notLowerLogLevelInIfStatement)
 			// process not lower log levels in if statements.
-			if (this.checkIfBlock(logInvocation.getExpression())
+			if (checkIfBlock(logInvocation.getExpression())
 					&& (currentLogLevel.intValue() > rejuvenatedLogLevel.intValue())) {
 				this.logInvsNotLoweredInIfStatement.add(logInvocation);
 				logInvocation.setAction(Action.NONE, null);
@@ -374,7 +375,7 @@ public class LogAnalyzer extends ASTVisitor {
 	/**
 	 * Check if condition mentions log levels.
 	 */
-	private boolean checkIfConditionHavingLevel(ASTNode node) {
+	private static boolean checkIfConditionHavingLevel(ASTNode node) {
 		while (node != null) {
 			if (node instanceof IfStatement) {
 				String condition = ((IfStatement) node).getExpression().toString().toUpperCase();
@@ -395,14 +396,35 @@ public class LogAnalyzer extends ASTVisitor {
 	 * Returns true if the given logging expression is immediately contained
 	 * within an if statement and false otherwise.
 	 */
-	private boolean checkIfBlock(ASTNode loggingExpression) {
+	private static boolean checkIfBlock(MethodInvocation loggingExpression) {
 		ASTNode loggingStatement = loggingExpression.getParent();
 		ASTNode parent = loggingStatement.getParent();
 
 		if (parent instanceof Block)
 			parent = parent.getParent();
 
-		return parent instanceof IfStatement;
+		if (parent instanceof IfStatement) {
+			IfStatement ifStatement = (IfStatement) parent;
+			Statement elseStatement = ifStatement.getElseStatement();
+
+			// does the else statement contain the logging expression?
+			return !contains(elseStatement, loggingExpression);
+		} else
+			return false;
+	}
+
+	private static boolean contains(Statement elseStatement, MethodInvocation loggingExpression) {
+		if (elseStatement == null || loggingExpression == null)
+			return false;
+		else {
+			int elseStart = elseStatement.getStartPosition();
+			int elseEnd = elseStart + elseStatement.getLength();
+
+			int loggingExpressionStart = loggingExpression.getStartPosition();
+			int loggingExpressionEnd = loggingExpressionStart + loggingExpression.getLength();
+
+			return elseStart <= loggingExpressionStart && elseEnd >= loggingExpressionEnd;
+		}
 	}
 
 	/**
