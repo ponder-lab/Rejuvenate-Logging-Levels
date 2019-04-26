@@ -491,4 +491,8 @@ public class LogAnalyzer extends ASTVisitor {
 		return this.logInvsNotLoweredInCatch;
 	}
 
+	public HashSet<LogInvocation> getLogInvsNotLoweredInIfStatement() {
+		return this.logInvsNotLoweredInIfStatement;
+	}
+
 }
