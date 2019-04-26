@@ -393,23 +393,17 @@ public class LogAnalyzer extends ASTVisitor {
 	}
 
 	/**
-	 * Check immediate if statement
+	 * Returns true if the given logging expression is immediately contained within an if statement
+     * and false otherwise.
 	 */
-	private boolean checkIfBlock(ASTNode node) {
-		boolean visitBlock = false;
-		while (node != null) {
+	private boolean checkIfBlock(ASTNode loggingExpression) {
+        ASTNode loggingStatement = loggingExpression.getParent();
+        ASTNode parent = loggingStatement.getParent();
 
-			if (node instanceof IfStatement) {
-				return true;
-			} else if (visitBlock)
-				return false;
+        if (parent instanceof Block)
+            parent = parent.getParent();
 
-			if (node instanceof Block)
-				visitBlock = true;
-
-			node = node.getParent();
-		}
-		return false;
+        return parent instanceof IfStatement;
 	}
 
 	/**
