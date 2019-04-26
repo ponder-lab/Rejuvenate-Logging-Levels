@@ -52,6 +52,8 @@ public class LogWizard extends RefactoringWizard {
 
 		private static final String NOT_LOWER_LOG_LEVEL_CATCH_BLOCK = "notLowerLogLevelInCatchBlock";
 
+		private static final String NOT_LOWER_LOG_LEVEL_IF_STATEMENT = "notLowerLogLevelInIfStatement";
+
 		private static final String CHECK_IF_CONDITION = "checkIfCondition";
 
 		private LogRejuvenatingProcessor processor;
@@ -133,9 +135,16 @@ public class LogWizard extends RefactoringWizard {
 
 			// set up buttons.
 			Button checkButton3 = this.addBooleanButton(
+					"Never lower the logging level of logging statements inside if statements.",
+					NOT_LOWER_LOG_LEVEL_IF_STATEMENT, this.getProcessor()::setNotLowerLogLevelInIfStatement, result,
+					SWT.CHECK);
+			checkButton3.setSelection(true);
+
+			// set up buttons.
+			Button checkButton4 = this.addBooleanButton(
 					"Do not change a log level if its if statement condition contains a log level.", CHECK_IF_CONDITION,
 					this.getProcessor()::setCheckIfCondition, result, SWT.CHECK);
-			checkButton3.setSelection(true);
+			checkButton4.setSelection(true);
 
 			Label separator3 = new Label(result, SWT.SEPARATOR | SWT.SHADOW_OUT | SWT.HORIZONTAL);
 			separator3.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
@@ -193,6 +202,8 @@ public class LogWizard extends RefactoringWizard {
 				this.settings.put(NOT_LOWER_LOG_LEVEL_CATCH_BLOCK,
 						this.getProcessor().getNotLowerLogLevelInCatchBlock());
 				this.settings.put(CHECK_IF_CONDITION, this.getProcessor().isCheckIfCondition());
+				this.settings.put(NOT_LOWER_LOG_LEVEL_IF_STATEMENT,
+						this.getProcessor().isNotLowerLogLevelInIfStatement());
 			}
 			this.processor.setParticularConfigLogLevel(this.settings.getBoolean(USE_LOG_CATEGORY_CONFIG));
 			this.processor.setParticularLogLevel(this.settings.getBoolean(USE_LOG_CATEGORY));
@@ -200,6 +211,7 @@ public class LogWizard extends RefactoringWizard {
 			this.processor.setNToUseForCommits(this.settings.getInt(N_TO_USE_FOR_COMMITS));
 			this.processor.setNotLowerLogLevelInCatchBlock(this.settings.getBoolean(NOT_LOWER_LOG_LEVEL_CATCH_BLOCK));
 			this.processor.setCheckIfCondition(this.settings.getBoolean(CHECK_IF_CONDITION));
+			this.processor.setNotLowerLogLevelInIfStatement(this.settings.getBoolean(NOT_LOWER_LOG_LEVEL_IF_STATEMENT));
 		}
 
 		private void setProcessor(LogRejuvenatingProcessor processor) {

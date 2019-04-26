@@ -87,6 +87,11 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 	private boolean notLowerLogLevelInCatchBlock = true;
 
 	/**
+	 * We should not lower log level in immediate if statement.
+	 */
+	private boolean notLowerLogLevelInIfStatement = true;
+
+	/**
 	 * Limit number of commits
 	 */
 	private int NToUseForCommits = 100;
@@ -211,7 +216,7 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 		for (IJavaProject jproj : this.getJavaProjects()) {
 
 			LogAnalyzer analyzer = new LogAnalyzer(this.useLogCategoryWithConfig, this.useLogCategory,
-					this.notLowerLogLevelInCatchBlock, this.checkIfCondition);
+					this.notLowerLogLevelInCatchBlock, this.checkIfCondition, this.notLowerLogLevelInIfStatement);
 
 			// If we are using the git history.
 			if (this.useGitHistory) {
@@ -490,6 +495,14 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 
 	public void setActualNumberOfCommits(int actualNumberOfCommits) {
 		this.actualNumberOfCommits = actualNumberOfCommits;
+	}
+
+	public boolean isNotLowerLogLevelInIfStatement() {
+		return notLowerLogLevelInIfStatement;
+	}
+
+	public void setNotLowerLogLevelInIfStatement(boolean notLowerLogLevelInIfStatement) {
+		this.notLowerLogLevelInIfStatement = notLowerLogLevelInIfStatement;
 	}
 
 }

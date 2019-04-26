@@ -12,6 +12,7 @@ import org.eclipse.jdt.core.IMethod;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.ASTVisitor;
+import org.eclipse.jdt.core.dom.Block;
 import org.eclipse.jdt.core.dom.CatchClause;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.IMethodBinding;
@@ -37,9 +38,13 @@ public class LogAnalyzer extends ASTVisitor {
 	 */
 	private HashSet<LogInvocation> logInvsNotLoweredInCatch = new HashSet<LogInvocation>();
 
+	private HashSet<LogInvocation> logInvsNotLoweredInIfStatement = new HashSet<LogInvocation>();
+
 	private HashSet<MethodDeclaration> methodDeclarations = new HashSet<>();
 
 	private Set<LogInvocation> logInvocationSet = new HashSet<>();
+
+	private boolean notLowerLogLevelInIfStatement = false;
 
 	private boolean notLowerLogLevelInCatchBlock = false;
 
@@ -64,10 +69,11 @@ public class LogAnalyzer extends ASTVisitor {
 	}
 
 	public LogAnalyzer(boolean useConfigLogLevelCategory, boolean useLogLevelCategory,
-			boolean notLowerLogLevelInCatchBlock, boolean checkIfCondition) {
+			boolean notLowerLogLevelInCatchBlock, boolean checkIfCondition, boolean notLowerLogLevelInIfStatement) {
 		this.useLogCategoryWithConfig = useConfigLogLevelCategory;
 		this.useLogCategory = useLogLevelCategory;
 		this.notLowerLogLevelInCatchBlock = notLowerLogLevelInCatchBlock;
+		this.notLowerLogLevelInIfStatement = notLowerLogLevelInIfStatement;
 		this.checkIfCondition = checkIfCondition;
 	}
 
@@ -131,7 +137,7 @@ public class LogAnalyzer extends ASTVisitor {
 		 * if statement whose condition contains a log level.
 		 */
 		if (this.checkIfCondition) {
-			if (this.checkIfBlock(logInvocation.getExpression())) {
+			if (this.checkIfConditionHavingLevel(logInvocation.getExpression())) {
 				logInvocation.setAction(Action.NONE, null);
 				this.logInvsNotTransformedInIf.add(logInvocation);
 				return false;
@@ -149,6 +155,15 @@ public class LogAnalyzer extends ASTVisitor {
 
 		if (rejuvenatedLogLevel == null)
 			return false;
+
+		if (this.notLowerLogLevelInIfStatement)
+			if (this.checkIfBlock(logInvocation.getExpression())// process not lower log levels in
+																// if statements
+					&& (currentLogLevel.intValue() > rejuvenatedLogLevel.intValue())) {
+				this.logInvsNotLoweredInIfStatement.add(logInvocation);
+				logInvocation.setAction(Action.NONE, null);
+				return false;
+			}
 
 		if (logInvocation.getInCatchBlock() // process not lower log levels in
 											// catch blocks
@@ -359,7 +374,8 @@ public class LogAnalyzer extends ASTVisitor {
 	/**
 	 * Check if condition mentions log levels.
 	 */
-	private Boolean checkIfBlock(ASTNode node) {
+	private Boolean checkIfConditionHavingLevel(ASTNode node) {
+		boolean visitBlock = false;
 		while (node != null) {
 			if (node instanceof IfStatement) {
 				String condition = ((IfStatement) node).getExpression().toString();
@@ -370,7 +386,31 @@ public class LogAnalyzer extends ASTVisitor {
 					LOGGER.info("We meet a logging wrapping: \n" + node);
 					return true;
 				}
-			}
+			} else if (visitBlock)
+				return false;
+
+			if (node instanceof Block)
+				visitBlock = true;
+			node = node.getParent();
+		}
+		return false;
+	}
+
+	/**
+	 * Check immediate if statement
+	 */
+	private Boolean checkIfBlock(ASTNode node) {
+		boolean visitBlock = false;
+		while (node != null) {
+
+			if (node instanceof IfStatement) {
+				return true;
+			} else if (visitBlock)
+				return false;
+
+			if (node instanceof Block)
+				visitBlock = true;
+
 			node = node.getParent();
 		}
 		return false;
