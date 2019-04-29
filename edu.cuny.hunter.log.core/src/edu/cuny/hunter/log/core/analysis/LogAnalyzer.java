@@ -394,7 +394,8 @@ public class LogAnalyzer extends ASTVisitor {
 
 	/**
 	 * Returns true if the given logging expression is immediately contained
-	 * within an if statement and false otherwise.
+	 * within an if statement not having an else clause (i.e., guarded) and
+	 * false otherwise.
 	 */
 	private static boolean checkIfBlock(MethodInvocation loggingExpression) {
 		ASTNode loggingStatement = loggingExpression.getParent();
@@ -406,13 +407,13 @@ public class LogAnalyzer extends ASTVisitor {
 		if (parent instanceof IfStatement) {
 			IfStatement ifStatement = (IfStatement) parent;
 			Statement elseStatement = ifStatement.getElseStatement();
+			return elseStatement == null;
 
-			// does the else statement contain the logging expression?
-			return !contains(elseStatement, loggingExpression);
 		} else
 			return false;
 	}
 
+	@SuppressWarnings("unused")
 	private static boolean contains(Statement elseStatement, MethodInvocation loggingExpression) {
 		if (elseStatement == null || loggingExpression == null)
 			return false;
