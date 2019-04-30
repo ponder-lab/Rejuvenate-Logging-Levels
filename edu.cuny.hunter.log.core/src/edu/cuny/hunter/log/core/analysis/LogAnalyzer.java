@@ -159,7 +159,7 @@ public class LogAnalyzer extends ASTVisitor {
 			return false;
 
 		// process not lower log levels in catch blocks
-		if (logInvocation.getInCatchBlock() && (currentLogLevel.intValue() > rejuvenatedLogLevel.intValue())) {
+		if (logInvocation.getInCatchBlock() && currentLogLevel.intValue() > rejuvenatedLogLevel.intValue()) {
 			this.logInvsNotLoweredInCatch.add(logInvocation);
 			logInvocation.setAction(Action.NONE, null);
 			return false;
@@ -168,7 +168,7 @@ public class LogAnalyzer extends ASTVisitor {
 		if (this.notLowerLogLevelInIfStatement)
 			// process not lower log levels in if statements.
 			if (checkIfBlock(logInvocation.getExpression())
-					&& (currentLogLevel.intValue() > rejuvenatedLogLevel.intValue())) {
+					&& currentLogLevel.intValue() > rejuvenatedLogLevel.intValue()) {
 				this.logInvsNotLoweredInIfStatement.add(logInvocation);
 				logInvocation.setAction(Action.NONE, null);
 				return false;
@@ -414,12 +414,12 @@ public class LogAnalyzer extends ASTVisitor {
 	}
 
 	@SuppressWarnings("unused")
-	private static boolean contains(Statement elseStatement, MethodInvocation loggingExpression) {
-		if (elseStatement == null || loggingExpression == null)
+	private static boolean contains(Statement statement, MethodInvocation loggingExpression) {
+		if (statement == null || loggingExpression == null)
 			return false;
 		else {
-			int elseStart = elseStatement.getStartPosition();
-			int elseEnd = elseStart + elseStatement.getLength();
+			int elseStart = statement.getStartPosition();
+			int elseEnd = elseStart + statement.getLength();
 
 			int loggingExpressionStart = loggingExpression.getStartPosition();
 			int loggingExpressionEnd = loggingExpressionStart + loggingExpression.getLength();
