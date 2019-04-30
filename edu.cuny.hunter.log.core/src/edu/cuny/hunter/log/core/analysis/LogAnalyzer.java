@@ -407,8 +407,32 @@ public class LogAnalyzer extends ASTVisitor {
 		if (parent instanceof IfStatement) {
 			IfStatement ifStatement = (IfStatement) parent;
 			Statement elseStatement = ifStatement.getElseStatement();
-			return elseStatement == null;
 
+			// if there's no else clause
+			if (elseStatement == null) {
+				// is it the first statement of the then statement?
+				Statement thenStatement = ifStatement.getThenStatement();
+
+				// if it's a block.
+				if (thenStatement.getNodeType() == ASTNode.BLOCK) {
+					Block block = (Block) thenStatement;
+
+					// if the block is non-empty.
+					if (block.statements().size() > 0) {
+						// if it's in the first statement of the block.
+						Statement firstStatement = (Statement) block.statements().get(0);
+
+						return firstStatement.getNodeType() != ASTNode.BLOCK
+								&& contains(firstStatement, loggingExpression);
+					} else
+						// it's an empty block.
+						throw new IllegalStateException("Block shouldn't be empty.");
+				} else
+					// it's not a block. Just check the statement.
+					return contains(thenStatement, loggingExpression);
+			} else
+				// there's an else clause. It's not a guarded comment.
+				return false;
 		} else
 			return false;
 	}
