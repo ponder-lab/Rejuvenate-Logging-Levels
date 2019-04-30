@@ -48,7 +48,7 @@ public class LogInvocation {
 	 */
 	private Level newLogLevel;
 
-	private boolean inCatchBlock = false;
+	private boolean inCatchBlock;
 
 	private float degreeOfInterestValue;
 

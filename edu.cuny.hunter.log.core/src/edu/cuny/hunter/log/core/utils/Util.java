@@ -198,5 +198,4 @@ public final class Util {
 	public static boolean isGeneratedCode(IJavaElement element) throws JavaModelException {
 		return element.getResource().isDerived(IResource.CHECK_ANCESTORS);
 	}
-
 }

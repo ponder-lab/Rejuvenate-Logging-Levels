@@ -12,12 +12,14 @@ import org.eclipse.jdt.core.IMethod;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.ASTVisitor;
+import org.eclipse.jdt.core.dom.Block;
 import org.eclipse.jdt.core.dom.CatchClause;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.IMethodBinding;
 import org.eclipse.jdt.core.dom.IfStatement;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.MethodInvocation;
+import org.eclipse.jdt.core.dom.Statement;
 import org.eclipse.mylyn.context.core.IDegreeOfInterest;
 import edu.cuny.hunter.log.core.messages.Messages;
 import edu.cuny.hunter.log.core.utils.LoggerNames;
@@ -33,13 +35,18 @@ public class LogAnalyzer extends ASTVisitor {
 	private HashSet<LogInvocation> logInvsNotTransformedInIf = new HashSet<LogInvocation>();
 
 	/**
-	 * Set of log invocations that their log levels are not lower in catch blocks
+	 * Set of log invocations that their log levels are not lower in catch
+	 * blocks
 	 */
 	private HashSet<LogInvocation> logInvsNotLoweredInCatch = new HashSet<LogInvocation>();
+
+	private HashSet<LogInvocation> logInvsNotLoweredInIfStatement = new HashSet<LogInvocation>();
 
 	private HashSet<MethodDeclaration> methodDeclarations = new HashSet<>();
 
 	private Set<LogInvocation> logInvocationSet = new HashSet<>();
+
+	private boolean notLowerLogLevelInIfStatement = false;
 
 	private boolean notLowerLogLevelInCatchBlock = false;
 
@@ -64,10 +71,11 @@ public class LogAnalyzer extends ASTVisitor {
 	}
 
 	public LogAnalyzer(boolean useConfigLogLevelCategory, boolean useLogLevelCategory,
-			boolean notLowerLogLevelInCatchBlock, boolean checkIfCondition) {
+			boolean notLowerLogLevelInCatchBlock, boolean checkIfCondition, boolean notLowerLogLevelInIfStatement) {
 		this.useLogCategoryWithConfig = useConfigLogLevelCategory;
 		this.useLogCategory = useLogLevelCategory;
 		this.notLowerLogLevelInCatchBlock = notLowerLogLevelInCatchBlock;
+		this.notLowerLogLevelInIfStatement = notLowerLogLevelInIfStatement;
 		this.checkIfCondition = checkIfCondition;
 	}
 
@@ -126,18 +134,6 @@ public class LogAnalyzer extends ASTVisitor {
 		if (currentLogLevel == null)
 			return false;
 
-		/**
-		 * Do not change a log level in a logging statement if there exists an immediate
-		 * if statement whose condition contains a log level.
-		 */
-		if (this.checkIfCondition) {
-			if (this.checkIfBlock(logInvocation.getExpression())) {
-				logInvocation.setAction(Action.NONE, null);
-				this.logInvsNotTransformedInIf.add(logInvocation);
-				return false;
-			}
-		}
-
 		// DOI not in intervals
 		if (logInvocation.getDegreeOfInterestValue() < this.boundary.get(0)
 				|| logInvocation.getDegreeOfInterestValue() > this.boundary.get(this.boundary.size() - 1)) {
@@ -145,18 +141,38 @@ public class LogAnalyzer extends ASTVisitor {
 			return false;
 		}
 
+		/**
+		 * Do not change a log level in a logging statement if there exists an
+		 * immediate if statement whose condition contains a log level.
+		 */
+		if (this.checkIfCondition) {
+			if (checkIfConditionHavingLevel(logInvocation.getExpression())) {
+				logInvocation.setAction(Action.NONE, null);
+				this.logInvsNotTransformedInIf.add(logInvocation);
+				return false;
+			}
+		}
+
 		Level rejuvenatedLogLevel = getRejuvenatedLogLevel(this.boundary, logInvocation);
 
 		if (rejuvenatedLogLevel == null)
 			return false;
 
-		if (logInvocation.getInCatchBlock() // process not lower log levels in
-											// catch blocks
-				&& (currentLogLevel.intValue() > rejuvenatedLogLevel.intValue())) {
+		// process not lower log levels in catch blocks
+		if (logInvocation.getInCatchBlock() && currentLogLevel.intValue() > rejuvenatedLogLevel.intValue()) {
 			this.logInvsNotLoweredInCatch.add(logInvocation);
 			logInvocation.setAction(Action.NONE, null);
 			return false;
 		}
+
+		if (this.notLowerLogLevelInIfStatement)
+			// process not lower log levels in if statements.
+			if (checkIfBlock(logInvocation.getExpression())
+					&& currentLogLevel.intValue() > rejuvenatedLogLevel.intValue()) {
+				this.logInvsNotLoweredInIfStatement.add(logInvocation);
+				logInvocation.setAction(Action.NONE, null);
+				return false;
+			}
 
 		if ((currentLogLevel == rejuvenatedLogLevel) // current log level is
 														// same to transformed
@@ -257,8 +273,8 @@ public class LogAnalyzer extends ASTVisitor {
 	}
 
 	/**
-	 * Build a list of boundary. The DOI values could be divided into 7 groups by
-	 * this boundary. 7 groups are corresponding to 7 logging levels
+	 * Build a list of boundary. The DOI values could be divided into 7 groups
+	 * by this boundary. 7 groups are corresponding to 7 logging levels
 	 * 
 	 * @param degreeOfInterests
 	 * @return a list of boundary
@@ -359,10 +375,10 @@ public class LogAnalyzer extends ASTVisitor {
 	/**
 	 * Check if condition mentions log levels.
 	 */
-	private Boolean checkIfBlock(ASTNode node) {
+	private static boolean checkIfConditionHavingLevel(ASTNode node) {
 		while (node != null) {
 			if (node instanceof IfStatement) {
-				String condition = ((IfStatement) node).getExpression().toString();
+				String condition = ((IfStatement) node).getExpression().toString().toUpperCase();
 				if (condition.contains("CONFIG") || condition.contains("FINE") || condition.contains("FINER")
 						|| condition.contains("FINEST") || condition.contains("SEVERE") || condition.contains("WARN")
 						|| condition.contains("INFO") || condition.contains("FATAL") || condition.contains("ERROR")
@@ -374,6 +390,66 @@ public class LogAnalyzer extends ASTVisitor {
 			node = node.getParent();
 		}
 		return false;
+	}
+
+	/**
+	 * Returns true if the given logging expression is immediately contained
+	 * within an if statement not having an else clause (i.e., guarded) and
+	 * false otherwise.
+	 */
+	private static boolean checkIfBlock(MethodInvocation loggingExpression) {
+		ASTNode loggingStatement = loggingExpression.getParent();
+		ASTNode parent = loggingStatement.getParent();
+
+		if (parent instanceof Block)
+			parent = parent.getParent();
+
+		if (parent instanceof IfStatement) {
+			IfStatement ifStatement = (IfStatement) parent;
+			Statement elseStatement = ifStatement.getElseStatement();
+
+			// if there's no else clause
+			if (elseStatement == null) {
+				// is it the first statement of the then statement?
+				Statement thenStatement = ifStatement.getThenStatement();
+
+				// if it's a block.
+				if (thenStatement.getNodeType() == ASTNode.BLOCK) {
+					Block block = (Block) thenStatement;
+
+					// if the block is non-empty.
+					if (block.statements().size() > 0) {
+						// if it's in the first statement of the block.
+						Statement firstStatement = (Statement) block.statements().get(0);
+
+						return firstStatement.getNodeType() != ASTNode.BLOCK
+								&& contains(firstStatement, loggingExpression);
+					} else
+						// it's an empty block.
+						throw new IllegalStateException("Block shouldn't be empty.");
+				} else
+					// it's not a block. Just check the statement.
+					return contains(thenStatement, loggingExpression);
+			} else
+				// there's an else clause. It's not a guarded comment.
+				return false;
+		} else
+			return false;
+	}
+
+	@SuppressWarnings("unused")
+	private static boolean contains(Statement statement, MethodInvocation loggingExpression) {
+		if (statement == null || loggingExpression == null)
+			return false;
+		else {
+			int elseStart = statement.getStartPosition();
+			int elseEnd = elseStart + statement.getLength();
+
+			int loggingExpressionStart = loggingExpression.getStartPosition();
+			int loggingExpressionEnd = loggingExpressionStart + loggingExpression.getLength();
+
+			return elseStart <= loggingExpressionStart && elseEnd >= loggingExpressionEnd;
+		}
 	}
 
 	/**
@@ -449,6 +525,10 @@ public class LogAnalyzer extends ASTVisitor {
 
 	public HashSet<LogInvocation> getLogInvsNotLoweredInCatch() {
 		return this.logInvsNotLoweredInCatch;
+	}
+
+	public HashSet<LogInvocation> getLogInvsNotLoweredInIfStatement() {
+		return this.logInvsNotLoweredInIfStatement;
 	}
 
 }
