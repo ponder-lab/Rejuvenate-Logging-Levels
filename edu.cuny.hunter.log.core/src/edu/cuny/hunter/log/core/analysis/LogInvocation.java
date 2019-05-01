@@ -181,7 +181,8 @@ public class LogInvocation {
 					SimpleName newMethodName = ast.newSimpleName(target);
 					astRewrite.replace(expression.getName(), newMethodName, null);
 					this.setNames(expression.getName(), newMethodName);
-				} else // The parameters (e.g., log(Level.WARNING) -> log(Level.CRITICAL).
+				} else // The parameters (e.g., log(Level.WARNING) ->
+						// log(Level.CRITICAL).
 				if (isLogMethod(identifier)) {
 					Name firstArgument = (Name) expression.arguments().get(0);
 					// log(WARNING, ...)

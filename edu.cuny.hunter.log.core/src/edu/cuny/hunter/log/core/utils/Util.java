@@ -76,7 +76,9 @@ public final class Util {
 	 */
 	public static IDegreeOfInterest getDegreeOfInterest(IMethod method) {
 		IInteractionElement interactionElement = getInteractionElement(method);
-		if (interactionElement == null || interactionElement.getContext() == null) // workaround bug ...
+		if (interactionElement == null || interactionElement.getContext() == null) // workaround
+																					// bug
+																					// ...
 			return null;
 		return interactionElement.getInterest();
 	}
@@ -90,17 +92,18 @@ public final class Util {
 
 	/**
 	 * Clear the active task context.
-	 * @throws NonActiveMylynTaskException 
+	 * 
+	 * @throws NonActiveMylynTaskException
 	 */
 	public static void clearTaskContext() throws NonActiveMylynTaskException {
 		MylynGitPredictionProvider.clearTaskContext();
 	}
 
 	/**
-	 * We only focus on the logging level, which is set by the developer. Hence, we
-	 * do not record the logging level which is embedded by the logging package.
-	 * e.g. each time we call method entering, a logging record which has "FINER"
-	 * level is created.
+	 * We only focus on the logging level, which is set by the developer. Hence,
+	 * we do not record the logging level which is embedded by the logging
+	 * package. e.g. each time we call method entering, a logging record which
+	 * has "FINER" level is created.
 	 * 
 	 * @param node
 	 * @return logging level
