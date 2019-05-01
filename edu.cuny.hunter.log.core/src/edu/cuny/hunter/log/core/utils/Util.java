@@ -16,6 +16,9 @@ import org.eclipse.jdt.core.dom.Expression;
 import org.eclipse.jdt.core.dom.IMethodBinding;
 import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.MethodInvocation;
+import org.eclipse.jdt.core.dom.Name;
+import org.eclipse.jdt.core.dom.QualifiedName;
+import org.eclipse.jdt.core.dom.SimpleName;
 import org.eclipse.jdt.internal.corext.codemanipulation.CodeGenerationSettings;
 import org.eclipse.jdt.internal.ui.preferences.JavaPreferencesSettings;
 import org.eclipse.ltk.core.refactoring.participants.ProcessorBasedRefactoring;
@@ -167,30 +170,47 @@ public final class Util {
 	public static Level getLogLevel(Expression firstArg, boolean isTest) {
 		ITypeBinding typeBinding = firstArg.resolveTypeBinding();
 		if (isTest)
-			return getLogLevel(firstArg.toString());
+			return getLogLevel(firstArg);
 		if (typeBinding == null || !typeBinding.getQualifiedName().equals("java.util.logging.Level"))
 			return null;
-		return getLogLevel(firstArg.toString());
+		return getLogLevel(firstArg);
 	}
 
-	private static Level getLogLevel(String argument) {
-		if (argument.contains("SEVERE"))
+	private static Level getLogLevel(Expression firstArg) {
+		String identifier;
+		// if it's not a name.
+		if (!(firstArg instanceof Name))
+			return null;
+		else {
+			Name name = (Name) firstArg;
+			if (name.isSimpleName()) {
+				SimpleName simpleName = (SimpleName) name;
+				identifier = simpleName.getIdentifier();
+			} else if (name.isQualifiedName()) {
+				QualifiedName qualifiedName = (QualifiedName) name;
+				SimpleName simpleName = qualifiedName.getName();
+				identifier = simpleName.getIdentifier();
+			} else
+				throw new IllegalArgumentException("Expecting simple or qualified name: " + firstArg);
+		}
+
+		if (identifier.contains("SEVERE"))
 			return Level.SEVERE;
-		if (argument.contains("WARNING"))
+		if (identifier.contains("WARNING"))
 			return Level.WARNING;
-		if (argument.contains("INFO"))
+		if (identifier.contains("INFO"))
 			return Level.INFO;
-		if (argument.contains("CONFIG"))
+		if (identifier.contains("CONFIG"))
 			return Level.CONFIG;
-		if (argument.contains("FINER"))
+		if (identifier.contains("FINER"))
 			return Level.FINER;
-		if (argument.contains("FINEST"))
+		if (identifier.contains("FINEST"))
 			return Level.FINEST;
-		if (argument.contains("FINE"))
+		if (identifier.contains("FINE"))
 			return Level.FINE;
-		if (argument.contains("ALL"))
+		if (identifier.contains("ALL"))
 			return Level.ALL;
-		if (argument.contains("OFF"))
+		if (identifier.contains("OFF"))
 			return Level.OFF;
 		return null;
 	}
