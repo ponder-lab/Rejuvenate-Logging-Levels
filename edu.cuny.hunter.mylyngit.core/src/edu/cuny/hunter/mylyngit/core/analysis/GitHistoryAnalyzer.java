@@ -18,6 +18,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -40,6 +42,7 @@ import org.eclipse.jgit.diff.DiffEntry.ChangeType;
 import org.eclipse.jgit.errors.CorruptObjectException;
 import org.eclipse.jgit.errors.IncorrectObjectTypeException;
 import org.eclipse.jgit.errors.MissingObjectException;
+import org.eclipse.jgit.errors.NoMergeBaseException;
 import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.ObjectLoader;
 import org.eclipse.jgit.lib.ObjectReader;
@@ -201,13 +204,19 @@ public class GitHistoryAnalyzer {
 	 */
 	private void processMergeCommit(RevCommit headCommit, RevCommit commitToMerge, Git git) throws IOException {
 		ThreeWayMerger merger = MergeStrategy.RECURSIVE.newMerger(git.getRepository(), true);
-		boolean canMerge = merger.merge(headCommit, commitToMerge);
-		// no conflicts for merging
-		if (canMerge)
-			return;
-
-		// TODO: process conflicts
-		System.out.println("Conflicits here");
+		
+		try {
+			boolean canMerge = merger.merge(headCommit, commitToMerge);
+			
+			// no conflicts for merging
+			if (canMerge)
+				return;
+		} catch (NoMergeBaseException e) {
+			Logger.getGlobal().log(Level.WARNING, "Error processing merge commit.", e);
+		} finally {
+			// TODO: process conflicts
+			System.out.println("Conflicits here");
+		}
 	}
 
 	/**
