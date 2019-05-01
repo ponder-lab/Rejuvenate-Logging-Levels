@@ -87,6 +87,7 @@ public class EvaluationHandler extends AbstractHandler {
 			CSVPrinter failurePrinter = null;
 			CSVPrinter doiPrinter = null;
 			CSVPrinter gitCommitPrinter = null;
+			CSVPrinter candidatePrinter = null;
 
 			try {
 				IJavaProject[] javaProjects = Util.getSelectedJavaProjectsFromEvent(event);
@@ -97,15 +98,15 @@ public class EvaluationHandler extends AbstractHandler {
 
 				CodeGenerationSettings settings = JavaPreferencesSettings.getCodeGenerationSettings(javaProjects[0]);
 
-				resultPrinter = Util.createCSVPrinter("result.csv",
-						new String[] { "sequence", "subject", "repo URL", "input logging statements",
-								"passing logging statements", "failures", "transformed logging statements",
-								"log level not lowered in catch blocks", "log level not lowered in if statements",
-								"log level not transformed due to if condition",
-								"use log category (SEVERE/WARNING/CONFIG)", "use log category (CONFIG)",
-								"not lower log levels of logs inside of catch blocks",
-								"not lower log levels of logs inside of if statements",
-								"consider if condition having log level", "time (s)" });
+				resultPrinter = Util.createCSVPrinter("result.csv", new String[] { "sequence", "subject", "repo URL",
+						"input logging statements", "candidate logging statements", "passing logging statements",
+						"failures", "transformed logging statements", "log level not lowered in catch blocks",
+						"log level not lowered in if statements", "log level not transformed due to if condition",
+						"use log category (SEVERE/WARNING/CONFIG)", "use log category (CONFIG)",
+						"not lower log levels of logs inside of catch blocks",
+						"not lower log levels of logs inside of if statements",
+						"consider if condition having log level", "time (s)" });
+
 				repoPrinter = Util.createCSVPrinter("repos.csv",
 						new String[] { "sequence", "repo URL", "SHA-1 of head", "N for commits",
 								"number of commits processed", "actual number of commits", "average Java lines added",
@@ -125,6 +126,8 @@ public class EvaluationHandler extends AbstractHandler {
 				gitCommitPrinter = Util.createCSVPrinter("git_commits.csv",
 						new String[] { "subject", "SHA1", "Java lines added", "Java lines removed", "methods found",
 								"interaction events", "run time (s)" });
+				candidatePrinter = Util.createCSVPrinter("candidate_log_invocations.csv", new String[] { "sequence",
+						"subject", "log expression", "start pos", "log level", "type FQN", "enclosing method" });
 
 				// we are using 6 settings
 				for (int i = 0; i < 6; ++i) {
@@ -186,12 +189,19 @@ public class EvaluationHandler extends AbstractHandler {
 											logInvocation.getDegreeOfInterestValue());
 								}
 
+							Set<LogInvocation> candidates = computeCandidateLogs(logInvocationSet);
+
+							for (LogInvocation logInvocation : candidates)
+								candidatePrinter.printRecord(sequence, logInvocation.getExpression(),
+										logInvocation.getStartPosition(), logInvocation.getLogLevel(),
+										logInvocation.getEnclosingType().getFullyQualifiedName(),
+										Util.getMethodIdentifier(logInvocation.getEnclosingEclipseMethod()));
+
 							// get the difference of log invocations and passing
 							// log invocations
 							HashSet<LogInvocation> failures = new HashSet<LogInvocation>();
-							failures.addAll(logInvocationSet);
-							HashSet<LogInvocation> passingLogInvocationSet = logRejuvenatingProcessor
-									.getPassingLogInvocation();
+							failures.addAll(candidates);
+							HashSet<LogInvocation> passingLogInvocationSet = this.getPassingLogInvocation(candidates);
 							failures.removeAll(passingLogInvocationSet);
 
 							// failures.
@@ -281,7 +291,7 @@ public class EvaluationHandler extends AbstractHandler {
 							}
 
 							resultPrinter.printRecord(sequence, project.getElementName(),
-									logRejuvenatingProcessor.getRepoURL(), logInvocationSet.size(),
+									logRejuvenatingProcessor.getRepoURL(), logInvocationSet.size(), candidates.size(),
 									passingLogInvocationSet.size(), errorEntries.size(),
 									transformedLogInvocationSet.size(),
 									logRejuvenatingProcessor.getLogInvsNotLoweredInCatch().size(),
@@ -308,6 +318,7 @@ public class EvaluationHandler extends AbstractHandler {
 					failurePrinter.close();
 					doiPrinter.close();
 					gitCommitPrinter.close();
+					candidatePrinter.close();
 				} catch (IOException e) {
 					return new Status(IStatus.ERROR, FrameworkUtil.getBundle(this.getClass()).getSymbolicName(),
 							"Encountered exception during file closing", e);
@@ -319,6 +330,42 @@ public class EvaluationHandler extends AbstractHandler {
 		}).schedule();
 
 		return null;
+	}
+
+	/**
+	 * Get passing log invocations.
+	 */
+	public HashSet<LogInvocation> getPassingLogInvocation(Set<LogInvocation> candidates) {
+		HashSet<LogInvocation> passingLogInvocations = new HashSet<>();
+		candidates.forEach(inv -> {
+			if (inv.getAction() != null)
+				passingLogInvocations.add(inv);
+		});
+		return passingLogInvocations;
+	}
+
+	/**
+	 * @return Number of candidate logging statements.
+	 */
+	private Set<LogInvocation> computeCandidateLogs(Set<LogInvocation> logInvocationSet) {
+		// Set of candidate log invocations.
+		Set<LogInvocation> candidates = new HashSet<LogInvocation>();
+		if (!this.isUseLogCategory() && !this.isUseLogCategoryWithConfig())
+			candidates.addAll(logInvocationSet);
+
+		if (this.isUseLogCategoryWithConfig()) {
+			for (LogInvocation inv : logInvocationSet)
+				if (!inv.getLogLevel().equals(Level.CONFIG))
+					candidates.add(inv);
+		}
+
+		if (this.isUseLogCategory()) {
+			for (LogInvocation inv : logInvocationSet)
+				if (!(inv.getLogLevel().equals(Level.CONFIG) || inv.getLogLevel().equals(Level.WARNING)
+						|| inv.getLogLevel().equals(Level.SEVERE)))
+					candidates.add(inv);
+		}
+		return candidates;
 	}
 
 	/**
@@ -400,6 +447,8 @@ public class EvaluationHandler extends AbstractHandler {
 		this.setNotLowerLogLevelInCatchBlock(this.computeLowerLogLevelInCatchBlock(i));
 		this.setNotLowerLogLevelInIfStatement(this.getValueOfNotLowerLogLevelInIfStatement());
 		this.setCheckIfCondition(this.getValueOfCheckIfCondition());
+		if (this.isUseLogCategory() && this.isUseLogCategoryWithConfig())
+			throw new IllegalStateException("You cannot choose two log categories in the same time");
 	}
 
 	private boolean getValueOfUseLogCategory() {
