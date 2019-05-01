@@ -69,7 +69,7 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 	/**
 	 * Treat CONFIG as category
 	 */
-	private boolean useLogCategoryWithConfig = false;
+	private boolean useLogCategoryWithConfig = true;
 
 	/**
 	 * Treat CONFIG/WARNING/SEVERE log levels as category
@@ -104,7 +104,7 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 	/**
 	 * Keep if condition and log levels inside if statement consistent
 	 */
-	private boolean checkIfCondition = false;
+	private boolean checkIfCondition = true;
 
 	/**
 	 * It the caller Evaluation plugin?
