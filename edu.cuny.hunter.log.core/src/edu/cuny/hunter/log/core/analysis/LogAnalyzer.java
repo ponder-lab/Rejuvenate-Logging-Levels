@@ -5,7 +5,9 @@ import java.util.LinkedList;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IMethod;
@@ -35,12 +37,13 @@ public class LogAnalyzer extends ASTVisitor {
 	private HashSet<LogInvocation> logInvsNotTransformedInIf = new HashSet<LogInvocation>();
 
 	/**
-	 * Set of log invocations that their log levels are not lower in catch
-	 * blocks
+	 * Set of log invocations that their log levels are not lower in catch blocks
 	 */
 	private HashSet<LogInvocation> logInvsNotLoweredInCatch = new HashSet<LogInvocation>();
 
 	private HashSet<LogInvocation> logInvsNotLoweredInIfStatement = new HashSet<LogInvocation>();
+
+	private HashSet<LogInvocation> logInvsNotLoweredByKeywords = new HashSet<LogInvocation>();
 
 	private HashSet<MethodDeclaration> methodDeclarations = new HashSet<>();
 
@@ -49,6 +52,8 @@ public class LogAnalyzer extends ASTVisitor {
 	private boolean notLowerLogLevelInIfStatement = false;
 
 	private boolean notLowerLogLevelInCatchBlock = false;
+
+	private boolean notLowerLogLevelWithKeyWords = false;
 
 	private boolean useLogCategoryWithConfig = false;
 
@@ -59,6 +64,12 @@ public class LogAnalyzer extends ASTVisitor {
 	private HashSet<Float> DOIValues = new HashSet<>();
 
 	private LinkedList<Float> boundary;
+
+	/**
+	 * A set of keywords in log messages.
+	 */
+	final private Set<String> keyWordsInLogMessages = Stream.of("failed", "disabled", "error")
+			.collect(Collectors.toSet());
 
 	private boolean test;
 
@@ -71,11 +82,13 @@ public class LogAnalyzer extends ASTVisitor {
 	}
 
 	public LogAnalyzer(boolean useConfigLogLevelCategory, boolean useLogLevelCategory,
-			boolean notLowerLogLevelInCatchBlock, boolean checkIfCondition, boolean notLowerLogLevelInIfStatement) {
+			boolean notLowerLogLevelInCatchBlock, boolean checkIfCondition, boolean notLowerLogLevelInIfStatement,
+			boolean notLowerLogLevelWithKeyWords) {
 		this.useLogCategoryWithConfig = useConfigLogLevelCategory;
 		this.useLogCategory = useLogLevelCategory;
 		this.notLowerLogLevelInCatchBlock = notLowerLogLevelInCatchBlock;
 		this.notLowerLogLevelInIfStatement = notLowerLogLevelInIfStatement;
+		this.notLowerLogLevelWithKeyWords = notLowerLogLevelWithKeyWords;
 		this.checkIfCondition = checkIfCondition;
 	}
 
@@ -139,6 +152,14 @@ public class LogAnalyzer extends ASTVisitor {
 				|| logInvocation.getDegreeOfInterestValue() > this.boundary.get(this.boundary.size() - 1)) {
 			logInvocation.setAction(Action.NONE, null);
 			return false;
+		}
+
+		if (this.notLowerLogLevelWithKeyWords) {
+			if (Util.isLogMessageWithKeywords(logInvocation.getExpression(), keyWordsInLogMessages)) {
+				logInvocation.setAction(Action.NONE, null);
+				this.logInvsNotLoweredByKeywords.add(logInvocation);
+				return false;
+			}
 		}
 
 		/**
@@ -529,6 +550,10 @@ public class LogAnalyzer extends ASTVisitor {
 
 	public HashSet<LogInvocation> getLogInvsNotLoweredInIfStatement() {
 		return this.logInvsNotLoweredInIfStatement;
+	}
+	
+	public HashSet<LogInvocation> getLogInvsNotLoweredByKeywords(){
+		return this.logInvsNotLoweredByKeywords;
 	}
 
 }
