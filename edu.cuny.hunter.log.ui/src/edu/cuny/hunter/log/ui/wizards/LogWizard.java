@@ -54,6 +54,8 @@ public class LogWizard extends RefactoringWizard {
 
 		private static final String NOT_LOWER_LOG_LEVEL_IF_STATEMENT = "notLowerLogLevelInIfStatement";
 
+		private static final String NOT_LOWER_LOG_LEVEL_KEY_WORDS = "notLowerLogLevelKeyWords";
+
 		private static final String CHECK_IF_CONDITION = "checkIfCondition";
 
 		private LogRejuvenatingProcessor processor;
@@ -136,6 +138,11 @@ public class LogWizard extends RefactoringWizard {
 					SWT.CHECK);
 
 			// set up buttons.
+			this.addBooleanButton(
+					"Never lower the logging level of logging statements with particular keywords in their messages.",
+					NOT_LOWER_LOG_LEVEL_KEY_WORDS, this.getProcessor()::setNotLowerLogLevelWithKeyWords, result,
+					SWT.CHECK);
+
 			this.addBooleanButton("Do not change a log level if its if statement condition contains a log level.",
 					CHECK_IF_CONDITION, this.getProcessor()::setCheckIfCondition, result, SWT.CHECK);
 
@@ -197,6 +204,7 @@ public class LogWizard extends RefactoringWizard {
 				this.settings.put(CHECK_IF_CONDITION, this.getProcessor().isCheckIfCondition());
 				this.settings.put(NOT_LOWER_LOG_LEVEL_IF_STATEMENT,
 						this.getProcessor().isNotLowerLogLevelInIfStatement());
+				this.settings.put(NOT_LOWER_LOG_LEVEL_KEY_WORDS, this.getProcessor().isNotLowerLogLevelWithKeyWords());
 			}
 			this.processor.setParticularConfigLogLevel(this.settings.getBoolean(USE_LOG_CATEGORY_CONFIG));
 			this.processor.setParticularLogLevel(this.settings.getBoolean(USE_LOG_CATEGORY));
@@ -205,6 +213,7 @@ public class LogWizard extends RefactoringWizard {
 			this.processor.setNotLowerLogLevelInCatchBlock(this.settings.getBoolean(NOT_LOWER_LOG_LEVEL_CATCH_BLOCK));
 			this.processor.setCheckIfCondition(this.settings.getBoolean(CHECK_IF_CONDITION));
 			this.processor.setNotLowerLogLevelInIfStatement(this.settings.getBoolean(NOT_LOWER_LOG_LEVEL_IF_STATEMENT));
+			this.processor.setNotLowerLogLevelWithKeyWords(this.settings.getBoolean(NOT_LOWER_LOG_LEVEL_KEY_WORDS));
 		}
 
 		private void setProcessor(LogRejuvenatingProcessor processor) {

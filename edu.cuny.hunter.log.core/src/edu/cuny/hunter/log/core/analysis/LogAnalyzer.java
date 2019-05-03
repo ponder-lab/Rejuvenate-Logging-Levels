@@ -5,7 +5,9 @@ import java.util.LinkedList;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IMethod;
@@ -35,12 +37,13 @@ public class LogAnalyzer extends ASTVisitor {
 	private HashSet<LogInvocation> logInvsNotTransformedInIf = new HashSet<LogInvocation>();
 
 	/**
-	 * Set of log invocations that their log levels are not lower in catch
-	 * blocks
+	 * Set of log invocations that their log levels are not lower in catch blocks
 	 */
 	private HashSet<LogInvocation> logInvsNotLoweredInCatch = new HashSet<LogInvocation>();
 
 	private HashSet<LogInvocation> logInvsNotLoweredInIfStatement = new HashSet<LogInvocation>();
+
+	private HashSet<LogInvocation> logInvsNotLoweredByKeywords = new HashSet<LogInvocation>();
 
 	private HashSet<MethodDeclaration> methodDeclarations = new HashSet<>();
 
@@ -49,6 +52,8 @@ public class LogAnalyzer extends ASTVisitor {
 	private boolean notLowerLogLevelInIfStatement;
 
 	private boolean notLowerLogLevelInCatchBlock;
+
+	private boolean notLowerLogLevelWithKeyWords;
 
 	private boolean useLogCategoryWithConfig;
 
@@ -59,6 +64,12 @@ public class LogAnalyzer extends ASTVisitor {
 	private HashSet<Float> DOIValues = new HashSet<>();
 
 	private LinkedList<Float> boundary;
+
+	/**
+	 * A set of keywords in log messages.
+	 */
+	private final Set<String> KEYWORDS_IN_LOG_MESSAGES = Stream.of("fail", "disable", "error", "exception", "collision",
+			"reboot", "terminate", "throw", "shut", "start", "shut", "run").collect(Collectors.toSet());
 
 	private boolean test;
 
@@ -71,11 +82,13 @@ public class LogAnalyzer extends ASTVisitor {
 	}
 
 	public LogAnalyzer(boolean useConfigLogLevelCategory, boolean useLogLevelCategory,
-			boolean notLowerLogLevelInCatchBlock, boolean checkIfCondition, boolean notLowerLogLevelInIfStatement) {
+			boolean notLowerLogLevelInCatchBlock, boolean checkIfCondition, boolean notLowerLogLevelInIfStatement,
+			boolean notLowerLogLevelWithKeyWords) {
 		this.useLogCategoryWithConfig = useConfigLogLevelCategory;
 		this.useLogCategory = useLogLevelCategory;
 		this.notLowerLogLevelInCatchBlock = notLowerLogLevelInCatchBlock;
 		this.notLowerLogLevelInIfStatement = notLowerLogLevelInIfStatement;
+		this.notLowerLogLevelWithKeyWords = notLowerLogLevelWithKeyWords;
 		this.checkIfCondition = checkIfCondition;
 	}
 
@@ -141,9 +154,17 @@ public class LogAnalyzer extends ASTVisitor {
 			return false;
 		}
 
+		if (this.notLowerLogLevelWithKeyWords) {
+			if (Util.isLogMessageWithKeywords(logInvocation.getExpression(), KEYWORDS_IN_LOG_MESSAGES)) {
+				logInvocation.setAction(Action.NONE, null);
+				this.logInvsNotLoweredByKeywords.add(logInvocation);
+				return false;
+			}
+		}
+
 		/**
-		 * Do not change a log level in a logging statement if there exists an
-		 * immediate if statement whose condition contains a log level.
+		 * Do not change a log level in a logging statement if there exists an immediate
+		 * if statement whose condition contains a log level.
 		 */
 		if (this.checkIfCondition) {
 			if (checkIfConditionHavingLevel(logInvocation.getExpression())) {
@@ -273,8 +294,8 @@ public class LogAnalyzer extends ASTVisitor {
 	}
 
 	/**
-	 * Build a list of boundary. The DOI values could be divided into 7 groups
-	 * by this boundary. 7 groups are corresponding to 7 logging levels
+	 * Build a list of boundary. The DOI values could be divided into 7 groups by
+	 * this boundary. 7 groups are corresponding to 7 logging levels
 	 * 
 	 * @param degreeOfInterests
 	 * @return a list of boundary
@@ -393,9 +414,9 @@ public class LogAnalyzer extends ASTVisitor {
 	}
 
 	/**
-	 * Returns true if the given logging expression is immediately contained
-	 * within an if statement not having an else clause (i.e., guarded) and
-	 * false otherwise.
+	 * Returns true if the given logging expression is immediately contained within
+	 * an if statement not having an else clause (i.e., guarded) and false
+	 * otherwise.
 	 */
 	private static boolean checkIfBlock(MethodInvocation loggingExpression) {
 		ASTNode loggingStatement = loggingExpression.getParent();
@@ -529,6 +550,10 @@ public class LogAnalyzer extends ASTVisitor {
 
 	public HashSet<LogInvocation> getLogInvsNotLoweredInIfStatement() {
 		return this.logInvsNotLoweredInIfStatement;
+	}
+
+	public HashSet<LogInvocation> getLogInvsNotLoweredByKeywords() {
+		return this.logInvsNotLoweredByKeywords;
 	}
 
 }

@@ -59,13 +59,15 @@ public class EvaluationHandler extends AbstractHandler {
 	private static final String EVALUATION_PROPERTIES_FILE_NAME = "eval.properties";
 	private static final String NOT_LOWER_LOG_LEVEL_IF_STATEMENT_KEY = "edu.cuny.hunter.log.evaluation.notLowerLogLevelInIfStatement";
 	private static final String NOT_LOWER_LOG_LEVEL_CATCH_BLOCK_KEY = "edu.cuny.hunter.log.evaluation.notLowerLogLevelInCatchBlock";
+	private static final String NOT_LOWER_LOG_LEVEL_KEYWORDS_KEY = "edu.cuny.hunter.log.evaluation.notLowerLogLevelWithKeywords";
 	private static final String USE_LOG_CATEGORY_CONFIG_KEY = "edu.cuny.hunter.log.evaluation.useLogCategoryWithConfig";
 	private static final String CHECK_IF_CONDITION_KEY = "edu.cuny.hunter.log. evaluation.checkIfCondition";
 	private static final String USE_LOG_CATEGORY_KEY = "edu.cuny.hunter.log.evaluation.useLogCategory";
 	private static final String USE_GIT_HISTORY_KEY = "edu.cuny.hunter.log.evaluation.useGitHistory";
 	private static final String N_TO_USE_FOR_COMMITS_KEY = "NToUseForCommits";
 	private static final int N_TO_USE_FOR_COMMITS_DEFAULT = 100;
-	private static final boolean NOR_LOWER_LOG_LEVEL_IF_STATEMENT_DEFAULT = false;
+	private static final boolean NOT_LOWER_LOG_LEVEL_IF_STATEMENT_DEFAULT = false;
+	private static final boolean NOT_LOWER_LOG_LEVEL_KEYWORDS_DEFAULT = false;
 	private static final boolean NOT_LOWER_LOG_LEVEL_CATCH_BLOCK_DEFAULT = false;
 	private static final boolean USE_LOG_CATEGORY_CONFIG_DEFAULT = false;
 	private static final boolean CHECK_IF_CONDITION_DEFAULT = false;
@@ -75,6 +77,7 @@ public class EvaluationHandler extends AbstractHandler {
 	private boolean useLogCategoryWithConfig;
 	private boolean notLowerLogLevelInCatchBlock;
 	private boolean notLowerLogLevelInIfStatement;
+	private boolean notLowerLogLevelWithKeywords;
 	private boolean checkIfCondtion;
 
 	@Override
@@ -102,9 +105,10 @@ public class EvaluationHandler extends AbstractHandler {
 						"input logging statements", "candidate logging statements", "passing logging statements",
 						"failures", "transformed logging statements", "log level not lowered in catch blocks",
 						"log level not lowered in if statements", "log level not transformed due to if condition",
-						"use log category (SEVERE/WARNING/CONFIG)", "use log category (CONFIG)",
-						"not lower log levels of logs inside of catch blocks",
+						"log level not lowered due to keywords", "use log category (SEVERE/WARNING/CONFIG)",
+						"use log category (CONFIG)", "not lower log levels of logs inside of catch blocks",
 						"not lower log levels of logs inside of if statements",
+						"not lower log levels in their messages with keywords",
 						"consider if condition having log level", "time (s)" });
 
 				repoPrinter = Util.createCSVPrinter("repos.csv",
@@ -153,8 +157,8 @@ public class EvaluationHandler extends AbstractHandler {
 									new IJavaProject[] { project }, this.isUseLogCategory(),
 									this.isUseLogCategoryWithConfig(), this.getValueOfUseGitHistory(),
 									this.isNotLowerLogLevelInCatchBlock(), this.isNotLowerLogLevelInIfStatement(),
-									this.isCheckIfCondition(), NToUseCommit, settings, Optional.ofNullable(monitor),
-									true);
+									this.isNotLowerLogLevelWithKeywords(), this.isCheckIfCondition(), NToUseCommit,
+									settings, Optional.ofNullable(monitor), true);
 
 							RefactoringStatus status = new ProcessorBasedRefactoring(
 									(RefactoringProcessor) logRejuvenatingProcessor)
@@ -297,9 +301,11 @@ public class EvaluationHandler extends AbstractHandler {
 									logRejuvenatingProcessor.getLogInvsNotLoweredInCatch().size(),
 									logRejuvenatingProcessor.getLogInvsNotLoweredInIf().size(),
 									logRejuvenatingProcessor.getLogInvsNotTransformedInIf().size(),
+									logRejuvenatingProcessor.getLogInvsNotLoweredWithKeywords().size(),
 									this.isUseLogCategory(), this.isUseLogCategoryWithConfig(),
 									this.isNotLowerLogLevelInCatchBlock(), this.isNotLowerLogLevelInIfStatement(),
-									this.isCheckIfCondition(), resultsTimeCollector.getCollectedTime());
+									this.isNotLowerLogLevelWithKeywords(), this.isCheckIfCondition(),
+									resultsTimeCollector.getCollectedTime());
 
 						}
 					}
@@ -446,6 +452,7 @@ public class EvaluationHandler extends AbstractHandler {
 		this.setUseLogCategoryWithConfig(this.computeLogCategoryWithConfig(i));
 		this.setNotLowerLogLevelInCatchBlock(this.computeLowerLogLevelInCatchBlock(i));
 		this.setNotLowerLogLevelInIfStatement(this.getValueOfNotLowerLogLevelInIfStatement());
+		this.setNotLowerLogLevelWithKeywords(this.getValueOfNotLowerLogLevelWithKeywords());
 		this.setCheckIfCondition(this.getValueOfCheckIfCondition());
 		if (this.isUseLogCategory() && this.isUseLogCategoryWithConfig())
 			throw new IllegalStateException("You cannot choose two log categories in the same time");
@@ -491,9 +498,18 @@ public class EvaluationHandler extends AbstractHandler {
 		String notLowerLogLevelInIfStatement = System.getenv(NOT_LOWER_LOG_LEVEL_IF_STATEMENT_KEY);
 
 		if (notLowerLogLevelInIfStatement == null)
-			return NOR_LOWER_LOG_LEVEL_IF_STATEMENT_DEFAULT;
+			return NOT_LOWER_LOG_LEVEL_IF_STATEMENT_DEFAULT;
 		else
 			return Boolean.valueOf(notLowerLogLevelInIfStatement);
+	}
+
+	private boolean getValueOfNotLowerLogLevelWithKeywords() {
+		String notLowerLogLevelWithKeywords = System.getenv(NOT_LOWER_LOG_LEVEL_KEYWORDS_KEY);
+
+		if (notLowerLogLevelWithKeywords == null)
+			return NOT_LOWER_LOG_LEVEL_KEYWORDS_DEFAULT;
+		else
+			return Boolean.valueOf(notLowerLogLevelWithKeywords);
 	}
 
 	private boolean getValueOfCheckIfCondition() {
@@ -543,5 +559,13 @@ public class EvaluationHandler extends AbstractHandler {
 
 	public boolean isNotLowerLogLevelInIfStatement() {
 		return this.notLowerLogLevelInIfStatement;
+	}
+
+	private void setNotLowerLogLevelWithKeywords(boolean notLowerLogLevelWithKeywords) {
+		this.notLowerLogLevelWithKeywords = notLowerLogLevelWithKeywords;
+	}
+
+	public boolean isNotLowerLogLevelWithKeywords() {
+		return this.notLowerLogLevelWithKeywords;
 	}
 }
