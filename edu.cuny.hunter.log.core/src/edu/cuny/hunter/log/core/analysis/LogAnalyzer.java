@@ -163,8 +163,8 @@ public class LogAnalyzer extends ASTVisitor {
 		}
 
 		/**
-		 * Do not change a log level in a logging statement if there exists an
-		 * immediate if statement whose condition contains a log level.
+		 * Do not change a log level in a logging statement if there exists an immediate
+		 * if statement whose condition contains a log level.
 		 */
 		if (this.checkIfCondition) {
 			if (checkIfConditionHavingLevel(logInvocation.getExpression())) {
@@ -294,8 +294,8 @@ public class LogAnalyzer extends ASTVisitor {
 	}
 
 	/**
-	 * Build a list of boundary. The DOI values could be divided into 7 groups
-	 * by this boundary. 7 groups are corresponding to 7 logging levels
+	 * Build a list of boundary. The DOI values could be divided into 7 groups by
+	 * this boundary. 7 groups are corresponding to 7 logging levels
 	 * 
 	 * @param degreeOfInterests
 	 * @return a list of boundary
@@ -414,9 +414,9 @@ public class LogAnalyzer extends ASTVisitor {
 	}
 
 	/**
-	 * Returns true if the given logging expression is immediately contained
-	 * within an if statement not having an else clause (i.e., guarded) and
-	 * false otherwise.
+	 * Returns true if the given logging expression is immediately contained within
+	 * an if statement not having an else clause (i.e., guarded) and false
+	 * otherwise.
 	 */
 	private static boolean checkIfBlock(MethodInvocation loggingExpression) {
 		ASTNode loggingStatement = loggingExpression.getParent();
@@ -551,8 +551,8 @@ public class LogAnalyzer extends ASTVisitor {
 	public HashSet<LogInvocation> getLogInvsNotLoweredInIfStatement() {
 		return this.logInvsNotLoweredInIfStatement;
 	}
-	
-	public HashSet<LogInvocation> getLogInvsNotLoweredByKeywords(){
+
+	public HashSet<LogInvocation> getLogInvsNotLoweredByKeywords() {
 		return this.logInvsNotLoweredByKeywords;
 	}
 
