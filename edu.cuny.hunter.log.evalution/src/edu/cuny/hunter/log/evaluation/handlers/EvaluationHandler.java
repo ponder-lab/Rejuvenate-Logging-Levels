@@ -504,9 +504,9 @@ public class EvaluationHandler extends AbstractHandler {
 	}
 
 	private boolean getValueOfNotLowerLogLevelWithKeywords() {
-		String notLowerLogLevelInIfStatement = System.getenv(NOT_LOWER_LOG_LEVEL_KEYWORDS_KEY);
+		String notLowerLogLevelWithKeywords = System.getenv(NOT_LOWER_LOG_LEVEL_KEYWORDS_KEY);
 
-		if (notLowerLogLevelInIfStatement == null)
+		if (notLowerLogLevelWithKeywords == null)
 			return NOT_LOWER_LOG_LEVEL_KEYWORDS_DEFAULT;
 		else
 			return Boolean.valueOf(notLowerLogLevelWithKeywords);
