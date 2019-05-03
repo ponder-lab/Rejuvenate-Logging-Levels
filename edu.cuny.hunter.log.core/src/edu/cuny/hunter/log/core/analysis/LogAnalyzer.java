@@ -68,7 +68,7 @@ public class LogAnalyzer extends ASTVisitor {
 	/**
 	 * A set of keywords in log messages.
 	 */
-	final private Set<String> keyWordsInLogMessages = Stream.of("failed", "disabled", "error", "exception")
+	private final Set<String> KEYWORDS_IN_LOG_MESSAGES = Stream.of("failed", "disabled", "error", "exception")
 			.collect(Collectors.toSet());
 
 	private boolean test;
@@ -155,7 +155,7 @@ public class LogAnalyzer extends ASTVisitor {
 		}
 
 		if (this.notLowerLogLevelWithKeyWords) {
-			if (Util.isLogMessageWithKeywords(logInvocation.getExpression(), keyWordsInLogMessages)) {
+			if (Util.isLogMessageWithKeywords(logInvocation.getExpression(), KEYWORDS_IN_LOG_MESSAGES)) {
 				logInvocation.setAction(Action.NONE, null);
 				this.logInvsNotLoweredByKeywords.add(logInvocation);
 				return false;

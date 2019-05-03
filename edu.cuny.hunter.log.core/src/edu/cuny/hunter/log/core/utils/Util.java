@@ -101,7 +101,7 @@ public final class Util {
 	public static boolean isLogMessageWithKeywords(MethodInvocation node, Set<String> keyWordsInLogMessages) {
 		String logExpression = node.toString().toLowerCase();
 		for (String key : keyWordsInLogMessages) {
-			if (logExpression.contains(key))
+			if (logExpression.contains(key.toLowerCase()))
 				return true;
 		}
 		return false;
