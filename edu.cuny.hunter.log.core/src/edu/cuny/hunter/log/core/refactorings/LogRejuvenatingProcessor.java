@@ -322,6 +322,7 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 			throw e;
 		} catch (IOException e) {
 			LOGGER.severe("Cannot process git commits.");
+			e.printStackTrace();
 			throw e;
 		}
 	}
