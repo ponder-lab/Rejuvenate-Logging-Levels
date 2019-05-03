@@ -517,7 +517,7 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 	}
 
 	public boolean isNotLowerLogLevelWithKeyWords() {
-		return notLowerLogLevelWithKeyWords;
+		return this.notLowerLogLevelWithKeyWords;
 	}
 
 	public void setNotLowerLogLevelWithKeyWords(boolean notLowerLogLevelWithKeyWords) {
