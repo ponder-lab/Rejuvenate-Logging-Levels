@@ -99,46 +99,9 @@ public final class Util {
 	}
 
 	public static boolean isLogMessageWithKeywords(MethodInvocation node, Set<String> keyWordsInLogMessages) {
-		String methodName = node.getName().toString();
-
-		@SuppressWarnings("unchecked")
-		List<Expression> arguments = node.arguments();
-		if (arguments.size() == 0)
-			return false;
-
-		if (methodName.equals("log")) {
-			Expression argument = arguments.get(1);
-			return havingKeyWord(argument.toString(), keyWordsInLogMessages);
-		}
-
-		if (methodName.equals("logp")) {
-			Expression argument = arguments.get(3);
-			return havingKeyWord(argument.toString(), keyWordsInLogMessages);
-		}
-		if (methodName.equals("logrb")) {
-			Expression argument = arguments.get(2);
-			Expression argument2 = arguments.get(4);
-			return havingKeyWord(argument.toString(), keyWordsInLogMessages)
-					|| havingKeyWord(argument2.toString(), keyWordsInLogMessages);
-		}
-
-		// Get rid of all and off here.
-		if (methodName.equals("config") || methodName.equals("fine") || methodName.equals("finer")
-				|| methodName.equals("finest") || methodName.equals("info") || methodName.equals("severe")
-				|| methodName.equals("warning")) {
-			Expression argument = arguments.get(0);
-			return havingKeyWord(argument.toString(), keyWordsInLogMessages);
-		}
-		return false;
-	}
-
-	/**
-	 * Check whether log messages contain key words.
-	 */
-	public static boolean havingKeyWord(String logMessages, Set<String> keyWordsInLogMessages) {
-		logMessages = logMessages.toLowerCase();
+		String logExpression = node.toString().toLowerCase();
 		for (String key : keyWordsInLogMessages) {
-			if (logMessages.contains(key))
+			if (logExpression.contains(key))
 				return true;
 		}
 		return false;
