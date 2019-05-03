@@ -53,7 +53,7 @@ public class LogAnalyzer extends ASTVisitor {
 
 	private boolean notLowerLogLevelInCatchBlock = false;
 
-	private boolean notLowerLogLevelWithKeyWords = false;
+	private boolean notLowerLogLevelWithKeyWords;
 
 	private boolean useLogCategoryWithConfig = false;
 
