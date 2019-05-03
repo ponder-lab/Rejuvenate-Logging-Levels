@@ -68,7 +68,7 @@ public class LogAnalyzer extends ASTVisitor {
 	/**
 	 * A set of keywords in log messages.
 	 */
-	private final Set<String> KEYWORDS_IN_LOG_MESSAGES = Stream.of("failed", "disabled", "error", "exception")
+	private final Set<String> KEYWORDS_IN_LOG_MESSAGES = Stream.of("fail", "disable", "error", "exception")
 			.collect(Collectors.toSet());
 
 	private boolean test;
