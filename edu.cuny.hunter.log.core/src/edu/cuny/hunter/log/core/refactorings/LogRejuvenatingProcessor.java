@@ -69,7 +69,7 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 	/**
 	 * Treat CONFIG as category
 	 */
-	private boolean useLogCategoryWithConfig = true;
+	private boolean useLogCategoryWithConfig = false;
 
 	/**
 	 * Treat CONFIG/WARNING/SEVERE log levels as category
@@ -79,17 +79,17 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 	/**
 	 * Should we use git history to bump DOI values for all methods?
 	 */
-	private boolean useGitHistory = true;
+	private boolean useGitHistory = false;
 
 	/**
 	 * Should we consider logging statements in catch blocks?
 	 */
-	private boolean notLowerLogLevelInCatchBlock = true;
+	private boolean notLowerLogLevelInCatchBlock = false;
 
 	/**
 	 * We should not lower log level in immediate if statement.
 	 */
-	private boolean notLowerLogLevelInIfStatement = true;
+	private boolean notLowerLogLevelInIfStatement = false;
 
 	/**
 	 * Limit number of commits
@@ -104,7 +104,7 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 	/**
 	 * Keep if condition and log levels inside if statement consistent
 	 */
-	private boolean checkIfCondition = true;
+	private boolean checkIfCondition = false;
 
 	/**
 	 * It the caller Evaluation plugin?
