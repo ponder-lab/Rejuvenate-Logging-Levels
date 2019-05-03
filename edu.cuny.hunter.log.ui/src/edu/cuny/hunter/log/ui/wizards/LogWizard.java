@@ -121,26 +121,21 @@ public class LogWizard extends RefactoringWizard {
 			gitLabel.setText("Check the option below if you would like to use git history to rejuvenate log levels.");
 
 			// set up buttons.
-			Button checkButton = this.addBooleanButton("Traverse git history to rejuvenate log levels.",
-					USE_GIT_HISTORY, this.getProcessor()::setUseGitHistory, result, SWT.CHECK);
-			checkButton.setSelection(true);
+			this.addBooleanButton("Traverse git history to rejuvenate log levels.", USE_GIT_HISTORY,
+					this.getProcessor()::setUseGitHistory, result, SWT.CHECK);
 
 			Label separator2 = new Label(result, SWT.SEPARATOR | SWT.SHADOW_OUT | SWT.HORIZONTAL);
 			separator2.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
 
 			// set up buttons.
-			Button checkButton2 = this.addBooleanButton(
-					"Never lower the logging level of logging statements within catch blocks.",
+			this.addBooleanButton("Never lower the logging level of logging statements within catch blocks.",
 					NOT_LOWER_LOG_LEVEL_CATCH_BLOCK, this.getProcessor()::setNotLowerLogLevelInCatchBlock, result,
 					SWT.CHECK);
-			checkButton2.setSelection(true);
 
 			// set up buttons.
-			Button checkButton3 = this.addBooleanButton(
-					"Never lower the logging level of logging statements inside if statements.",
+			this.addBooleanButton("Never lower the logging level of logging statements inside if statements.",
 					NOT_LOWER_LOG_LEVEL_IF_STATEMENT, this.getProcessor()::setNotLowerLogLevelInIfStatement, result,
 					SWT.CHECK);
-			checkButton3.setSelection(true);
 
 			// set up buttons.
 			this.addBooleanButton(
@@ -148,11 +143,8 @@ public class LogWizard extends RefactoringWizard {
 					NOT_LOWER_LOG_LEVEL_KEY_WORDS, this.getProcessor()::setNotLowerLogLevelWithKeyWords, result,
 					SWT.CHECK);
 
-			// set up buttons.
-			Button checkButton5 = this.addBooleanButton(
-					"Do not change a log level if its if statement condition contains a log level.", CHECK_IF_CONDITION,
-					this.getProcessor()::setCheckIfCondition, result, SWT.CHECK);
-			checkButton5.setSelection(true);
+			this.addBooleanButton("Do not change a log level if its if statement condition contains a log level.",
+					CHECK_IF_CONDITION, this.getProcessor()::setCheckIfCondition, result, SWT.CHECK);
 
 			Label separator3 = new Label(result, SWT.SEPARATOR | SWT.SHADOW_OUT | SWT.HORIZONTAL);
 			separator3.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));

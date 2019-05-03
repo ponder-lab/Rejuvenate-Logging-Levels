@@ -49,17 +49,17 @@ public class LogAnalyzer extends ASTVisitor {
 
 	private Set<LogInvocation> logInvocationSet = new HashSet<>();
 
-	private boolean notLowerLogLevelInIfStatement = false;
+	private boolean notLowerLogLevelInIfStatement;
 
-	private boolean notLowerLogLevelInCatchBlock = false;
+	private boolean notLowerLogLevelInCatchBlock;
 
 	private boolean notLowerLogLevelWithKeyWords;
 
-	private boolean useLogCategoryWithConfig = false;
+	private boolean useLogCategoryWithConfig;
 
-	private boolean checkIfCondition = false;
+	private boolean checkIfCondition;
 
-	private boolean useLogCategory = false;
+	private boolean useLogCategory;
 
 	private HashSet<Float> DOIValues = new HashSet<>();
 
