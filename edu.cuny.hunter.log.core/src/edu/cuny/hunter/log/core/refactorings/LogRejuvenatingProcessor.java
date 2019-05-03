@@ -94,7 +94,7 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 	/**
 	 * Not lower logs with particular keywords in their messages.
 	 */
-	private boolean notLowerLogLevelWithKeyWords = true;
+	private boolean notLowerLogLevelWithKeyWords = false;
 
 	/**
 	 * Limit number of commits

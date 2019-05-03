@@ -143,11 +143,10 @@ public class LogWizard extends RefactoringWizard {
 			checkButton3.setSelection(true);
 
 			// set up buttons.
-			Button checkButton4 = this.addBooleanButton(
+			this.addBooleanButton(
 					"Never lower the logging level of logging statements with particular keywords in their messages.",
 					NOT_LOWER_LOG_LEVEL_KEY_WORDS, this.getProcessor()::setNotLowerLogLevelWithKeyWords, result,
 					SWT.CHECK);
-			checkButton4.setSelection(true);
 
 			// set up buttons.
 			Button checkButton5 = this.addBooleanButton(
