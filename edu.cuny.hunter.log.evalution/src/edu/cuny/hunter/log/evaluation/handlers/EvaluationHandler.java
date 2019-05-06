@@ -73,11 +73,38 @@ public class EvaluationHandler extends AbstractHandler {
 	private static final boolean CHECK_IF_CONDITION_DEFAULT = false;
 	private static final boolean USE_LOG_CATEGORY_DEFAULT = false;
 	private static final boolean USE_GIT_HISTORY = false;
+
+	/**
+	 * Treat CONFIG/WARNING/SEVERE log levels as category and not traditional
+	 * levels.
+	 */
 	private boolean useLogCategory;
+
+	/**
+	 * Treat CONFIG log level as a category and not a traditional level.
+	 */
 	private boolean useLogCategoryWithConfig;
+
+	/**
+	 * Never lower the logging level of logging statements within catch blocks.
+	 */
 	private boolean notLowerLogLevelInCatchBlock;
+
+	/**
+	 * Never lower the logging level of logging statements within immediate if
+	 * statements.
+	 */
 	private boolean notLowerLogLevelInIfStatement;
+
+	/**
+	 * Never lower logs with particular keywords in their log messages.
+	 */
 	private boolean notLowerLogLevelWithKeywords;
+
+	/**
+	 * Do not change a log level in a logging statement if there exists an
+	 * immediate if statement whose condition contains a log level.
+	 */
 	private boolean checkIfCondtion;
 
 	@Override
@@ -451,9 +478,11 @@ public class EvaluationHandler extends AbstractHandler {
 		this.setUseLogCategory(this.computeLogCategory(i));
 		this.setUseLogCategoryWithConfig(this.computeLogCategoryWithConfig(i));
 		this.setNotLowerLogLevelInCatchBlock(this.computeLowerLogLevelInCatchBlock(i));
+
 		this.setNotLowerLogLevelInIfStatement(this.getValueOfNotLowerLogLevelInIfStatement());
 		this.setNotLowerLogLevelWithKeywords(this.getValueOfNotLowerLogLevelWithKeywords());
 		this.setCheckIfCondition(this.getValueOfCheckIfCondition());
+
 		if (this.isUseLogCategory() && this.isUseLogCategoryWithConfig())
 			throw new IllegalStateException("You cannot choose two log categories in the same time");
 	}
