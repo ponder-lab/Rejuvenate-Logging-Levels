@@ -223,8 +223,9 @@ public class EvaluationHandler extends AbstractHandler {
 							Set<LogInvocation> candidates = computeCandidateLogs(logInvocationSet);
 
 							for (LogInvocation logInvocation : candidates)
-								candidatePrinter.printRecord(sequence, logInvocation.getExpression(),
-										logInvocation.getStartPosition(), logInvocation.getLogLevel(),
+								candidatePrinter.printRecord(sequence, project.getElementName(),
+										logInvocation.getExpression(), logInvocation.getStartPosition(),
+										logInvocation.getLogLevel(),
 										logInvocation.getEnclosingType().getFullyQualifiedName(),
 										Util.getMethodIdentifier(logInvocation.getEnclosingEclipseMethod()));
 
