@@ -118,6 +118,10 @@ public class EvaluationHandler extends AbstractHandler {
 			CSVPrinter doiPrinter = null;
 			CSVPrinter gitCommitPrinter = null;
 			CSVPrinter candidatePrinter = null;
+			CSVPrinter notLowerLevelsInCatchBlockPrinter = null;
+			CSVPrinter notLowerLevelsInIfStatementPrinter = null;
+			CSVPrinter notLowerLevelsDueToKeywordsPrinter = null;
+			CSVPrinter considerIfConditionPrinter = null;
 
 			try {
 				IJavaProject[] javaProjects = Util.getSelectedJavaProjectsFromEvent(event);
@@ -145,10 +149,8 @@ public class EvaluationHandler extends AbstractHandler {
 				actionPrinter = Util.createCSVPrinter("log_transformation_actions.csv",
 						new String[] { "sequence", "subject", "log expression", "start pos", "log level", "type FQN",
 								"enclosing method", "DOI value", "action", "new level" });
-				inputLogInvPrinter = Util.createCSVPrinter("input_log_invocations.csv",
-						new String[] { "subject", "log expression", "start pos", "log level", "type FQN",
-								"enclosing method", "not lower log levels of logs inside of catch blocks",
-								"log level not transformed due to if condition", "DOI value" });
+				inputLogInvPrinter = Util.createCSVPrinter("input_log_invocations.csv", new String[] { "subject",
+						"log expression", "start pos", "log level", "type FQN", "enclosing method", "DOI value" });
 				failurePrinter = Util.createCSVPrinter("failures.csv",
 						new String[] { "sequence", "subject", "log expression", "start pos", "log level", "type FQN",
 								"enclosing method", "code", "message" });
@@ -159,6 +161,18 @@ public class EvaluationHandler extends AbstractHandler {
 								"interaction events", "run time (s)" });
 				candidatePrinter = Util.createCSVPrinter("candidate_log_invocations.csv", new String[] { "sequence",
 						"subject", "log expression", "start pos", "log level", "type FQN", "enclosing method" });
+				notLowerLevelsInCatchBlockPrinter = Util.createCSVPrinter("not_lower_levels_in_catch_blocks.csv",
+						new String[] { "sequence", "subject", "log expression", "start pos", "log level", "type FQN",
+								"enclosing method" });
+				notLowerLevelsInIfStatementPrinter = Util.createCSVPrinter("not_lower_levels_in_if_statements.csv",
+						new String[] { "sequence", "subject", "log expression", "start pos", "log level", "type FQN",
+								"enclosing method" });
+				notLowerLevelsDueToKeywordsPrinter = Util.createCSVPrinter("not_lower_levels_due_to_keywords.csv",
+						new String[] { "sequence", "subject", "log expression", "start pos", "log level", "type FQN",
+								"enclosing method" });
+				considerIfConditionPrinter = Util.createCSVPrinter("not_transform_levels_due_to_if_condition.csv",
+						new String[] { "sequence", "subject", "log expression", "start pos", "log level", "type FQN",
+								"enclosing method" });
 
 				// we are using 6 settings
 				for (int i = 0; i < 6; ++i) {
@@ -213,18 +227,15 @@ public class EvaluationHandler extends AbstractHandler {
 											logInvocation.getLogLevel(),
 											logInvocation.getEnclosingType().getFullyQualifiedName(),
 											Util.getMethodIdentifier(logInvocation.getEnclosingEclipseMethod()),
-											logRejuvenatingProcessor.getLogInvsNotLoweredInCatch()
-													.contains(logInvocation),
-											logRejuvenatingProcessor.getLogInvsNotTransformedInIf()
-													.contains(logInvocation),
 											logInvocation.getDegreeOfInterestValue());
 								}
 
 							Set<LogInvocation> candidates = computeCandidateLogs(logInvocationSet);
 
 							for (LogInvocation logInvocation : candidates)
-								candidatePrinter.printRecord(sequence, logInvocation.getExpression(),
-										logInvocation.getStartPosition(), logInvocation.getLogLevel(),
+								candidatePrinter.printRecord(sequence, project.getElementName(),
+										logInvocation.getExpression(), logInvocation.getStartPosition(),
+										logInvocation.getLogLevel(),
 										logInvocation.getEnclosingType().getFullyQualifiedName(),
 										Util.getMethodIdentifier(logInvocation.getEnclosingEclipseMethod()));
 
@@ -337,6 +348,35 @@ public class EvaluationHandler extends AbstractHandler {
 									this.isNotLowerLogLevelWithKeywords(), this.isCheckIfCondition(),
 									resultsTimeCollector.getCollectedTime());
 
+							for (LogInvocation logInvocation : logRejuvenatingProcessor.getLogInvsNotLoweredInCatch())
+								notLowerLevelsInCatchBlockPrinter.printRecord(sequence, project.getElementName(),
+										logInvocation.getExpression(), logInvocation.getStartPosition(),
+										logInvocation.getLogLevel(),
+										logInvocation.getEnclosingType().getFullyQualifiedName(),
+										Util.getMethodIdentifier(logInvocation.getEnclosingEclipseMethod()));
+
+							for (LogInvocation logInvocation : logRejuvenatingProcessor.getLogInvsNotLoweredInIf())
+								notLowerLevelsInIfStatementPrinter.printRecord(sequence, project.getElementName(),
+										logInvocation.getExpression(), logInvocation.getStartPosition(),
+										logInvocation.getLogLevel(),
+										logInvocation.getEnclosingType().getFullyQualifiedName(),
+										Util.getMethodIdentifier(logInvocation.getEnclosingEclipseMethod()));
+
+							for (LogInvocation logInvocation : logRejuvenatingProcessor
+									.getLogInvsNotLoweredWithKeywords())
+								notLowerLevelsDueToKeywordsPrinter.printRecord(sequence, project.getElementName(),
+										logInvocation.getExpression(), logInvocation.getStartPosition(),
+										logInvocation.getLogLevel(),
+										logInvocation.getEnclosingType().getFullyQualifiedName(),
+										Util.getMethodIdentifier(logInvocation.getEnclosingEclipseMethod()));
+
+							for (LogInvocation logInvocation : logRejuvenatingProcessor.getLogInvsNotTransformedInIf())
+								considerIfConditionPrinter.printRecord(sequence, project.getElementName(),
+										logInvocation.getExpression(), logInvocation.getStartPosition(),
+										logInvocation.getLogLevel(),
+										logInvocation.getEnclosingType().getFullyQualifiedName(),
+										Util.getMethodIdentifier(logInvocation.getEnclosingEclipseMethod()));
+
 						}
 					}
 					// Clear intermediate data for mylyn-git plug-in.
@@ -355,6 +395,15 @@ public class EvaluationHandler extends AbstractHandler {
 					doiPrinter.close();
 					gitCommitPrinter.close();
 					candidatePrinter.close();
+
+					if (notLowerLevelsInCatchBlockPrinter != null)
+						notLowerLevelsInCatchBlockPrinter.close();
+					if (notLowerLevelsInIfStatementPrinter != null)
+						notLowerLevelsInIfStatementPrinter.close();
+					if (notLowerLevelsDueToKeywordsPrinter != null)
+						notLowerLevelsDueToKeywordsPrinter.close();
+					if (considerIfConditionPrinter != null)
+						considerIfConditionPrinter.close();
 				} catch (IOException e) {
 					return new Status(IStatus.ERROR, FrameworkUtil.getBundle(this.getClass()).getSymbolicName(),
 							"Encountered exception during file closing", e);
