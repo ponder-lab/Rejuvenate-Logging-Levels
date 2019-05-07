@@ -170,7 +170,7 @@ public class EvaluationHandler extends AbstractHandler {
 				notLowerLevelsDueToKeywordsPrinter = Util.createCSVPrinter("not_lower_levels_due_to_keywords.csv",
 						new String[] { "sequence", "subject", "log expression", "start pos", "log level", "type FQN",
 								"enclosing method" });
-				considerIfConditionPrinter = Util.createCSVPrinter("consider_if_conditions.csv",
+				considerIfConditionPrinter = Util.createCSVPrinter("not_transform_levels_due_to_if_condition.csv",
 						new String[] { "sequence", "subject", "log expression", "start pos", "log level", "type FQN",
 								"enclosing method" });
 
