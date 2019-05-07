@@ -307,16 +307,19 @@ public class EvaluationHandler extends AbstractHandler {
 								LinkedList<Commit> commits = logRejuvenatingProcessor.getCommits();
 								// We only need to print once.
 								if (i == 0) {
+									// If memoization happens, the list of commits is empty.
 									for (Commit c : commits) {
 										gitCommitPrinter.printRecord(project.getElementName(), c.getSHA1(),
 												c.getJavaLinesAdded(), c.getJavaLinesRemoved(), c.getMethodFound(),
 												c.getInteractionEvents(), c.getRunTime());
 										resultCommit.computLines(c);
 									}
-									this.repoToLinesAdded.put(repoURL, commits.size() == 0 ? 0
-											: ((double) resultCommit.getJavaLinesAdded()) / commits.size());
-									this.repoToLinesRemoved.put(repoURL, commits.size() == 0 ? 0
-											: ((double) resultCommit.getJavaLinesRemoved()) / commits.size());
+									if (!this.repoToLinesAdded.containsKey(repoURL))
+										this.repoToLinesAdded.put(repoURL, commits.size() == 0 ? 0
+												: ((double) resultCommit.getJavaLinesAdded()) / commits.size());
+									if (!this.repoToLinesRemoved.containsKey(repoURL))
+										this.repoToLinesRemoved.put(repoURL, commits.size() == 0 ? 0
+												: ((double) resultCommit.getJavaLinesRemoved()) / commits.size());
 								}
 								resultCommit.setActualCommits(commits.size());
 								if (!commits.isEmpty())
@@ -328,7 +331,7 @@ public class EvaluationHandler extends AbstractHandler {
 									repoPrinter.printRecord(sequence, repoURL, resultCommit.getHeadSha(), NToUseCommit,
 											resultCommit.getCommitsProcessed(),
 											logRejuvenatingProcessor.getActualNumberOfCommits(),
-											repoToLinesAdded.get(repoURL), repoToLinesRemoved.get(repoURL));
+											this.repoToLinesAdded.get(repoURL), this.repoToLinesRemoved.get(repoURL));
 
 							}
 
