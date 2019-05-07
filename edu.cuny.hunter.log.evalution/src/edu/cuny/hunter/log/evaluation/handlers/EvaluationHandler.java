@@ -118,9 +118,9 @@ public class EvaluationHandler extends AbstractHandler {
 			CSVPrinter doiPrinter = null;
 			CSVPrinter gitCommitPrinter = null;
 			CSVPrinter candidatePrinter = null;
-			CSVPrinter notLoweredLevelsInCatchBlockPrinter = null;
-			CSVPrinter notLoweredLevelsInIfStatementPrinter = null;
-			CSVPrinter notLoweredLevelsDueToKeywordsPrinter = null;
+			CSVPrinter notLowerLevelsInCatchBlockPrinter = null;
+			CSVPrinter notLowerLevelsInIfStatementPrinter = null;
+			CSVPrinter notLowerLevelsDueToKeywordsPrinter = null;
 			CSVPrinter considerIfConditionPrinter = null;
 
 			try {
@@ -161,16 +161,16 @@ public class EvaluationHandler extends AbstractHandler {
 								"interaction events", "run time (s)" });
 				candidatePrinter = Util.createCSVPrinter("candidate_log_invocations.csv", new String[] { "sequence",
 						"subject", "log expression", "start pos", "log level", "type FQN", "enclosing method" });
-				notLoweredLevelsInCatchBlockPrinter = Util.createCSVPrinter("candidate_log_invocations.csv",
+				notLowerLevelsInCatchBlockPrinter = Util.createCSVPrinter("not_lower_levels_in_catch_blocks.csv",
 						new String[] { "sequence", "subject", "log expression", "start pos", "log level", "type FQN",
 								"enclosing method" });
-				notLoweredLevelsInIfStatementPrinter = Util.createCSVPrinter("candidate_log_invocations.csv",
+				notLowerLevelsInIfStatementPrinter = Util.createCSVPrinter("not_lower_levels_in_if_statements.csv",
 						new String[] { "sequence", "subject", "log expression", "start pos", "log level", "type FQN",
 								"enclosing method" });
-				notLoweredLevelsDueToKeywordsPrinter = Util.createCSVPrinter("candidate_log_invocations.csv",
+				notLowerLevelsDueToKeywordsPrinter = Util.createCSVPrinter("not_lower_levels_due_to_keywords.csv",
 						new String[] { "sequence", "subject", "log expression", "start pos", "log level", "type FQN",
 								"enclosing method" });
-				considerIfConditionPrinter = Util.createCSVPrinter("candidate_log_invocations.csv",
+				considerIfConditionPrinter = Util.createCSVPrinter("consider_if_conditions.csv",
 						new String[] { "sequence", "subject", "log expression", "start pos", "log level", "type FQN",
 								"enclosing method" });
 
@@ -346,14 +346,14 @@ public class EvaluationHandler extends AbstractHandler {
 									resultsTimeCollector.getCollectedTime());
 
 							for (LogInvocation logInvocation : logRejuvenatingProcessor.getLogInvsNotLoweredInCatch())
-								notLoweredLevelsInCatchBlockPrinter.printRecord(sequence, project.getElementName(),
+								notLowerLevelsInCatchBlockPrinter.printRecord(sequence, project.getElementName(),
 										logInvocation.getExpression(), logInvocation.getStartPosition(),
 										logInvocation.getLogLevel(),
 										logInvocation.getEnclosingType().getFullyQualifiedName(),
 										Util.getMethodIdentifier(logInvocation.getEnclosingEclipseMethod()));
 
 							for (LogInvocation logInvocation : logRejuvenatingProcessor.getLogInvsNotLoweredInIf())
-								notLoweredLevelsInIfStatementPrinter.printRecord(sequence, project.getElementName(),
+								notLowerLevelsInIfStatementPrinter.printRecord(sequence, project.getElementName(),
 										logInvocation.getExpression(), logInvocation.getStartPosition(),
 										logInvocation.getLogLevel(),
 										logInvocation.getEnclosingType().getFullyQualifiedName(),
@@ -361,7 +361,7 @@ public class EvaluationHandler extends AbstractHandler {
 
 							for (LogInvocation logInvocation : logRejuvenatingProcessor
 									.getLogInvsNotLoweredWithKeywords())
-								notLoweredLevelsDueToKeywordsPrinter.printRecord(sequence, project.getElementName(),
+								notLowerLevelsDueToKeywordsPrinter.printRecord(sequence, project.getElementName(),
 										logInvocation.getExpression(), logInvocation.getStartPosition(),
 										logInvocation.getLogLevel(),
 										logInvocation.getEnclosingType().getFullyQualifiedName(),
@@ -393,12 +393,12 @@ public class EvaluationHandler extends AbstractHandler {
 					gitCommitPrinter.close();
 					candidatePrinter.close();
 
-					if (notLoweredLevelsInCatchBlockPrinter != null)
-						notLoweredLevelsInCatchBlockPrinter.close();
-					if (notLoweredLevelsInIfStatementPrinter != null)
-						notLoweredLevelsInIfStatementPrinter.close();
-					if (notLoweredLevelsDueToKeywordsPrinter != null)
-						notLoweredLevelsDueToKeywordsPrinter.close();
+					if (notLowerLevelsInCatchBlockPrinter != null)
+						notLowerLevelsInCatchBlockPrinter.close();
+					if (notLowerLevelsInIfStatementPrinter != null)
+						notLowerLevelsInIfStatementPrinter.close();
+					if (notLowerLevelsDueToKeywordsPrinter != null)
+						notLowerLevelsDueToKeywordsPrinter.close();
 					if (considerIfConditionPrinter != null)
 						considerIfConditionPrinter.close();
 				} catch (IOException e) {
