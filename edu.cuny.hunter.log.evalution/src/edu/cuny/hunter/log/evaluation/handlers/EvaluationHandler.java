@@ -344,14 +344,22 @@ public class EvaluationHandler extends AbstractHandler {
 						"Encountered exception during evaluation", e);
 			} finally {
 				try {
-					resultPrinter.close();
-					repoPrinter.close();
-					actionPrinter.close();
-					inputLogInvPrinter.close();
-					failurePrinter.close();
-					doiPrinter.close();
-					gitCommitPrinter.close();
-					candidatePrinter.close();
+					if (resultPrinter != null)
+						resultPrinter.close();
+					if (repoPrinter != null)
+						repoPrinter.close();
+					if (actionPrinter != null)
+						actionPrinter.close();
+					if (inputLogInvPrinter != null)
+						inputLogInvPrinter.close();
+					if (failurePrinter != null)
+						failurePrinter.close();
+					if (doiPrinter != null)
+						doiPrinter.close();
+					if (gitCommitPrinter != null)
+						gitCommitPrinter.close();
+					if (candidatePrinter != null)
+						candidatePrinter.close();
 				} catch (IOException e) {
 					return new Status(IStatus.ERROR, FrameworkUtil.getBundle(this.getClass()).getSymbolicName(),
 							"Encountered exception during file closing", e);
