@@ -148,6 +148,8 @@ public class EvaluationHandler extends AbstractHandler {
 				inputLogInvPrinter = Util.createCSVPrinter("input_log_invocations.csv",
 						new String[] { "subject", "log expression", "start pos", "log level", "type FQN",
 								"enclosing method", "not lower log levels of logs inside of catch blocks",
+								"not lower log levels of logs due to if statement",
+								"not lower log levels of logs due to keywords",
 								"log level not transformed due to if condition", "DOI value" });
 				failurePrinter = Util.createCSVPrinter("failures.csv",
 						new String[] { "sequence", "subject", "log expression", "start pos", "log level", "type FQN",
@@ -214,6 +216,9 @@ public class EvaluationHandler extends AbstractHandler {
 											logInvocation.getEnclosingType().getFullyQualifiedName(),
 											Util.getMethodIdentifier(logInvocation.getEnclosingEclipseMethod()),
 											logRejuvenatingProcessor.getLogInvsNotLoweredInCatch()
+													.contains(logInvocation),
+											logRejuvenatingProcessor.getLogInvsNotLoweredInIf().contains(logInvocation),
+											logRejuvenatingProcessor.getLogInvsNotLoweredWithKeywords()
 													.contains(logInvocation),
 											logRejuvenatingProcessor.getLogInvsNotTransformedInIf()
 													.contains(logInvocation),

@@ -179,13 +179,6 @@ public class LogAnalyzer extends ASTVisitor {
 		if (rejuvenatedLogLevel == null)
 			return false;
 
-		// process not lower log levels in catch blocks
-		if (logInvocation.getInCatchBlock() && currentLogLevel.intValue() > rejuvenatedLogLevel.intValue()) {
-			this.logInvsNotLoweredInCatch.add(logInvocation);
-			logInvocation.setAction(Action.NONE, null);
-			return false;
-		}
-
 		if (this.notLowerLogLevelInIfStatement)
 			// process not lower log levels in if statements.
 			if (checkIfBlock(logInvocation.getExpression())
@@ -194,6 +187,13 @@ public class LogAnalyzer extends ASTVisitor {
 				logInvocation.setAction(Action.NONE, null);
 				return false;
 			}
+		
+		// process not lower log levels in catch blocks
+		if (logInvocation.getInCatchBlock() && currentLogLevel.intValue() > rejuvenatedLogLevel.intValue()) {
+			this.logInvsNotLoweredInCatch.add(logInvocation);
+			logInvocation.setAction(Action.NONE, null);
+			return false;
+		}
 
 		if ((currentLogLevel == rejuvenatedLogLevel) // current log level is
 														// same to transformed
