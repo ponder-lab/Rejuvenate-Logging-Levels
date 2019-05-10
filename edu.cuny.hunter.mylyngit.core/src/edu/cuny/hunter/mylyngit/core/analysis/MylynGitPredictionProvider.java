@@ -2,6 +2,7 @@ package edu.cuny.hunter.mylyngit.core.analysis;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -63,13 +64,15 @@ public class MylynGitPredictionProvider extends AbstractJavaRelationProvider {
 
 	private LinkedList<Commit> commits;
 
+	PrintWriter writer;
+
 	/**
 	 * The entry point
 	 * 
 	 * @throws GitAPIException
 	 * @throws IOException
 	 * @throws NoHeadException
-	 * @throws NonActiveMylynTaskException 
+	 * @throws NonActiveMylynTaskException
 	 */
 	public void processProjects() throws NoHeadException, IOException, GitAPIException, NonActiveMylynTaskException {
 		clearTaskContext();
@@ -93,7 +96,10 @@ public class MylynGitPredictionProvider extends AbstractJavaRelationProvider {
 			if (methodBinding != null)
 				this.methodDecToIMethod.put(m, (IMethod) methodBinding.getJavaElement());
 		});
+
+		writer = new PrintWriter("DOI_value.csv", "UTF-8");
 		this.bumpDOIValuesForAllGitMethods(javaProject);
+		writer.close();
 	}
 
 	/**
@@ -113,6 +119,11 @@ public class MylynGitPredictionProvider extends AbstractJavaRelationProvider {
 	public void bumpDOI(IMethod method) {
 		IInteractionContext activeContext = ContextCore.getContextManager().getActiveContext();
 		ContextCorePlugin.getContextManager().processInteractionEvent(method, Kind.EDIT, ID, activeContext);
+
+		writer.println("\"" + method.getHandleIdentifier() + "\"," + ContextCore.getContextManager().getElement(
+				"=client/src<org.openqa.selenium.net{UrlChecker.java[UrlChecker~waitUntilAvailable~J~QTimeUnit;~\\[QURL;")
+				.getInterest().getValue());
+
 	}
 
 	/**
