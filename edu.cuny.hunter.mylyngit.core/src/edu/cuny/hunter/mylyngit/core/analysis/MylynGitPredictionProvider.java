@@ -21,6 +21,7 @@ import org.eclipse.jgit.api.errors.NoHeadException;
 import org.eclipse.mylyn.context.core.ContextCore;
 import org.eclipse.mylyn.context.core.IInteractionContext;
 import org.eclipse.mylyn.internal.context.core.ContextCorePlugin;
+import org.eclipse.mylyn.internal.context.core.InteractionContextScaling;
 import org.eclipse.mylyn.internal.java.ui.search.AbstractJavaRelationProvider;
 import org.eclipse.mylyn.monitor.core.InteractionEvent.Kind;
 
@@ -85,7 +86,10 @@ public class MylynGitPredictionProvider extends AbstractJavaRelationProvider {
 	public void processOneProject(IJavaProject javaProject) throws NoHeadException, IOException, GitAPIException {
 		this.methodDeclarations.clear();
 		this.methodDecToIMethod.clear();
-
+		
+		InteractionContextScaling scaling = (InteractionContextScaling)ContextCorePlugin.getContextManager().getActiveContext().getScaling();
+		scaling.setDecay(0.0085f);
+		
 		List<ICompilationUnit> cUnits = Util.getCompilationUnits(javaProject);
 		cUnits.forEach(cUnit -> {
 			this.methodDeclarations.addAll(this.getIMethodsInSouceCode(cUnit));
