@@ -86,10 +86,7 @@ public class MylynGitPredictionProvider extends AbstractJavaRelationProvider {
 	public void processOneProject(IJavaProject javaProject) throws NoHeadException, IOException, GitAPIException {
 		this.methodDeclarations.clear();
 		this.methodDecToIMethod.clear();
-		
-		InteractionContextScaling scaling = (InteractionContextScaling)ContextCorePlugin.getContextManager().getActiveContext().getScaling();
-		scaling.setDecay(0.0085f);
-		
+
 		List<ICompilationUnit> cUnits = Util.getCompilationUnits(javaProject);
 		cUnits.forEach(cUnit -> {
 			this.methodDeclarations.addAll(this.getIMethodsInSouceCode(cUnit));
@@ -144,6 +141,10 @@ public class MylynGitPredictionProvider extends AbstractJavaRelationProvider {
 		this.setCommits(gitHistoryAnalyzer.getCommits());
 		this.setRepoURL(gitHistoryAnalyzer.getRepoURL());
 		this.setActualNumberOfCommits(gitHistoryAnalyzer.getActualNumberOfCommits());
+
+		InteractionContextScaling scaling = (InteractionContextScaling) ContextCorePlugin.getContextManager()
+				.getActiveContext().getScaling();
+		scaling.setDecay((float) (0.017 / this.actualNumberOfCommits));
 
 		LinkedList<GitMethod> gitMethods = gitHistoryAnalyzer.getGitMethods();
 		gitMethods.forEach(method -> {
