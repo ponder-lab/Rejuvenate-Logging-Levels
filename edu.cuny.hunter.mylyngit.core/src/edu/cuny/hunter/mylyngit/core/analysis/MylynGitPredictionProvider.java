@@ -41,13 +41,24 @@ public class MylynGitPredictionProvider extends AbstractJavaRelationProvider {
 	private static final String Name = "mylyn git";
 
 	private int actualNumberOfCommits;
-
+	
 	private String repoURL = "";
+	
+	private HashSet<IMethod> enclosingMethods;
+	
+	private InteractionContextScaling scaling = (InteractionContextScaling) ContextCorePlugin.getContextManager()
+			.getActiveContext().getScaling();
 
 	public MylynGitPredictionProvider() {
 		super("java", ID);
 	}
 
+	public MylynGitPredictionProvider(int N, HashSet<IMethod> enclosingMethods) {
+		this();
+		this.enclosingMethods = enclosingMethods;
+		NToUseForCommits = N;
+	}
+	
 	public MylynGitPredictionProvider(int N) {
 		this();
 		NToUseForCommits = N;
@@ -117,7 +128,12 @@ public class MylynGitPredictionProvider extends AbstractJavaRelationProvider {
 	/**
 	 * Bump DOI when there is a method change.
 	 */
-	public void bumpDOI(IMethod method) {
+	public void bumpDOI(IMethod method) {	
+		
+		if (this.enclosingMethods.contains(method)) {
+			this.scaling.set(Kind.EDIT, (float) 5.6);
+		} else this.scaling.set(Kind.EDIT, (float) 0.7);
+		
 		IInteractionContext activeContext = ContextCore.getContextManager().getActiveContext();
 		ContextCorePlugin.getContextManager().processInteractionEvent(method, Kind.EDIT, ID, activeContext);
 
@@ -141,10 +157,6 @@ public class MylynGitPredictionProvider extends AbstractJavaRelationProvider {
 		this.setCommits(gitHistoryAnalyzer.getCommits());
 		this.setRepoURL(gitHistoryAnalyzer.getRepoURL());
 		this.setActualNumberOfCommits(gitHistoryAnalyzer.getActualNumberOfCommits());
-
-		InteractionContextScaling scaling = (InteractionContextScaling) ContextCorePlugin.getContextManager()
-				.getActiveContext().getScaling();
-		scaling.setDecay((float) (0.017 / this.actualNumberOfCommits));
 
 		LinkedList<GitMethod> gitMethods = gitHistoryAnalyzer.getGitMethods();
 		gitMethods.forEach(method -> {

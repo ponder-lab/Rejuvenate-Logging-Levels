@@ -17,6 +17,7 @@ import org.eclipse.core.runtime.SubProgressMonitor;
 import org.eclipse.jdt.core.ICompilationUnit;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IJavaProject;
+import org.eclipse.jdt.core.IMethod;
 import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.jdt.core.IPackageFragmentRoot;
 import org.eclipse.jdt.core.JavaModelException;
@@ -37,7 +38,6 @@ import org.eclipse.ltk.core.refactoring.RefactoringStatus;
 import org.eclipse.ltk.core.refactoring.participants.CheckConditionsContext;
 import org.eclipse.ltk.core.refactoring.participants.RefactoringParticipant;
 import org.eclipse.ltk.core.refactoring.participants.SharableParticipants;
-
 import edu.cuny.citytech.refactoring.common.core.RefactoringProcessor;
 import edu.cuny.hunter.log.core.analysis.Action;
 import edu.cuny.hunter.log.core.analysis.LogAnalyzer;
@@ -254,11 +254,13 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 					}
 			}
 
+			this.addLogInvocationSet(analyzer.getLogInvocationSet());
+			
 			MylynGitPredictionProvider mylynProvider = null;
 
 			if (this.useGitHistory) {
 				// Process git history.
-				mylynProvider = new MylynGitPredictionProvider(this.NToUseForCommits);
+				mylynProvider = new MylynGitPredictionProvider(this.NToUseForCommits, this.getEnclosingMethods(this.logInvocationSet));
 
 				try {
 					this.processGitHistory(mylynProvider, analyzer, jproj);
@@ -281,8 +283,6 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 
 			// Get boundary
 			this.boundary = analyzer.getBoundary();
-
-			this.addLogInvocationSet(analyzer.getLogInvocationSet());
 
 			// If we are using the git history.
 			if (this.useGitHistory) {
@@ -312,6 +312,20 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 		}
 
 		return status;
+	}
+	
+	/**
+	 * Given a set of log invocations, return a set of enclosing methods.
+	 * @param logInvocationSet2
+	 * @return a set of enclosing methods
+	 */
+	private HashSet<IMethod> getEnclosingMethods(Set<LogInvocation> logInvocationSet2){
+		HashSet<IMethod> methods = new HashSet<IMethod>();
+		logInvocationSet2.forEach(inv -> {
+			if (inv.getEnclosingEclipseMethod() != null)
+				methods.add(inv.getEnclosingEclipseMethod());
+		});
+		return methods;
 	}
 
 	/**
