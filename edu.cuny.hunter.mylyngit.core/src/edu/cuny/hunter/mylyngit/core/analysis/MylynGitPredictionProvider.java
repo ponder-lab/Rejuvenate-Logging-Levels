@@ -40,11 +40,11 @@ public class MylynGitPredictionProvider extends AbstractJavaRelationProvider {
 	private static final String Name = "mylyn git";
 
 	private int actualNumberOfCommits;
-	
+
 	private String repoURL = "";
-	
+
 	private HashSet<IMethod> enclosingMethods;
-	
+
 	private InteractionContextScaling scaling = (InteractionContextScaling) ContextCorePlugin.getContextManager()
 			.getActiveContext().getScaling();
 
@@ -57,7 +57,7 @@ public class MylynGitPredictionProvider extends AbstractJavaRelationProvider {
 		this.enclosingMethods = enclosingMethods;
 		NToUseForCommits = N;
 	}
-	
+
 	public MylynGitPredictionProvider(int N) {
 		this();
 		NToUseForCommits = N;
@@ -122,13 +122,14 @@ public class MylynGitPredictionProvider extends AbstractJavaRelationProvider {
 	/**
 	 * Bump DOI when there is a method change.
 	 */
-	public void bumpDOI(IMethod method) {	
-		
+	public void bumpDOI(IMethod method) {
+
 		if (this.enclosingMethods.contains(method)) {
 			// the scaling factor for enclosing method
 			this.scaling.set(Kind.EDIT, (float) 5.6);
-		} else this.scaling.set(Kind.EDIT, (float) 0.7); // the scaling factor for non-enclosing method
-		
+		} else
+			this.scaling.set(Kind.EDIT, (float) 0.7); // the scaling factor for non-enclosing method
+
 		IInteractionContext activeContext = ContextCore.getContextManager().getActiveContext();
 		ContextCorePlugin.getContextManager().processInteractionEvent(method, Kind.EDIT, ID, activeContext);
 

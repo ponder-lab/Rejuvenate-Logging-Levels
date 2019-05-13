@@ -256,7 +256,7 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 			}
 
 			this.addLogInvocationSet(analyzer.getLogInvocationSet());
-			
+
 			MylynGitPredictionProvider mylynProvider = null;
 
 			if (this.useGitHistory) {
@@ -314,12 +314,13 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 
 		return status;
 	}
-	
+
 	/**
 	 * Given a set of log invocations, return a set of enclosing methods.
+	 * 
 	 * @return a set of enclosing methods
 	 */
-	private HashSet<IMethod> getEnclosingMethods(){
+	private HashSet<IMethod> getEnclosingMethods() {
 		HashSet<IMethod> methods = new HashSet<IMethod>();
 		this.logInvocationSet.forEach(inv -> {
 			if (inv.getEnclosingEclipseMethod() != null)
