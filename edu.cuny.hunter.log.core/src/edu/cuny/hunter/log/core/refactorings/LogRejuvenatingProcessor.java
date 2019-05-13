@@ -260,7 +260,7 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 
 			if (this.useGitHistory) {
 				// Process git history.
-				mylynProvider = new MylynGitPredictionProvider(this.NToUseForCommits, this.getEnclosingMethods(this.logInvocationSet));
+				mylynProvider = new MylynGitPredictionProvider(this.NToUseForCommits, this.getEnclosingMethods());
 
 				try {
 					this.processGitHistory(mylynProvider, analyzer, jproj);
@@ -316,12 +316,11 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 	
 	/**
 	 * Given a set of log invocations, return a set of enclosing methods.
-	 * @param logInvocationSet2
 	 * @return a set of enclosing methods
 	 */
-	private HashSet<IMethod> getEnclosingMethods(Set<LogInvocation> logInvocationSet2){
+	private HashSet<IMethod> getEnclosingMethods(){
 		HashSet<IMethod> methods = new HashSet<IMethod>();
-		logInvocationSet2.forEach(inv -> {
+		this.logInvocationSet.forEach(inv -> {
 			if (inv.getEnclosingEclipseMethod() != null)
 				methods.add(inv.getEnclosingEclipseMethod());
 		});

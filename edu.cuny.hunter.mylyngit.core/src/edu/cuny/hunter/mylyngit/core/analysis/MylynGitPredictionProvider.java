@@ -2,7 +2,6 @@ package edu.cuny.hunter.mylyngit.core.analysis;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -76,8 +75,6 @@ public class MylynGitPredictionProvider extends AbstractJavaRelationProvider {
 
 	private LinkedList<Commit> commits;
 
-	PrintWriter writer;
-
 	/**
 	 * The entry point
 	 * 
@@ -109,9 +106,7 @@ public class MylynGitPredictionProvider extends AbstractJavaRelationProvider {
 				this.methodDecToIMethod.put(m, (IMethod) methodBinding.getJavaElement());
 		});
 
-		writer = new PrintWriter("DOI_value.csv", "UTF-8");
 		this.bumpDOIValuesForAllGitMethods(javaProject);
-		writer.close();
 	}
 
 	/**
@@ -131,15 +126,12 @@ public class MylynGitPredictionProvider extends AbstractJavaRelationProvider {
 	public void bumpDOI(IMethod method) {	
 		
 		if (this.enclosingMethods.contains(method)) {
+			// the scaling factor for enclosing method
 			this.scaling.set(Kind.EDIT, (float) 5.6);
-		} else this.scaling.set(Kind.EDIT, (float) 0.7);
+		} else this.scaling.set(Kind.EDIT, (float) 0.7); // the scaling factor for non-enclosing method
 		
 		IInteractionContext activeContext = ContextCore.getContextManager().getActiveContext();
 		ContextCorePlugin.getContextManager().processInteractionEvent(method, Kind.EDIT, ID, activeContext);
-
-		writer.println("\"" + method.getHandleIdentifier() + "\"," + ContextCore.getContextManager().getElement(
-				"=client/src<org.openqa.selenium.net{UrlChecker.java[UrlChecker~waitUntilAvailable~J~QTimeUnit;~\\[QURL;")
-				.getInterest().getValue());
 
 	}
 
