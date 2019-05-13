@@ -105,7 +105,6 @@ public class MylynGitPredictionProvider extends AbstractJavaRelationProvider {
 			if (methodBinding != null)
 				this.methodDecToIMethod.put(m, (IMethod) methodBinding.getJavaElement());
 		});
-
 		this.bumpDOIValuesForAllGitMethods(javaProject);
 	}
 
