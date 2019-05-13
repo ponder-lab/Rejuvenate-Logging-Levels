@@ -45,9 +45,6 @@ public class MylynGitPredictionProvider extends AbstractJavaRelationProvider {
 
 	private HashSet<IMethod> enclosingMethods;
 
-	private InteractionContextScaling scaling = (InteractionContextScaling) ContextCorePlugin.getContextManager()
-			.getActiveContext().getScaling();
-
 	public MylynGitPredictionProvider() {
 		super("java", ID);
 	}
@@ -121,14 +118,17 @@ public class MylynGitPredictionProvider extends AbstractJavaRelationProvider {
 
 	/**
 	 * Bump DOI when there is a method change.
+	 * 
+	 * @param scaling
+	 * @param DEFAULT_SCALING_FACTOR
 	 */
-	public void bumpDOI(IMethod method) {
+	public void bumpDOI(IMethod method, InteractionContextScaling scaling, float DEFAULT_SCALING_FACTOR) {
 
 		if (this.enclosingMethods.contains(method)) {
 			// the scaling factor for enclosing method
-			this.scaling.set(Kind.EDIT, (float) 5.6);
+			scaling.set(Kind.EDIT, (float) 5.6);
 		} else
-			this.scaling.set(Kind.EDIT, (float) 0.7); // the scaling factor for non-enclosing method
+			scaling.set(Kind.EDIT, DEFAULT_SCALING_FACTOR); // the scaling factor for non-enclosing method
 
 		IInteractionContext activeContext = ContextCore.getContextManager().getActiveContext();
 		ContextCorePlugin.getContextManager().processInteractionEvent(method, Kind.EDIT, ID, activeContext);
@@ -150,9 +150,12 @@ public class MylynGitPredictionProvider extends AbstractJavaRelationProvider {
 		this.setRepoURL(gitHistoryAnalyzer.getRepoURL());
 		this.setActualNumberOfCommits(gitHistoryAnalyzer.getActualNumberOfCommits());
 
+		InteractionContextScaling scaling = (InteractionContextScaling) ContextCorePlugin.getContextManager()
+				.getActiveContext().getScaling();
+		final float DEFAULT_SCALING_FACTOR = scaling.get(Kind.EDIT);
 		LinkedList<GitMethod> gitMethods = gitHistoryAnalyzer.getGitMethods();
 		gitMethods.forEach(method -> {
-			bumpDOIValuesForMethod(method, gitHistoryAnalyzer);
+			bumpDOIValuesForMethod(method, gitHistoryAnalyzer, scaling, DEFAULT_SCALING_FACTOR);
 		});
 	}
 
@@ -166,8 +169,12 @@ public class MylynGitPredictionProvider extends AbstractJavaRelationProvider {
 	/**
 	 * Bump DOI value for a method in the current source code when its historical
 	 * method has a change.
+	 * 
+	 * @param scaling
+	 * @param DEFAULT_SCALING_FACTOR
 	 */
-	private void bumpDOIValuesForMethod(GitMethod gitMethod, GitHistoryAnalyzer gitHistoryAnalyzer) {
+	private void bumpDOIValuesForMethod(GitMethod gitMethod, GitHistoryAnalyzer gitHistoryAnalyzer,
+			InteractionContextScaling scaling, float DEFAULT_SCALING_FACTOR) {
 		TypesOfMethodOperations methodOp = gitMethod.getMethodOp();
 		MethodDeclaration methodDec = this.getMethodDeclaration(gitMethod, gitHistoryAnalyzer);
 		if (methodDec == null)
@@ -180,7 +187,7 @@ public class MylynGitPredictionProvider extends AbstractJavaRelationProvider {
 			case RENAME:
 			case CHANGE:
 			case CHANGEPARAMETER:
-				this.bumpDOI(method);
+				this.bumpDOI(method, scaling, DEFAULT_SCALING_FACTOR);
 				break;
 			case DELETE:
 				Util.resetDOIValue(method, ID);

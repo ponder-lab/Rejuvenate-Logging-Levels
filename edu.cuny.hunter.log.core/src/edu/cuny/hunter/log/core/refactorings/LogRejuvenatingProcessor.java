@@ -322,7 +322,7 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 	 */
 	private HashSet<IMethod> getEnclosingMethods() {
 		HashSet<IMethod> methods = new HashSet<IMethod>();
-		this.logInvocationSet.forEach(inv -> {
+		this.logInvocationSet.parallelStream().forEach(inv -> {
 			if (inv.getEnclosingEclipseMethod() != null)
 				methods.add(inv.getEnclosingEclipseMethod());
 		});
