@@ -22,11 +22,14 @@ import org.eclipse.jdt.core.dom.IfStatement;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.MethodInvocation;
 import org.eclipse.jdt.core.dom.Statement;
-import org.eclipse.mylyn.context.core.IDegreeOfInterest;
+import org.eclipse.mylyn.internal.context.core.ContextCorePlugin;
+import org.eclipse.mylyn.internal.context.core.InteractionContextScaling;
+
 import edu.cuny.hunter.log.core.messages.Messages;
 import edu.cuny.hunter.log.core.utils.LoggerNames;
 import edu.cuny.hunter.log.core.utils.Util;
 
+@SuppressWarnings("restriction")
 public class LogAnalyzer extends ASTVisitor {
 
 	private static final Logger LOGGER = Logger.getLogger(LoggerNames.LOGGER_NAME);
@@ -69,7 +72,9 @@ public class LogAnalyzer extends ASTVisitor {
 	 * A set of keywords in log messages.
 	 */
 	private final Set<String> KEYWORDS_IN_LOG_MESSAGES = Stream.of("fail", "disable", "error", "exception", "collision",
-			"reboot", "terminate", "throw", "should", "start", "should", "tried", "empty", "launch", "init", "does not", "doesn't", "stop", "shut", "run", "deprecate", "kill", "finish", "ready", "wait").collect(Collectors.toSet());
+			"reboot", "terminate", "throw", "should", "start", "should", "tried", "empty", "launch", "init", "does not",
+			"doesn't", "stop", "shut", "run", "deprecate", "kill", "finish", "ready", "wait")
+			.collect(Collectors.toSet());
 
 	private boolean test;
 
@@ -99,8 +104,22 @@ public class LogAnalyzer extends ASTVisitor {
 	 * Analyze project without git history.
 	 */
 	public void analyze() {
-		this.collectDOIValues(this.methodDeclarations);
+		this.collectDOIValues(this.methodDeclarations, this.getEnclosingMethods());
 		this.analyzeLogInvs();
+	}
+
+	/**
+	 * Given a set of log invocations, return a set of enclosing methods.
+	 * 
+	 * @return a set of enclosing methods
+	 */
+	private HashSet<IMethod> getEnclosingMethods() {
+		HashSet<IMethod> methods = new HashSet<IMethod>();
+		this.logInvocationSet.parallelStream().forEach(inv -> {
+			if (inv.getEnclosingEclipseMethod() != null)
+				methods.add(inv.getEnclosingEclipseMethod());
+		});
+		return methods;
 	}
 
 	/**
@@ -482,14 +501,26 @@ public class LogAnalyzer extends ASTVisitor {
 		return super.visit(node);
 	}
 
-	public void collectDOIValues(HashSet<MethodDeclaration> methods) {
-		methods.forEach(m -> {
+	public void collectDOIValues(HashSet<MethodDeclaration> methods, HashSet<IMethod> enclosingMethods) {
+		methods.parallelStream().forEach(m -> {
 			IMethodBinding methodBinding = m.resolveBinding();
 			if (methodBinding != null) {
-				IDegreeOfInterest degreeOfInterest = Util.getDegreeOfInterest((IMethod) methodBinding.getJavaElement());
-				this.DOIValues.add(Util.getDOIValue(degreeOfInterest));
+				IMethod method = (IMethod) methodBinding.getJavaElement();
+
+				InteractionContextScaling scaling = (InteractionContextScaling) ContextCorePlugin.getContextManager()
+						.getActiveContext().getScaling();
+
+				if (enclosingMethods.contains(method)) {
+					scaling.setDecay(100f);
+					System.out.println("decay: " + scaling.getDecay());
+				} else {
+					scaling.setDecay(0.017f);
+					System.out.println("decay: " + scaling.getDecay());
+				}
+				this.DOIValues.add(Util.getDegreeOfInterestValue(method));
 			}
 		});
+		this.DOIValues.forEach(v -> {System.out.println("DOI: " + v);});
 	}
 
 	/**

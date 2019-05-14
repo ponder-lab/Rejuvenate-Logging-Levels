@@ -23,7 +23,6 @@ import org.eclipse.jdt.internal.corext.codemanipulation.CodeGenerationSettings;
 import org.eclipse.jdt.internal.ui.preferences.JavaPreferencesSettings;
 import org.eclipse.ltk.core.refactoring.participants.ProcessorBasedRefactoring;
 import org.eclipse.mylyn.context.core.ContextCore;
-import org.eclipse.mylyn.context.core.IDegreeOfInterest;
 import org.eclipse.mylyn.context.core.IInteractionElement;
 import edu.cuny.hunter.log.core.refactorings.LogRejuvenatingProcessor;
 import edu.cuny.hunter.mylyngit.core.analysis.MylynGitPredictionProvider;
@@ -60,26 +59,16 @@ public final class Util {
 	}
 
 	/**
-	 * Get DOI value.
-	 */
-	public static float getDOIValue(IDegreeOfInterest degreeOfInterest) {
-		if (degreeOfInterest != null) {
-			if (degreeOfInterest.getValue() > 0)
-				return degreeOfInterest.getValue();
-		}
-		return 0;
-	}
-
-	/**
 	 * Get DOI
 	 */
-	public static IDegreeOfInterest getDegreeOfInterest(IMethod method) {
+	public static float getDegreeOfInterestValue(IMethod method) {
 		IInteractionElement interactionElement = getInteractionElement(method);
 		if (interactionElement == null || interactionElement.getContext() == null) // workaround
 																					// bug
 																					// ...
-			return null;
-		return interactionElement.getInterest();
+			return 0;
+		float doi = interactionElement.getInterest().getValue();
+		return doi > 0 ? doi : 0;
 	}
 
 	// The element in Mylyn
