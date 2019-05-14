@@ -1,5 +1,6 @@
 package edu.cuny.hunter.log.core.analysis;
 
+import java.util.Collections;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -324,8 +325,8 @@ public class LogInvocation {
 	 * Should update DOI values after evaluating git history.
 	 */
 	public void updateDOI() {
-		this.degreeOfInterest = Util.getDegreeOfInterest(this.getEnclosingEclipseMethod());
-		this.degreeOfInterestValue = Util.getDOIValue(this.degreeOfInterest);
+		this.degreeOfInterestValue = Util.getDOIValue(this.getEnclosingEclipseMethod(),
+				Collections.singleton(this.getEnclosingEclipseMethod()));
 	}
 
 	public Name getReplacedName() {

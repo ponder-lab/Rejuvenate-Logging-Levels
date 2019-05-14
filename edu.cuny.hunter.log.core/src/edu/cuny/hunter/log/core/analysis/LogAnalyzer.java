@@ -2,6 +2,7 @@ package edu.cuny.hunter.log.core.analysis;
 
 import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.Objects;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -483,13 +484,20 @@ public class LogAnalyzer extends ASTVisitor {
 	}
 
 	public void collectDOIValues(HashSet<MethodDeclaration> methods) {
+		Set<IMethod> enclosingMethods = getEnclosingMethods();
+
 		methods.forEach(m -> {
 			IMethodBinding methodBinding = m.resolveBinding();
 			if (methodBinding != null) {
-				IDegreeOfInterest degreeOfInterest = Util.getDegreeOfInterest((IMethod) methodBinding.getJavaElement());
-				this.DOIValues.add(Util.getDOIValue(degreeOfInterest));
+				float doiValue = Util.getDOIValue((IMethod) methodBinding.getJavaElement(), enclosingMethods);
+				this.DOIValues.add(doiValue);
 			}
 		});
+	}
+
+	private Set<IMethod> getEnclosingMethods() {
+		return this.getLogInvocationSet().parallelStream().map(LogInvocation::getEnclosingEclipseMethod)
+				.filter(Objects::nonNull).collect(Collectors.toSet());
 	}
 
 	/**
