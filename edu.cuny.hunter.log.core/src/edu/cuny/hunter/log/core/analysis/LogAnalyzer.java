@@ -38,7 +38,8 @@ public class LogAnalyzer extends ASTVisitor {
 	private HashSet<LogInvocation> logInvsNotTransformedInIf = new HashSet<LogInvocation>();
 
 	/**
-	 * Set of log invocations that their log levels are not lower in catch blocks
+	 * Set of log invocations that their log levels are not lower in catch
+	 * blocks
 	 */
 	private HashSet<LogInvocation> logInvsNotLoweredInCatch = new HashSet<LogInvocation>();
 
@@ -70,7 +71,9 @@ public class LogAnalyzer extends ASTVisitor {
 	 * A set of keywords in log messages.
 	 */
 	private final Set<String> KEYWORDS_IN_LOG_MESSAGES = Stream.of("fail", "disable", "error", "exception", "collision",
-			"reboot", "terminate", "throw", "should", "start", "should", "tried", "empty", "launch", "init", "does not", "doesn't", "stop", "shut", "run", "deprecate", "kill", "finish", "ready", "wait").collect(Collectors.toSet());
+			"reboot", "terminate", "throw", "should", "start", "should", "tried", "empty", "launch", "init", "does not",
+			"doesn't", "stop", "shut", "run", "deprecate", "kill", "finish", "ready", "wait")
+			.collect(Collectors.toSet());
 
 	private boolean test;
 
@@ -164,8 +167,8 @@ public class LogAnalyzer extends ASTVisitor {
 		}
 
 		/**
-		 * Do not change a log level in a logging statement if there exists an immediate
-		 * if statement whose condition contains a log level.
+		 * Do not change a log level in a logging statement if there exists an
+		 * immediate if statement whose condition contains a log level.
 		 */
 		if (this.checkIfCondition) {
 			if (checkIfConditionHavingLevel(logInvocation.getExpression())) {
@@ -295,8 +298,8 @@ public class LogAnalyzer extends ASTVisitor {
 	}
 
 	/**
-	 * Build a list of boundary. The DOI values could be divided into 7 groups by
-	 * this boundary. 7 groups are corresponding to 7 logging levels
+	 * Build a list of boundary. The DOI values could be divided into 7 groups
+	 * by this boundary. 7 groups are corresponding to 7 logging levels
 	 * 
 	 * @param degreeOfInterests
 	 * @return a list of boundary
@@ -415,9 +418,9 @@ public class LogAnalyzer extends ASTVisitor {
 	}
 
 	/**
-	 * Returns true if the given logging expression is immediately contained within
-	 * an if statement not having an else clause (i.e., guarded) and false
-	 * otherwise.
+	 * Returns true if the given logging expression is immediately contained
+	 * within an if statement not having an else clause (i.e., guarded) and
+	 * false otherwise.
 	 */
 	private static boolean checkIfBlock(MethodInvocation loggingExpression) {
 		ASTNode loggingStatement = loggingExpression.getParent();
