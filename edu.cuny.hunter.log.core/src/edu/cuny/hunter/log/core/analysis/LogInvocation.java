@@ -24,7 +24,6 @@ import org.eclipse.jdt.internal.corext.refactoring.structure.CompilationUnitRewr
 import org.eclipse.jdt.internal.corext.refactoring.util.JavaStatusContext;
 import org.eclipse.ltk.core.refactoring.RefactoringStatus;
 import org.eclipse.ltk.core.refactoring.RefactoringStatusContext;
-import org.eclipse.mylyn.context.core.IDegreeOfInterest;
 import org.eclipse.mylyn.internal.tasks.core.TaskList;
 import org.eclipse.mylyn.internal.tasks.ui.TasksUiPlugin;
 import org.osgi.framework.FrameworkUtil;
@@ -56,8 +55,6 @@ public class LogInvocation {
 	private Name replacedName;
 
 	private Name newTargetName;
-
-	private IDegreeOfInterest degreeOfInterest;
 
 	private final MethodInvocation logExpression;
 
