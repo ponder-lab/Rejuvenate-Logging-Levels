@@ -3,9 +3,9 @@
   <parent>
 		<groupId>edu.cuny.hunter.log</groupId>
 		<artifactId>parent</artifactId>
-		<version>1.0.0</version>
+		<version>1.4.0-SNAPSHOT</version>
 	</parent>
   <artifactId>edu.cuny.hunter.log.updatesite</artifactId>
-  <version>0.0.1-SNAPSHOT</version>
+  <version>1.4.0-SNAPSHOT</version>
   <packaging>eclipse-repository</packaging>
 </project>
