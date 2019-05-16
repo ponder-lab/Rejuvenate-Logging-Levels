@@ -9,3 +9,5 @@ mysql_backup.cfg
 edu\.cuny\.hunter\.streamrefactoring\.core/\.settings/org\.eclipse\.jdt\.core\.prefs
 edu\.cuny\.hunter\.streamrefactoring\.eval/Stream Refactoring Evaluation\.launch
 /.swo
+edu.cuny.hunter.log.updatesite/target/*
+!edu.cuny.hunter.log.updatesite/target/repository/
