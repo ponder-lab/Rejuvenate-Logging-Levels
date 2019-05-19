@@ -45,7 +45,7 @@ We have four categories of option settings:
 
 ### Update Site
 
-Our tool can be installed via Eclipse Update Site at [https://raw.githubusercontent.com/ponder-lab/Logging-Level-Evolution-Plugin/master/edu.cuny.hunter.log.updatesite/target/repository](https://raw.githubusercontent.com/ponder-lab/Logging-Level-Evolution-Plugin/master/edu.cuny.hunter.log.updatesite/target/repository)
+Our tool can be installed via Eclipse Update Site at [https://raw.githubusercontent.com/ponder-lab/Logging-Level-Evolution-Plugin/master/edu.cuny.hunter.log.updatesite](https://raw.githubusercontent.com/ponder-lab/Logging-Level-Evolution-Plugin/master/edu.cuny.hunter.log.updatesite)
 
 ## Development platform
 

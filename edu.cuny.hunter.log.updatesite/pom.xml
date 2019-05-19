@@ -8,4 +8,32 @@
   <artifactId>edu.cuny.hunter.log.updatesite</artifactId>
   <version>1.4.0-SNAPSHOT</version>
   <packaging>eclipse-repository</packaging>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.eclipse.tycho.extras</groupId>
+        <artifactId>tycho-p2-extras-plugin</artifactId>
+        <version>${tycho-version}</version>
+        <executions>
+            <execution>
+              <id>add-to-update-site</id>
+              <phase>install</phase>
+              <goals>
+                  <goal>mirror</goal>
+              </goals>
+              <configuration>
+                  <source>
+                    <repository>
+                        <url>${project.build.directory}/repository</url>
+                    </repository>
+                  </source>
+                  <destination>./</destination>
+                  <append>true</append>
+              </configuration>
+            </execution>
+        </executions>
+      </plugin>  
+    </plugins>
+  </build>
 </project>
