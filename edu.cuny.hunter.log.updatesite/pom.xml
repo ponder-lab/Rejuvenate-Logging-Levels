@@ -18,7 +18,7 @@
         <executions>
             <execution>
               <id>add-to-update-site</id>
-              <phase>install</phase>
+              <phase>package</phase>
               <goals>
                   <goal>mirror</goal>
               </goals>
