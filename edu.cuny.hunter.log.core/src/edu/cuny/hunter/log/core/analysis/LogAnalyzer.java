@@ -1,7 +1,10 @@
 package edu.cuny.hunter.log.core.analysis;
 
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.logging.Level;
@@ -23,7 +26,6 @@ import org.eclipse.jdt.core.dom.IfStatement;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.MethodInvocation;
 import org.eclipse.jdt.core.dom.Statement;
-import org.eclipse.mylyn.context.core.IDegreeOfInterest;
 import edu.cuny.hunter.log.core.messages.Messages;
 import edu.cuny.hunter.log.core.utils.LoggerNames;
 import edu.cuny.hunter.log.core.utils.Util;
@@ -63,7 +65,7 @@ public class LogAnalyzer extends ASTVisitor {
 
 	private boolean useLogCategory;
 
-	private HashSet<Float> DOIValues = new HashSet<>();
+	private Map<IMethod, Float> methodToDOI = new HashMap<>();
 
 	private LinkedList<Float> boundary;
 
@@ -112,7 +114,7 @@ public class LogAnalyzer extends ASTVisitor {
 	 */
 	private void analyzeLogInvs() {
 		// build boundary
-		boundary = this.buildBoundary(this.DOIValues);
+		boundary = this.buildBoundary(this.methodToDOI.values());
 		// check whether action is needed
 		for (LogInvocation logInvocation : this.logInvocationSet) {
 			if (this.checkCodeModification(logInvocation) && this.checkEnoughData(logInvocation))
@@ -304,7 +306,7 @@ public class LogAnalyzer extends ASTVisitor {
 	 * @param degreeOfInterests
 	 * @return a list of boundary
 	 */
-	private LinkedList<Float> buildBoundary(HashSet<Float> degreeOfInterests) {
+	private LinkedList<Float> buildBoundary(Collection<Float> degreeOfInterests) {
 		float min = getMinDOI(degreeOfInterests);
 		float max = getMaxDOI(degreeOfInterests);
 		LinkedList<Float> boundary = new LinkedList<>();
@@ -338,7 +340,7 @@ public class LogAnalyzer extends ASTVisitor {
 	 * 
 	 * @param degreeOfInterests
 	 */
-	private float getMinDOI(HashSet<Float> degreeOfInterests) {
+	private float getMinDOI(Collection<Float> degreeOfInterests) {
 		float min = 0;
 		for (float d : degreeOfInterests)
 			if (d < min)
@@ -346,7 +348,7 @@ public class LogAnalyzer extends ASTVisitor {
 		return min;
 	}
 
-	private float getMaxDOI(HashSet<Float> degreeOfInterests) {
+	private float getMaxDOI(Collection<Float> degreeOfInterests) {
 		float max = 0;
 		for (float d : degreeOfInterests)
 			if (d > max)
@@ -462,7 +464,6 @@ public class LogAnalyzer extends ASTVisitor {
 			return false;
 	}
 
-	@SuppressWarnings("unused")
 	private static boolean contains(Statement statement, MethodInvocation loggingExpression) {
 		if (statement == null || loggingExpression == null)
 			return false;
@@ -486,19 +487,20 @@ public class LogAnalyzer extends ASTVisitor {
 		return super.visit(node);
 	}
 
-	public void collectDOIValues(HashSet<MethodDeclaration> methods) {
+	private void collectDOIValues(HashSet<MethodDeclaration> methods) {
 		Set<IMethod> enclosingMethods = getEnclosingMethods();
 
 		methods.forEach(m -> {
 			IMethodBinding methodBinding = m.resolveBinding();
 			if (methodBinding != null) {
-				float doiValue = Util.getDOIValue((IMethod) methodBinding.getJavaElement(), enclosingMethods);
-				this.DOIValues.add(doiValue);
+				IMethod method = (IMethod) methodBinding.getJavaElement();
+				float doiValue = Util.getDOIValue(method, enclosingMethods);
+				this.methodToDOI.put(method, doiValue);
 			}
 		});
 	}
 
-	private Set<IMethod> getEnclosingMethods() {
+	public Set<IMethod> getEnclosingMethods() {
 		return this.getLogInvocationSet().parallelStream().map(LogInvocation::getEnclosingEclipseMethod)
 				.filter(Objects::nonNull).collect(Collectors.toSet());
 	}
@@ -567,4 +569,7 @@ public class LogAnalyzer extends ASTVisitor {
 		return this.logInvsNotLoweredByKeywords;
 	}
 
+	public Map<IMethod, Float> getMethodToDOI() {
+		return methodToDOI;
+	}
 }
