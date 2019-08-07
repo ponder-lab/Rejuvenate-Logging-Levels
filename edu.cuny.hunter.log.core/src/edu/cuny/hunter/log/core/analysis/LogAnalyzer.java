@@ -154,14 +154,6 @@ public class LogAnalyzer extends ASTVisitor {
 			return false;
 		}
 
-		if (this.notLowerLogLevelWithKeyWords) {
-			if (Util.isLogMessageWithKeywords(logInvocation.getExpression(), KEYWORDS_IN_LOG_MESSAGES)) {
-				logInvocation.setAction(Action.NONE, null);
-				this.logInvsNotLoweredByKeywords.add(logInvocation);
-				return false;
-			}
-		}
-
 		/**
 		 * Do not change a log level in a logging statement if there exists an immediate
 		 * if statement whose condition contains a log level.
@@ -179,6 +171,15 @@ public class LogAnalyzer extends ASTVisitor {
 		if (rejuvenatedLogLevel == null)
 			return false;
 
+		if (this.notLowerLogLevelWithKeyWords) {
+			if (Util.isLogMessageWithKeywords(logInvocation.getExpression(), KEYWORDS_IN_LOG_MESSAGES)
+					&& currentLogLevel.intValue() > rejuvenatedLogLevel.intValue()) {
+				logInvocation.setAction(Action.NONE, null);
+				this.logInvsNotLoweredByKeywords.add(logInvocation);
+				return false;
+			}
+		}
+		
 		// process not lower log levels in catch blocks
 		if (logInvocation.getInCatchBlock() && currentLogLevel.intValue() > rejuvenatedLogLevel.intValue()) {
 			this.logInvsNotLoweredInCatch.add(logInvocation);
