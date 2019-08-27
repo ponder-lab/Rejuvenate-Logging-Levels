@@ -45,8 +45,6 @@ public class LogAnalyzer extends ASTVisitor {
 
 	private HashSet<LogInvocation> logInvsNotLoweredByKeywords = new HashSet<LogInvocation>();
 
-	private HashSet<MethodDeclaration> methodDeclarations = new HashSet<>();
-
 	private Set<LogInvocation> logInvocationSet = new HashSet<>();
 
 	private boolean notLowerLogLevelInIfStatement;
@@ -98,8 +96,16 @@ public class LogAnalyzer extends ASTVisitor {
 	/**
 	 * Analyze project without git history.
 	 */
+	public void analyze(HashSet<MethodDeclaration> methodDecsForAnalyzedMethod) {
+		this.collectDOIValues(methodDecsForAnalyzedMethod);
+		this.analyzeLogInvs();
+	}
+
+	/**
+	 * Analyze project without git history.
+	 */
 	public void analyze() {
-		this.collectDOIValues(this.methodDeclarations);
+		this.collectDOIValues(null);
 		this.analyzeLogInvs();
 	}
 
@@ -474,23 +480,16 @@ public class LogAnalyzer extends ASTVisitor {
 		}
 	}
 
-	/**
-	 * This method is used to find a set of logging objects
-	 */
-	@Override
-	public boolean visit(MethodDeclaration node) {
-		this.methodDeclarations.add(node);
-		return super.visit(node);
-	}
-
 	public void collectDOIValues(HashSet<MethodDeclaration> methods) {
-		methods.forEach(m -> {
-			IMethodBinding methodBinding = m.resolveBinding();
-			if (methodBinding != null) {
-				IDegreeOfInterest degreeOfInterest = Util.getDegreeOfInterest((IMethod) methodBinding.getJavaElement());
-				this.DOIValues.add(Util.getDOIValue(degreeOfInterest));
-			}
-		});
+		if (methods != null)
+			methods.forEach(m -> {
+				IMethodBinding methodBinding = m.resolveBinding();
+				if (methodBinding != null) {
+					IDegreeOfInterest degreeOfInterest = Util
+							.getDegreeOfInterest((IMethod) methodBinding.getJavaElement());
+					this.DOIValues.add(Util.getDOIValue(degreeOfInterest));
+				}
+			});
 	}
 
 	/**
