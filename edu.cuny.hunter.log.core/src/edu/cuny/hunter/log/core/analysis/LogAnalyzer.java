@@ -1,7 +1,11 @@
 package edu.cuny.hunter.log.core.analysis;
 
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -22,7 +26,6 @@ import org.eclipse.jdt.core.dom.IfStatement;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.MethodInvocation;
 import org.eclipse.jdt.core.dom.Statement;
-import org.eclipse.mylyn.context.core.IDegreeOfInterest;
 import edu.cuny.hunter.log.core.messages.Messages;
 import edu.cuny.hunter.log.core.utils.LoggerNames;
 import edu.cuny.hunter.log.core.utils.Util;
@@ -37,7 +40,8 @@ public class LogAnalyzer extends ASTVisitor {
 	private HashSet<LogInvocation> logInvsNotTransformedInIf = new HashSet<LogInvocation>();
 
 	/**
-	 * Set of log invocations that their log levels are not lower in catch blocks
+	 * Set of log invocations that their log levels are not lower in catch
+	 * blocks
 	 */
 	private HashSet<LogInvocation> logInvsNotLoweredInCatch = new HashSet<LogInvocation>();
 
@@ -61,7 +65,7 @@ public class LogAnalyzer extends ASTVisitor {
 
 	private boolean useLogCategory;
 
-	private HashSet<Float> DOIValues = new HashSet<>();
+	private Map<IMethod, Float> methodToDOI = new HashMap<>();
 
 	private LinkedList<Float> boundary;
 
@@ -69,7 +73,9 @@ public class LogAnalyzer extends ASTVisitor {
 	 * A set of keywords in log messages.
 	 */
 	private final Set<String> KEYWORDS_IN_LOG_MESSAGES = Stream.of("fail", "disable", "error", "exception", "collision",
-			"reboot", "terminate", "throw", "should", "start", "should", "tried", "empty", "launch", "init", "does not", "doesn't", "stop", "shut", "run", "deprecate", "kill", "finish", "ready", "wait").collect(Collectors.toSet());
+			"reboot", "terminate", "throw", "should", "start", "should", "tried", "empty", "launch", "init", "does not",
+			"doesn't", "stop", "shut", "run", "deprecate", "kill", "finish", "ready", "wait")
+			.collect(Collectors.toSet());
 
 	private boolean test;
 
@@ -108,7 +114,7 @@ public class LogAnalyzer extends ASTVisitor {
 	 */
 	private void analyzeLogInvs() {
 		// build boundary
-		boundary = this.buildBoundary(this.DOIValues);
+		boundary = this.buildBoundary(this.methodToDOI.values());
 		// check whether action is needed
 		for (LogInvocation logInvocation : this.logInvocationSet) {
 			if (this.checkCodeModification(logInvocation) && this.checkEnoughData(logInvocation))
@@ -163,8 +169,8 @@ public class LogAnalyzer extends ASTVisitor {
 		}
 
 		/**
-		 * Do not change a log level in a logging statement if there exists an immediate
-		 * if statement whose condition contains a log level.
+		 * Do not change a log level in a logging statement if there exists an
+		 * immediate if statement whose condition contains a log level.
 		 */
 		if (this.checkIfCondition) {
 			if (checkIfConditionHavingLevel(logInvocation.getExpression())) {
@@ -294,13 +300,13 @@ public class LogAnalyzer extends ASTVisitor {
 	}
 
 	/**
-	 * Build a list of boundary. The DOI values could be divided into 7 groups by
-	 * this boundary. 7 groups are corresponding to 7 logging levels
+	 * Build a list of boundary. The DOI values could be divided into 7 groups
+	 * by this boundary. 7 groups are corresponding to 7 logging levels
 	 * 
 	 * @param degreeOfInterests
 	 * @return a list of boundary
 	 */
-	private LinkedList<Float> buildBoundary(HashSet<Float> degreeOfInterests) {
+	private LinkedList<Float> buildBoundary(Collection<Float> degreeOfInterests) {
 		float min = getMinDOI(degreeOfInterests);
 		float max = getMaxDOI(degreeOfInterests);
 		LinkedList<Float> boundary = new LinkedList<>();
@@ -336,7 +342,7 @@ public class LogAnalyzer extends ASTVisitor {
 	 * 
 	 * @param degreeOfInterests
 	 */
-	private float getMinDOI(HashSet<Float> degreeOfInterests) {
+	private float getMinDOI(Collection<Float> degreeOfInterests) {
 		float min = 0;
 		for (float d : degreeOfInterests)
 			if (d < min)
@@ -344,7 +350,7 @@ public class LogAnalyzer extends ASTVisitor {
 		return min;
 	}
 
-	private float getMaxDOI(HashSet<Float> degreeOfInterests) {
+	private float getMaxDOI(Collection<Float> degreeOfInterests) {
 		float max = 0;
 		for (float d : degreeOfInterests)
 			if (d > max)
@@ -416,9 +422,9 @@ public class LogAnalyzer extends ASTVisitor {
 	}
 
 	/**
-	 * Returns true if the given logging expression is immediately contained within
-	 * an if statement not having an else clause (i.e., guarded) and false
-	 * otherwise.
+	 * Returns true if the given logging expression is immediately contained
+	 * within an if statement not having an else clause (i.e., guarded) and
+	 * false otherwise.
 	 */
 	private static boolean checkIfBlock(MethodInvocation loggingExpression) {
 		ASTNode loggingStatement = loggingExpression.getParent();
@@ -460,7 +466,6 @@ public class LogAnalyzer extends ASTVisitor {
 			return false;
 	}
 
-	@SuppressWarnings("unused")
 	private static boolean contains(Statement statement, MethodInvocation loggingExpression) {
 		if (statement == null || loggingExpression == null)
 			return false;
@@ -484,14 +489,22 @@ public class LogAnalyzer extends ASTVisitor {
 		return super.visit(node);
 	}
 
-	public void collectDOIValues(HashSet<MethodDeclaration> methods) {
+	private void collectDOIValues(HashSet<MethodDeclaration> methods) {
+		Set<IMethod> enclosingMethods = getEnclosingMethods();
+
 		methods.forEach(m -> {
 			IMethodBinding methodBinding = m.resolveBinding();
 			if (methodBinding != null) {
-				IDegreeOfInterest degreeOfInterest = Util.getDegreeOfInterest((IMethod) methodBinding.getJavaElement());
-				this.DOIValues.add(Util.getDOIValue(degreeOfInterest));
+				IMethod method = (IMethod) methodBinding.getJavaElement();
+				float doiValue = Util.getDOIValue(method, enclosingMethods);
+				this.methodToDOI.put(method, doiValue);
 			}
 		});
+	}
+
+	public Set<IMethod> getEnclosingMethods() {
+		return this.getLogInvocationSet().parallelStream().map(LogInvocation::getEnclosingEclipseMethod)
+				.filter(Objects::nonNull).collect(Collectors.toSet());
 	}
 
 	/**
@@ -558,4 +571,7 @@ public class LogAnalyzer extends ASTVisitor {
 		return this.logInvsNotLoweredByKeywords;
 	}
 
+	public Map<IMethod, Float> getMethodToDOI() {
+		return methodToDOI;
+	}
 }

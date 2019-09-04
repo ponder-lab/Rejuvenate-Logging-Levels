@@ -25,6 +25,7 @@ import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jdt.core.IJavaProject;
+import org.eclipse.jdt.core.IMethod;
 import org.eclipse.jdt.internal.corext.codemanipulation.CodeGenerationSettings;
 import org.eclipse.jdt.internal.ui.preferences.JavaPreferencesSettings;
 import org.eclipse.ltk.core.refactoring.RefactoringStatus;
@@ -102,8 +103,8 @@ public class EvaluationHandler extends AbstractHandler {
 	private boolean notLowerLogLevelWithKeywords;
 
 	/**
-	 * Do not change a log level in a logging statement if there exists an
-	 * immediate if statement whose condition contains a log level.
+	 * Do not change a log level in a logging statement if there exists an immediate
+	 * if statement whose condition contains a log level.
 	 */
 	private boolean checkIfCondtion;
 
@@ -114,6 +115,7 @@ public class EvaluationHandler extends AbstractHandler {
 			CSVPrinter repoPrinter = null;
 			CSVPrinter actionPrinter = null;
 			CSVPrinter inputLogInvPrinter = null;
+			CSVPrinter nonenclosingMethodPrinter = null;
 			CSVPrinter failurePrinter = null;
 			CSVPrinter doiPrinter = null;
 			CSVPrinter gitCommitPrinter = null;
@@ -151,6 +153,10 @@ public class EvaluationHandler extends AbstractHandler {
 								"enclosing method", "DOI value", "action", "new level" });
 				inputLogInvPrinter = Util.createCSVPrinter("input_log_invocations.csv", new String[] { "subject",
 						"log expression", "start pos", "log level", "type FQN", "enclosing method", "DOI value" });
+
+				nonenclosingMethodPrinter = Util.createCSVPrinter("nonenclosing_methods.csv",
+						new String[] { "subject", "type FQN", "method", "DOI" });
+
 				failurePrinter = Util.createCSVPrinter("failures.csv",
 						new String[] { "sequence", "subject", "log expression", "start pos", "log level", "type FQN",
 								"enclosing method", "code", "message" });
@@ -229,6 +235,15 @@ public class EvaluationHandler extends AbstractHandler {
 											Util.getMethodIdentifier(logInvocation.getEnclosingEclipseMethod()),
 											logInvocation.getDegreeOfInterestValue());
 								}
+
+							Map<IMethod, Float> nonenclosingMethodToDOI = logRejuvenatingProcessor
+									.getNonenclosingMethodToDOI();
+
+							for (IMethod method : nonenclosingMethodToDOI.keySet()) {
+								nonenclosingMethodPrinter.printRecord(project.getElementName(),
+										method.getDeclaringType().getFullyQualifiedName(),
+										Util.getMethodIdentifier(method), nonenclosingMethodToDOI.get(method));
+							}
 
 							Set<LogInvocation> candidates = computeCandidateLogs(logInvocationSet);
 
@@ -411,6 +426,8 @@ public class EvaluationHandler extends AbstractHandler {
 						notLowerLevelsDueToKeywordsPrinter.close();
 					if (considerIfConditionPrinter != null)
 						considerIfConditionPrinter.close();
+					if (nonenclosingMethodPrinter != null)
+						nonenclosingMethodPrinter.close();
 				} catch (IOException e) {
 					return new Status(IStatus.ERROR, FrameworkUtil.getBundle(this.getClass()).getSymbolicName(),
 							"Encountered exception during file closing", e);
