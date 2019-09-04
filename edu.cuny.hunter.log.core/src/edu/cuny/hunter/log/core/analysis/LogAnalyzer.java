@@ -317,7 +317,8 @@ public class LogAnalyzer extends ASTVisitor {
 				// table that includes the levels FINEST, FINER, FINE, INFO,
 				// WARNING, and SEVERE #185.
 				float interval = (max - min) / 6;
-				IntStream.range(0, 7).forEach(i -> boundary.add(min + i * interval));
+				IntStream.range(0, 6).forEach(i -> boundary.add(min + i * interval));
+				boundary.add(max);
 
 				if (this.useLogCategory) {
 					// The DOI boundaries should then be *modified* to *remove*
@@ -328,7 +329,8 @@ public class LogAnalyzer extends ASTVisitor {
 				}
 			} else {
 				float interval = (max - min) / 7;
-				IntStream.range(0, 8).forEach(i -> boundary.add(min + i * interval));
+				IntStream.range(0, 7).forEach(i -> boundary.add(min + i * interval));
+				boundary.add(max);
 			}
 			return boundary;
 		} else
