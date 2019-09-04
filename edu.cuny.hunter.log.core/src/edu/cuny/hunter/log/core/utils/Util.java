@@ -25,12 +25,18 @@ import org.eclipse.ltk.core.refactoring.participants.ProcessorBasedRefactoring;
 import org.eclipse.mylyn.context.core.ContextCore;
 import org.eclipse.mylyn.context.core.IDegreeOfInterest;
 import org.eclipse.mylyn.context.core.IInteractionElement;
+import org.eclipse.mylyn.internal.context.core.InteractionContextScaling;
+
 import edu.cuny.hunter.log.core.refactorings.LogRejuvenatingProcessor;
 import edu.cuny.hunter.mylyngit.core.analysis.MylynGitPredictionProvider;
 import edu.cuny.hunter.mylyngit.core.utils.NonActiveMylynTaskException;
 
 @SuppressWarnings("restriction")
 public final class Util {
+	private static final int ENCLOSING_METHOD_DECAY_FACTOR = 32;
+	
+	private static Float originalDecay;
+
 	public static ProcessorBasedRefactoring createRejuvenating(IJavaProject[] projects,
 			Optional<IProgressMonitor> monitor) throws JavaModelException {
 		LogRejuvenatingProcessor processor = createLoggingProcessor(projects, monitor);
@@ -62,24 +68,36 @@ public final class Util {
 	/**
 	 * Get DOI value.
 	 */
-	public static float getDOIValue(IDegreeOfInterest degreeOfInterest) {
+	public static float getDOIValue(IMethod method, Set<IMethod> enclosingMethods) {
+		IInteractionElement interactionElement = getInteractionElement(method);
+
+		if (interactionElement == null || interactionElement.getContext() == null)
+			// workaround bug ...
+			return 0;
+
+		// we haven't found the decay yet.
+		if (originalDecay == null)
+			originalDecay = interactionElement.getContext().getScaling().getDecay();
+
+		IDegreeOfInterest degreeOfInterest = interactionElement.getInterest();
+
 		if (degreeOfInterest != null) {
+			InteractionContextScaling scaling = (InteractionContextScaling) interactionElement.getContext()
+					.getScaling();
+
+			// if the method is an enclosing method.
+			if (enclosingMethods.contains(method)) {
+				// set a special decay.
+				scaling.setDecay(originalDecay / ENCLOSING_METHOD_DECAY_FACTOR);
+			} else { // otherwise, it's a non-enclosing method.
+				// use the original decay.
+				scaling.setDecay(originalDecay);
+			}
+
 			if (degreeOfInterest.getValue() > 0)
 				return degreeOfInterest.getValue();
 		}
 		return 0;
-	}
-
-	/**
-	 * Get DOI
-	 */
-	public static IDegreeOfInterest getDegreeOfInterest(IMethod method) {
-		IInteractionElement interactionElement = getInteractionElement(method);
-		if (interactionElement == null || interactionElement.getContext() == null) // workaround
-																					// bug
-																					// ...
-			return null;
-		return interactionElement.getInterest();
 	}
 
 	// The element in Mylyn
@@ -108,10 +126,10 @@ public final class Util {
 	}
 
 	/**
-	 * We only focus on the logging level, which is set by the developer. Hence, we
-	 * do not record the logging level which is embedded by the logging package.
-	 * e.g. each time we call method entering, a logging record which has "FINER"
-	 * level is created.
+	 * We only focus on the logging level, which is set by the developer. Hence,
+	 * we do not record the logging level which is embedded by the logging
+	 * package. e.g. each time we call method entering, a logging record which
+	 * has "FINER" level is created.
 	 * 
 	 * @param node
 	 * @return logging level
