@@ -483,18 +483,20 @@ public class LogAnalyzer extends ASTVisitor {
 		}
 	}
 
+	/**
+	 * We only consider analyzed methods.
+	 */
 	private void collectDOIValues(HashSet<MethodDeclaration> methods) {
 		Set<IMethod> enclosingMethods = getEnclosingMethods();
-
-		methods.forEach(m -> {
-			IMethodBinding methodBinding = m.resolveBinding();
-			if (methodBinding != null) {
-				IMethod method = (IMethod) methodBinding.getJavaElement();
-				float doiValue = Util.getDOIValue(method, enclosingMethods);
-				this.methodToDOI.put(method, doiValue);
-			}
-		});
-
+		if (methods != null)
+			methods.forEach(m -> {
+				IMethodBinding methodBinding = m.resolveBinding();
+				if (methodBinding != null) {
+					IMethod method = (IMethod) methodBinding.getJavaElement();
+					float doiValue = Util.getDOIValue(method, enclosingMethods);
+					this.methodToDOI.put(method, doiValue);
+				}
+			});
 	}
 
 	public Set<IMethod> getEnclosingMethods() {
