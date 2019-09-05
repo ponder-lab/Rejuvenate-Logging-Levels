@@ -1,6 +1,7 @@
 package edu.cuny.hunter.log.core.analysis;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -100,26 +101,29 @@ public class LogAnalyzer extends ASTVisitor {
 
 	public void analyze(HashSet<MethodDeclaration> methodDecsForAnalyzedMethod) {
 		this.collectDOIValues(methodDecsForAnalyzedMethod);
-		this.analyzeLogInvs();
+		this.analyzeLogInvs(methodDecsForAnalyzedMethod);
 	}
 
 	/**
 	 * Analyze project without git history.
 	 */
 	public void analyze() {
-		this.collectDOIValues(null);
-		this.analyzeLogInvs();
+		this.collectDOIValues(Collections.emptySet());
+		this.analyzeLogInvs(Collections.emptySet());
 	}
 
 	/**
 	 * Build boundary and analyze log invocations.
 	 */
-	private void analyzeLogInvs() {
+	private void analyzeLogInvs(Set<MethodDeclaration> methodDecsForAnalyzedMethod) {
 		// build boundary
 		boundary = this.buildBoundary(this.methodToDOI.values());
 		// check whether action is needed
 		for (LogInvocation logInvocation : this.logInvocationSet) {
-			if (this.checkCodeModification(logInvocation) && this.checkEnoughData(logInvocation))
+			// Methods not analyzed will not be considered for transformation.
+			if (!methodDecsForAnalyzedMethod.contains(logInvocation.getEnclosingMethodDeclaration()))
+				logInvocation.setAction(Action.NONE, null);
+			else if (this.checkCodeModification(logInvocation) && this.checkEnoughData(logInvocation))
 				if (this.doAction(logInvocation))
 					LOGGER.info("Do action: " + logInvocation.getAction() + "! The changed log expression is "
 							+ logInvocation.getExpression());
@@ -486,17 +490,16 @@ public class LogAnalyzer extends ASTVisitor {
 	/**
 	 * We only consider analyzed methods.
 	 */
-	private void collectDOIValues(HashSet<MethodDeclaration> methods) {
+	private void collectDOIValues(Set<MethodDeclaration> methods) {
 		Set<IMethod> enclosingMethods = getEnclosingMethods();
-		if (methods != null)
-			methods.forEach(m -> {
-				IMethodBinding methodBinding = m.resolveBinding();
-				if (methodBinding != null) {
-					IMethod method = (IMethod) methodBinding.getJavaElement();
-					float doiValue = Util.getDOIValue(method, enclosingMethods);
-					this.methodToDOI.put(method, doiValue);
-				}
-			});
+		methods.forEach(m -> {
+			IMethodBinding methodBinding = m.resolveBinding();
+			if (methodBinding != null) {
+				IMethod method = (IMethod) methodBinding.getJavaElement();
+				float doiValue = Util.getDOIValue(method, enclosingMethods);
+				this.methodToDOI.put(method, doiValue);
+			}
+		});
 	}
 
 	public Set<IMethod> getEnclosingMethods() {
