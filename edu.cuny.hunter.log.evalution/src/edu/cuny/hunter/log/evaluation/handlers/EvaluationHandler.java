@@ -245,7 +245,7 @@ public class EvaluationHandler extends AbstractHandler {
 										Util.getMethodIdentifier(method), nonenclosingMethodToDOI.get(method));
 							}
 
-							Set<LogInvocation> candidates = computeCandidateLogs(logInvocationSet);
+							Set<LogInvocation> candidates = computeCandidateLogs(logRejuvenatingProcessor.getRoughCandidateSet());
 
 							for (LogInvocation logInvocation : candidates)
 								candidatePrinter.printRecord(sequence, project.getElementName(),
@@ -454,7 +454,7 @@ public class EvaluationHandler extends AbstractHandler {
 	}
 
 	/**
-	 * @return Number of candidate logging statements.
+	 * @return Candidate logging statements.
 	 */
 	private Set<LogInvocation> computeCandidateLogs(Set<LogInvocation> logInvocationSet) {
 		// Set of candidate log invocations.

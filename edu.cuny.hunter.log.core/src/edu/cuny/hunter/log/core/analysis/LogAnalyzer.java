@@ -98,9 +98,6 @@ public class LogAnalyzer extends ASTVisitor {
 	public LogAnalyzer() {
 	}
 
-	/**
-	 * Analyze project without git history.
-	 */
 	public void analyze(HashSet<MethodDeclaration> methodDecsForAnalyzedMethod) {
 		this.collectDOIValues(methodDecsForAnalyzedMethod);
 		this.analyzeLogInvs();

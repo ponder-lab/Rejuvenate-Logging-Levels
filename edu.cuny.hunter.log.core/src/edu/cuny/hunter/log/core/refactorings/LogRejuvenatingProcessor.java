@@ -63,6 +63,8 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 
 	private LinkedList<Commit> commits = new LinkedList<>();
 
+	private Set<LogInvocation> candidates = new HashSet<LogInvocation>();
+
 	private IJavaProject[] javaProjects;
 
 	/**
@@ -266,7 +268,7 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 			if (this.useGitHistory) {
 				// Process git history.
 				mylynProvider = new MylynGitPredictionProvider(this.NToUseForCommits);
-				
+
 				methodDeclsForAnalyzedMethod = mylynProvider.getMethodDecsForAnalyzedMethod();
 
 				try {
@@ -282,6 +284,7 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 			}
 
 			analyzer.analyze(methodDeclsForAnalyzedMethod);
+			this.estimateCandidates(methodDeclsForAnalyzedMethod);
 
 			this.setLogInvsNotLoweredInCatch(analyzer.getLogInvsNotLoweredInCatch());
 			this.setLogInvsNotTransformedInIf(analyzer.getLogInvsNotTransformedInIf());
@@ -323,6 +326,25 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 		}
 
 		return status;
+	}
+
+	/**
+	 * Remove candidate log invocation whose enclosing method was not analyzed.
+	 * 
+	 * @param methodDeclsForAnalyzedMethod: A set of method declarations is analyzed
+	 *                                      before.
+	 */
+	private void estimateCandidates(HashSet<MethodDeclaration> methodDeclsForAnalyzedMethod) {
+		candidates.addAll(this.logInvocationSet);
+		for (LogInvocation candidate : candidates) {
+			// if its enclosing method is not analyzed in the git history
+			if (!methodDeclsForAnalyzedMethod.contains(candidate.getEnclosingMethodDeclaration()))
+				this.candidates.remove(candidate);
+		}
+	}
+
+	public Set<LogInvocation> getRoughCandidateSet() {
+		return this.candidates;
 	}
 
 	/**
