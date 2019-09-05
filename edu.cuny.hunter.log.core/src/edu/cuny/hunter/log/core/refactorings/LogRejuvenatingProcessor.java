@@ -8,7 +8,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -17,6 +19,7 @@ import org.eclipse.core.runtime.SubProgressMonitor;
 import org.eclipse.jdt.core.ICompilationUnit;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IJavaProject;
+import org.eclipse.jdt.core.IMethod;
 import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.jdt.core.IPackageFragmentRoot;
 import org.eclipse.jdt.core.JavaModelException;
@@ -117,12 +120,14 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 	 */
 	private boolean isEvaluation;
 
-	private HashSet<LogInvocation> logInvsNotTransformedInIf = new HashSet<LogInvocation>();
-	private HashSet<LogInvocation> logInvsNotLoweredInCatch = new HashSet<LogInvocation>();
-	private HashSet<LogInvocation> logInvsNotLoweredInIf = new HashSet<LogInvocation>();
-	private HashSet<LogInvocation> logInvsNotLoweredWithKeywords = new HashSet<LogInvocation>();
+	private HashSet<LogInvocation> logInvsNotTransformedInIf;
+	private HashSet<LogInvocation> logInvsNotLoweredInCatch;
+	private HashSet<LogInvocation> logInvsNotLoweredInIf;
+	private HashSet<LogInvocation> logInvsNotLoweredWithKeywords;
+	private Map<IMethod, Float> methodToDOI;
+	private Set<IMethod> enclosingMethods;
 
-	private String repoURL = "";
+	private String repoURL;
 
 	public LogRejuvenatingProcessor(final CodeGenerationSettings settings) {
 		super(settings);
@@ -282,6 +287,8 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 			this.setLogInvsNotTransformedInIf(analyzer.getLogInvsNotTransformedInIf());
 			this.setLogInvsNotLoweredInIf(analyzer.getLogInvsNotLoweredInIfStatement());
 			this.setLogInvsNotLoweredWithKeywords(analyzer.getLogInvsNotLoweredByKeywords());
+			this.setMethodToDOI(analyzer.getMethodToDOI());
+			this.setEnclosingMethods(analyzer.getEnclosingMethods());
 
 			// Get boundary
 			this.boundary = analyzer.getBoundary();
@@ -536,4 +543,16 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 		this.logInvsNotLoweredWithKeywords = logInvsNotLoweredWithKeywords;
 	}
 
+	private void setMethodToDOI(Map<IMethod, Float> methodToDOI) {
+		this.methodToDOI = methodToDOI;
+	}
+
+	private void setEnclosingMethods(Set<IMethod> enclosingMethods) {
+		this.enclosingMethods = enclosingMethods;
+	}
+
+	public Map<IMethod, Float> getNonenclosingMethodToDOI() {
+		return this.methodToDOI.keySet().stream().filter(m -> !this.enclosingMethods.contains(m))
+				.collect(Collectors.toMap(Function.identity(), m -> this.methodToDOI.get(m)));
+	}
 }
