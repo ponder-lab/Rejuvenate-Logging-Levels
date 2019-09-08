@@ -118,15 +118,20 @@ public class LogAnalyzer extends ASTVisitor {
 	private void analyzeLogInvs(Set<MethodDeclaration> methodDecsForAnalyzedMethod) {
 		// build boundary
 		boundary = this.buildBoundary(this.methodToDOI.values());
+
+		Set<IMethod> validMethods = this.methodToDOI.keySet();
+
 		// check whether action is needed
 		for (LogInvocation logInvocation : this.logInvocationSet) {
 			// Methods not analyzed will not be considered for transformation.
-			if (!methodDecsForAnalyzedMethod.contains(logInvocation.getEnclosingMethodDeclaration()))
+			if (!validMethods.contains(logInvocation.getEnclosingEclipseMethod()))
 				logInvocation.setAction(Action.NONE, null);
-			else if (this.checkCodeModification(logInvocation) && this.checkEnoughData(logInvocation))
-				if (this.doAction(logInvocation))
-					LOGGER.info("Do action: " + logInvocation.getAction() + "! The changed log expression is "
-							+ logInvocation.getExpression());
+			else {
+				if (this.checkCodeModification(logInvocation) && this.checkEnoughData(logInvocation))
+					if (this.doAction(logInvocation))
+						LOGGER.info("Do action: " + logInvocation.getAction() + "! The changed log expression is "
+								+ logInvocation.getExpression());
+			}
 		}
 	}
 
