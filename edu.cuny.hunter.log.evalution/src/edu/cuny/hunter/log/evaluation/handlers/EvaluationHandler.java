@@ -165,8 +165,9 @@ public class EvaluationHandler extends AbstractHandler {
 				gitCommitPrinter = Util.createCSVPrinter("git_commits.csv",
 						new String[] { "subject", "SHA1", "Java lines added", "Java lines removed", "methods found",
 								"interaction events", "run time (s)" });
-				candidatePrinter = Util.createCSVPrinter("candidate_log_invocations.csv", new String[] { "sequence",
-						"subject", "log expression", "start pos", "log level", "type FQN", "enclosing method" });
+				candidatePrinter = Util.createCSVPrinter("candidate_log_invocations.csv",
+						new String[] { "sequence", "subject", "log expression", "start pos", "log level", "type FQN",
+								"enclosing method", "DOI value" });
 				notLowerLevelsInCatchBlockPrinter = Util.createCSVPrinter("not_lower_levels_in_catch_blocks.csv",
 						new String[] { "sequence", "subject", "log expression", "start pos", "log level", "type FQN",
 								"enclosing method" });
@@ -252,7 +253,8 @@ public class EvaluationHandler extends AbstractHandler {
 										logInvocation.getExpression(), logInvocation.getStartPosition(),
 										logInvocation.getLogLevel(),
 										logInvocation.getEnclosingType().getFullyQualifiedName(),
-										Util.getMethodIdentifier(logInvocation.getEnclosingEclipseMethod()));
+										Util.getMethodIdentifier(logInvocation.getEnclosingEclipseMethod()),
+										logInvocation.getDegreeOfInterestValue());
 
 							// get the difference of log invocations and passing
 							// log invocations
