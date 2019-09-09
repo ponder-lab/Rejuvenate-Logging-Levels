@@ -284,7 +284,6 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 			}
 
 			analyzer.analyze(methodDeclsForAnalyzedMethod);
-			this.estimateCandidates(methodDeclsForAnalyzedMethod);
 
 			this.setLogInvsNotLoweredInCatch(analyzer.getLogInvsNotLoweredInCatch());
 			this.setLogInvsNotTransformedInIf(analyzer.getLogInvsNotTransformedInIf());
@@ -297,6 +296,8 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 			this.boundary = analyzer.getBoundary();
 
 			this.addLogInvocationSet(analyzer.getLogInvocationSet());
+
+			this.estimateCandidates();
 
 			// If we are using the git history.
 			if (this.useGitHistory) {
@@ -334,11 +335,13 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 	 * @param methodDeclsForAnalyzedMethod: A set of method declarations is analyzed
 	 *                                      before.
 	 */
-	private void estimateCandidates(HashSet<MethodDeclaration> methodDeclsForAnalyzedMethod) {
+	private void estimateCandidates() {
+		Set<IMethod> validMethods = this.methodToDOI.keySet();
+
 		candidates.addAll(this.logInvocationSet);
-		for (LogInvocation candidate : candidates) {
+		for (LogInvocation candidate : this.logInvocationSet) {
 			// if its enclosing method is not analyzed in the git history
-			if (!methodDeclsForAnalyzedMethod.contains(candidate.getEnclosingMethodDeclaration()))
+			if (!validMethods.contains(candidate.getEnclosingEclipseMethod()))
 				this.candidates.remove(candidate);
 		}
 	}

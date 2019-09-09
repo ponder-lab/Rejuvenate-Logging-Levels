@@ -577,6 +577,6 @@ public class LogAnalyzer extends ASTVisitor {
 	}
 
 	public Map<IMethod, Float> getMethodToDOI() {
-		return methodToDOI;
+		return this.methodToDOI;
 	}
 }
