@@ -25,6 +25,7 @@ import org.eclipse.jdt.core.IPackageFragmentRoot;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.ImportDeclaration;
+import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.Name;
 import org.eclipse.jdt.core.dom.rewrite.ImportRewrite.ImportRewriteContext;
 import org.eclipse.jdt.internal.corext.codemanipulation.CodeGenerationSettings;
@@ -61,6 +62,8 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 	private Set<LogInvocation> logInvocationSet = new HashSet<>();
 
 	private LinkedList<Commit> commits = new LinkedList<>();
+
+	private Set<LogInvocation> candidates = new HashSet<LogInvocation>();
 
 	private IJavaProject[] javaProjects;
 
@@ -260,10 +263,13 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 			}
 
 			MylynGitPredictionProvider mylynProvider = null;
+			HashSet<MethodDeclaration> methodDeclsForAnalyzedMethod = null;
 
 			if (this.useGitHistory) {
 				// Process git history.
 				mylynProvider = new MylynGitPredictionProvider(this.NToUseForCommits);
+
+				methodDeclsForAnalyzedMethod = mylynProvider.getMethodDecsForAnalyzedMethod();
 
 				try {
 					this.processGitHistory(mylynProvider, analyzer, jproj);
@@ -277,7 +283,7 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 				this.setRepoURL(mylynProvider.getRepoURL());
 			}
 
-			analyzer.analyze();
+			analyzer.analyze(methodDeclsForAnalyzedMethod);
 
 			this.setLogInvsNotLoweredInCatch(analyzer.getLogInvsNotLoweredInCatch());
 			this.setLogInvsNotTransformedInIf(analyzer.getLogInvsNotTransformedInIf());
@@ -290,6 +296,8 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 			this.boundary = analyzer.getBoundary();
 
 			this.addLogInvocationSet(analyzer.getLogInvocationSet());
+
+			this.estimateCandidates();
 
 			// If we are using the git history.
 			if (this.useGitHistory) {
@@ -319,6 +327,27 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 		}
 
 		return status;
+	}
+
+	/**
+	 * Remove candidate log invocation whose enclosing method was not analyzed.
+	 * 
+	 * @param methodDeclsForAnalyzedMethod: A set of method declarations is analyzed
+	 *                                      before.
+	 */
+	private void estimateCandidates() {
+		Set<IMethod> validMethods = this.methodToDOI.keySet();
+
+		candidates.addAll(this.logInvocationSet);
+		for (LogInvocation candidate : this.logInvocationSet) {
+			// if its enclosing method is not analyzed in the git history
+			if (!validMethods.contains(candidate.getEnclosingEclipseMethod()))
+				this.candidates.remove(candidate);
+		}
+	}
+
+	public Set<LogInvocation> getRoughCandidateSet() {
+		return this.candidates;
 	}
 
 	/**

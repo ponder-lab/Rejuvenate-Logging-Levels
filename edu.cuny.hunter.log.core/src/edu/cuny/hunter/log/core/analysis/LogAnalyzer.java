@@ -1,6 +1,7 @@
 package edu.cuny.hunter.log.core.analysis;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -40,16 +41,13 @@ public class LogAnalyzer extends ASTVisitor {
 	private HashSet<LogInvocation> logInvsNotTransformedInIf = new HashSet<LogInvocation>();
 
 	/**
-	 * Set of log invocations that their log levels are not lower in catch
-	 * blocks
+	 * Set of log invocations that their log levels are not lower in catch blocks
 	 */
 	private HashSet<LogInvocation> logInvsNotLoweredInCatch = new HashSet<LogInvocation>();
 
 	private HashSet<LogInvocation> logInvsNotLoweredInIfStatement = new HashSet<LogInvocation>();
 
 	private HashSet<LogInvocation> logInvsNotLoweredByKeywords = new HashSet<LogInvocation>();
-
-	private HashSet<MethodDeclaration> methodDeclarations = new HashSet<>();
 
 	private Set<LogInvocation> logInvocationSet = new HashSet<>();
 
@@ -101,26 +99,39 @@ public class LogAnalyzer extends ASTVisitor {
 	public LogAnalyzer() {
 	}
 
+	public void analyze(HashSet<MethodDeclaration> methodDecsForAnalyzedMethod) {
+		this.collectDOIValues(methodDecsForAnalyzedMethod);
+		this.analyzeLogInvs(methodDecsForAnalyzedMethod);
+	}
+
 	/**
 	 * Analyze project without git history.
 	 */
 	public void analyze() {
-		this.collectDOIValues(this.methodDeclarations);
-		this.analyzeLogInvs();
+		this.collectDOIValues(Collections.emptySet());
+		this.analyzeLogInvs(Collections.emptySet());
 	}
 
 	/**
 	 * Build boundary and analyze log invocations.
 	 */
-	private void analyzeLogInvs() {
+	private void analyzeLogInvs(Set<MethodDeclaration> methodDecsForAnalyzedMethod) {
 		// build boundary
 		boundary = this.buildBoundary(this.methodToDOI.values());
+
+		Set<IMethod> validMethods = this.methodToDOI.keySet();
+
 		// check whether action is needed
 		for (LogInvocation logInvocation : this.logInvocationSet) {
-			if (this.checkCodeModification(logInvocation) && this.checkEnoughData(logInvocation))
-				if (this.doAction(logInvocation))
-					LOGGER.info("Do action: " + logInvocation.getAction() + "! The changed log expression is "
-							+ logInvocation.getExpression());
+			// Methods not analyzed will not be considered for transformation.
+			if (!validMethods.contains(logInvocation.getEnclosingEclipseMethod()))
+				logInvocation.setAction(Action.NONE, null);
+			else {
+				if (this.checkCodeModification(logInvocation) && this.checkEnoughData(logInvocation))
+					if (this.doAction(logInvocation))
+						LOGGER.info("Do action: " + logInvocation.getAction() + "! The changed log expression is "
+								+ logInvocation.getExpression());
+			}
 		}
 	}
 
@@ -161,8 +172,8 @@ public class LogAnalyzer extends ASTVisitor {
 		}
 
 		/**
-		 * Do not change a log level in a logging statement if there exists an
-		 * immediate if statement whose condition contains a log level.
+		 * Do not change a log level in a logging statement if there exists an immediate
+		 * if statement whose condition contains a log level.
 		 */
 		if (this.checkIfCondition) {
 			if (checkIfConditionHavingLevel(logInvocation.getExpression())) {
@@ -185,7 +196,7 @@ public class LogAnalyzer extends ASTVisitor {
 				return false;
 			}
 		}
-		
+
 		// process not lower log levels in catch blocks
 		if (logInvocation.getInCatchBlock() && currentLogLevel.intValue() > rejuvenatedLogLevel.intValue()) {
 			this.logInvsNotLoweredInCatch.add(logInvocation);
@@ -301,8 +312,8 @@ public class LogAnalyzer extends ASTVisitor {
 	}
 
 	/**
-	 * Build a list of boundary. The DOI values could be divided into 7 groups
-	 * by this boundary. 7 groups are corresponding to 7 logging levels
+	 * Build a list of boundary. The DOI values could be divided into 7 groups by
+	 * this boundary. 7 groups are corresponding to 7 logging levels
 	 * 
 	 * @param degreeOfInterests
 	 * @return a list of boundary
@@ -423,9 +434,9 @@ public class LogAnalyzer extends ASTVisitor {
 	}
 
 	/**
-	 * Returns true if the given logging expression is immediately contained
-	 * within an if statement not having an else clause (i.e., guarded) and
-	 * false otherwise.
+	 * Returns true if the given logging expression is immediately contained within
+	 * an if statement not having an else clause (i.e., guarded) and false
+	 * otherwise.
 	 */
 	private static boolean checkIfBlock(MethodInvocation loggingExpression) {
 		ASTNode loggingStatement = loggingExpression.getParent();
@@ -482,17 +493,10 @@ public class LogAnalyzer extends ASTVisitor {
 	}
 
 	/**
-	 * This method is used to find a set of logging objects
+	 * We only consider analyzed methods.
 	 */
-	@Override
-	public boolean visit(MethodDeclaration node) {
-		this.methodDeclarations.add(node);
-		return super.visit(node);
-	}
-
-	private void collectDOIValues(HashSet<MethodDeclaration> methods) {
+	private void collectDOIValues(Set<MethodDeclaration> methods) {
 		Set<IMethod> enclosingMethods = getEnclosingMethods();
-
 		methods.forEach(m -> {
 			IMethodBinding methodBinding = m.resolveBinding();
 			if (methodBinding != null) {
@@ -573,6 +577,6 @@ public class LogAnalyzer extends ASTVisitor {
 	}
 
 	public Map<IMethod, Float> getMethodToDOI() {
-		return methodToDOI;
+		return this.methodToDOI;
 	}
 }
