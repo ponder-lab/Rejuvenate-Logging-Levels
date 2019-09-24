@@ -1,6 +1,7 @@
 package edu.cuny.hunter.log.core.refactorings;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -70,7 +71,7 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 	/**
 	 * Boundary for DOI values of enclosing methods
 	 */
-	private LinkedList<Float> boundary;
+	private ArrayList<Float> boundary;
 
 	/**
 	 * Treat CONFIG as category
@@ -391,7 +392,7 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 		return this.javaProjects;
 	}
 
-	public LinkedList<Float> getBoundary() {
+	public ArrayList<Float> getBoundary() {
 		return this.boundary;
 	}
 
