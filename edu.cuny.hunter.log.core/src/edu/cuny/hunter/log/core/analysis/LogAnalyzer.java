@@ -1,10 +1,10 @@
 package edu.cuny.hunter.log.core.analysis;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -65,7 +65,7 @@ public class LogAnalyzer extends ASTVisitor {
 
 	private Map<IMethod, Float> methodToDOI = new HashMap<>();
 
-	private LinkedList<Float> boundary;
+	private ArrayList<Float> boundary;
 
 	/**
 	 * A set of keywords in log messages.
@@ -81,7 +81,7 @@ public class LogAnalyzer extends ASTVisitor {
 		this.test = isTest;
 	}
 
-	public LinkedList<Float> getBoundary() {
+	public ArrayList<Float> getBoundary() {
 		return this.boundary;
 	}
 
@@ -262,7 +262,7 @@ public class LogAnalyzer extends ASTVisitor {
 	 * @param DOI
 	 * @return the rejuvenated log level
 	 */
-	private Level getRejuvenatedLogLevel(LinkedList<Float> boundary, LogInvocation logInvocation) {
+	private Level getRejuvenatedLogLevel(ArrayList<Float> boundary, LogInvocation logInvocation) {
 		float DOI = logInvocation.getDegreeOfInterestValue();
 		if (boundary == null)
 			return null;
@@ -318,27 +318,19 @@ public class LogAnalyzer extends ASTVisitor {
 	 * @param degreeOfInterests
 	 * @return a list of boundary
 	 */
-	private LinkedList<Float> buildBoundary(Collection<Float> degreeOfInterests) {
+	private ArrayList<Float> buildBoundary(Collection<Float> degreeOfInterests) {
 		float min = getMinDOI(degreeOfInterests);
 		float max = getMaxDOI(degreeOfInterests);
-		LinkedList<Float> boundary = new LinkedList<>();
+		ArrayList<Float> boundary = new ArrayList<>();
 		if (min < max) {
-			if (this.useLogCategory || this.useLogCategoryWithConfig) {
-				// The DOI boundaries should be built as if the "treat CONFIG as
-				// a log category" was selected. This will produce a boundaries
-				// table that includes the levels FINEST, FINER, FINE, INFO,
-				// WARNING, and SEVERE #185.
+			if (this.useLogCategory) {
+				float interval = (max - min) / 4;
+				IntStream.range(0, 4).forEach(i -> boundary.add(min + i * interval));
+				boundary.add(max);
+			} else if (this.useLogCategoryWithConfig) {
 				float interval = (max - min) / 6;
 				IntStream.range(0, 6).forEach(i -> boundary.add(min + i * interval));
 				boundary.add(max);
-
-				if (this.useLogCategory) {
-					// The DOI boundaries should then be *modified* to *remove*
-					// the boundaries for WARNING and SEVERE #185.
-					LOGGER.info(() -> "Original boundaries are: " + boundary);
-					IntStream.range(0, 2).forEach(i -> boundary.remove(boundary.size() - 1));
-					LOGGER.info(() -> "New boundaries are: " + boundary);
-				}
 			} else {
 				float interval = (max - min) / 7;
 				IntStream.range(0, 7).forEach(i -> boundary.add(min + i * interval));
