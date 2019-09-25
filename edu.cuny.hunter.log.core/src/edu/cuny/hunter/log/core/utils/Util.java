@@ -33,7 +33,7 @@ import edu.cuny.hunter.mylyngit.core.utils.NonActiveMylynTaskException;
 
 @SuppressWarnings("restriction")
 public final class Util {
-	private static final int ENCLOSING_METHOD_DECAY_FACTOR = 128;
+	private static final int ENCLOSING_METHOD_DECAY_FACTOR = 256;
 	
 	private static Float originalDecay;
 
