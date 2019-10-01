@@ -135,15 +135,17 @@ public class EvaluationHandler extends AbstractHandler {
 
 				CodeGenerationSettings settings = JavaPreferencesSettings.getCodeGenerationSettings(javaProjects[0]);
 
-				resultPrinter = Util.createCSVPrinter("result.csv", new String[] { "sequence", "subject", "repo URL",
-						"input logging statements", "candidate logging statements", "passing logging statements",
-						"failures", "transformed logging statements", "log level not lowered in catch blocks",
-						"log level not lowered in if statements", "log level not transformed due to if condition",
-						"log level not lowered due to keywords", "use log category (SEVERE/WARNING/CONFIG)",
-						"use log category (CONFIG)", "not lower log levels of logs inside of catch blocks",
-						"not lower log levels of logs inside of if statements",
-						"not lower log levels in their messages with keywords",
-						"consider if condition having log level", "time (s)" });
+				resultPrinter = Util.createCSVPrinter("result.csv",
+						new String[] { "sequence", "subject", "repo URL", "decay factor", "input logging statements",
+								"candidate logging statements", "passing logging statements", "failures",
+								"transformed logging statements", "log level not lowered in catch blocks",
+								"log level not lowered in if statements",
+								"log level not transformed due to if condition",
+								"log level not lowered due to keywords", "use log category (SEVERE/WARNING/CONFIG)",
+								"use log category (CONFIG)", "not lower log levels of logs inside of catch blocks",
+								"not lower log levels of logs inside of if statements",
+								"not lower log levels in their messages with keywords",
+								"consider if condition having log level", "time (s)" });
 
 				repoPrinter = Util.createCSVPrinter("repos.csv",
 						new String[] { "sequence", "repo URL", "SHA-1 of head", "N for commits",
@@ -247,7 +249,8 @@ public class EvaluationHandler extends AbstractHandler {
 										Util.getMethodIdentifier(method), nonenclosingMethodToDOI.get(method));
 							}
 
-							Set<LogInvocation> candidates = computeCandidateLogs(logRejuvenatingProcessor.getRoughCandidateSet());
+							Set<LogInvocation> candidates = computeCandidateLogs(
+									logRejuvenatingProcessor.getRoughCandidateSet());
 
 							for (LogInvocation logInvocation : candidates)
 								candidatePrinter.printRecord(sequence, project.getElementName(),
@@ -354,9 +357,9 @@ public class EvaluationHandler extends AbstractHandler {
 							}
 
 							resultPrinter.printRecord(sequence, project.getElementName(),
-									logRejuvenatingProcessor.getRepoURL(), logInvocationSet.size(), candidates.size(),
-									passingLogInvocationSet.size(), errorEntries.size(),
-									transformedLogInvocationSet.size(),
+									logRejuvenatingProcessor.getRepoURL(), logRejuvenatingProcessor.getDecayFactor(),
+									logInvocationSet.size(), candidates.size(), passingLogInvocationSet.size(),
+									errorEntries.size(), transformedLogInvocationSet.size(),
 									logRejuvenatingProcessor.getLogInvsNotLoweredInCatch().size(),
 									logRejuvenatingProcessor.getLogInvsNotLoweredInIf().size(),
 									logRejuvenatingProcessor.getLogInvsNotTransformedInIf().size(),

@@ -34,7 +34,7 @@ import edu.cuny.hunter.mylyngit.core.utils.NonActiveMylynTaskException;
 @SuppressWarnings("restriction")
 public final class Util {
 	private static final int ENCLOSING_METHOD_DECAY_FACTOR = 256;
-	
+
 	private static Float originalDecay;
 
 	public static ProcessorBasedRefactoring createRejuvenating(IJavaProject[] projects,
@@ -126,10 +126,10 @@ public final class Util {
 	}
 
 	/**
-	 * We only focus on the logging level, which is set by the developer. Hence,
-	 * we do not record the logging level which is embedded by the logging
-	 * package. e.g. each time we call method entering, a logging record which
-	 * has "FINER" level is created.
+	 * We only focus on the logging level, which is set by the developer. Hence, we
+	 * do not record the logging level which is embedded by the logging package.
+	 * e.g. each time we call method entering, a logging record which has "FINER"
+	 * level is created.
 	 * 
 	 * @param node
 	 * @return logging level
@@ -246,5 +246,9 @@ public final class Util {
 
 	public static boolean isGeneratedCode(IJavaElement element) throws JavaModelException {
 		return element.getResource().isDerived(IResource.CHECK_ANCESTORS);
+	}
+
+	public static int getDecayFactor() {
+		return ENCLOSING_METHOD_DECAY_FACTOR;
 	}
 }

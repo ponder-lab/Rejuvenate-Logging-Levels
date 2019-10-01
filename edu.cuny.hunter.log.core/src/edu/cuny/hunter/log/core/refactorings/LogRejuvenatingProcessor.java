@@ -581,4 +581,8 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 		return this.methodToDOI.keySet().stream().filter(m -> !this.enclosingMethods.contains(m))
 				.collect(Collectors.toMap(Function.identity(), m -> this.methodToDOI.get(m)));
 	}
+
+	public int getDecayFactor() {
+		return Util.getDecayFactor();
+	}
 }
