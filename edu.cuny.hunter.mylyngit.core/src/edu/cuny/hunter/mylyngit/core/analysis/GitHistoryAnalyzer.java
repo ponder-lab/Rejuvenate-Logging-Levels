@@ -427,7 +427,7 @@ public class GitHistoryAnalyzer {
 	 * @throws GitAPIException
 	 * @throws NoHeadException
 	 */
-	private Git preProcessGitHistory(File repoFile, int NToUseForCommits) throws NoHeadException, GitAPIException {
+	private Git preProcessGitHistory(File repoFile, int NToUseForCommits) {
 		Git git = null;
 		while (repoFile != null) {
 
@@ -442,7 +442,7 @@ public class GitHistoryAnalyzer {
 					// if not, let's search its parent
 					repoFile = repoFile.getParentFile();
 				}
-			} catch (IOException e) {
+			} catch (IOException | GitAPIException e) {
 				Logger.getLogger(Util.LOGGER_NAME)
 						.fine("Cannot build fileRepoBuilder for file path: " + repoFile.getAbsolutePath());
 			}
