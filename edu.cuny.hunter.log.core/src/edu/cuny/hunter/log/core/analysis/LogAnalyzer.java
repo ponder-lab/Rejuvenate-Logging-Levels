@@ -74,7 +74,7 @@ public class LogAnalyzer extends ASTVisitor {
 	/**
 	 * A set of keywords in log messages for lowering log levels.
 	 */
-	private final Set<String> KEYWORDS_IN_LOG_MESSAGES_FOR_LOWERING = Stream
+	private static final Set<String> KEYWORDS_IN_LOG_MESSAGES_FOR_LOWERING = Stream
 			.of("fail", "disable", "error", "exception", "collision", "reboot", "terminate", "throw", "should", "start",
 					"tried", "empty", "launch", "init", "does not", "doesn't", "stop", "shut", "run", "deprecate",
 					"kill", "finish", "ready", "wait", "dead", "alive")
@@ -82,7 +82,7 @@ public class LogAnalyzer extends ASTVisitor {
 	/**
 	 * A set of keywords in log messages for raising log levels.
 	 */
-	private final Set<String> KEYWORDS_IN_LOG_MESSAGES_FOR_RAISING = Stream
+	private static final Set<String> KEYWORDS_IN_LOG_MESSAGES_FOR_RAISING = Stream
 			.of("fail", "disable", "error", "exception", "collision", "reboot", "terminate", "throw", "should", "start",
 					"tried", "empty", "launch", "init", "does not", "doesn't", "stop", "shut", "run", "deprecate",
 					"kill", "finish", "ready", "wait", "dead", "alive")
