@@ -424,28 +424,27 @@ public class GitHistoryAnalyzer {
 	 * 
 	 * @param repoFile
 	 * @return
+	 * @throws IOException
 	 * @throws GitAPIException
 	 * @throws NoHeadException
 	 */
-	private Git preProcessGitHistory(File repoFile, int NToUseForCommits) {
+	private Git preProcessGitHistory(File repoFile, int NToUseForCommits)
+			throws IOException, NoHeadException, GitAPIException {
 		Git git = null;
 		while (repoFile != null) {
 
 			Repository repo;
-			try {
-				repo = new FileRepositoryBuilder().setWorkTree(repoFile).build();
-				// if the directory is a valid repo
-				if (repo.getObjectDatabase().exists()) {
-					git = tryPreProcessGitHistory(repoFile, NToUseForCommits);
-					break;
-				} else {
-					// if not, let's search its parent
-					repoFile = repoFile.getParentFile();
-				}
-			} catch (IOException | GitAPIException e) {
-				Logger.getLogger(Util.LOGGER_NAME)
-						.fine("Cannot build fileRepoBuilder for file path: " + repoFile.getAbsolutePath());
+
+			repo = new FileRepositoryBuilder().setWorkTree(repoFile).build();
+			// if the directory is a valid repo
+			if (repo.getObjectDatabase().exists()) {
+				git = tryPreProcessGitHistory(repoFile, NToUseForCommits);
+				break;
+			} else {
+				// if not, let's search its parent
+				repoFile = repoFile.getParentFile();
 			}
+
 		}
 
 		if (repoFile != null) {
