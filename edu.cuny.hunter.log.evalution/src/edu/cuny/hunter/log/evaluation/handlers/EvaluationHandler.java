@@ -153,6 +153,7 @@ public class EvaluationHandler extends AbstractHandler {
 								"use log category (CONFIG)", "not lower log levels of logs inside of catch blocks",
 								"not lower log levels of logs inside of if statements",
 								"not lower log levels in their messages with keywords",
+								"not raise log levels in their message with keywords",
 								"consider if condition having log level", "time (s)" });
 
 				repoPrinter = Util.createCSVPrinter("repos.csv",
@@ -219,8 +220,9 @@ public class EvaluationHandler extends AbstractHandler {
 									new IJavaProject[] { project }, this.isUseLogCategory(),
 									this.isUseLogCategoryWithConfig(), this.getValueOfUseGitHistory(),
 									this.isNotLowerLogLevelInCatchBlock(), this.isNotLowerLogLevelInIfStatement(),
-									this.isNotLowerLogLevelWithKeywords(), this.isNotRaiseLogLevelWithKeywords(), this.isCheckIfCondition(), NToUseCommit,
-									settings, Optional.ofNullable(monitor), true);
+									this.isNotLowerLogLevelWithKeywords(), this.isNotRaiseLogLevelWithKeywords(),
+									this.isCheckIfCondition(), NToUseCommit, settings, Optional.ofNullable(monitor),
+									true);
 
 							RefactoringStatus status = new ProcessorBasedRefactoring(
 									(RefactoringProcessor) logRejuvenatingProcessor)
@@ -377,8 +379,8 @@ public class EvaluationHandler extends AbstractHandler {
 									logRejuvenatingProcessor.getLogInvsNotLoweredWithKeywords().size(),
 									this.isUseLogCategory(), this.isUseLogCategoryWithConfig(),
 									this.isNotLowerLogLevelInCatchBlock(), this.isNotLowerLogLevelInIfStatement(),
-									this.isNotLowerLogLevelWithKeywords(), this.isCheckIfCondition(),
-									resultsTimeCollector.getCollectedTime());
+									this.isNotLowerLogLevelWithKeywords(), this.isNotRaiseLogLevelWithKeywords(),
+									this.isCheckIfCondition(), resultsTimeCollector.getCollectedTime());
 
 							for (LogInvocation logInvocation : logRejuvenatingProcessor.getLogInvsNotLoweredInCatch())
 								notLowerLevelsInCatchBlockPrinter.printRecord(sequence, project.getElementName(),
@@ -401,8 +403,9 @@ public class EvaluationHandler extends AbstractHandler {
 										logInvocation.getLogLevel(),
 										logInvocation.getEnclosingType().getFullyQualifiedName(),
 										Util.getMethodIdentifier(logInvocation.getEnclosingEclipseMethod()));
-							
-							for (LogInvocation logInvocation : logRejuvenatingProcessor.getLogInvsNotRaisedWithKeywords())
+
+							for (LogInvocation logInvocation : logRejuvenatingProcessor
+									.getLogInvsNotRaisedWithKeywords())
 								notRaiseLevelDueToKeywordsPrinter.printRecord(sequence, project.getElementName(),
 										logInvocation.getExpression(), logInvocation.getStartPosition(),
 										logInvocation.getLogLevel(),
@@ -714,7 +717,7 @@ public class EvaluationHandler extends AbstractHandler {
 	public boolean isNotLowerLogLevelWithKeywords() {
 		return this.notLowerLogLevelWithKeywords;
 	}
-	
+
 	public boolean isNotRaiseLogLevelWithKeywords() {
 		return this.notRaiseLogLevelWithKeywords;
 	}
