@@ -59,7 +59,7 @@ public class LogAnalyzer extends ASTVisitor {
 
 	private boolean notLowerLogLevelWithKeyWords;
 
-	private boolean notRaiseLogLevelWithKeyWords;
+	private boolean notRaiseLogLevelWithoutKeyWords;
 
 	private boolean useLogCategoryWithConfig;
 
@@ -100,13 +100,13 @@ public class LogAnalyzer extends ASTVisitor {
 
 	public LogAnalyzer(boolean useConfigLogLevelCategory, boolean useLogLevelCategory,
 			boolean notLowerLogLevelInCatchBlock, boolean checkIfCondition, boolean notLowerLogLevelInIfStatement,
-			boolean notLowerLogLevelWithKeyWords, boolean notRaiseLogLevelWithKeywords) {
+			boolean notLowerLogLevelWithKeyWords, boolean notRaiseLogLevelWithoutKeywords) {
 		this.useLogCategoryWithConfig = useConfigLogLevelCategory;
 		this.useLogCategory = useLogLevelCategory;
 		this.notLowerLogLevelInCatchBlock = notLowerLogLevelInCatchBlock;
 		this.notLowerLogLevelInIfStatement = notLowerLogLevelInIfStatement;
 		this.notLowerLogLevelWithKeyWords = notLowerLogLevelWithKeyWords;
-		this.notRaiseLogLevelWithKeyWords = notRaiseLogLevelWithKeywords;
+		this.notRaiseLogLevelWithoutKeyWords = notRaiseLogLevelWithoutKeywords;
 		this.checkIfCondition = checkIfCondition;
 	}
 
@@ -211,8 +211,8 @@ public class LogAnalyzer extends ASTVisitor {
 			}
 		}
 
-		if (this.notRaiseLogLevelWithKeyWords) {
-			if (Util.isLogMessageWithKeywords(logInvocation.getExpression(), KEYWORDS_IN_LOG_MESSAGES_FOR_RAISING)
+		if (this.notRaiseLogLevelWithoutKeyWords) {
+			if (!Util.isLogMessageWithKeywords(logInvocation.getExpression(), KEYWORDS_IN_LOG_MESSAGES_FOR_RAISING)
 					&& currentLogLevel.intValue() < rejuvenatedLogLevel.intValue()) {
 				logInvocation.setAction(Action.NONE, null);
 				this.logInvsNotRaisedByKeywords.add(logInvocation);

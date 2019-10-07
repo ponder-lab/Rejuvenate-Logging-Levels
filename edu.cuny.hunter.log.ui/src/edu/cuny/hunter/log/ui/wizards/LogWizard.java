@@ -148,8 +148,8 @@ public class LogWizard extends RefactoringWizard {
 
 			// set up buttons.
 			this.addBooleanButton(
-					"Never raise the logging level of logging statements with particular keywords in their message.",
-					NOT_RAISE_LOG_LEVEL_KEY_WORDS, this.getProcessor()::setNotRaiseLogLevelWithKeyWords, result,
+					"Never raise the logging level of logging statements without particular keywords in their message.",
+					NOT_RAISE_LOG_LEVEL_KEY_WORDS, this.getProcessor()::setNotRaiseLogLevelWithoutKeyWords, result,
 					SWT.CHECK);
 
 			this.addBooleanButton("Do not change a log level if its if statement condition contains a log level.",
@@ -214,7 +214,7 @@ public class LogWizard extends RefactoringWizard {
 				this.settings.put(NOT_LOWER_LOG_LEVEL_IF_STATEMENT,
 						this.getProcessor().isNotLowerLogLevelInIfStatement());
 				this.settings.put(NOT_LOWER_LOG_LEVEL_KEY_WORDS, this.getProcessor().isNotLowerLogLevelWithKeyWords());
-				this.settings.put(NOT_RAISE_LOG_LEVEL_KEY_WORDS, this.getProcessor().isNotRaisedLogLevelWithKeywords());
+				this.settings.put(NOT_RAISE_LOG_LEVEL_KEY_WORDS, this.getProcessor().isNotRaisedLogLevelWithoutKeywords());
 			}
 			this.processor.setParticularConfigLogLevel(this.settings.getBoolean(USE_LOG_CATEGORY_CONFIG));
 			this.processor.setParticularLogLevel(this.settings.getBoolean(USE_LOG_CATEGORY));
@@ -224,7 +224,7 @@ public class LogWizard extends RefactoringWizard {
 			this.processor.setCheckIfCondition(this.settings.getBoolean(CHECK_IF_CONDITION));
 			this.processor.setNotLowerLogLevelInIfStatement(this.settings.getBoolean(NOT_LOWER_LOG_LEVEL_IF_STATEMENT));
 			this.processor.setNotLowerLogLevelWithKeyWords(this.settings.getBoolean(NOT_LOWER_LOG_LEVEL_KEY_WORDS));
-			this.processor.setNotRaiseLogLevelWithKeyWords(this.settings.getBoolean(NOT_RAISE_LOG_LEVEL_KEY_WORDS));
+			this.processor.setNotRaiseLogLevelWithoutKeyWords(this.settings.getBoolean(NOT_RAISE_LOG_LEVEL_KEY_WORDS));
 		}
 
 		private void setProcessor(LogRejuvenatingProcessor processor) {

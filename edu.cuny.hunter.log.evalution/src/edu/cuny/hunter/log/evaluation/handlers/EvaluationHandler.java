@@ -62,7 +62,7 @@ public class EvaluationHandler extends AbstractHandler {
 	private static final String NOT_LOWER_LOG_LEVEL_IF_STATEMENT_KEY = "edu.cuny.hunter.log.evaluation.notLowerLogLevelInIfStatement";
 	private static final String NOT_LOWER_LOG_LEVEL_CATCH_BLOCK_KEY = "edu.cuny.hunter.log.evaluation.notLowerLogLevelInCatchBlock";
 	private static final String NOT_LOWER_LOG_LEVEL_KEYWORDS_KEY = "edu.cuny.hunter.log.evaluation.notLowerLogLevelWithKeywords";
-	private static final String NOT_RAISE_LOG_LEVEL_KEYWORKS_KEY = "edu.cuny.hunter.log.evaluation.notRaiseLogLevelWithKeywords";
+	private static final String NOT_RAISE_LOG_LEVEL_KEYWORKS_KEY = "edu.cuny.hunter.log.evaluation.notRaiseLogLevelWithoutKeywords";
 	private static final String USE_LOG_CATEGORY_CONFIG_KEY = "edu.cuny.hunter.log.evaluation.useLogCategoryWithConfig";
 	private static final String CHECK_IF_CONDITION_KEY = "edu.cuny.hunter.log.evaluation.checkIfCondition";
 	private static final String USE_LOG_CATEGORY_KEY = "edu.cuny.hunter.log.evaluation.useLogCategory";
@@ -106,9 +106,9 @@ public class EvaluationHandler extends AbstractHandler {
 	private boolean notLowerLogLevelWithKeywords;
 
 	/**
-	 * Never raise logs with particular keywords in their log messages.
+	 * Never raise logs without particular keywords in their log messages.
 	 */
-	private boolean notRaiseLogLevelWithKeywords;
+	private boolean notRaiseLogLevelWithoutKeywords;
 
 	/**
 	 * Do not change a log level in a logging statement if there exists an immediate
@@ -153,7 +153,7 @@ public class EvaluationHandler extends AbstractHandler {
 								"use log category (CONFIG)", "not lower log levels of logs inside of catch blocks",
 								"not lower log levels of logs inside of if statements",
 								"not lower log levels in their messages with keywords",
-								"not raise log levels in their message with keywords",
+								"not raise log levels in their message without keywords",
 								"consider if condition having log level", "time (s)" });
 
 				repoPrinter = Util.createCSVPrinter("repos.csv",
@@ -220,7 +220,7 @@ public class EvaluationHandler extends AbstractHandler {
 									new IJavaProject[] { project }, this.isUseLogCategory(),
 									this.isUseLogCategoryWithConfig(), this.getValueOfUseGitHistory(),
 									this.isNotLowerLogLevelInCatchBlock(), this.isNotLowerLogLevelInIfStatement(),
-									this.isNotLowerLogLevelWithKeywords(), this.isNotRaiseLogLevelWithKeywords(),
+									this.isNotLowerLogLevelWithKeywords(), this.isNotRaiseLogLevelWithoutKeywords(),
 									this.isCheckIfCondition(), NToUseCommit, settings, Optional.ofNullable(monitor),
 									true);
 
@@ -379,7 +379,7 @@ public class EvaluationHandler extends AbstractHandler {
 									logRejuvenatingProcessor.getLogInvsNotLoweredWithKeywords().size(),
 									this.isUseLogCategory(), this.isUseLogCategoryWithConfig(),
 									this.isNotLowerLogLevelInCatchBlock(), this.isNotLowerLogLevelInIfStatement(),
-									this.isNotLowerLogLevelWithKeywords(), this.isNotRaiseLogLevelWithKeywords(),
+									this.isNotLowerLogLevelWithKeywords(), this.isNotRaiseLogLevelWithoutKeywords(),
 									this.isCheckIfCondition(), resultsTimeCollector.getCollectedTime());
 
 							for (LogInvocation logInvocation : logRejuvenatingProcessor.getLogInvsNotLoweredInCatch())
@@ -405,7 +405,7 @@ public class EvaluationHandler extends AbstractHandler {
 										Util.getMethodIdentifier(logInvocation.getEnclosingEclipseMethod()));
 
 							for (LogInvocation logInvocation : logRejuvenatingProcessor
-									.getLogInvsNotRaisedWithKeywords())
+									.getLogInvsNotRaisedWithoutKeywords())
 								notRaiseLevelDueToKeywordsPrinter.printRecord(sequence, project.getElementName(),
 										logInvocation.getExpression(), logInvocation.getStartPosition(),
 										logInvocation.getLogLevel(),
@@ -586,7 +586,7 @@ public class EvaluationHandler extends AbstractHandler {
 
 		this.setNotLowerLogLevelInIfStatement(this.getValueOfNotLowerLogLevelInIfStatement());
 		this.setNotLowerLogLevelWithKeywords(this.getValueOfNotLowerLogLevelWithKeywords());
-		this.setNotRaiseLogLevelWithKeywords(this.getValueOfNotRaiseLogLevelWithKeywords());
+		this.setNotRaiseLogLevelWithoutKeywords(this.getValueOfNotRaiseLogLevelWithoutKeywords());
 		this.setCheckIfCondition(this.getValueOfCheckIfCondition());
 
 		if (this.isUseLogCategory() && this.isUseLogCategoryWithConfig())
@@ -647,13 +647,13 @@ public class EvaluationHandler extends AbstractHandler {
 			return Boolean.valueOf(notLowerLogLevelWithKeywords);
 	}
 
-	private boolean getValueOfNotRaiseLogLevelWithKeywords() {
-		String notRaiseLogLevelWithKeywords = System.getenv(NOT_RAISE_LOG_LEVEL_KEYWORKS_KEY);
+	private boolean getValueOfNotRaiseLogLevelWithoutKeywords() {
+		String notRaiseLogLevelWithoutKeywords = System.getenv(NOT_RAISE_LOG_LEVEL_KEYWORKS_KEY);
 
-		if (notRaiseLogLevelWithKeywords == null)
+		if (notRaiseLogLevelWithoutKeywords == null)
 			return NOT_RAISE_LOG_LEVEL_KEYWORDS_DEFAULT;
 		else
-			return Boolean.valueOf(notRaiseLogLevelWithKeywords);
+			return Boolean.valueOf(notRaiseLogLevelWithoutKeywords);
 	}
 
 	private boolean getValueOfCheckIfCondition() {
@@ -709,8 +709,8 @@ public class EvaluationHandler extends AbstractHandler {
 		this.notLowerLogLevelWithKeywords = notLowerLogLevelWithKeywords;
 	}
 
-	private void setNotRaiseLogLevelWithKeywords(boolean notRaiseLogLevelWithKeywords) {
-		this.notRaiseLogLevelWithKeywords = notLowerLogLevelWithKeywords;
+	private void setNotRaiseLogLevelWithoutKeywords(boolean notRaiseLogLevelWithoutKeywords) {
+		this.notRaiseLogLevelWithoutKeywords = notRaiseLogLevelWithoutKeywords;
 
 	}
 
@@ -718,7 +718,7 @@ public class EvaluationHandler extends AbstractHandler {
 		return this.notLowerLogLevelWithKeywords;
 	}
 
-	public boolean isNotRaiseLogLevelWithKeywords() {
-		return this.notRaiseLogLevelWithKeywords;
+	public boolean isNotRaiseLogLevelWithoutKeywords() {
+		return this.notRaiseLogLevelWithoutKeywords;
 	}
 }
