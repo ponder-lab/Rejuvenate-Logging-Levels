@@ -54,12 +54,12 @@ import org.eclipse.jgit.patch.HunkHeader;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.revwalk.RevTree;
 import org.eclipse.jgit.revwalk.RevWalk;
+import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
 import org.eclipse.jgit.treewalk.AbstractTreeIterator;
 import org.eclipse.jgit.treewalk.CanonicalTreeParser;
 import org.eclipse.jgit.treewalk.EmptyTreeIterator;
 import org.eclipse.jgit.treewalk.TreeWalk;
 import org.eclipse.jgit.treewalk.filter.PathFilter;
-
 import edu.cuny.hunter.mylyngit.core.utils.Commit;
 import edu.cuny.hunter.mylyngit.core.utils.GitMethod;
 import edu.cuny.hunter.mylyngit.core.utils.Graph;
@@ -103,7 +103,7 @@ public class GitHistoryAnalyzer {
 	private String repoPath;
 
 	private String repoURL;
-	
+
 	private int actualNumberOfCommits;
 
 	// Map repo path to URL
@@ -204,10 +204,10 @@ public class GitHistoryAnalyzer {
 	 */
 	private void processMergeCommit(RevCommit headCommit, RevCommit commitToMerge, Git git) throws IOException {
 		ThreeWayMerger merger = MergeStrategy.RECURSIVE.newMerger(git.getRepository(), true);
-		
+
 		try {
 			boolean canMerge = merger.merge(headCommit, commitToMerge);
-			
+
 			// no conflicts for merging
 			if (canMerge)
 				return;
@@ -223,7 +223,6 @@ public class GitHistoryAnalyzer {
 	 * This method is used to JUnit test.
 	 */
 	public GitHistoryAnalyzer(String sha, File repoFile) throws IOException, GitAPIException {
-
 		Git git = Git.init().setDirectory(repoFile).call();
 
 		ObjectId currentCommitId = ObjectId.fromString(sha);
@@ -414,9 +413,9 @@ public class GitHistoryAnalyzer {
 				this.commitList.addFirst(commit);
 			commitNumber++;
 		}
-		
+
 		this.setActualNumberOfCommits(commitNumber);
-		
+
 		return git;
 	}
 
@@ -425,16 +424,27 @@ public class GitHistoryAnalyzer {
 	 * 
 	 * @param repoFile
 	 * @return
+	 * @throws IOException
+	 * @throws GitAPIException
+	 * @throws NoHeadException
 	 */
-	private Git preProcessGitHistory(File repoFile, int NToUseForCommits) {
+	private Git preProcessGitHistory(File repoFile, int NToUseForCommits)
+			throws IOException, NoHeadException, GitAPIException {
 		Git git = null;
 		while (repoFile != null) {
-			try {
+
+			Repository repo;
+
+			repo = new FileRepositoryBuilder().setWorkTree(repoFile).build();
+			// if the directory is a valid repo
+			if (repo.getObjectDatabase().exists()) {
 				git = tryPreProcessGitHistory(repoFile, NToUseForCommits);
 				break;
-			} catch (GitAPIException e) {
+			} else {
+				// if not, let's search its parent
 				repoFile = repoFile.getParentFile();
 			}
+
 		}
 
 		if (repoFile != null) {
