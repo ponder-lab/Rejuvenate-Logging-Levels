@@ -103,7 +103,7 @@ public class GitHistoryAnalyzer {
 	private String repoPath;
 
 	private String repoURL;
-	
+
 	private int actualNumberOfCommits;
 
 	// Map repo path to URL
@@ -129,6 +129,8 @@ public class GitHistoryAnalyzer {
 			// Already evaluated before or no repo
 			if (git == null)
 				return;
+
+			this.prepareWorkingDir(new File("tmp/" + Paths.get(repoPath).getFileName()));
 
 			// from the earliest commit to the current commit
 			for (RevCommit currentCommit : this.commitList) {
@@ -162,6 +164,14 @@ public class GitHistoryAnalyzer {
 		}
 	}
 
+	/**
+	 * Checking whether working directory has the directories we need.
+	 */
+	private void prepareWorkingDir(File file) {
+		this.createDirectory(file.getParentFile());
+		this.createDirectory(file);
+	}
+
 	public LinkedList<Commit> getCommits() {
 		return this.commits;
 	}
@@ -181,7 +191,6 @@ public class GitHistoryAnalyzer {
 	 * Remove intermediate files and reset statistical data.
 	 */
 	private void resetDataForOneCommit() {
-		this.clearFiles(new File("").getAbsoluteFile());
 		this.javaLinesAdded = 0;
 		this.javaLinesRemoved = 0;
 		this.methodFound = 0;
@@ -204,10 +213,10 @@ public class GitHistoryAnalyzer {
 	 */
 	private void processMergeCommit(RevCommit headCommit, RevCommit commitToMerge, Git git) throws IOException {
 		ThreeWayMerger merger = MergeStrategy.RECURSIVE.newMerger(git.getRepository(), true);
-		
+
 		try {
 			boolean canMerge = merger.merge(headCommit, commitToMerge);
-			
+
 			// no conflicts for merging
 			if (canMerge)
 				return;
@@ -235,8 +244,6 @@ public class GitHistoryAnalyzer {
 		revWalk.close();
 
 		processOneCommit(currentCommit, previousCommit, git);
-
-		this.clearFiles(new File("").getAbsoluteFile());
 
 		git.close();
 	}
@@ -414,9 +421,9 @@ public class GitHistoryAnalyzer {
 				this.commitList.addFirst(commit);
 			commitNumber++;
 		}
-		
+
 		this.setActualNumberOfCommits(commitNumber);
-		
+
 		return git;
 	}
 
@@ -549,37 +556,6 @@ public class GitHistoryAnalyzer {
 				this.gitMethods.add(new GitMethod(methodSig, op, path, fileOp, commitIndex, commit.name()));
 			}
 		});
-	}
-
-	/**
-	 * Check whether a directory is a temporary directory.
-	 */
-	private boolean isTemporaryDirectory(File directory) {
-		if (directory.getName().length() >= 7 && directory.getName().substring(0, 4).equals("tmp_"))
-			return true;
-		else
-			return false;
-	}
-
-	/**
-	 * Remove all temporary files
-	 */
-	private boolean clearFiles(File directory) {
-		if (directory.exists()) {
-			File[] files = directory.listFiles();
-			if (null != files) {
-				for (int i = 0; i < files.length; i++) {
-					if (files[i].isDirectory()) {
-						// Need to clear the content of the temporary directory first before remove it
-						if (isTemporaryDirectory(files[i]))
-							clearFiles(files[i]);
-					} else if (isTemporaryDirectory(directory)) {
-						files[i].delete();
-					}
-				}
-			}
-		}
-		return (directory.delete());
 	}
 
 	/**
@@ -722,15 +698,18 @@ public class GitHistoryAnalyzer {
 	 */
 	private File getFile(String fileName, String newDirectory) throws IOException {
 		// ALL files are moved into a new directory
-		File file = new File(newDirectory + commitIndex + "/" + fileName);
-
+		File file = new File(
+				"tmp/" + Paths.get(repoPath).getFileName() + "/" + newDirectory + commitIndex + "/" + fileName);
 		if (!file.exists()) {
-			if (!file.getParentFile().exists())
-				file.getParentFile().mkdir();
-
+			this.createDirectory(file.getParentFile());
 			file.createNewFile();
 		}
 		return file;
+	}
+
+	private void createDirectory(File file) {
+		if (!file.exists())
+			file.mkdir();
 	}
 
 	/**
