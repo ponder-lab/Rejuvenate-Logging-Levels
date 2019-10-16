@@ -104,6 +104,11 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 	private boolean notLowerLogLevelWithKeyWords;
 
 	/**
+	 * Not raise logs without particular keywords in their messages.
+	 */
+	private boolean notRaiseLogLevelWithoutKeywords;
+
+	/**
 	 * Limit number of commits
 	 */
 	private int NToUseForCommits = 100;
@@ -127,6 +132,7 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 	private HashSet<LogInvocation> logInvsNotLoweredInCatch;
 	private HashSet<LogInvocation> logInvsNotLoweredInIf;
 	private HashSet<LogInvocation> logInvsNotLoweredWithKeywords;
+	private HashSet<LogInvocation> logInvsNotRaisedWithoutKeywords;
 	private Map<IMethod, Float> methodToDOI;
 	private Set<IMethod> enclosingMethods;
 
@@ -188,8 +194,9 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 
 	public LogRejuvenatingProcessor(IJavaProject[] javaProjects, boolean useLogLevelCategory,
 			boolean useConfigLogLevelCategory, boolean useGitHistory, boolean notLowerLogLevelInCatchBlock,
-			boolean notLowerLogLevelInIfStatement, boolean notLowerLogLevelWithKeywords, boolean checkIfCondtion,
-			int NToUseForCommits, final CodeGenerationSettings settings, Optional<IProgressMonitor> monitor) {
+			boolean notLowerLogLevelInIfStatement, boolean notLowerLogLevelWithKeywords,
+			boolean notRaiseLogLevelWithoutKeywords, boolean checkIfCondtion, int NToUseForCommits,
+			final CodeGenerationSettings settings, Optional<IProgressMonitor> monitor) {
 		super(settings);
 		try {
 			this.javaProjects = javaProjects;
@@ -199,6 +206,7 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 			this.notLowerLogLevelInCatchBlock = notLowerLogLevelInCatchBlock;
 			this.notLowerLogLevelInIfStatement = notLowerLogLevelInIfStatement;
 			this.notLowerLogLevelWithKeyWords = notLowerLogLevelWithKeywords;
+			this.notRaiseLogLevelWithoutKeywords = notRaiseLogLevelWithoutKeywords;
 			this.checkIfCondition = checkIfCondtion;
 			this.NToUseForCommits = NToUseForCommits;
 		} finally {
@@ -208,12 +216,12 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 
 	public LogRejuvenatingProcessor(IJavaProject[] javaProjects, boolean useLogLevelCategory,
 			boolean useConfigLogLevelCategory, boolean useGitHistory, boolean notLowerLogLevelInCatchBlock,
-			boolean notLowerLogLevelInIfStatement, boolean notLowerLogLevelWithKeywords, boolean checkIfCondtion,
-			int NToUseForCommits, final CodeGenerationSettings settings, Optional<IProgressMonitor> monitor,
-			boolean isEvaluation) {
+			boolean notLowerLogLevelInIfStatement, boolean notLowerLogLevelWithKeywords,
+			boolean notRaiseLogLevelWithoutKeywords, boolean checkIfCondtion, int NToUseForCommits,
+			final CodeGenerationSettings settings, Optional<IProgressMonitor> monitor, boolean isEvaluation) {
 		this(javaProjects, useLogLevelCategory, useConfigLogLevelCategory, useGitHistory, notLowerLogLevelInCatchBlock,
-				notLowerLogLevelInIfStatement, notLowerLogLevelWithKeywords, checkIfCondtion, NToUseForCommits,
-				settings, monitor);
+				notLowerLogLevelInIfStatement, notLowerLogLevelWithKeywords, notRaiseLogLevelWithoutKeywords,
+				checkIfCondtion, NToUseForCommits, settings, monitor);
 		this.isEvaluation = isEvaluation;
 	}
 
@@ -237,7 +245,7 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 
 			LogAnalyzer analyzer = new LogAnalyzer(this.useLogCategoryWithConfig, this.useLogCategory,
 					this.notLowerLogLevelInCatchBlock, this.checkIfCondition, this.notLowerLogLevelInIfStatement,
-					this.notLowerLogLevelWithKeyWords);
+					this.notLowerLogLevelWithKeyWords, this.notRaiseLogLevelWithoutKeywords);
 
 			// If we are using the git history.
 			if (this.useGitHistory) {
@@ -290,6 +298,7 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 			this.setLogInvsNotTransformedInIf(analyzer.getLogInvsNotTransformedInIf());
 			this.setLogInvsNotLoweredInIf(analyzer.getLogInvsNotLoweredInIfStatement());
 			this.setLogInvsNotLoweredWithKeywords(analyzer.getLogInvsNotLoweredByKeywords());
+			this.setLogInvsNotRaisedWithoutKeywords(analyzer.getLogInvsNotRaisedByKeywords());
 			this.setMethodToDOI(analyzer.getMethodToDOI());
 			this.setEnclosingMethods(analyzer.getEnclosingMethods());
 
@@ -557,16 +566,32 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 		return this.notLowerLogLevelWithKeyWords;
 	}
 
+	public boolean isNotRaisedLogLevelWithoutKeywords() {
+		return this.notRaiseLogLevelWithoutKeywords;
+	}
+
 	public void setNotLowerLogLevelWithKeyWords(boolean notLowerLogLevelWithKeyWords) {
 		this.notLowerLogLevelWithKeyWords = notLowerLogLevelWithKeyWords;
 	}
 
+	public void setNotRaiseLogLevelWithoutKeyWords(boolean notRaiseLogLevelWithoutKeyWords) {
+		this.notRaiseLogLevelWithoutKeywords = notRaiseLogLevelWithoutKeyWords;
+	}
+
 	public HashSet<LogInvocation> getLogInvsNotLoweredWithKeywords() {
-		return logInvsNotLoweredWithKeywords;
+		return this.logInvsNotLoweredWithKeywords;
+	}
+
+	public HashSet<LogInvocation> getLogInvsNotRaisedWithoutKeywords() {
+		return this.logInvsNotRaisedWithoutKeywords;
 	}
 
 	private void setLogInvsNotLoweredWithKeywords(HashSet<LogInvocation> logInvsNotLoweredWithKeywords) {
 		this.logInvsNotLoweredWithKeywords = logInvsNotLoweredWithKeywords;
+	}
+
+	private void setLogInvsNotRaisedWithoutKeywords(HashSet<LogInvocation> logInvsNotRaisedWithoutKeywords) {
+		this.logInvsNotRaisedWithoutKeywords = logInvsNotRaisedWithoutKeywords;
 	}
 
 	private void setMethodToDOI(Map<IMethod, Float> methodToDOI) {

@@ -49,6 +49,8 @@ public class LogAnalyzer extends ASTVisitor {
 
 	private HashSet<LogInvocation> logInvsNotLoweredByKeywords = new HashSet<LogInvocation>();
 
+	private HashSet<LogInvocation> logInvsNotRaisedByKeywords = new HashSet<LogInvocation>();
+
 	private Set<LogInvocation> logInvocationSet = new HashSet<>();
 
 	private boolean notLowerLogLevelInIfStatement;
@@ -56,6 +58,8 @@ public class LogAnalyzer extends ASTVisitor {
 	private boolean notLowerLogLevelInCatchBlock;
 
 	private boolean notLowerLogLevelWithKeyWords;
+
+	private boolean notRaiseLogLevelWithoutKeyWords;
 
 	private boolean useLogCategoryWithConfig;
 
@@ -68,11 +72,19 @@ public class LogAnalyzer extends ASTVisitor {
 	private ArrayList<Float> boundary;
 
 	/**
-	 * A set of keywords in log messages.
+	 * A set of keywords in log messages for lowering log levels.
 	 */
-	private final Set<String> KEYWORDS_IN_LOG_MESSAGES = Stream.of("fail", "disable", "error", "exception", "collision",
-			"reboot", "terminate", "throw", "should", "start", "should", "tried", "empty", "launch", "init", "does not",
-			"doesn't", "stop", "shut", "run", "deprecate", "kill", "finish", "ready", "wait")
+	private static final Set<String> KEYWORDS_IN_LOG_MESSAGES_FOR_LOWERING = Stream
+			.of("fail", "disable", "error", "exception", "collision", "reboot", "terminate", "throw", "should", "start",
+					"tried", "empty", "launch", "init", "does not", "doesn't", "stop", "shut", "run", "deprecate",
+					"kill", "finish", "ready", "wait", "dead", "alive", "creat")
+			.collect(Collectors.toSet());
+	/**
+	 * A set of keywords in log messages for raising log levels.
+	 */
+	private static final Set<String> KEYWORDS_IN_LOG_MESSAGES_FOR_RAISING = Stream
+			.of("fail", "disable", "error", "exception", "collision", "reboot", "terminate", "throw", "should have",
+					"should've", "tried", "empty", "does not", "doesn't", "stop", "shut", "kill", "dead", "not alive")
 			.collect(Collectors.toSet());
 
 	private boolean test;
@@ -87,12 +99,13 @@ public class LogAnalyzer extends ASTVisitor {
 
 	public LogAnalyzer(boolean useConfigLogLevelCategory, boolean useLogLevelCategory,
 			boolean notLowerLogLevelInCatchBlock, boolean checkIfCondition, boolean notLowerLogLevelInIfStatement,
-			boolean notLowerLogLevelWithKeyWords) {
+			boolean notLowerLogLevelWithKeyWords, boolean notRaiseLogLevelWithoutKeywords) {
 		this.useLogCategoryWithConfig = useConfigLogLevelCategory;
 		this.useLogCategory = useLogLevelCategory;
 		this.notLowerLogLevelInCatchBlock = notLowerLogLevelInCatchBlock;
 		this.notLowerLogLevelInIfStatement = notLowerLogLevelInIfStatement;
 		this.notLowerLogLevelWithKeyWords = notLowerLogLevelWithKeyWords;
+		this.notRaiseLogLevelWithoutKeyWords = notRaiseLogLevelWithoutKeywords;
 		this.checkIfCondition = checkIfCondition;
 	}
 
@@ -189,10 +202,19 @@ public class LogAnalyzer extends ASTVisitor {
 			return false;
 
 		if (this.notLowerLogLevelWithKeyWords) {
-			if (Util.isLogMessageWithKeywords(logInvocation.getExpression(), KEYWORDS_IN_LOG_MESSAGES)
+			if (Util.isLogMessageWithKeywords(logInvocation.getExpression(), KEYWORDS_IN_LOG_MESSAGES_FOR_LOWERING)
 					&& currentLogLevel.intValue() > rejuvenatedLogLevel.intValue()) {
 				logInvocation.setAction(Action.NONE, null);
 				this.logInvsNotLoweredByKeywords.add(logInvocation);
+				return false;
+			}
+		}
+
+		if (this.notRaiseLogLevelWithoutKeyWords) {
+			if (!Util.isLogMessageWithKeywords(logInvocation.getExpression(), KEYWORDS_IN_LOG_MESSAGES_FOR_RAISING)
+					&& currentLogLevel.intValue() < rejuvenatedLogLevel.intValue()) {
+				logInvocation.setAction(Action.NONE, null);
+				this.logInvsNotRaisedByKeywords.add(logInvocation);
 				return false;
 			}
 		}
@@ -566,6 +588,10 @@ public class LogAnalyzer extends ASTVisitor {
 
 	public HashSet<LogInvocation> getLogInvsNotLoweredByKeywords() {
 		return this.logInvsNotLoweredByKeywords;
+	}
+
+	public HashSet<LogInvocation> getLogInvsNotRaisedByKeywords() {
+		return this.logInvsNotRaisedByKeywords;
 	}
 
 	public Map<IMethod, Float> getMethodToDOI() {

@@ -62,6 +62,7 @@ public class EvaluationHandler extends AbstractHandler {
 	private static final String NOT_LOWER_LOG_LEVEL_IF_STATEMENT_KEY = "edu.cuny.hunter.log.evaluation.notLowerLogLevelInIfStatement";
 	private static final String NOT_LOWER_LOG_LEVEL_CATCH_BLOCK_KEY = "edu.cuny.hunter.log.evaluation.notLowerLogLevelInCatchBlock";
 	private static final String NOT_LOWER_LOG_LEVEL_KEYWORDS_KEY = "edu.cuny.hunter.log.evaluation.notLowerLogLevelWithKeywords";
+	private static final String NOT_RAISE_LOG_LEVEL_KEYWORKS_KEY = "edu.cuny.hunter.log.evaluation.notRaiseLogLevelWithoutKeywords";
 	private static final String USE_LOG_CATEGORY_CONFIG_KEY = "edu.cuny.hunter.log.evaluation.useLogCategoryWithConfig";
 	private static final String CHECK_IF_CONDITION_KEY = "edu.cuny.hunter.log.evaluation.checkIfCondition";
 	private static final String USE_LOG_CATEGORY_KEY = "edu.cuny.hunter.log.evaluation.useLogCategory";
@@ -70,6 +71,7 @@ public class EvaluationHandler extends AbstractHandler {
 	private static final int N_TO_USE_FOR_COMMITS_DEFAULT = 100;
 	private static final boolean NOT_LOWER_LOG_LEVEL_IF_STATEMENT_DEFAULT = false;
 	private static final boolean NOT_LOWER_LOG_LEVEL_KEYWORDS_DEFAULT = false;
+	private static final boolean NOT_RAISE_LOG_LEVEL_KEYWORDS_DEFAULT = false;
 	private static final boolean NOT_LOWER_LOG_LEVEL_CATCH_BLOCK_DEFAULT = false;
 	private static final boolean USE_LOG_CATEGORY_CONFIG_DEFAULT = false;
 	private static final boolean CHECK_IF_CONDITION_DEFAULT = false;
@@ -104,6 +106,11 @@ public class EvaluationHandler extends AbstractHandler {
 	private boolean notLowerLogLevelWithKeywords;
 
 	/**
+	 * Never raise logs without particular keywords in their log messages.
+	 */
+	private boolean notRaiseLogLevelWithoutKeywords;
+
+	/**
 	 * Do not change a log level in a logging statement if there exists an immediate
 	 * if statement whose condition contains a log level.
 	 */
@@ -124,6 +131,7 @@ public class EvaluationHandler extends AbstractHandler {
 			CSVPrinter notLowerLevelsInCatchBlockPrinter = null;
 			CSVPrinter notLowerLevelsInIfStatementPrinter = null;
 			CSVPrinter notLowerLevelsDueToKeywordsPrinter = null;
+			CSVPrinter notRaiseLevelDueToKeywordsPrinter = null;
 			CSVPrinter considerIfConditionPrinter = null;
 
 			try {
@@ -145,6 +153,7 @@ public class EvaluationHandler extends AbstractHandler {
 								"use log category (CONFIG)", "not lower log levels of logs inside of catch blocks",
 								"not lower log levels of logs inside of if statements",
 								"not lower log levels in their messages with keywords",
+								"not raise log levels in their message without keywords",
 								"consider if condition having log level", "time (s)" });
 
 				repoPrinter = Util.createCSVPrinter("repos.csv",
@@ -180,6 +189,9 @@ public class EvaluationHandler extends AbstractHandler {
 				notLowerLevelsDueToKeywordsPrinter = Util.createCSVPrinter("not_lower_levels_due_to_keywords.csv",
 						new String[] { "sequence", "subject", "log expression", "start pos", "log level", "type FQN",
 								"enclosing method" });
+				notRaiseLevelDueToKeywordsPrinter = Util.createCSVPrinter("not_raise_levels_due_to_keywords.csv",
+						new String[] { "sequence", "subject", "log expression", "start pos", "log level", "type FQN",
+								"enclosing method" });
 				considerIfConditionPrinter = Util.createCSVPrinter("not_transform_levels_due_to_if_condition.csv",
 						new String[] { "sequence", "subject", "log expression", "start pos", "log level", "type FQN",
 								"enclosing method" });
@@ -208,8 +220,9 @@ public class EvaluationHandler extends AbstractHandler {
 									new IJavaProject[] { project }, this.isUseLogCategory(),
 									this.isUseLogCategoryWithConfig(), this.getValueOfUseGitHistory(),
 									this.isNotLowerLogLevelInCatchBlock(), this.isNotLowerLogLevelInIfStatement(),
-									this.isNotLowerLogLevelWithKeywords(), this.isCheckIfCondition(), NToUseCommit,
-									settings, Optional.ofNullable(monitor), true);
+									this.isNotLowerLogLevelWithKeywords(), this.isNotRaiseLogLevelWithoutKeywords(),
+									this.isCheckIfCondition(), NToUseCommit, settings, Optional.ofNullable(monitor),
+									true);
 
 							RefactoringStatus status = new ProcessorBasedRefactoring(
 									(RefactoringProcessor) logRejuvenatingProcessor)
@@ -366,8 +379,8 @@ public class EvaluationHandler extends AbstractHandler {
 									logRejuvenatingProcessor.getLogInvsNotLoweredWithKeywords().size(),
 									this.isUseLogCategory(), this.isUseLogCategoryWithConfig(),
 									this.isNotLowerLogLevelInCatchBlock(), this.isNotLowerLogLevelInIfStatement(),
-									this.isNotLowerLogLevelWithKeywords(), this.isCheckIfCondition(),
-									resultsTimeCollector.getCollectedTime());
+									this.isNotLowerLogLevelWithKeywords(), this.isNotRaiseLogLevelWithoutKeywords(),
+									this.isCheckIfCondition(), resultsTimeCollector.getCollectedTime());
 
 							for (LogInvocation logInvocation : logRejuvenatingProcessor.getLogInvsNotLoweredInCatch())
 								notLowerLevelsInCatchBlockPrinter.printRecord(sequence, project.getElementName(),
@@ -386,6 +399,14 @@ public class EvaluationHandler extends AbstractHandler {
 							for (LogInvocation logInvocation : logRejuvenatingProcessor
 									.getLogInvsNotLoweredWithKeywords())
 								notLowerLevelsDueToKeywordsPrinter.printRecord(sequence, project.getElementName(),
+										logInvocation.getExpression(), logInvocation.getStartPosition(),
+										logInvocation.getLogLevel(),
+										logInvocation.getEnclosingType().getFullyQualifiedName(),
+										Util.getMethodIdentifier(logInvocation.getEnclosingEclipseMethod()));
+
+							for (LogInvocation logInvocation : logRejuvenatingProcessor
+									.getLogInvsNotRaisedWithoutKeywords())
+								notRaiseLevelDueToKeywordsPrinter.printRecord(sequence, project.getElementName(),
 										logInvocation.getExpression(), logInvocation.getStartPosition(),
 										logInvocation.getLogLevel(),
 										logInvocation.getEnclosingType().getFullyQualifiedName(),
@@ -430,6 +451,8 @@ public class EvaluationHandler extends AbstractHandler {
 						notLowerLevelsInIfStatementPrinter.close();
 					if (notLowerLevelsDueToKeywordsPrinter != null)
 						notLowerLevelsDueToKeywordsPrinter.close();
+					if (notRaiseLevelDueToKeywordsPrinter != null)
+						notRaiseLevelDueToKeywordsPrinter.close();
 					if (considerIfConditionPrinter != null)
 						considerIfConditionPrinter.close();
 					if (nonenclosingMethodPrinter != null)
@@ -563,6 +586,7 @@ public class EvaluationHandler extends AbstractHandler {
 
 		this.setNotLowerLogLevelInIfStatement(this.getValueOfNotLowerLogLevelInIfStatement());
 		this.setNotLowerLogLevelWithKeywords(this.getValueOfNotLowerLogLevelWithKeywords());
+		this.setNotRaiseLogLevelWithoutKeywords(this.getValueOfNotRaiseLogLevelWithoutKeywords());
 		this.setCheckIfCondition(this.getValueOfCheckIfCondition());
 
 		if (this.isUseLogCategory() && this.isUseLogCategoryWithConfig())
@@ -623,6 +647,15 @@ public class EvaluationHandler extends AbstractHandler {
 			return Boolean.valueOf(notLowerLogLevelWithKeywords);
 	}
 
+	private boolean getValueOfNotRaiseLogLevelWithoutKeywords() {
+		String notRaiseLogLevelWithoutKeywords = System.getenv(NOT_RAISE_LOG_LEVEL_KEYWORKS_KEY);
+
+		if (notRaiseLogLevelWithoutKeywords == null)
+			return NOT_RAISE_LOG_LEVEL_KEYWORDS_DEFAULT;
+		else
+			return Boolean.valueOf(notRaiseLogLevelWithoutKeywords);
+	}
+
 	private boolean getValueOfCheckIfCondition() {
 		String considerIfCondition = System.getenv(CHECK_IF_CONDITION_KEY);
 
@@ -676,7 +709,16 @@ public class EvaluationHandler extends AbstractHandler {
 		this.notLowerLogLevelWithKeywords = notLowerLogLevelWithKeywords;
 	}
 
+	private void setNotRaiseLogLevelWithoutKeywords(boolean notRaiseLogLevelWithoutKeywords) {
+		this.notRaiseLogLevelWithoutKeywords = notRaiseLogLevelWithoutKeywords;
+
+	}
+
 	public boolean isNotLowerLogLevelWithKeywords() {
 		return this.notLowerLogLevelWithKeywords;
+	}
+
+	public boolean isNotRaiseLogLevelWithoutKeywords() {
+		return this.notRaiseLogLevelWithoutKeywords;
 	}
 }
