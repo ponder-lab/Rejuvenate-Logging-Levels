@@ -152,7 +152,7 @@ public class LogWizard extends RefactoringWizard {
 					NOT_RAISE_LOG_LEVEL_KEY_WORDS, this.getProcessor()::setNotRaiseLogLevelWithoutKeyWords, result,
 					SWT.CHECK);
 
-			this.addBooleanButton("Do not change a log level if its if statement condition contains a log level.",
+			this.addBooleanButton("Do not change a log level if its if statement condition/case label contains a log level.",
 					CHECK_IF_CONDITION, this.getProcessor()::setCheckIfCondition, result, SWT.CHECK);
 
 			Label separator3 = new Label(result, SWT.SEPARATOR | SWT.SHADOW_OUT | SWT.HORIZONTAL);
