@@ -6,7 +6,6 @@ import java.util.function.Consumer;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaModelException;
-import org.eclipse.jdt.core.dom.ThisExpression;
 import org.eclipse.jdt.internal.ui.refactoring.RefactoringMessages;
 import org.eclipse.jdt.internal.ui.refactoring.actions.RefactoringStarter;
 import org.eclipse.jdt.ui.refactoring.RefactoringSaveHelper;
