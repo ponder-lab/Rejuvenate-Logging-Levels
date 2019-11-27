@@ -480,8 +480,10 @@ public class LogAnalyzer extends ASTVisitor {
 				SwitchCase switchCase = postionToSwitchCase.get(tmp);
 
 				// check whether the case label contains the keywords
-				for (Object e : switchCase.expressions())
-					if (containingKeywords(e)) {
+				//for (Object e : switchCase.expressions())
+				String expression = switchCase.toString();
+				System.out.println(expression);
+					if (containingKeywords(switchCase.toString())) {
 						LOGGER.info("We meet a logging wrapping: \n" + node);
 						return true;
 					}
