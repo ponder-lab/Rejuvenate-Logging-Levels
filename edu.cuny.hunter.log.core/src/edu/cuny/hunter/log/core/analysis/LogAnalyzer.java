@@ -470,6 +470,7 @@ public class LogAnalyzer extends ASTVisitor {
 
 				// get the corresponding case label for the log invocation.
 				Set<Integer> positions = postionToSwitchCase.keySet();
+				// tmp is the max poisition before nodePosition
 				int tmp = 0;
 				for (int p : positions)
 					if (p < nodePosition && p >= tmp) {
@@ -480,13 +481,10 @@ public class LogAnalyzer extends ASTVisitor {
 				SwitchCase switchCase = postionToSwitchCase.get(tmp);
 
 				// check whether the case label contains the keywords
-				//for (Object e : switchCase.expressions())
-				String expression = switchCase.toString();
-				System.out.println(expression);
-					if (containingKeywords(switchCase.toString())) {
-						LOGGER.info("We meet a logging wrapping: \n" + node);
-						return true;
-					}
+				if (containingKeywords(switchCase.toString())) {
+					LOGGER.info("We meet a logging wrapping: \n" + node);
+					return true;
+				}
 				return false;
 			}
 			node = node.getParent();
