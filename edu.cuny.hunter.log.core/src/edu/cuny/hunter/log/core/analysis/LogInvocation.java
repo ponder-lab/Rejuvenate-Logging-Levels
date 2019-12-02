@@ -174,7 +174,7 @@ public class LogInvocation {
 				ASTRewrite astRewrite = rewrite.getASTRewrite();
 
 				// The methods (e.g., warning() -> critical()).
-				if (isLoggingLevelMethod(identifier)) {
+				if (Util.isLoggingLevelMethod(identifier)) {
 
 					SimpleName newMethodName = ast.newSimpleName(target);
 					astRewrite.replace(expression.getName(), newMethodName, null);
@@ -234,17 +234,6 @@ public class LogInvocation {
 	 */
 	private static boolean isLogMethod(String methodName) {
 		if (methodName.equals("log") || methodName.equals("logp") || methodName.equals("logrb"))
-			return true;
-		return false;
-	}
-
-	/**
-	 * Check whether the logging method contains logging level
-	 */
-	private static boolean isLoggingLevelMethod(String methodName) {
-		if (methodName.equals("config") || methodName.equals("fine") || methodName.equals("finer")
-				|| methodName.equals("finest") || methodName.equals("info") || methodName.equals("severe")
-				|| methodName.equals("warning"))
 			return true;
 		return false;
 	}

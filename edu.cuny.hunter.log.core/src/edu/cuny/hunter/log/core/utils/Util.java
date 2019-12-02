@@ -1,6 +1,7 @@
 package edu.cuny.hunter.log.core.utils;
 
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -108,6 +109,17 @@ public final class Util {
 	}
 
 	/**
+	 * Check whether the logging method contains logging level
+	 */
+	public static boolean isLoggingLevelMethod(String methodName) {
+		if (methodName.equals("config") || methodName.equals("fine") || methodName.equals("finer")
+				|| methodName.equals("finest") || methodName.equals("info") || methodName.equals("severe")
+				|| methodName.equals("warning"))
+			return true;
+		return false;
+	}
+
+	/**
 	 * Clear the active task context.
 	 * 
 	 * @throws NonActiveMylynTaskException
@@ -116,10 +128,25 @@ public final class Util {
 		MylynGitPredictionProvider.clearTaskContext();
 	}
 
+	@SuppressWarnings("unchecked")
 	public static boolean isLogMessageWithKeywords(MethodInvocation node, Set<String> keyWordsInLogMessages) {
-		String logExpression = node.toString().toLowerCase();
+
+		String identifier = node.getName().getIdentifier();
+		String logMessage = "";
+
+		List<Expression> arguments = new LinkedList<Expression>();
+		arguments.addAll(node.arguments());
+
+		// log(Level.INFO, "...");
+		if (!Util.isLoggingLevelMethod(identifier)) {
+			arguments.remove(0);
+		}
+
+		for (Expression argument : arguments)
+			logMessage += argument.toString().toLowerCase();
+
 		for (String key : keyWordsInLogMessages) {
-			if (logExpression.contains(key.toLowerCase()))
+			if (logMessage.contains(key.toLowerCase()))
 				return true;
 		}
 		return false;
