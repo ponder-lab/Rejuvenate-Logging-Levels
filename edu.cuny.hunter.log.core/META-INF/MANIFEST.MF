@@ -30,6 +30,8 @@ Import-Package: edu.cuny.citytech.refactoring.common.core,
  org.eclipse.text.edits,
  org.osgi.framework;version="1.8.0"
 Export-Package: edu.cuny.hunter.log.core.analysis,
+ edu.cuny.hunter.log.core.contributions,
+ edu.cuny.hunter.log.core.descriptors,
  edu.cuny.hunter.log.core.messages,
  edu.cuny.hunter.log.core.refactorings,
  edu.cuny.hunter.log.core.utils

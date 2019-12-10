@@ -24,3 +24,4 @@ Import-Package: edu.cuny.citytech.refactoring.common.core,
 Bundle-ClassPath: lib/commons-csv-1.1.jar,
  .
 Automatic-Module-Name: edu.cuny.hunter.log.evaluation
+Export-Package: org.apache.commons.csv

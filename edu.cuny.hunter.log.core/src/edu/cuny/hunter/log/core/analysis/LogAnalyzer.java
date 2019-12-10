@@ -22,11 +22,14 @@ import org.eclipse.jdt.core.dom.ASTVisitor;
 import org.eclipse.jdt.core.dom.Block;
 import org.eclipse.jdt.core.dom.CatchClause;
 import org.eclipse.jdt.core.dom.CompilationUnit;
+import org.eclipse.jdt.core.dom.Expression;
 import org.eclipse.jdt.core.dom.IMethodBinding;
 import org.eclipse.jdt.core.dom.IfStatement;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.MethodInvocation;
 import org.eclipse.jdt.core.dom.Statement;
+import org.eclipse.jdt.core.dom.SwitchCase;
+import org.eclipse.jdt.core.dom.SwitchStatement;
 import edu.cuny.hunter.log.core.messages.Messages;
 import edu.cuny.hunter.log.core.utils.LoggerNames;
 import edu.cuny.hunter.log.core.utils.Util;
@@ -74,10 +77,10 @@ public class LogAnalyzer extends ASTVisitor {
 	/**
 	 * A set of keywords in log messages for lowering log levels.
 	 */
-	private static final Set<String> KEYWORDS_IN_LOG_MESSAGES_FOR_LOWERING = Stream
-			.of("fail", "disable", "error", "exception", "collision", "reboot", "terminate", "throw", "should", "start",
-					"tried", "empty", "launch", "init", "does not", "doesn't", "stop", "shut", "run", "deprecate",
-					"kill", "finish", "ready", "wait", "dead", "alive", "creat")
+	private static final Set<String> KEYWORDS_IN_LOG_MESSAGES_FOR_LOWERING = Stream.of("fail", "disable", "error",
+			"exception", "collision", "reboot", "terminate", "throw", "should", "start", "tried", "empty", "launch",
+			"init", "does not", "doesn't", "stop", "shut", "run", "deprecate", "kill", "finish", "ready", "wait",
+			"dead", "alive", "creat", "debug", "info", "warn", "fatal", "severe", "config", "fine", "trace", "FYI")
 			.collect(Collectors.toSet());
 	/**
 	 * A set of keywords in log messages for raising log levels.
@@ -186,10 +189,12 @@ public class LogAnalyzer extends ASTVisitor {
 
 		/**
 		 * Do not change a log level in a logging statement if there exists an immediate
-		 * if statement whose condition contains a log level.
+		 * if statement whose condition contains a log level or a case label mentioning
+		 * a log level.
 		 */
 		if (this.checkIfCondition) {
-			if (checkIfConditionHavingLevel(logInvocation.getExpression())) {
+			if (checkIfConditionHavingLevel(logInvocation.getExpression())
+					|| checkCaseHavingLevel(logInvocation.getExpression())) {
 				logInvocation.setAction(Action.NONE, null);
 				this.logInvsNotTransformedInIf.add(logInvocation);
 				return false;
@@ -433,11 +438,8 @@ public class LogAnalyzer extends ASTVisitor {
 	private static boolean checkIfConditionHavingLevel(ASTNode node) {
 		while (node != null) {
 			if (node instanceof IfStatement) {
-				String condition = ((IfStatement) node).getExpression().toString().toUpperCase();
-				if (condition.contains("CONFIG") || condition.contains("FINE") || condition.contains("FINER")
-						|| condition.contains("FINEST") || condition.contains("SEVERE") || condition.contains("WARN")
-						|| condition.contains("INFO") || condition.contains("FATAL") || condition.contains("ERROR")
-						|| condition.contains("DEBUG") || condition.contains("TRACE")) {
+				Expression condition = ((IfStatement) node).getExpression();
+				if (containingKeywords(condition)) {
 					LOGGER.info("We meet a logging wrapping: \n" + node);
 					return true;
 				}
@@ -445,6 +447,64 @@ public class LogAnalyzer extends ASTVisitor {
 			node = node.getParent();
 		}
 		return false;
+	}
+
+	/**
+	 * Check case label mentions log levels.
+	 */
+	private static boolean checkCaseHavingLevel(ASTNode node) {
+		int nodePosition = node.getStartPosition();
+		while (node != null) {
+			if (node instanceof SwitchStatement) {
+				SwitchStatement switchStatement = (SwitchStatement) node;
+
+				Map<Integer, SwitchCase> postionToSwitchCase = new HashMap<Integer, SwitchCase>();
+				// get a list of positions for switch cases
+				switchStatement.accept(new ASTVisitor() {
+					@Override
+					public boolean visit(SwitchCase switchCase) {
+						postionToSwitchCase.put(switchCase.getStartPosition(), switchCase);
+						return true;
+					}
+				});
+
+				// get the corresponding case label for the log invocation.
+				Set<Integer> positions = postionToSwitchCase.keySet();
+				// tmp is the max poisition before nodePosition
+				int tmp = 0;
+				for (int p : positions)
+					if (p < nodePosition && p >= tmp) {
+						tmp = p;
+					}
+				if (tmp == 0)
+					return false;
+				SwitchCase switchCase = postionToSwitchCase.get(tmp);
+
+				// check whether the case label contains the keywords
+				if (containingKeywords(switchCase.toString())) {
+					LOGGER.info("We meet a logging wrapping: \n" + node);
+					return true;
+				}
+				return false;
+			}
+			node = node.getParent();
+		}
+		return false;
+	}
+
+	/**
+	 * Check whether if condition or case label contains a particular log level.
+	 */
+	private static boolean containingKeywords(Object expression) {
+		String label = expression.toString().toUpperCase();
+		if (label.contains("CONFIG") || label.contains("FINE") || label.contains("FINER") || label.contains("FINEST")
+				|| label.contains("SEVERE") || label.contains("WARN") || label.contains("INFO")
+				|| label.contains("FATAL") || label.contains("ERROR") || label.contains("DEBUG")
+				|| label.contains("TRACE"))
+			return true;
+		else
+			return false;
+
 	}
 
 	/**

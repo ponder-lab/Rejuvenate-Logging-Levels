@@ -18,3 +18,4 @@ Require-Bundle: org.junit;bundle-version="4.12.0",
  edu.cuny.hunter.log.core,
  org.eclipse.jdt.ui.tests.refactoring;bundle-version="3.13.200"
 Automatic-Module-Name: edu.cuny.hunter.log.tests
+Export-Package: edu.cuny.hunter.log.ui.tests
