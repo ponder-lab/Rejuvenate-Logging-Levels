@@ -548,10 +548,10 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 		Level newLevel = null;
 		int maxCounting = 0;
 
-		for (Level level : newLevelToCount.keySet()) {
-			if (newLevelToCount.get(level) > maxCounting) {
-				maxCounting = newLevelToCount.get(level);
-				newLevel = level;
+		for (Map.Entry<Level, Integer> levelToCount : newLevelToCount.entrySet()) {
+			if (levelToCount.getValue() > maxCounting) {
+				maxCounting = levelToCount.getValue();
+				newLevel = levelToCount.getKey();
 			}
 		}
 
