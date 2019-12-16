@@ -415,6 +415,7 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 	 */
 	private void inheritanceChecking(Set<LogInvocation> logInvocationSet, IProgressMonitor monitor)
 			throws JavaModelException {
+		Set<IMethod> enclosingMethodsForLogs = this.getEnclosingMethodForLogs(logInvocationSet);
 		for (LogInvocation log : logInvocationSet) {
 			IMethod enclosingMethod = log.getEnclosingEclipseMethod();
 			if (enclosingMethod == null)
@@ -429,7 +430,6 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 
 			// If we find an super-type with log invocation
 			if (this.checkTypes(superTypes, enclosingTypes)) {
-				Set<IMethod> enclosingMethodsForLogs = this.getEnclosingMethodForLogs(logInvocationSet);
 				this.processTypes(superTypes, enclosingTypes, typeHierarchy, enclosingMethodsForLogs, logInvocationSet,
 						log);
 			}
@@ -449,7 +449,7 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 	 * Process super types.
 	 */
 	private void processTypes(IType[] superTypes, Set<IType> enclosingTypes, ITypeHierarchy typeHierarchy,
-			Set<IMethod> enclosingMethodsForLogs, Set<LogInvocation> transformedLogs, LogInvocation logInvocation)
+			Set<IMethod> enclosingMethodsForLogs, Set<LogInvocation> logSet, LogInvocation logInvocation)
 			throws JavaModelException {
 		// Store all log invocations in RootDefs.
 		HashSet<LogInvocation> logInvsInRootDefs = new HashSet<LogInvocation>();
@@ -466,7 +466,7 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 					// The method should be an overridden method and includes a log invocation.
 					if (this.isOverriddenMethod(method, logInvocation.getEnclosingEclipseMethod())
 							&& enclosingMethodsForLogs.contains(method)) {
-						Set<LogInvocation> logs = this.getInvocationsByMethod(method, transformedLogs);
+						Set<LogInvocation> logs = this.getInvocationsByMethod(method, logSet);
 						logInvsInHierarchy.addAll(logs);
 						// Check whether it's a RootDef
 						if (this.isRootDef(typeHierarchy, method, enclosingTypes, logInvocation))
@@ -507,10 +507,10 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 	/**
 	 * Get a set of invocations, given an enclosing method.
 	 */
-	private Set<LogInvocation> getInvocationsByMethod(IMethod enclosingMethod, Set<LogInvocation> transformedLogs) {
+	private Set<LogInvocation> getInvocationsByMethod(IMethod enclosingMethod, Set<LogInvocation> logSet) {
 		Set<LogInvocation> logs = new HashSet<LogInvocation>();
-		transformedLogs.forEach(log -> {
-			if (log.getEnclosingEclipseMethod().equals(enclosingMethod))
+		logSet.forEach(log -> {
+			if (log.getEnclosingEclipseMethod() != null && log.getEnclosingEclipseMethod().equals(enclosingMethod))
 				logs.add(log);
 		});
 		return logs;
@@ -522,7 +522,11 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 	 */
 	private void adjustTransformation(Set<LogInvocation> logInvocations, Level newLevel) {
 		logInvocations.forEach(logInv -> {
-			Action action = Action.valueOf("CONVERT_TO_" + newLevel.getName());
+			Action action;
+			if (newLevel == null)
+				action = Action.valueOf("NONE");
+			else
+				action = Action.valueOf("CONVERT_TO_" + newLevel.getName());
 			logInv.setAction(action, newLevel);
 		});
 	}
