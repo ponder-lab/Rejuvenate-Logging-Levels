@@ -7,9 +7,11 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
@@ -23,6 +25,8 @@ import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IMethod;
 import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.jdt.core.IPackageFragmentRoot;
+import org.eclipse.jdt.core.IType;
+import org.eclipse.jdt.core.ITypeHierarchy;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.ImportDeclaration;
@@ -375,7 +379,7 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 				analyzer.updateDOI();
 			}
 		} catch (GitAPIException | JGitInternalException e) {
-			LOGGER.severe("Cannot get valid git object! May not a valid git repo.");
+			LOGGER.severe("Cannot get valid git object! May not be a valid git repo.");
 			throw e;
 		} catch (IOException e) {
 			LOGGER.severe("Cannot process git commits.");
@@ -405,10 +409,191 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 		return this.boundary;
 	}
 
+	/**
+	 * Process the inconsistent log level transformations in the overriding and
+	 * overridden methods.
+	 */
+	private void inheritanceChecking(Set<LogInvocation> logInvocationSet, IProgressMonitor monitor)
+			throws JavaModelException {
+		for (LogInvocation log : logInvocationSet) {
+			IMethod enclosingMethod = log.getEnclosingEclipseMethod();
+			if (enclosingMethod == null)
+				continue;
+			IType declaringType = enclosingMethod.getDeclaringType();
+			ITypeHierarchy typeHierarchy = declaringType.newTypeHierarchy(monitor);
+
+			IType[] superTypes = typeHierarchy.getAllSupertypes(declaringType);
+
+			// Get all enclosing class types for all logs
+			Set<IType> enclosingTypes = this.getEnclosingClassTypes(logInvocationSet);
+
+			// If we find an super-type with log invocation
+			if (this.checkTypes(superTypes, enclosingTypes)) {
+				Set<IMethod> enclosingMethodsForLogs = this.getEnclosingMethodForLogs(logInvocationSet);
+				this.processTypes(superTypes, enclosingTypes, typeHierarchy, enclosingMethodsForLogs, logInvocationSet,
+						log);
+			}
+
+		}
+	}
+
+	/**
+	 * Get a set of enclosing methods for transformed logs.
+	 */
+	private Set<IMethod> getEnclosingMethodForLogs(Set<LogInvocation> transformedLogs) {
+		return this.logInvocationSet.parallelStream().map(log -> log.getEnclosingEclipseMethod())
+				.filter(Objects::nonNull).collect(Collectors.toSet());
+	}
+
+	/**
+	 * Process super types.
+	 */
+	private void processTypes(IType[] superTypes, Set<IType> enclosingTypes, ITypeHierarchy typeHierarchy,
+			Set<IMethod> enclosingMethodsForLogs, Set<LogInvocation> transformedLogs, LogInvocation logInvocation)
+			throws JavaModelException {
+		// Store all log invocations in RootDefs.
+		HashSet<LogInvocation> logInvsInRootDefs = new HashSet<LogInvocation>();
+		// Store all log invocations in Hierarchy.
+		HashSet<LogInvocation> logInvsInHierarchy = new HashSet<LogInvocation>();
+		logInvsInHierarchy.add(logInvocation);
+
+		for (IType type : superTypes) {
+			// We find a super-type with log transformation
+			if (enclosingTypes.contains(type)) {
+
+				IMethod[] methods = type.getMethods();
+				for (IMethod method : methods) {
+					// The method should be an overridden method and includes a log invocation.
+					if (this.isOverriddenMethod(method, logInvocation.getEnclosingEclipseMethod())
+							&& enclosingMethodsForLogs.contains(method)) {
+						Set<LogInvocation> logs = this.getInvocationsByMethod(method, transformedLogs);
+						logInvsInHierarchy.addAll(logs);
+						// Check whether it's a RootDef
+						if (this.isRootDef(typeHierarchy, method, enclosingTypes, logInvocation))
+							logInvsInRootDefs.addAll(logs);
+					}
+				}
+			}
+		}
+
+		if (!logInvsInRootDefs.isEmpty()) {
+			Level newLevel = this.majorityVote(logInvsInRootDefs);
+			this.adjustTransformation(logInvsInHierarchy, newLevel);
+		}
+
+	}
+
+	/**
+	 * Check whether the current method is a RootDef.
+	 */
+	private boolean isRootDef(ITypeHierarchy typeHierarchy, IMethod enclosingMethod, Set<IType> enclosingTypes,
+			LogInvocation logInvocation) throws JavaModelException {
+		IType[] types = typeHierarchy.getAllSupertypes(enclosingMethod.getDeclaringType());
+		for (IType type : types) {
+			// We find a super-type with log transformation
+			if (enclosingTypes.contains(type)) {
+				IMethod[] methods = type.getMethods();
+				for (IMethod method : methods) {
+					// The method should be an overridden method and includes a log invocation.
+					if (this.isOverriddenMethod(method, logInvocation.getEnclosingEclipseMethod())) {
+						return false;
+					}
+				}
+			}
+		}
+		return true;
+	}
+
+	/**
+	 * Get a set of invocations, given an enclosing method.
+	 */
+	private Set<LogInvocation> getInvocationsByMethod(IMethod enclosingMethod, Set<LogInvocation> transformedLogs) {
+		Set<LogInvocation> logs = new HashSet<LogInvocation>();
+		transformedLogs.forEach(log -> {
+			if (log.getEnclosingEclipseMethod().equals(enclosingMethod))
+				logs.add(log);
+		});
+		return logs;
+	}
+
+	/**
+	 * Adjust all transformations in the overriding method or overridden method in
+	 * same hierarchy. We should make all these transformations the same.
+	 */
+	private void adjustTransformation(Set<LogInvocation> logInvocations, Level newLevel) {
+		logInvocations.forEach(logInv -> {
+			Action action = Action.valueOf("CONVERT_TO_" + newLevel.getName());
+			logInv.setAction(action, newLevel);
+		});
+	}
+
+	/**
+	 * Take a majority vote on transformations in the RootDefs
+	 */
+	private Level majorityVote(Set<LogInvocation> logInvs) {
+
+		HashMap<Level, Integer> newLevelToCount = new HashMap<Level, Integer>();
+		logInvs.parallelStream().forEach(logInv -> {
+			Level newLogLevel = logInv.getNewLogLevel();
+			if (newLevelToCount.containsKey(newLogLevel))
+				newLevelToCount.put(newLogLevel, newLevelToCount.get(newLogLevel) + 1);
+			else
+				newLevelToCount.put(newLogLevel, 1);
+		});
+
+		Level newLevel = null;
+		int maxCounting = 0;
+
+		for (Level level : newLevelToCount.keySet()) {
+			if (newLevelToCount.get(level) > maxCounting) {
+				maxCounting = newLevelToCount.get(level);
+				newLevel = level;
+			}
+		}
+
+		return newLevel;
+	}
+
+	/**
+	 * Method 1 and method 2 should have the identical signatures.
+	 */
+	private boolean isOverriddenMethod(IMethod method1, IMethod method2) throws JavaModelException {
+		// Check method name
+		if (!method1.getElementName().equals(method2.getElementName()))
+			return false;
+
+		return Util.getMethodIdentifier(method1).equals(Util.getMethodIdentifier(method2));
+	}
+
+	/**
+	 * Check whether there is a super-type with log transformations
+	 */
+	private boolean checkTypes(IType[] types, Set<IType> enclosingTypes) {
+		for (IType type : types) {
+			if (enclosingTypes.contains(type))
+				return true;
+		}
+		return false;
+	}
+
+	/**
+	 * Get a set of enclosing types for all transformed logs
+	 */
+	private Set<IType> getEnclosingClassTypes(Set<LogInvocation> logSet) {
+		HashSet<IType> types = new HashSet<IType>();
+		logSet.forEach(log -> {
+			types.add(log.getEnclosingType());
+		});
+		return types;
+	}
+
 	@Override
 	public Change createChange(IProgressMonitor pm) throws CoreException, OperationCanceledException {
 		try {
 			final TextEditBasedChangeManager manager = new TextEditBasedChangeManager();
+
+			this.inheritanceChecking(this.logInvocationSet, pm);
+
 			Set<LogInvocation> transformedLogs = this.getTransformedLog();
 
 			pm.beginTask("Transforming logging levels ...", transformedLogs.size());

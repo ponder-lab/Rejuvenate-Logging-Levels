@@ -1,5 +1,7 @@
 package edu.cuny.hunter.log.core.utils;
 
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -7,12 +9,19 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.logging.Level;
 
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVPrinter;
+import org.eclipse.core.commands.ExecutionEvent;
+import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IJavaProject;
+import org.eclipse.jdt.core.ILocalVariable;
 import org.eclipse.jdt.core.IMethod;
+import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.JavaModelException;
+import org.eclipse.jdt.core.Signature;
 import org.eclipse.jdt.core.dom.Expression;
 import org.eclipse.jdt.core.dom.IMethodBinding;
 import org.eclipse.jdt.core.dom.ITypeBinding;
@@ -22,11 +31,14 @@ import org.eclipse.jdt.core.dom.QualifiedName;
 import org.eclipse.jdt.core.dom.SimpleName;
 import org.eclipse.jdt.internal.corext.codemanipulation.CodeGenerationSettings;
 import org.eclipse.jdt.internal.ui.preferences.JavaPreferencesSettings;
+import org.eclipse.jdt.internal.ui.util.SelectionUtil;
+import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.ltk.core.refactoring.participants.ProcessorBasedRefactoring;
 import org.eclipse.mylyn.context.core.ContextCore;
 import org.eclipse.mylyn.context.core.IDegreeOfInterest;
 import org.eclipse.mylyn.context.core.IInteractionElement;
 import org.eclipse.mylyn.internal.context.core.InteractionContextScaling;
+import org.eclipse.ui.handlers.HandlerUtil;
 
 import edu.cuny.hunter.log.core.refactorings.LogRejuvenatingProcessor;
 import edu.cuny.hunter.mylyngit.core.analysis.MylynGitPredictionProvider;
@@ -277,5 +289,84 @@ public final class Util {
 
 	public static int getDecayFactor() {
 		return ENCLOSING_METHOD_DECAY_FACTOR;
+	}
+	
+	/**
+	 * @author Raffi Khatchadourian
+	 * @param enclosing
+	 *            eclipse method object
+	 * @return method identifier
+	 */
+	public static String getMethodIdentifier(IMethod method) throws JavaModelException {
+		if (method == null)
+			return null;
+
+		StringBuilder sb = new StringBuilder();
+		sb.append((method.getElementName()) + "(");
+		ILocalVariable[] parameters = method.getParameters();
+		for (int i = 0; i < parameters.length; i++) {
+			sb.append(getQualifiedNameFromTypeSignature(parameters[i].getTypeSignature(), method.getDeclaringType()));
+			if (i != (parameters.length - 1)) {
+				sb.append(",");
+			}
+		}
+		sb.append(")");
+		return sb.toString();
+	}
+
+	/**
+	 * @author Raffi Khatchadourian
+	 */
+	public static String getQualifiedNameFromTypeSignature(String typeSignature, IType declaringType)
+			throws JavaModelException {
+		typeSignature = Signature.getTypeErasure(typeSignature);
+		String signatureQualifier = Signature.getSignatureQualifier(typeSignature);
+		String signatureSimpleName = Signature.getSignatureSimpleName(typeSignature);
+		String simpleName = signatureQualifier.isEmpty() ? signatureSimpleName
+				: signatureQualifier + '.' + signatureSimpleName;
+
+		// workaround https://bugs.eclipse.org/bugs/show_bug.cgi?id=494209.
+		boolean isArray = false;
+		if (simpleName.endsWith("[]")) {
+			isArray = true;
+			simpleName = simpleName.substring(0, simpleName.lastIndexOf('['));
+		}
+
+		String[][] allResults = declaringType.resolveType(simpleName);
+		String fullName = null;
+		if (allResults != null) {
+			String[] nameParts = allResults[0];
+			if (nameParts != null) {
+				StringBuilder fullNameBuilder = new StringBuilder();
+				for (String part : nameParts) {
+					if (fullNameBuilder.length() > 0)
+						fullNameBuilder.append('.');
+					if (part != null)
+						fullNameBuilder.append(part);
+				}
+				fullName = fullNameBuilder.toString();
+			}
+		} else
+			fullName = simpleName;
+
+		// workaround https://bugs.eclipse.org/bugs/show_bug.cgi?id=494209.
+		if (isArray)
+			fullName += "[]";
+
+		return fullName;
+	}
+	
+	public static CSVPrinter createCSVPrinter(String fileName, String[] header) throws IOException {
+		return new CSVPrinter(new FileWriter(fileName, true), CSVFormat.EXCEL.withHeader(header));
+	}
+	
+
+	public static IJavaProject[] getSelectedJavaProjectsFromEvent(ExecutionEvent event) throws ExecutionException {
+		ISelection currentSelection = HandlerUtil.getCurrentSelectionChecked(event);
+		List<?> list = SelectionUtil.toList(currentSelection);
+		IJavaProject[] javaProjects = list.stream().filter(e -> e instanceof IJavaProject)
+				.toArray(length -> new IJavaProject[length]);
+
+		return javaProjects;
 	}
 }
