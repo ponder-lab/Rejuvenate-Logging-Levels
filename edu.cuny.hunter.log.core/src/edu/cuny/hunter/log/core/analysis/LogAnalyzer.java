@@ -56,6 +56,8 @@ public class LogAnalyzer extends ASTVisitor {
 
 	private Set<LogInvocation> logInvocationSet = new HashSet<>();
 
+	private Set<LogInvocationSlf4j> logInvocationSlf4js = new HashSet<LogInvocationSlf4j>();
+
 	private boolean notLowerLogLevelInIfStatement;
 
 	private boolean notLowerLogLevelInCatchBlock;
@@ -149,12 +151,29 @@ public class LogAnalyzer extends ASTVisitor {
 								+ logInvocation.getExpression());
 			}
 		}
+
+		for (LogInvocationSlf4j logInvocationSlf4j : this.logInvocationSlf4js) {
+			// Methods not analyzed will not be considered for transformation.
+			if (!validMethods.contains(logInvocationSlf4j.getEnclosingEclipseMethod()))
+				logInvocationSlf4j.setAction(Action.NONE, null);
+			else {
+				if (this.checkCodeModification(logInvocationSlf4j) && this.checkEnoughData(logInvocationSlf4j))
+					if (this.doAction(logInvocationSlf4j))
+						LOGGER.info("Do action: " + logInvocationSlf4j.getAction() + "! The changed log expression is "
+								+ logInvocationSlf4j.getExpression());
+			}
+		}
+	}
+
+	private boolean doAction(LogInvocationSlf4j logInvocationSlf4j) {
+		// TODO Auto-generated method stub
+		return false;
 	}
 
 	/**
 	 * Check whether all DOI values are the same.
 	 */
-	private boolean checkEnoughData(LogInvocation logInvocation) {
+	private boolean checkEnoughData(AbstractLogInvocation logInvocation) {
 		if (this.boundary == null) {
 			logInvocation.addStatusEntry(Failure.NO_ENOUGH_DATA,
 					"The DOI values are all same or no DOI values. Cannot get valid results.");
@@ -168,17 +187,13 @@ public class LogAnalyzer extends ASTVisitor {
 	 * Do transformation action.
 	 */
 	private boolean doAction(LogInvocation logInvocation) {
+
 		// No enclosing method.
 		if (logInvocation.getEnclosingEclipseMethod() == null) {
 			logInvocation.addStatusEntry(Failure.CURRENTLY_NOT_HANDLED,
 					logInvocation.getExpression() + " has no enclosing method.");
 			return false;
 		}
-
-		Level currentLogLevel = logInvocation.getLogLevel();
-		// Cannot get valid log level from log invocations.
-		if (currentLogLevel == null)
-			return false;
 
 		// DOI not in intervals
 		if (logInvocation.getDegreeOfInterestValue() < this.boundary.get(0)
@@ -201,19 +216,20 @@ public class LogAnalyzer extends ASTVisitor {
 			}
 		}
 
+		Level currentLogLevel = logInvocation.getLogLevel();
+
+		// Cannot get valid log level from log invocations.
+		if (currentLogLevel == null)
+			return false;
+
 		Level rejuvenatedLogLevel = getRejuvenatedLogLevel(this.boundary, logInvocation);
 
 		if (rejuvenatedLogLevel == null)
 			return false;
 
-		if (this.notLowerLogLevelWithKeyWords) {
-			if (Util.isLogMessageWithKeywords(logInvocation.getExpression(), KEYWORDS_IN_LOG_MESSAGES_FOR_LOWERING)
-					&& currentLogLevel.intValue() > rejuvenatedLogLevel.intValue()) {
-				logInvocation.setAction(Action.NONE, null);
-				this.logInvsNotLoweredByKeywords.add(logInvocation);
-				return false;
-			}
-		}
+		if (this.processNotLowerLogLevelWithKeyWords(logInvocation,
+				currentLogLevel.intValue() > rejuvenatedLogLevel.intValue()))
+			return false;
 
 		if (this.notRaiseLogLevelWithoutKeyWords) {
 			if (!Util.isLogMessageWithKeywords(logInvocation.getExpression(), KEYWORDS_IN_LOG_MESSAGES_FOR_RAISING)
@@ -280,6 +296,36 @@ public class LogAnalyzer extends ASTVisitor {
 			logInvocation.setAction(Action.CONVERT_TO_SEVERE, Level.SEVERE);
 
 		return true;
+
+	}
+
+	private boolean processNotRaiseLogLevelWithKeywords() {
+		if (this.notRaiseLogLevelWithoutKeyWords) {
+			if (!Util.isLogMessageWithKeywords(logInvocation.getExpression(), KEYWORDS_IN_LOG_MESSAGES_FOR_RAISING)
+					&& currentLogLevel.intValue() < rejuvenatedLogLevel.intValue()) {
+				logInvocation.setAction(Action.NONE, null);
+				this.logInvsNotRaisedByKeywords.add(logInvocation);
+				return false;
+			}
+		}
+	}
+
+	/**
+	 * Should not lower log level if the log message includes a keyword.
+	 * 
+	 * @return boolean: true means the log level is not transformed due to the
+	 *         keywords
+	 */
+	private boolean processNotLowerLogLevelWithKeyWords(LogInvocation logInvocation, boolean isLowered) {
+		if (this.notLowerLogLevelWithKeyWords) {
+			if (Util.isLogMessageWithKeywords(logInvocation.getExpression(), KEYWORDS_IN_LOG_MESSAGES_FOR_LOWERING)
+					&& isLowered) {
+				logInvocation.setAction(Action.NONE, null);
+				this.logInvsNotLoweredByKeywords.add(logInvocation);
+				return true;
+			}
+		}
+		return false;
 	}
 
 	/**
@@ -403,7 +449,7 @@ public class LogAnalyzer extends ASTVisitor {
 	@Override
 	public boolean visit(MethodInvocation node) {
 
-		Level logLevel = null;
+		LogLevel logLevel = null;
 
 		try {
 			logLevel = Util.isLogExpression(node, test);
@@ -589,7 +635,7 @@ public class LogAnalyzer extends ASTVisitor {
 	/**
 	 * Whether the code is read-only, generated code and in a .class file.
 	 */
-	public boolean checkCodeModification(LogInvocation logInvocation) {
+	public boolean checkCodeModification(AbstractLogInvocation logInvocation) {
 
 		CompilationUnit cu = logInvocation.getEnclosingCompilationUnit();
 		if (cu != null) {
@@ -623,9 +669,18 @@ public class LogAnalyzer extends ASTVisitor {
 
 	}
 
-	private void createLogInvocation(MethodInvocation node, Level logLevel, boolean inCatchBlock) {
-		LogInvocation logInvocation = new LogInvocation(node, logLevel, inCatchBlock);
-		this.getLogInvocationSet().add(logInvocation);
+	/**
+	 * Create a set of input log invocations.
+	 */
+	private void createLogInvocation(MethodInvocation node, LogLevel logLevel, boolean inCatchBlock) {
+		if (logLevel.framework.equals(LoggingFramework.JAVA_LOGGING)) {
+			LogInvocation logInvocation = new LogInvocation(node, logLevel.getLogLevel(), inCatchBlock);
+			this.getLogInvocationSet().add(logInvocation);
+		} else if (logLevel.framework.equals(LoggingFramework.SLF4J)) {
+			LogInvocationSlf4j logInvocationSlf4j = new LogInvocationSlf4j(node, logLevel.getSlf4jLevel(),
+					inCatchBlock);
+			this.getLogInvocationSlf4js().add(logInvocationSlf4j);
+		}
 	}
 
 	public void updateDOI() {
@@ -656,5 +711,13 @@ public class LogAnalyzer extends ASTVisitor {
 
 	public Map<IMethod, Float> getMethodToDOI() {
 		return this.methodToDOI;
+	}
+
+	public Set<LogInvocationSlf4j> getLogInvocationSlf4js() {
+		return this.logInvocationSlf4js;
+	}
+
+	public void setLogInvocationsSlf4js(Set<LogInvocationSlf4j> logInvocationSlf4j) {
+		this.logInvocationSlf4js = logInvocationSlf4j;
 	}
 }

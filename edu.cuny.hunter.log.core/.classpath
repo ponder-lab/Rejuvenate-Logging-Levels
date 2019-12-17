@@ -6,6 +6,7 @@
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="con" path="org.eclipse.pde.core.requiredPlugins"/>
-	<classpathentry kind="src" path="src/"/>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="lib" path="lib/slf4j-api-2.0.0-alpha1.jar"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>

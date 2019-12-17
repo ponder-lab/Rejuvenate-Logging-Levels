@@ -40,6 +40,8 @@ import org.eclipse.mylyn.context.core.IInteractionElement;
 import org.eclipse.mylyn.internal.context.core.InteractionContextScaling;
 import org.eclipse.ui.handlers.HandlerUtil;
 
+import edu.cuny.hunter.log.core.analysis.LogLevel;
+import edu.cuny.hunter.log.core.analysis.LoggingFramework;
 import edu.cuny.hunter.log.core.refactorings.LogRejuvenatingProcessor;
 import edu.cuny.hunter.mylyngit.core.analysis.MylynGitPredictionProvider;
 import edu.cuny.hunter.mylyngit.core.utils.NonActiveMylynTaskException;
@@ -170,37 +172,103 @@ public final class Util {
 	 * e.g. each time we call method entering, a logging record which has "FINER"
 	 * level is created.
 	 * 
-	 * @param node
-	 * @return logging level
+	 * @param method invocation
+	 * @return log level
 	 */
-	// if isTest == 1, then it is junit test
-	@SuppressWarnings("unchecked")
-	public static Level isLogExpression(MethodInvocation node, boolean isTest) {
+	// if isTest == 1, then it is jUnit test
+	public static LogLevel isLogExpression(MethodInvocation node, boolean isTest) {
 		if (!isTest) {
 			IMethodBinding methodBinding = node.resolveMethodBinding();
 
-			if (methodBinding == null
-					|| !methodBinding.getDeclaringClass().getQualifiedName().equals("java.util.logging.Logger"))
+			if (methodBinding == null)
 				return null;
+
+			if (methodBinding.getDeclaringClass().getQualifiedName().equals("java.util.logging.Logger"))
+				return getLogLevelForLogging(node, isTest);
+
+			if (methodBinding.getDeclaringClass().getQualifiedName().equals("org.slf4j.Logger"))
+				return getLogLevelForSlf4J(node);
+
 		}
+
+		return getLogLevelForLogging(node, isTest);
+
+	}
+
+	/**
+	 * Get the slf4j log level.
+	 */
+	private static LogLevel getLogLevelForSlf4J(MethodInvocation node) {
+		LogLevel logLevel = new LogLevel();
+		logLevel.setLoggingFramework(LoggingFramework.valueOf("SLF4J"));
+		String methodName = node.getName().toString();
+		switch (methodName) {
+		case "debug":
+			logLevel.setSlf4jLevel(org.slf4j.event.Level.DEBUG);
+			return logLevel;
+
+		case "error":
+			logLevel.setSlf4jLevel(org.slf4j.event.Level.ERROR);
+			return logLevel;
+
+		case "info":
+			logLevel.setSlf4jLevel(org.slf4j.event.Level.INFO);
+			return logLevel;
+
+		case "trace":
+			logLevel.setSlf4jLevel(org.slf4j.event.Level.TRACE);
+			return logLevel;
+
+		case "warn":
+			logLevel.setSlf4jLevel(org.slf4j.event.Level.WARN);
+			return logLevel;
+
+		default:
+			return logLevel;
+		}
+	}
+
+	@SuppressWarnings("unchecked")
+	private static LogLevel getLogLevelForLogging(MethodInvocation node, boolean isTest) {
 
 		String methodName = node.getName().toString();
 
-		// Get rid of all and off here.
-		if (methodName.equals("config"))
-			return Level.CONFIG;
-		if (methodName.equals("fine"))
-			return Level.FINE;
-		if (methodName.equals("finer"))
-			return Level.FINER;
-		if (methodName.equals("finest"))
-			return Level.FINEST;
-		if (methodName.equals("info"))
-			return Level.INFO;
-		if (methodName.equals("severe"))
-			return Level.SEVERE;
-		if (methodName.equals("warning"))
-			return Level.WARNING;
+		LogLevel logLevel = new LogLevel();
+
+		logLevel.setLoggingFramework(LoggingFramework.valueOf("JAVA_LOGGING"));
+
+		switch (methodName) {
+		case "config":
+			logLevel.setLogLevel(Level.CONFIG);
+			return logLevel;
+
+		case "fine":
+			logLevel.setLogLevel(Level.FINE);
+			return logLevel;
+
+		case "finer":
+			logLevel.setLogLevel(Level.FINER);
+			return logLevel;
+
+		case "finest":
+			logLevel.setLogLevel(Level.FINEST);
+			return logLevel;
+
+		case "info":
+			logLevel.setLogLevel(Level.INFO);
+			return logLevel;
+
+		case "severe":
+			logLevel.setLogLevel(Level.SEVERE);
+			return logLevel;
+
+		case "warning":
+			logLevel.setLogLevel(Level.WARNING);
+			return logLevel;
+
+		default:
+			break;
+		}
 
 		List<Expression> arguments = node.arguments();
 		if (arguments.size() == 0)
@@ -216,14 +284,17 @@ public final class Util {
 			}
 			if (loggingLevel == Level.ALL || loggingLevel == Level.OFF)
 				return null;
-			return loggingLevel;
+
+			logLevel.setLogLevel(loggingLevel);
+			return logLevel;
 		}
 
 		if (methodName.equals("logp") || methodName.equals("logrb")) {
 			Level loggingLevel = getLogLevel(firstArgument, isTest);
 			if (loggingLevel == Level.ALL || loggingLevel == Level.OFF)
 				return null;
-			return loggingLevel;
+			logLevel.setLogLevel(loggingLevel);
+			return logLevel;
 		}
 
 		return null;
@@ -290,11 +361,10 @@ public final class Util {
 	public static int getDecayFactor() {
 		return ENCLOSING_METHOD_DECAY_FACTOR;
 	}
-	
+
 	/**
 	 * @author Raffi Khatchadourian
-	 * @param enclosing
-	 *            eclipse method object
+	 * @param enclosing eclipse method object
 	 * @return method identifier
 	 */
 	public static String getMethodIdentifier(IMethod method) throws JavaModelException {
@@ -355,11 +425,10 @@ public final class Util {
 
 		return fullName;
 	}
-	
+
 	public static CSVPrinter createCSVPrinter(String fileName, String[] header) throws IOException {
 		return new CSVPrinter(new FileWriter(fileName, true), CSVFormat.EXCEL.withHeader(header));
 	}
-	
 
 	public static IJavaProject[] getSelectedJavaProjectsFromEvent(ExecutionEvent event) throws ExecutionException {
 		ISelection currentSelection = HandlerUtil.getCurrentSelectionChecked(event);
