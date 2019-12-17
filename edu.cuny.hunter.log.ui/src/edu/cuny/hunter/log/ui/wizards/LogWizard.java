@@ -3,19 +3,18 @@ package edu.cuny.hunter.log.ui.wizards;
 import java.util.Optional;
 import java.util.function.Consumer;
 
-import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.jdt.core.IJavaProject;
-import org.eclipse.jdt.core.JavaModelException;
-import org.eclipse.jdt.internal.ui.refactoring.RefactoringMessages;
-import org.eclipse.jdt.internal.ui.refactoring.actions.RefactoringStarter;
-import org.eclipse.jdt.ui.refactoring.RefactoringSaveHelper;
-import org.eclipse.jface.dialogs.Dialog;
-import org.eclipse.jface.dialogs.IDialogSettings;
-import org.eclipse.ltk.core.refactoring.Refactoring;
 import org.eclipse.ltk.core.refactoring.participants.ProcessorBasedRefactoring;
-import org.eclipse.ltk.ui.refactoring.RefactoringWizard;
+import org.eclipse.jdt.internal.ui.refactoring.actions.RefactoringStarter;
+import org.eclipse.jdt.internal.ui.refactoring.RefactoringMessages;
+import org.eclipse.jdt.ui.refactoring.RefactoringSaveHelper;
 import org.eclipse.ltk.ui.refactoring.UserInputWizardPage;
-import org.eclipse.swt.SWT;
+import org.eclipse.ltk.ui.refactoring.RefactoringWizard;
+import org.eclipse.ltk.core.refactoring.Refactoring;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.jdt.core.JavaModelException;
+import org.eclipse.jdt.core.IJavaProject;
+import org.eclipse.jface.dialogs.IDialogSettings;
+import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
@@ -26,6 +25,7 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.PlatformUI;
+import org.eclipse.swt.SWT;
 
 import edu.cuny.hunter.log.core.messages.Messages;
 import edu.cuny.hunter.log.core.refactorings.LogRejuvenatingProcessor;
@@ -38,27 +38,29 @@ public class LogWizard extends RefactoringWizard {
 
 		private static final String DESCRIPTION = Messages.Name;
 
-		private static final String DIALOG_SETTING_SECTION = "RejuvenateLogLevel"; //$NON-NLS-1$
-
-		public static final String PAGE_NAME = "LogInputPage"; //$NON-NLS-1$
-
-		private static final String USE_LOG_CATEGORY = "useLogCategory";
-
-		private static final String USE_LOG_CATEGORY_CONFIG = "useLogCategoryWithConfig";
-
-		private static final String USE_GIT_HISTORY = "useGitHistory";
-
-		private static final String N_TO_USE_FOR_COMMITS = "NToUseForCommits";
+		private static final String NOT_LOWER_LOG_LEVEL_IF_STATEMENT = "notLowerLogLevelInIfStatement";
 
 		private static final String NOT_LOWER_LOG_LEVEL_CATCH_BLOCK = "notLowerLogLevelInCatchBlock";
-
-		private static final String NOT_LOWER_LOG_LEVEL_IF_STATEMENT = "notLowerLogLevelInIfStatement";
 
 		private static final String NOT_LOWER_LOG_LEVEL_KEY_WORDS = "notLowerLogLevelKeyWords";
 
 		private static final String NOT_RAISE_LOG_LEVEL_KEY_WORDS = "notRaiseLogLevelKeywords";
 
+		private static final String MAX_TRANSFORMATION_DISTANCE = "maxTransformationDistance";
+
+		private static final String USE_LOG_CATEGORY_CONFIG = "useLogCategoryWithConfig";
+
+		private static final String DIALOG_SETTING_SECTION = "RejuvenateLogLevel"; //$NON-NLS-1$
+
+		private static final String N_TO_USE_FOR_COMMITS = "NToUseForCommits";
+
 		private static final String CHECK_IF_CONDITION = "checkIfCondition";
+
+		private static final String USE_LOG_CATEGORY = "useLogCategory";
+
+		private static final String USE_GIT_HISTORY = "useGitHistory";
+
+		public static final String PAGE_NAME = "LogInputPage"; //$NON-NLS-1$
 
 		private LogRejuvenatingProcessor processor;
 
@@ -107,6 +109,8 @@ public class LogWizard extends RefactoringWizard {
 
 			Button button = new Button(result, SWT.RADIO);
 			button.setText("Default： traditional levels.");
+			if (!this.settings.getBoolean(USE_LOG_CATEGORY) && !this.settings.getBoolean(USE_LOG_CATEGORY_CONFIG))
+				button.setSelection(true);
 
 			// set up buttons.
 			this.addBooleanButton("Treat CONFIG log level as a category and not a traditional level.",
@@ -151,8 +155,12 @@ public class LogWizard extends RefactoringWizard {
 					NOT_RAISE_LOG_LEVEL_KEY_WORDS, this.getProcessor()::setNotRaiseLogLevelWithoutKeyWords, result,
 					SWT.CHECK);
 
-			this.addBooleanButton("Do not change a log level if its if statement condition/case label contains a log level.",
+			this.addBooleanButton(
+					"Do not change a log level if its if statement condition/case label contains a log level.",
 					CHECK_IF_CONDITION, this.getProcessor()::setCheckIfCondition, result, SWT.CHECK);
+
+			this.addIntegerButton("Max transformation distance:", MAX_TRANSFORMATION_DISTANCE,
+					this.getProcessor()::setMaxTransDistance, this.addIntegerButton(result));
 
 			Label separator3 = new Label(result, SWT.SEPARATOR | SWT.SHADOW_OUT | SWT.HORIZONTAL);
 			separator3.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
@@ -203,27 +211,30 @@ public class LogWizard extends RefactoringWizard {
 			this.settings = this.getDialogSettings().getSection(DIALOG_SETTING_SECTION);
 			if (this.settings == null) {
 				this.settings = this.getDialogSettings().addNewSection(DIALOG_SETTING_SECTION);
+				this.settings.put(NOT_LOWER_LOG_LEVEL_KEY_WORDS, this.getProcessor().isNotLowerLogLevelWithKeyWords());
 				this.settings.put(USE_LOG_CATEGORY_CONFIG, this.getProcessor().getParticularConfigLogLevel());
-				this.settings.put(USE_LOG_CATEGORY, this.getProcessor().getParticularLogLevel());
-				this.settings.put(USE_GIT_HISTORY, this.getProcessor().getGitHistory());
+				this.settings.put(MAX_TRANSFORMATION_DISTANCE, this.getProcessor().getMaxTransDistance());
 				this.settings.put(N_TO_USE_FOR_COMMITS, this.getProcessor().getNToUseForCommits());
+				this.settings.put(USE_LOG_CATEGORY, this.getProcessor().getParticularLogLevel());
+				this.settings.put(CHECK_IF_CONDITION, this.getProcessor().isCheckIfCondition());
+				this.settings.put(USE_GIT_HISTORY, this.getProcessor().getGitHistory());
+				this.settings.put(NOT_RAISE_LOG_LEVEL_KEY_WORDS,
+						this.getProcessor().isNotRaisedLogLevelWithoutKeywords());
 				this.settings.put(NOT_LOWER_LOG_LEVEL_CATCH_BLOCK,
 						this.getProcessor().getNotLowerLogLevelInCatchBlock());
-				this.settings.put(CHECK_IF_CONDITION, this.getProcessor().isCheckIfCondition());
 				this.settings.put(NOT_LOWER_LOG_LEVEL_IF_STATEMENT,
 						this.getProcessor().isNotLowerLogLevelInIfStatement());
-				this.settings.put(NOT_LOWER_LOG_LEVEL_KEY_WORDS, this.getProcessor().isNotLowerLogLevelWithKeyWords());
-				this.settings.put(NOT_RAISE_LOG_LEVEL_KEY_WORDS, this.getProcessor().isNotRaisedLogLevelWithoutKeywords());
 			}
-			this.processor.setParticularConfigLogLevel(this.settings.getBoolean(USE_LOG_CATEGORY_CONFIG));
-			this.processor.setParticularLogLevel(this.settings.getBoolean(USE_LOG_CATEGORY));
-			this.processor.setUseGitHistory(this.settings.getBoolean(USE_GIT_HISTORY));
-			this.processor.setNToUseForCommits(this.settings.getInt(N_TO_USE_FOR_COMMITS));
-			this.processor.setNotLowerLogLevelInCatchBlock(this.settings.getBoolean(NOT_LOWER_LOG_LEVEL_CATCH_BLOCK));
-			this.processor.setCheckIfCondition(this.settings.getBoolean(CHECK_IF_CONDITION));
 			this.processor.setNotLowerLogLevelInIfStatement(this.settings.getBoolean(NOT_LOWER_LOG_LEVEL_IF_STATEMENT));
-			this.processor.setNotLowerLogLevelWithKeyWords(this.settings.getBoolean(NOT_LOWER_LOG_LEVEL_KEY_WORDS));
+			this.processor.setNotLowerLogLevelInCatchBlock(this.settings.getBoolean(NOT_LOWER_LOG_LEVEL_CATCH_BLOCK));
 			this.processor.setNotRaiseLogLevelWithoutKeyWords(this.settings.getBoolean(NOT_RAISE_LOG_LEVEL_KEY_WORDS));
+			this.processor.setNotLowerLogLevelWithKeyWords(this.settings.getBoolean(NOT_LOWER_LOG_LEVEL_KEY_WORDS));
+			this.processor.setParticularConfigLogLevel(this.settings.getBoolean(USE_LOG_CATEGORY_CONFIG));
+			this.processor.setMaxTransDistance(this.settings.getInt(MAX_TRANSFORMATION_DISTANCE));
+			this.processor.setParticularLogLevel(this.settings.getBoolean(USE_LOG_CATEGORY));
+			this.processor.setCheckIfCondition(this.settings.getBoolean(CHECK_IF_CONDITION));
+			this.processor.setNToUseForCommits(this.settings.getInt(N_TO_USE_FOR_COMMITS));
+			this.processor.setUseGitHistory(this.settings.getBoolean(USE_GIT_HISTORY));
 		}
 
 		private void setProcessor(LogRejuvenatingProcessor processor) {
