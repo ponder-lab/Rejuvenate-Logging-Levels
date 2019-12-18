@@ -84,7 +84,7 @@ public class LogAnalyzer extends ASTVisitor {
 	private static final Set<String> KEYWORDS_IN_LOG_MESSAGES_FOR_LOWERING = Stream.of("fail", "disable", "error",
 			"exception", "collision", "reboot", "terminate", "throw", "should", "start", "tried", "empty", "launch",
 			"init", "does not", "doesn't", "stop", "shut", "run", "deprecate", "kill", "finish", "ready", "wait",
-			"dead", "alive", "creat", "debug", "info", "warn", "fatal", "severe", "config", "fine", "trace", "FYI")
+			"dead", "alive", "creat", "debug", "info", "warn", "fatal", "severe", "config ", "fine", "trace", "FYI")
 			.collect(Collectors.toSet());
 	/**
 	 * A set of keywords in log messages for raising log levels.
