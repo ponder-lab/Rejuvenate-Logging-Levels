@@ -32,14 +32,18 @@ Our tool could be run in three different purposes. For each purpose, it could be
 **Notice**:
 Make sure there must be an **active Mylyn task** before running tool. **Do not use a real Mylyn task** as the plug-in just uses this task for bookkeeping purposes. Please make a separate (fake) task for this purpose. We will integrate this process in the future.
 
-## Options
+## Settings
 
-We have four categories of option settings:
+We have eight option settings:
 
-- Whether treat some log levels as a category not traditional log levels?
-- Whether use git history?
-- Whether lower log levels of logging statements in catch blocks.
-- Limit the maximum number of git commits.
+- Treat CONFIG/WARNING/SEVERE log levels as category and not traditional levels.
+- Treat CONFIG log level as a category and not a traditional level.
+- Never lower the logging level of logging statements within catch blocks.
+- Never lower the logging level of logging statements within immediate if statements.
+- Never lower logs with particular keywords in their log messages.
+- Never raise logs without particular keywords in their log messages.
+- Do not change a log level in a logging statement if there exists an immediate if statement whose condition contains a log level.
+- Adjust transformations if their transformation distance is over maximum transformation distance.
 
 ## Installation
 
