@@ -53,7 +53,7 @@ Our tool can be installed via Eclipse Update Site at [https://raw.githubusercont
 
 ## Development platform
 
-It is developed on Eclipse for RCP and RAP, and its version is 2018-09. The download page: https://www.eclipse.org/downloads/packages/release/kepler/sr2/eclipse-rcp-and-rap-developers
+It is developed on Eclipse for RCP and RAP, and its version is 2019-06. The download page: https://www.eclipse.org/downloads/packages/release/2019-06
 
 ## Dependencies
 
