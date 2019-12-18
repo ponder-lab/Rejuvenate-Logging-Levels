@@ -118,6 +118,13 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 	private int NToUseForCommits = 100;
 
 	/**
+	 * Limit transformation Distance, e.g., if the max transformation is 1, the
+	 * transformation from INFO to FINEST should be adjusted to the transformation
+	 * from INFO to FINER.
+	 */
+	private int maxTransDistance = 10;
+
+	/**
 	 * The actual number of commits in repo.
 	 */
 	private int actualNumberOfCommits;
@@ -182,6 +189,14 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 		return this.useGitHistory;
 	}
 
+	public void setMaxTransDistance(int maxTransDistance) {
+		this.maxTransDistance = maxTransDistance;
+	}
+
+	public int getMaxTransDistance() {
+		return this.maxTransDistance;
+	}
+
 	public boolean getNotLowerLogLevelInCatchBlock() {
 		return this.notLowerLogLevelInCatchBlock;
 	}
@@ -199,8 +214,8 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 	public LogRejuvenatingProcessor(IJavaProject[] javaProjects, boolean useLogLevelCategory,
 			boolean useConfigLogLevelCategory, boolean useGitHistory, boolean notLowerLogLevelInCatchBlock,
 			boolean notLowerLogLevelInIfStatement, boolean notLowerLogLevelWithKeywords,
-			boolean notRaiseLogLevelWithoutKeywords, boolean checkIfCondtion, int NToUseForCommits,
-			final CodeGenerationSettings settings, Optional<IProgressMonitor> monitor) {
+			boolean notRaiseLogLevelWithoutKeywords, boolean checkIfCondtion, int maxTransDistance,
+			int NToUseForCommits, final CodeGenerationSettings settings, Optional<IProgressMonitor> monitor) {
 		super(settings);
 		try {
 			this.javaProjects = javaProjects;
@@ -213,6 +228,7 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 			this.notRaiseLogLevelWithoutKeywords = notRaiseLogLevelWithoutKeywords;
 			this.checkIfCondition = checkIfCondtion;
 			this.NToUseForCommits = NToUseForCommits;
+			this.maxTransDistance = maxTransDistance;
 		} finally {
 			monitor.ifPresent(IProgressMonitor::done);
 		}
@@ -221,11 +237,12 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 	public LogRejuvenatingProcessor(IJavaProject[] javaProjects, boolean useLogLevelCategory,
 			boolean useConfigLogLevelCategory, boolean useGitHistory, boolean notLowerLogLevelInCatchBlock,
 			boolean notLowerLogLevelInIfStatement, boolean notLowerLogLevelWithKeywords,
-			boolean notRaiseLogLevelWithoutKeywords, boolean checkIfCondtion, int NToUseForCommits,
-			final CodeGenerationSettings settings, Optional<IProgressMonitor> monitor, boolean isEvaluation) {
+			boolean notRaiseLogLevelWithoutKeywords, boolean checkIfCondtion, int maxTransDistance,
+			int NToUseForCommits, final CodeGenerationSettings settings, Optional<IProgressMonitor> monitor,
+			boolean isEvaluation) {
 		this(javaProjects, useLogLevelCategory, useConfigLogLevelCategory, useGitHistory, notLowerLogLevelInCatchBlock,
 				notLowerLogLevelInIfStatement, notLowerLogLevelWithKeywords, notRaiseLogLevelWithoutKeywords,
-				checkIfCondtion, NToUseForCommits, settings, monitor);
+				checkIfCondtion, maxTransDistance, NToUseForCommits, settings, monitor);
 		this.isEvaluation = isEvaluation;
 	}
 
@@ -249,7 +266,7 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 
 			LogAnalyzer analyzer = new LogAnalyzer(this.useLogCategoryWithConfig, this.useLogCategory,
 					this.notLowerLogLevelInCatchBlock, this.checkIfCondition, this.notLowerLogLevelInIfStatement,
-					this.notLowerLogLevelWithKeyWords, this.notRaiseLogLevelWithoutKeywords);
+					this.notLowerLogLevelWithKeyWords, this.notRaiseLogLevelWithoutKeywords, this.maxTransDistance);
 
 			// If we are using the git history.
 			if (this.useGitHistory) {

@@ -1,7 +1,5 @@
 package edu.cuny.hunter.log.core.utils;
 
-import java.io.FileWriter;
-import java.io.IOException;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -9,8 +7,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.logging.Level;
 
-import org.apache.commons.csv.CSVFormat;
-import org.apache.commons.csv.CSVPrinter;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.resources.IResource;
@@ -355,11 +351,6 @@ public final class Util {
 
 		return fullName;
 	}
-	
-	public static CSVPrinter createCSVPrinter(String fileName, String[] header) throws IOException {
-		return new CSVPrinter(new FileWriter(fileName, true), CSVFormat.EXCEL.withHeader(header));
-	}
-	
 
 	public static IJavaProject[] getSelectedJavaProjectsFromEvent(ExecutionEvent event) throws ExecutionException {
 		ISelection currentSelection = HandlerUtil.getCurrentSelectionChecked(event);
