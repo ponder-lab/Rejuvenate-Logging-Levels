@@ -151,7 +151,7 @@ public class LogWizard extends RefactoringWizard {
 
 			// set up buttons.
 			this.addBooleanButton(
-					"Never raise the logging level of logging statements without particular keywords in their message.",
+					"Never raise the logging level of logging statements without particular keywords in their messages.",
 					NOT_RAISE_LOG_LEVEL_KEY_WORDS, this.getProcessor()::setNotRaiseLogLevelWithoutKeyWords, result,
 					SWT.CHECK);
 
