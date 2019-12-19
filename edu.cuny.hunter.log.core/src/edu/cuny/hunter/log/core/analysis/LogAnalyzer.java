@@ -30,8 +30,6 @@ import org.eclipse.jdt.core.dom.MethodInvocation;
 import org.eclipse.jdt.core.dom.Statement;
 import org.eclipse.jdt.core.dom.SwitchCase;
 import org.eclipse.jdt.core.dom.SwitchStatement;
-import org.slf4j.spi.SLF4JServiceProvider;
-
 import edu.cuny.hunter.log.core.messages.Messages;
 import edu.cuny.hunter.log.core.utils.LoggerNames;
 import edu.cuny.hunter.log.core.utils.Util;
@@ -273,11 +271,11 @@ public class LogAnalyzer extends ASTVisitor {
 	/**
 	 * For slf4j.
 	 */
-	private boolean checkBoundarySize(LogInvocation logInvocation) {
+	private boolean checkBoundarySize(LogInvocationSlf4j logInvocation) {
 		// DOI not in intervals
 		if (logInvocation.getDegreeOfInterestValue() < this.boundary.get(0)
 				|| logInvocation.getDegreeOfInterestValue() > this.boundary.get(this.boundary.size() - 1)) {
-			logInvocation.setAction(Action.NONE, null);
+			logInvocation.setAction(ActionSlf4j.NONE, null);
 			return true;
 		}
 		return false;
@@ -417,7 +415,7 @@ public class LogAnalyzer extends ASTVisitor {
 			// process not lower log levels in if statements.
 			if (checkIfBlock(logInvocation.getExpression()) && isLowered) {
 				this.logInvsNotLoweredInIfStatementSlf4j.add(logInvocation);
-				logInvocation.setAction(Action.NONE, null);
+				logInvocation.setAction(ActionSlf4j.NONE, null);
 				return true;
 			}
 		return false;
@@ -449,7 +447,7 @@ public class LogAnalyzer extends ASTVisitor {
 		if (this.notRaiseLogLevelWithoutKeyWords) {
 			if (!Util.isLogMessageWithKeywords(logInvocation.getExpression(), KEYWORDS_IN_LOG_MESSAGES_FOR_RAISING)
 					&& isRaised) {
-				logInvocation.setAction(Action.NONE, null);
+				logInvocation.setAction(ActionSlf4j.NONE, null);
 				this.logInvsNotRaisedByKeywordsSlf4j.add(logInvocation);
 				return true;
 			}
@@ -479,7 +477,7 @@ public class LogAnalyzer extends ASTVisitor {
 		// process not lower log levels in catch blocks
 		if (logInvocation.getInCatchBlock() && isLowered) {
 			this.logInvsNotLoweredInCatchSlf4j.add(logInvocation);
-			logInvocation.setAction(Action.NONE, null);
+			logInvocation.setAction(ActionSlf4j.NONE, null);
 			return true;
 		}
 		return false;
@@ -515,7 +513,7 @@ public class LogAnalyzer extends ASTVisitor {
 		if (this.notLowerLogLevelWithKeyWords) {
 			if (Util.isLogMessageWithKeywords(logInvocation.getExpression(), KEYWORDS_IN_LOG_MESSAGES_FOR_LOWERING)
 					&& isLowered) {
-				logInvocation.setAction(Action.NONE, null);
+				logInvocation.setAction(ActionSlf4j.NONE, null);
 				this.logInvsNotLoweredByKeywordsSlf4j.add(logInvocation);
 				return true;
 			}
