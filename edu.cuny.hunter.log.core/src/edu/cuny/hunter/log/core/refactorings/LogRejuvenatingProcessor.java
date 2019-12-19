@@ -160,7 +160,7 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 	private HashSet<LogInvocationSlf4j> logInvsNotLoweredInCatchSlf4j = new HashSet<LogInvocationSlf4j>();
 	private HashSet<LogInvocationSlf4j> logInvsNotLoweredInIfStatementSlf4j = new HashSet<LogInvocationSlf4j>();
 	private HashSet<LogInvocationSlf4j> logInvsNotLoweredByKeywordsSlf4j = new HashSet<LogInvocationSlf4j>();
-	private HashSet<LogInvocationSlf4j> logInvsNotRaisedByKeywordsSlf4j = new HashSet<LogInvocationSlf4j>();
+	private HashSet<LogInvocationSlf4j> logInvsNotRaisedWithoutKeywordsSlf4j = new HashSet<LogInvocationSlf4j>();
 	private Set<LogInvocationSlf4j> logInvocationSlf4j = new HashSet<LogInvocationSlf4j>();
 
 	private Map<IMethod, Float> methodToDOI;
@@ -400,7 +400,7 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 		this.setLogInvsNotTransformedInIfSlf4j(analyzer.getLogInvsNotTransformedInIfSlf4j());
 		this.setLogInvsNotLoweredInIfStatementSlf4j(analyzer.getLogInvsNotLoweredInIfStatementsSlf4j());
 		this.setLogInvsNotLoweredByKeywordsSlf4j(analyzer.getLogInvsNotLoweredByKeywordsSlf4j());
-		this.setLogInvsNotRaisedByKeywordsSlf4j(analyzer.getLogInvsNotRaisedByKeywordsSlf4j());
+		this.setLogInvsNotRaisedWithoutKeywordsSlf4j(analyzer.getLogInvsNotRaisedByKeywordsSlf4j());
 	}
 
 	/**
@@ -442,6 +442,10 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 		return this.candidates;
 	}
 
+	public Set<LogInvocationSlf4j> getRoughCandidateSetSlf4j() {
+		return this.candidateSlf4j;
+	}
+	
 	/**
 	 * Call mylyngit plugin to process git history.
 	 * 
@@ -932,12 +936,12 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 		this.logInvsNotLoweredByKeywordsSlf4j = logInvsNotLoweredByKeywordsSlf4j;
 	}
 
-	public HashSet<LogInvocationSlf4j> getLogInvsNotRaisedByKeywordsSlf4j() {
-		return logInvsNotRaisedByKeywordsSlf4j;
+	public HashSet<LogInvocationSlf4j> getLogInvsNotRaisedWithoutKeywordsSlf4j() {
+		return logInvsNotRaisedWithoutKeywordsSlf4j;
 	}
 
-	public void setLogInvsNotRaisedByKeywordsSlf4j(HashSet<LogInvocationSlf4j> logInvsNotRaisedByKeywordsSlf4j) {
-		this.logInvsNotRaisedByKeywordsSlf4j = logInvsNotRaisedByKeywordsSlf4j;
+	public void setLogInvsNotRaisedWithoutKeywordsSlf4j(HashSet<LogInvocationSlf4j> logInvsNotRaisedByKeywordsSlf4j) {
+		this.logInvsNotRaisedWithoutKeywordsSlf4j = logInvsNotRaisedByKeywordsSlf4j;
 	}
 
 	public Set<LogInvocationSlf4j> getLogInvocationSlf4j() {
