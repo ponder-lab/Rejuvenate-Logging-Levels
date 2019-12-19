@@ -52,7 +52,7 @@ public class LogAnalyzer extends ASTVisitor {
 	private HashSet<LogInvocationSlf4j> logInvsNotLoweredInIfStatementSlf4j = new HashSet<LogInvocationSlf4j>();
 	private HashSet<LogInvocationSlf4j> logInvsNotLoweredByKeywordsSlf4j = new HashSet<LogInvocationSlf4j>();
 	private HashSet<LogInvocationSlf4j> logInvsNotRaisedByKeywordsSlf4j = new HashSet<LogInvocationSlf4j>();
-	private Set<LogInvocationSlf4j> logInvocationSlf4js = new HashSet<LogInvocationSlf4j>();
+	private Set<LogInvocationSlf4j> logInvocationSlf4j = new HashSet<LogInvocationSlf4j>();
 
 	private boolean notLowerLogLevelInIfStatement;
 
@@ -70,7 +70,10 @@ public class LogAnalyzer extends ASTVisitor {
 
 	private Map<IMethod, Float> methodToDOI = new HashMap<>();
 
+	// A list of boundary for J.U.L
 	private ArrayList<Float> boundary;
+	// A list of boundary for slf4j.
+	private ArrayList<Float> boundarySlf4j;
 
 	/**
 	 * A set of keywords in log messages for lowering log levels.
@@ -131,7 +134,8 @@ public class LogAnalyzer extends ASTVisitor {
 	 */
 	private void analyzeLogInvs(Set<MethodDeclaration> methodDecsForAnalyzedMethod) {
 		// build boundary
-		boundary = this.buildBoundary(this.methodToDOI.values());
+		this.boundary = this.buildBoundary(this.methodToDOI.values());
+		this.boundarySlf4j = this.buildBoundarySlf4j(this.methodToDOI.values());
 
 		Set<IMethod> validMethods = this.methodToDOI.keySet();
 
@@ -148,7 +152,7 @@ public class LogAnalyzer extends ASTVisitor {
 			}
 		}
 
-		for (LogInvocationSlf4j logInvocationSlf4j : this.logInvocationSlf4js) {
+		for (LogInvocationSlf4j logInvocationSlf4j : this.logInvocationSlf4j) {
 			// Methods not analyzed will not be considered for transformation.
 			if (!validMethods.contains(logInvocationSlf4j.getEnclosingEclipseMethod()))
 				logInvocationSlf4j.setAction(ActionSlf4j.NONE, null);
@@ -177,7 +181,7 @@ public class LogAnalyzer extends ASTVisitor {
 		if (currentLogLevel == null)
 			return false;
 
-		org.slf4j.event.Level rejuvenatedLogLevel = this.getRejuvenatedLogLevel(this.boundary, logInvocationSlf4j);
+		org.slf4j.event.Level rejuvenatedLogLevel = this.getRejuvenatedLogLevel(this.boundarySlf4j, logInvocationSlf4j);
 
 		if (rejuvenatedLogLevel == null)
 			return false;
@@ -267,7 +271,7 @@ public class LogAnalyzer extends ASTVisitor {
 		}
 		return false;
 	}
-	
+
 	/**
 	 * For slf4j.
 	 */
@@ -636,6 +640,27 @@ public class LogAnalyzer extends ASTVisitor {
 	}
 
 	/**
+	 * Build a list of boundary for the log transformations in Slf4j. The DOI values
+	 * could be divided into 5 groups. Each group is corresponding to log level
+	 * ERROR, WARN, INFO, DEBUG and TRACE respectively.
+	 * 
+	 * @param degreeOfInterests: a list of DOI values for all methods.
+	 * @return a list of boundary for slf4j.
+	 */
+	private ArrayList<Float> buildBoundarySlf4j(Collection<Float> degreeOfInterests) {
+		float min = getMinDOI(degreeOfInterests);
+		float max = getMaxDOI(degreeOfInterests);
+		ArrayList<Float> boundarySlf4j = new ArrayList<>();
+		if (min < max) {
+			float interval = (max - min) / 5;
+			IntStream.range(0, 4).forEach(i -> boundarySlf4j.add(min + i * interval));
+			boundarySlf4j.add(max);
+			return boundarySlf4j;
+		} else
+			return null;
+	}
+
+	/**
 	 * Get the minimum of DOIs
 	 * 
 	 * @param degreeOfInterests
@@ -935,10 +960,35 @@ public class LogAnalyzer extends ASTVisitor {
 	}
 
 	public Set<LogInvocationSlf4j> getLogInvocationSlf4js() {
-		return this.logInvocationSlf4js;
+		return this.logInvocationSlf4j;
 	}
 
 	public void setLogInvocationsSlf4js(Set<LogInvocationSlf4j> logInvocationSlf4j) {
-		this.logInvocationSlf4js = logInvocationSlf4j;
+		this.logInvocationSlf4j = logInvocationSlf4j;
+	}
+
+	public HashSet<LogInvocationSlf4j> getLogInvsNotLoweredByKeywordsSlf4j() {
+		return this.logInvsNotLoweredByKeywordsSlf4j;
+	}
+
+	public HashSet<LogInvocationSlf4j> getLogInvsNotLoweredInCatchSlf4j() {
+		return this.logInvsNotLoweredInCatchSlf4j;
+	}
+
+	public HashSet<LogInvocationSlf4j> getLogInvsNotLoweredInIfStatementsSlf4j() {
+		return this.logInvsNotLoweredInIfStatementSlf4j;
+	}
+
+	public HashSet<LogInvocationSlf4j> getLogInvsNotRaisedByKeywordsSlf4j() {
+		return this.logInvsNotRaisedByKeywordsSlf4j;
+	}
+
+	public HashSet<LogInvocationSlf4j> getLogInvsNotTransformedInIfSlf4j() {
+		return this.logInvsNotTransformedInIfSlf4j;
+	}
+
+	public ArrayList<Float> getBoundarySlf4j() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

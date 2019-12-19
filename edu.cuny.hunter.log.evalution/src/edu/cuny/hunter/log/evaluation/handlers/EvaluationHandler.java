@@ -36,6 +36,7 @@ import org.osgi.framework.FrameworkUtil;
 
 import edu.cuny.citytech.refactoring.common.core.RefactoringProcessor;
 import edu.cuny.hunter.log.core.analysis.LogInvocation;
+import edu.cuny.hunter.log.core.analysis.LogInvocationSlf4j;
 import edu.cuny.hunter.log.core.refactorings.LogRejuvenatingProcessor;
 import edu.cuny.hunter.log.core.utils.LoggerNames;
 import edu.cuny.hunter.log.core.utils.Util;
@@ -237,11 +238,12 @@ public class EvaluationHandler extends AbstractHandler {
 							resultsTimeCollector.stop();
 
 							Set<LogInvocation> logInvocationSet = logRejuvenatingProcessor.getLogInvocationSet();
+							Set<LogInvocationSlf4j> logInvocationSlf4js = logRejuvenatingProcessor.getLogInvocationSlf4j();
 
 							// Just print once.
 							// Using 1 here because both settings are enabled
 							// for this index.
-							if (i == 1)
+							if (i == 1) {
 								// print input log invocations
 								for (LogInvocation logInvocation : logInvocationSet) {
 									// Print input log invocations
@@ -252,6 +254,9 @@ public class EvaluationHandler extends AbstractHandler {
 											Util.getMethodIdentifier(logInvocation.getEnclosingEclipseMethod()),
 											logInvocation.getDegreeOfInterestValue());
 								}
+								
+								
+							}
 
 							Map<IMethod, Float> nonenclosingMethodToDOI = logRejuvenatingProcessor
 									.getNonenclosingMethodToDOI();
@@ -264,6 +269,7 @@ public class EvaluationHandler extends AbstractHandler {
 
 							Set<LogInvocation> candidates = computeCandidateLogs(
 									logRejuvenatingProcessor.getRoughCandidateSet());
+							Set<LogInvocationSlf4j> candidateSlf4js = 
 
 							for (LogInvocation logInvocation : candidates)
 								candidatePrinter.printRecord(sequence, project.getElementName(),
@@ -493,18 +499,42 @@ public class EvaluationHandler extends AbstractHandler {
 
 		if (this.isUseLogCategoryWithConfig()) {
 			for (LogInvocation inv : logInvocationSet)
-				if (inv.getLogLevel() == null || !inv.getLogLevel().equals(Level.CONFIG))
+				if (inv.getLogLevel() != null || !inv.getLogLevel().equals(Level.CONFIG))
 					candidates.add(inv);
 		}
 
 		if (this.isUseLogCategory()) {
 			for (LogInvocation inv : logInvocationSet)
-				if (inv.getLogLevel() == null || !(inv.getLogLevel().equals(Level.CONFIG)
+				if (inv.getLogLevel() != null || !(inv.getLogLevel().equals(Level.CONFIG)
 						|| inv.getLogLevel().equals(Level.WARNING) || inv.getLogLevel().equals(Level.SEVERE)))
 					candidates.add(inv);
 		}
 		return candidates;
 	}
+	
+//	/**
+//	 * @return Candidate logging statements for Slf4j.
+//	 */
+//	private Set<LogInvocation> computeCandidateLogs(Set<LogInvocationSlf4j> logInvocationSet) {
+//		// Set of candidate log invocations.
+//		Set<LogInvocationSlf4j> candidates = new HashSet<LogInvocationSlf4j>();
+//		if (!this.isUseLogCategory() && !this.isUseLogCategoryWithConfig())
+//			candidates.addAll(logInvocationSet);
+//
+//		if (this.isUseLogCategoryWithConfig()) {
+//			for (LogInvocationSlf4j inv : logInvocationSet)
+//				if (inv.getLogLevel() != null || !inv.getLogLevel().equals(Level.CONFIG))
+//					candidates.add(inv);
+//		}
+//
+//		if (this.isUseLogCategory()) {
+//			for (LogInvocationSlf4j inv : logInvocationSet)
+//				if (inv.getLogLevel() != null || !(inv.getLogLevel().equals(Level.CONFIG)
+//						|| inv.getLogLevel().equals(Level.WARNING) || inv.getLogLevel().equals(Level.SEVERE)))
+//					candidates.add(inv);
+//		}
+//		return candidates;
+//	}
 
 	/**
 	 * We could convert i to binary. Each digit stores the boolean value of one

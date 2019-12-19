@@ -48,9 +48,12 @@ import org.eclipse.ltk.core.refactoring.participants.RefactoringParticipant;
 import org.eclipse.ltk.core.refactoring.participants.SharableParticipants;
 
 import edu.cuny.citytech.refactoring.common.core.RefactoringProcessor;
+import edu.cuny.hunter.log.core.analysis.AbstractLogInvocation;
 import edu.cuny.hunter.log.core.analysis.Action;
+import edu.cuny.hunter.log.core.analysis.ActionSlf4j;
 import edu.cuny.hunter.log.core.analysis.LogAnalyzer;
 import edu.cuny.hunter.log.core.analysis.LogInvocation;
+import edu.cuny.hunter.log.core.analysis.LogInvocationSlf4j;
 import edu.cuny.hunter.log.core.descriptors.LogDescriptor;
 import edu.cuny.hunter.log.core.messages.Messages;
 import edu.cuny.hunter.log.core.utils.LoggerNames;
@@ -68,7 +71,15 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 
 	private LinkedList<Commit> commits = new LinkedList<>();
 
+	/**
+	 * A set of candidates for J.U.L.
+	 */
 	private Set<LogInvocation> candidates = new HashSet<LogInvocation>();
+
+	/**
+	 * A set of candidates for slf4j.
+	 */
+	private Set<LogInvocationSlf4j> candidateSlf4j = new HashSet<LogInvocationSlf4j>();
 
 	private IJavaProject[] javaProjects;
 
@@ -76,6 +87,11 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 	 * Boundary for DOI values of enclosing methods
 	 */
 	private ArrayList<Float> boundary;
+
+	/**
+	 * For Slf4j. Boundary for DOI values of enclosing methods.
+	 */
+	private ArrayList<Float> boundarySlf4j;
 
 	/**
 	 * Treat CONFIG as category
@@ -132,11 +148,21 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 	 */
 	private boolean isEvaluation;
 
+	// Sets of log invocations for J.U.L.
 	private HashSet<LogInvocation> logInvsNotTransformedInIf;
 	private HashSet<LogInvocation> logInvsNotLoweredInCatch;
 	private HashSet<LogInvocation> logInvsNotLoweredInIf;
 	private HashSet<LogInvocation> logInvsNotLoweredWithKeywords;
 	private HashSet<LogInvocation> logInvsNotRaisedWithoutKeywords;
+
+	// Sets of log invocations for slf4j.
+	private HashSet<LogInvocationSlf4j> logInvsNotTransformedInIfSlf4j = new HashSet<LogInvocationSlf4j>();
+	private HashSet<LogInvocationSlf4j> logInvsNotLoweredInCatchSlf4j = new HashSet<LogInvocationSlf4j>();
+	private HashSet<LogInvocationSlf4j> logInvsNotLoweredInIfStatementSlf4j = new HashSet<LogInvocationSlf4j>();
+	private HashSet<LogInvocationSlf4j> logInvsNotLoweredByKeywordsSlf4j = new HashSet<LogInvocationSlf4j>();
+	private HashSet<LogInvocationSlf4j> logInvsNotRaisedByKeywordsSlf4j = new HashSet<LogInvocationSlf4j>();
+	private Set<LogInvocationSlf4j> logInvocationSlf4j = new HashSet<LogInvocationSlf4j>();
+
 	private Map<IMethod, Float> methodToDOI;
 	private Set<IMethod> enclosingMethods;
 
@@ -298,20 +324,23 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 
 			analyzer.analyze(methodDeclsForAnalyzedMethod);
 
-			this.setLogInvsNotLoweredInCatch(analyzer.getLogInvsNotLoweredInCatch());
-			this.setLogInvsNotTransformedInIf(analyzer.getLogInvsNotTransformedInIf());
-			this.setLogInvsNotLoweredInIf(analyzer.getLogInvsNotLoweredInIfStatement());
-			this.setLogInvsNotLoweredWithKeywords(analyzer.getLogInvsNotLoweredByKeywords());
-			this.setLogInvsNotRaisedWithoutKeywords(analyzer.getLogInvsNotRaisedByKeywords());
+			// Store all not transformed log invocations due to the settings.
+			this.setDataForJUL(analyzer);
+			this.setDataForSlf4j(analyzer);
+
 			this.setMethodToDOI(analyzer.getMethodToDOI());
 			this.setEnclosingMethods(analyzer.getEnclosingMethods());
 
 			// Get boundary
 			this.boundary = analyzer.getBoundary();
+			this.setBoundarySlf4j(analyzer.getBoundarySlf4j());
 
+			// Get all log invocations.
 			this.addLogInvocationSet(analyzer.getLogInvocationSet());
+			this.setLogInvocationSlf4j(analyzer.getLogInvocationSlf4js());
 
 			this.estimateCandidates();
+			this.estimateCandidatesSlf4j();
 
 			// If we are using the git history.
 			if (this.useGitHistory) {
@@ -329,10 +358,18 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 		if (!isEvaluation)
 			MylynGitPredictionProvider.clearMappingData();
 
-		// get the status of each log invocation.
+		// get the status of each J.U.L log invocation.
 		RefactoringStatus collectedStatus = this.getLogInvocationSet().stream().map(LogInvocation::getStatus)
 				.collect(() -> new RefactoringStatus(), (a, b) -> a.merge(b), (a, b) -> a.merge(b));
+
 		status.merge(collectedStatus);
+
+		// get the status of each slf4j log invocation.
+		RefactoringStatus collectedStatusSlf4j = this.getLogInvocationSlf4j().stream()
+				.map(LogInvocationSlf4j::getStatus)
+				.collect(() -> new RefactoringStatus(), (a, b) -> a.merge(b), (a, b) -> a.merge(b));
+
+		status.merge(collectedStatusSlf4j);
 
 		if (!status.hasFatalError()) {
 			if (logInvocationSet.isEmpty()) {
@@ -344,7 +381,31 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 	}
 
 	/**
-	 * Remove candidate log invocation whose enclosing method was not analyzed.
+	 * Store all not transformed log invocations due to the settings for
+	 * Java.Util.Logging framework.
+	 */
+	private void setDataForJUL(LogAnalyzer analyzer) {
+		this.setLogInvsNotLoweredInCatch(analyzer.getLogInvsNotLoweredInCatch());
+		this.setLogInvsNotTransformedInIf(analyzer.getLogInvsNotTransformedInIf());
+		this.setLogInvsNotLoweredInIf(analyzer.getLogInvsNotLoweredInIfStatement());
+		this.setLogInvsNotLoweredWithKeywords(analyzer.getLogInvsNotLoweredByKeywords());
+		this.setLogInvsNotRaisedWithoutKeywords(analyzer.getLogInvsNotRaisedByKeywords());
+	}
+
+	/**
+	 * Store all not transformed log invocations due to the settings for slf4j.
+	 */
+	private void setDataForSlf4j(LogAnalyzer analyzer) {
+		this.setLogInvsNotLoweredInCatchSlf4j(analyzer.getLogInvsNotLoweredInCatchSlf4j());
+		this.setLogInvsNotTransformedInIfSlf4j(analyzer.getLogInvsNotTransformedInIfSlf4j());
+		this.setLogInvsNotLoweredInIfStatementSlf4j(analyzer.getLogInvsNotLoweredInIfStatementsSlf4j());
+		this.setLogInvsNotLoweredByKeywordsSlf4j(analyzer.getLogInvsNotLoweredByKeywordsSlf4j());
+		this.setLogInvsNotRaisedByKeywordsSlf4j(analyzer.getLogInvsNotRaisedByKeywordsSlf4j());
+	}
+
+	/**
+	 * Remove log invocations in candidate sets whose enclosing methods are not
+	 * analyzed.
 	 * 
 	 * @param methodDeclsForAnalyzedMethod: A set of method declarations is analyzed
 	 *                                      before.
@@ -352,11 +413,28 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 	private void estimateCandidates() {
 		Set<IMethod> validMethods = this.methodToDOI.keySet();
 
-		candidates.addAll(this.logInvocationSet);
+		this.candidates.addAll(this.logInvocationSet);
 		for (LogInvocation candidate : this.logInvocationSet) {
 			// if its enclosing method is not analyzed in the git history
 			if (!validMethods.contains(candidate.getEnclosingEclipseMethod()))
 				this.candidates.remove(candidate);
+		}
+	}
+
+	/**
+	 * For Slf4j.
+	 * 
+	 * Remove log invocations in candidate sets whose enclosing methods are not
+	 * analyzed.
+	 */
+	private void estimateCandidatesSlf4j() {
+		Set<IMethod> validMethods = this.methodToDOI.keySet();
+
+		this.candidateSlf4j.addAll(this.logInvocationSlf4j);
+		for (LogInvocationSlf4j candidate : this.logInvocationSlf4j) {
+			// if its enclosing method is not analyzed in the git history
+			if (!validMethods.contains(candidate.getEnclosingEclipseMethod()))
+				this.candidateSlf4j.remove(candidate);
 		}
 	}
 
@@ -389,12 +467,25 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 	}
 
 	/**
-	 * get a set of transformed log set
+	 * Get a set of transformed log set.
 	 */
 	public Set<LogInvocation> getTransformedLog() {
 		HashSet<LogInvocation> transformedSet = new HashSet<>();
 		for (LogInvocation logInvocation : this.logInvocationSet) {
 			if (logInvocation.getAction() != null && !logInvocation.getAction().equals(Action.NONE)
+					&& logInvocation.getStatus().isOK())
+				transformedSet.add(logInvocation);
+		}
+		return transformedSet;
+	}
+
+	/**
+	 * Get a set of slf4j transformed log set.
+	 */
+	public Set<LogInvocationSlf4j> getSlf4jTransformedLog() {
+		HashSet<LogInvocationSlf4j> transformedSet = new HashSet<>();
+		for (LogInvocationSlf4j logInvocation : this.logInvocationSlf4j) {
+			if (logInvocation.getAction() != null && !logInvocation.getAction().equals(ActionSlf4j.NONE)
 					&& logInvocation.getStatus().isOK())
 				transformedSet.add(logInvocation);
 		}
@@ -599,45 +690,16 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 			this.inheritanceChecking(this.logInvocationSet, pm);
 
 			Set<LogInvocation> transformedLogs = this.getTransformedLog();
+			Set<LogInvocationSlf4j> transformedSlf4jLogs = this.getSlf4jTransformedLog();
 
-			pm.beginTask("Transforming logging levels ...", transformedLogs.size());
-			for (LogInvocation logInvocation : transformedLogs) {
-				CompilationUnitRewrite rewrite = this.getCompilationUnitRewrite(
-						logInvocation.getEnclosingEclipseMethod().getCompilationUnit(),
-						logInvocation.getEnclosingCompilationUnit());
+			pm.beginTask("Transforming logging levels ...", transformedLogs.size() + transformedSlf4jLogs.size());
 
-				ImportRewriteContext context = new ContextSensitiveImportRewriteContext(
-						logInvocation.getEnclosingCompilationUnit(), rewrite.getImportRewrite());
-
-				logInvocation.transform(rewrite);
-				pm.worked(1);
-
-				// add static imports if necessary.
-				// for each import statement in the enclosing compilation unit.
-				List<?> imports = logInvocation.getEnclosingCompilationUnit().imports();
-				for (Object obj : imports) {
-					ImportDeclaration importDeclaration = (ImportDeclaration) obj;
-					// if the import is static (this is the only case we need to
-					// worry about).
-					if (importDeclaration.isStatic()) {
-						Name name = importDeclaration.getName();
-						String matchName = "java.util.logging.Level."
-								+ logInvocation.getReplacedName().getFullyQualifiedName();
-
-						if (name.getFullyQualifiedName().equals(matchName)) {
-							// deal with imports.
-							// register the removed name.
-							rewrite.getImportRemover().registerRemovedNode(logInvocation.getReplacedName());
-
-							// we are replacing a log level that has been
-							// statically imported.
-							// then, add a static import for new log level.
-							rewrite.getImportRewrite().addStaticImport("java.util.logging.Level",
-									logInvocation.getNewTargetName().getFullyQualifiedName(), true, context);
-						}
-					}
-				}
-			}
+			transformedLogs.forEach(log -> {
+				this.createTransformation(log, pm, "java.util.logging.Level");
+			});
+			transformedSlf4jLogs.forEach(log -> {
+				this.createTransformation(log, pm, "org.slf4j.event.Level");
+			});
 
 			// save the source changes.
 			ICompilationUnit[] units = this.getCompilationUnitToCompilationUnitRewriteMap().keySet().stream()
@@ -660,6 +722,43 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 		} finally {
 			pm.done();
 			this.clearCaches();
+		}
+	}
+
+	private void createTransformation(AbstractLogInvocation logInvocation, IProgressMonitor pm, String importPrefix) {
+		CompilationUnitRewrite rewrite = this.getCompilationUnitRewrite(
+				logInvocation.getEnclosingEclipseMethod().getCompilationUnit(),
+				logInvocation.getEnclosingCompilationUnit());
+
+		ImportRewriteContext context = new ContextSensitiveImportRewriteContext(
+				logInvocation.getEnclosingCompilationUnit(), rewrite.getImportRewrite());
+
+		logInvocation.transform(rewrite);
+		pm.worked(1);
+
+		// add static imports if necessary.
+		// for each import statement in the enclosing compilation unit.
+		List<?> imports = logInvocation.getEnclosingCompilationUnit().imports();
+		for (Object obj : imports) {
+			ImportDeclaration importDeclaration = (ImportDeclaration) obj;
+			// if the import is static (this is the only case we need to
+			// worry about).
+			if (importDeclaration.isStatic()) {
+				Name name = importDeclaration.getName();
+				String matchName = importPrefix + "." + logInvocation.getReplacedName().getFullyQualifiedName();
+
+				if (name.getFullyQualifiedName().equals(matchName)) {
+					// deal with imports.
+					// register the removed name.
+					rewrite.getImportRemover().registerRemovedNode(logInvocation.getReplacedName());
+
+					// we are replacing a log level that has been
+					// statically imported.
+					// then, add a static import for new log level.
+					rewrite.getImportRewrite().addStaticImport(importPrefix,
+							logInvocation.getNewTargetName().getFullyQualifiedName(), true, context);
+				}
+			}
 		}
 	}
 
@@ -798,5 +897,62 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 
 	public int getDecayFactor() {
 		return Util.getDecayFactor();
+	}
+
+	public HashSet<LogInvocationSlf4j> getLogInvsNotTransformedInIfSlf4j() {
+		return logInvsNotTransformedInIfSlf4j;
+	}
+
+	public void setLogInvsNotTransformedInIfSlf4j(HashSet<LogInvocationSlf4j> logInvsNotTransformedInIfSlf4j) {
+		this.logInvsNotTransformedInIfSlf4j = logInvsNotTransformedInIfSlf4j;
+	}
+
+	public HashSet<LogInvocationSlf4j> getLogInvsNotLoweredInCatchSlf4j() {
+		return logInvsNotLoweredInCatchSlf4j;
+	}
+
+	public void setLogInvsNotLoweredInCatchSlf4j(HashSet<LogInvocationSlf4j> logInvsNotLoweredInCatchSlf4j) {
+		this.logInvsNotLoweredInCatchSlf4j = logInvsNotLoweredInCatchSlf4j;
+	}
+
+	public HashSet<LogInvocationSlf4j> getLogInvsNotLoweredInIfStatementSlf4j() {
+		return logInvsNotLoweredInIfStatementSlf4j;
+	}
+
+	public void setLogInvsNotLoweredInIfStatementSlf4j(
+			HashSet<LogInvocationSlf4j> logInvsNotLoweredInIfStatementSlf4j) {
+		this.logInvsNotLoweredInIfStatementSlf4j = logInvsNotLoweredInIfStatementSlf4j;
+	}
+
+	public HashSet<LogInvocationSlf4j> getLogInvsNotLoweredByKeywordsSlf4j() {
+		return logInvsNotLoweredByKeywordsSlf4j;
+	}
+
+	public void setLogInvsNotLoweredByKeywordsSlf4j(HashSet<LogInvocationSlf4j> logInvsNotLoweredByKeywordsSlf4j) {
+		this.logInvsNotLoweredByKeywordsSlf4j = logInvsNotLoweredByKeywordsSlf4j;
+	}
+
+	public HashSet<LogInvocationSlf4j> getLogInvsNotRaisedByKeywordsSlf4j() {
+		return logInvsNotRaisedByKeywordsSlf4j;
+	}
+
+	public void setLogInvsNotRaisedByKeywordsSlf4j(HashSet<LogInvocationSlf4j> logInvsNotRaisedByKeywordsSlf4j) {
+		this.logInvsNotRaisedByKeywordsSlf4j = logInvsNotRaisedByKeywordsSlf4j;
+	}
+
+	public Set<LogInvocationSlf4j> getLogInvocationSlf4j() {
+		return logInvocationSlf4j;
+	}
+
+	public void setLogInvocationSlf4j(Set<LogInvocationSlf4j> logInvocationSlf4j) {
+		this.logInvocationSlf4j = logInvocationSlf4j;
+	}
+
+	public ArrayList<Float> getBoundarySlf4j() {
+		return boundarySlf4j;
+	}
+
+	public void setBoundarySlf4j(ArrayList<Float> boundarySlf4j) {
+		this.boundarySlf4j = boundarySlf4j;
 	}
 }
