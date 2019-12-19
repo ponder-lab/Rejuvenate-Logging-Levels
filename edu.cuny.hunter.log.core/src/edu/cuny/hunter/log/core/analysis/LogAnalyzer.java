@@ -195,19 +195,19 @@ public class LogAnalyzer extends ASTVisitor {
 		}
 
 		if (this.processNotLowerLogLevelWithKeyWords(logInvocationSlf4j,
-				currentLogLevel.compareTo(rejuvenatedLogLevel) > 0))
-			return false;
-
-		if (this.processNotRaiseLogLevelWithKeywords(logInvocationSlf4j,
 				currentLogLevel.compareTo(rejuvenatedLogLevel) < 0))
 			return false;
 
-		if (this.processNotLowerLevelInCatchBlocks(logInvocationSlf4j,
+		if (this.processNotRaiseLogLevelWithKeywords(logInvocationSlf4j,
 				currentLogLevel.compareTo(rejuvenatedLogLevel) > 0))
 			return false;
 
+		if (this.processNotLowerLevelInCatchBlocks(logInvocationSlf4j,
+				currentLogLevel.compareTo(rejuvenatedLogLevel) < 0))
+			return false;
+
 		if (this.proceeNotLowerLogLevelInIfStatement(logInvocationSlf4j,
-				currentLogLevel.compareTo(rejuvenatedLogLevel) > 0))
+				currentLogLevel.compareTo(rejuvenatedLogLevel) < 0))
 			return false;
 
 		if (rejuvenatedLogLevel == org.slf4j.event.Level.TRACE)
