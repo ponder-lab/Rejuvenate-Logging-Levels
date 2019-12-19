@@ -41,6 +41,7 @@ import edu.cuny.hunter.log.core.analysis.LoggingFramework;
 import edu.cuny.hunter.log.core.refactorings.LogRejuvenatingProcessor;
 import edu.cuny.hunter.log.core.utils.LoggerNames;
 import edu.cuny.hunter.log.core.utils.Util;
+import edu.cuny.hunter.log.evaluation.utils.EvaluationUtil;
 import edu.cuny.hunter.log.evaluation.utils.ResultForCommit;
 import edu.cuny.hunter.mylyngit.core.analysis.MylynGitPredictionProvider;
 import edu.cuny.hunter.mylyngit.core.utils.Commit;
@@ -66,11 +67,13 @@ public class EvaluationHandler extends AbstractHandler {
 	private static final String NOT_LOWER_LOG_LEVEL_KEYWORDS_KEY = "edu.cuny.hunter.log.evaluation.notLowerLogLevelWithKeywords";
 	private static final String NOT_RAISE_LOG_LEVEL_KEYWORKS_KEY = "edu.cuny.hunter.log.evaluation.notRaiseLogLevelWithoutKeywords";
 	private static final String USE_LOG_CATEGORY_CONFIG_KEY = "edu.cuny.hunter.log.evaluation.useLogCategoryWithConfig";
+	private static final String MAX_TRANSFORMATION_DISTANCE_KEY = "edu.cuny.hunter.log.evaluation.maxTransDistance";
 	private static final String CHECK_IF_CONDITION_KEY = "edu.cuny.hunter.log.evaluation.checkIfCondition";
 	private static final String USE_LOG_CATEGORY_KEY = "edu.cuny.hunter.log.evaluation.useLogCategory";
 	private static final String USE_GIT_HISTORY_KEY = "edu.cuny.hunter.log.evaluation.useGitHistory";
 	private static final String N_TO_USE_FOR_COMMITS_KEY = "NToUseForCommits";
 	private static final int N_TO_USE_FOR_COMMITS_DEFAULT = 100;
+	private static final int MAX_TRANSFORMATION_DISTANCE__DEFUALT = Integer.MAX_VALUE;
 	private static final boolean NOT_LOWER_LOG_LEVEL_IF_STATEMENT_DEFAULT = false;
 	private static final boolean NOT_LOWER_LOG_LEVEL_KEYWORDS_DEFAULT = false;
 	private static final boolean NOT_RAISE_LOG_LEVEL_KEYWORDS_DEFAULT = false;
@@ -118,6 +121,12 @@ public class EvaluationHandler extends AbstractHandler {
 	 */
 	private boolean checkIfCondtion;
 
+	/**
+	 * Adjust transformations if their transformation distance is over the allowed
+	 * transformation distance.
+	 */
+	private int maxTransDistance;
+
 	@Override
 	public Object execute(ExecutionEvent event) throws ExecutionException {
 		Job.create("Evaluating log level rejuventation ...", monitor -> {
@@ -146,7 +155,7 @@ public class EvaluationHandler extends AbstractHandler {
 
 				CodeGenerationSettings settings = JavaPreferencesSettings.getCodeGenerationSettings(javaProjects[0]);
 
-				resultPrinter = Util.createCSVPrinter("result.csv",
+				resultPrinter = EvaluationUtil.createCSVPrinter("result.csv",
 						new String[] { "sequence", "subject", "repo URL", "decay factor", "input logging statements",
 								"candidate logging statements", "passing logging statements", "failures",
 								"transformed logging statements", "log level not lowered in catch blocks",
@@ -159,7 +168,7 @@ public class EvaluationHandler extends AbstractHandler {
 								"not raise log levels in their message without keywords",
 								"consider if condition having log level", "logging framework", "time (s)" });
 
-				resultSlf4jPrinter = Util.createCSVPrinter("result.csv", new String[] { "sequence", "subject",
+				resultSlf4jPrinter = EvaluationUtil.createCSVPrinter("result.csv", new String[] { "sequence", "subject",
 						"repo URL", "decay factor", "input logging statements", "candidate logging statements",
 						"passing logging statements", "failures", "transformed logging statements",
 						"log level not lowered in catch blocks", "log level not lowered in if statements",
@@ -170,44 +179,44 @@ public class EvaluationHandler extends AbstractHandler {
 						"not raise log levels in their message without keywords",
 						"consider if condition having log level", "logging framework", "time (s)" });
 
-				repoPrinter = Util.createCSVPrinter("repos.csv",
+				repoPrinter = EvaluationUtil.createCSVPrinter("repos.csv",
 						new String[] { "sequence", "repo URL", "SHA-1 of head", "N for commits",
 								"number of commits processed", "actual number of commits", "average Java lines added",
 								"average Java lines removed" });
-				actionPrinter = Util.createCSVPrinter("log_transformation_actions.csv",
+				actionPrinter = EvaluationUtil.createCSVPrinter("log_transformation_actions.csv",
 						new String[] { "sequence", "subject", "log expression", "start pos", "log level", "type FQN",
 								"enclosing method", "DOI value", "action", "new level", "logging framework" });
-				inputLogInvPrinter = Util.createCSVPrinter("input_log_invocations.csv",
+				inputLogInvPrinter = EvaluationUtil.createCSVPrinter("input_log_invocations.csv",
 						new String[] { "subject", "log expression", "start pos", "log level", "type FQN",
 								"enclosing method", "logging framework", "DOI value" });
 
-				nonenclosingMethodPrinter = Util.createCSVPrinter("nonenclosing_methods.csv",
+				nonenclosingMethodPrinter = EvaluationUtil.createCSVPrinter("nonenclosing_methods.csv",
 						new String[] { "subject", "type FQN", "method", "DOI" });
 
-				failurePrinter = Util.createCSVPrinter("failures.csv",
+				failurePrinter = EvaluationUtil.createCSVPrinter("failures.csv",
 						new String[] { "sequence", "subject", "log expression", "start pos", "log level", "type FQN",
 								"enclosing method", "code", "message", "logging framework" });
-				doiPrinter = Util.createCSVPrinter("DOI_boundaries.csv", new String[] { "sequence", "subject",
+				doiPrinter = EvaluationUtil.createCSVPrinter("DOI_boundaries.csv", new String[] { "sequence", "subject",
 						"low boundary inclusive", "high boundary exclusive", "log level", "logging framework" });
-				gitCommitPrinter = Util.createCSVPrinter("git_commits.csv",
+				gitCommitPrinter = EvaluationUtil.createCSVPrinter("git_commits.csv",
 						new String[] { "subject", "SHA1", "Java lines added", "Java lines removed", "methods found",
 								"interaction events", "run time (s)" });
-				candidatePrinter = Util.createCSVPrinter("candidate_log_invocations.csv",
+				candidatePrinter = EvaluationUtil.createCSVPrinter("candidate_log_invocations.csv",
 						new String[] { "sequence", "subject", "log expression", "start pos", "log level", "type FQN",
 								"enclosing method", "logging framework", "DOI value" });
-				notLowerLevelsInCatchBlockPrinter = Util.createCSVPrinter("not_lower_levels_in_catch_blocks.csv",
+				notLowerLevelsInCatchBlockPrinter = EvaluationUtil.createCSVPrinter("not_lower_levels_in_catch_blocks.csv",
 						new String[] { "sequence", "subject", "log expression", "start pos", "log level", "type FQN",
 								"enclosing method", "logging framework" });
-				notLowerLevelsInIfStatementPrinter = Util.createCSVPrinter("not_lower_levels_in_if_statements.csv",
+				notLowerLevelsInIfStatementPrinter = EvaluationUtil.createCSVPrinter("not_lower_levels_in_if_statements.csv",
 						new String[] { "sequence", "subject", "log expression", "start pos", "log level", "type FQN",
 								"enclosing method", "logging framework" });
-				notLowerLevelsDueToKeywordsPrinter = Util.createCSVPrinter("not_lower_levels_due_to_keywords.csv",
+				notLowerLevelsDueToKeywordsPrinter = EvaluationUtil.createCSVPrinter("not_lower_levels_due_to_keywords.csv",
 						new String[] { "sequence", "subject", "log expression", "start pos", "log level", "type FQN",
 								"enclosing method", "logging framework" });
-				notRaiseLevelDueToKeywordsPrinter = Util.createCSVPrinter("not_raise_levels_due_to_keywords.csv",
+				notRaiseLevelDueToKeywordsPrinter = EvaluationUtil.createCSVPrinter("not_raise_levels_due_to_keywords.csv",
 						new String[] { "sequence", "subject", "log expression", "start pos", "log level", "type FQN",
 								"enclosing method", "logging framework" });
-				considerIfConditionPrinter = Util.createCSVPrinter("not_transform_levels_due_to_if_condition.csv",
+				considerIfConditionPrinter = EvaluationUtil.createCSVPrinter("not_transform_levels_due_to_if_condition.csv",
 						new String[] { "sequence", "subject", "log expression", "start pos", "log level", "type FQN",
 								"enclosing method", "logging framework" });
 
@@ -236,8 +245,8 @@ public class EvaluationHandler extends AbstractHandler {
 									this.isUseLogCategoryWithConfig(), this.getValueOfUseGitHistory(),
 									this.isNotLowerLogLevelInCatchBlock(), this.isNotLowerLogLevelInIfStatement(),
 									this.isNotLowerLogLevelWithKeywords(), this.isNotRaiseLogLevelWithoutKeywords(),
-									this.isCheckIfCondition(), NToUseCommit, settings, Optional.ofNullable(monitor),
-									true);
+									this.isCheckIfCondition(), this.getMaxTransDistance(), NToUseCommit, settings,
+									Optional.ofNullable(monitor), true);
 
 							RefactoringStatus status = new ProcessorBasedRefactoring(
 									(RefactoringProcessor) logRejuvenatingProcessor)
@@ -775,6 +784,7 @@ public class EvaluationHandler extends AbstractHandler {
 		this.setNotLowerLogLevelInCatchBlock(this.getValueOfNotLowerLogLevelInCatchBlock());
 		this.setNotLowerLogLevelInIfStatement(this.getValueOfNotLowerLogLevelInIfStatement());
 		this.setCheckIfCondition(this.getValueOfCheckIfCondition());
+		this.setMaxTransDistance(this.getValueOfMaxTransDistance());
 	}
 
 	/**
@@ -789,6 +799,7 @@ public class EvaluationHandler extends AbstractHandler {
 		this.setNotLowerLogLevelWithKeywords(this.getValueOfNotLowerLogLevelWithKeywords());
 		this.setNotRaiseLogLevelWithoutKeywords(this.getValueOfNotRaiseLogLevelWithoutKeywords());
 		this.setCheckIfCondition(this.getValueOfCheckIfCondition());
+		this.setMaxTransDistance(this.getValueOfMaxTransDistance());
 
 		if (this.isUseLogCategory() && this.isUseLogCategoryWithConfig())
 			throw new IllegalStateException("You cannot choose two log categories in the same time");
@@ -866,6 +877,15 @@ public class EvaluationHandler extends AbstractHandler {
 			return Boolean.valueOf(considerIfCondition);
 	}
 
+	private int getValueOfMaxTransDistance() {
+		String maxTransDistance = System.getenv(MAX_TRANSFORMATION_DISTANCE_KEY);
+
+		if (maxTransDistance == null)
+			return MAX_TRANSFORMATION_DISTANCE__DEFUALT;
+		else
+			return Integer.valueOf(maxTransDistance);
+	}
+
 	public boolean isUseLogCategory() {
 		return useLogCategory;
 	}
@@ -892,6 +912,14 @@ public class EvaluationHandler extends AbstractHandler {
 
 	private void setCheckIfCondition(boolean checkIfCondition) {
 		this.checkIfCondtion = checkIfCondition;
+	}
+
+	private void setMaxTransDistance(int maxTransDistance) {
+		this.maxTransDistance = maxTransDistance;
+	}
+
+	private int getMaxTransDistance() {
+		return this.maxTransDistance;
 	}
 
 	public boolean isCheckIfCondition() {

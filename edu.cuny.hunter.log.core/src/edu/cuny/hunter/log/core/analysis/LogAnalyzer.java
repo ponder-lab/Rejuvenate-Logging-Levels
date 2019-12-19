@@ -53,6 +53,8 @@ public class LogAnalyzer extends ASTVisitor {
 	private HashSet<LogInvocationSlf4j> logInvsNotLoweredByKeywordsSlf4j = new HashSet<LogInvocationSlf4j>();
 	private HashSet<LogInvocationSlf4j> logInvsNotRaisedByKeywordsSlf4j = new HashSet<LogInvocationSlf4j>();
 	private Set<LogInvocationSlf4j> logInvocationSlf4j = new HashSet<LogInvocationSlf4j>();
+	
+	private HashMap<Level, Integer> levelToInt = new HashMap<Level, Integer>();
 
 	private boolean notLowerLogLevelInIfStatement;
 
@@ -68,6 +70,8 @@ public class LogAnalyzer extends ASTVisitor {
 
 	private boolean useLogCategory;
 
+	private int maxTransDistance;
+
 	private Map<IMethod, Float> methodToDOI = new HashMap<>();
 
 	// A list of boundary for J.U.L
@@ -81,7 +85,7 @@ public class LogAnalyzer extends ASTVisitor {
 	private static final Set<String> KEYWORDS_IN_LOG_MESSAGES_FOR_LOWERING = Stream.of("fail", "disable", "error",
 			"exception", "collision", "reboot", "terminate", "throw", "should", "start", "tried", "empty", "launch",
 			"init", "does not", "doesn't", "stop", "shut", "run", "deprecate", "kill", "finish", "ready", "wait",
-			"dead", "alive", "creat", "debug", "info", "warn", "fatal", "severe", "config", "fine", "trace", "FYI")
+			"dead", "alive", "creat", "debug", "info", "warn", "fatal", "severe", "config ", "fine", "trace", "FYI")
 			.collect(Collectors.toSet());
 	/**
 	 * A set of keywords in log messages for raising log levels.
@@ -103,7 +107,7 @@ public class LogAnalyzer extends ASTVisitor {
 
 	public LogAnalyzer(boolean useConfigLogLevelCategory, boolean useLogLevelCategory,
 			boolean notLowerLogLevelInCatchBlock, boolean checkIfCondition, boolean notLowerLogLevelInIfStatement,
-			boolean notLowerLogLevelWithKeyWords, boolean notRaiseLogLevelWithoutKeywords) {
+			boolean notLowerLogLevelWithKeyWords, boolean notRaiseLogLevelWithoutKeywords, int maxTransDistance) {
 		this.useLogCategoryWithConfig = useConfigLogLevelCategory;
 		this.useLogCategory = useLogLevelCategory;
 		this.notLowerLogLevelInCatchBlock = notLowerLogLevelInCatchBlock;
@@ -111,6 +115,7 @@ public class LogAnalyzer extends ASTVisitor {
 		this.notLowerLogLevelWithKeyWords = notLowerLogLevelWithKeyWords;
 		this.notRaiseLogLevelWithoutKeyWords = notRaiseLogLevelWithoutKeywords;
 		this.checkIfCondition = checkIfCondition;
+		this.maxTransDistance = maxTransDistance;
 	}
 
 	public LogAnalyzer() {
@@ -138,6 +143,9 @@ public class LogAnalyzer extends ASTVisitor {
 		this.boundarySlf4j = this.buildBoundarySlf4j(this.methodToDOI.values());
 
 		Set<IMethod> validMethods = this.methodToDOI.keySet();
+
+		// It's used by the limitation of max transformation distance.
+		this.createLevelToInt();
 
 		// check whether action is needed
 		for (LogInvocation logInvocation : this.logInvocationSet) {
@@ -376,6 +384,14 @@ public class LogAnalyzer extends ASTVisitor {
 			return false;
 		}
 
+		// Adjust transformations by the max transformation distance.
+		rejuvenatedLogLevel = this.adjustTransformationByDistance(currentLogLevel, rejuvenatedLogLevel);
+
+		if (rejuvenatedLogLevel == null) {
+			logInvocation.setAction(Action.NONE, null);
+			return false;
+		}
+
 		if (rejuvenatedLogLevel == Level.FINEST)
 			logInvocation.setAction(Action.CONVERT_TO_FINEST, Level.FINEST);
 		if (rejuvenatedLogLevel == Level.FINER)
@@ -551,6 +567,66 @@ public class LogAnalyzer extends ASTVisitor {
 			return org.slf4j.event.Level.ERROR;
 
 		return null;
+	}
+
+	/**
+	 * Adjust transformations if their transformation distance is over the distance
+	 * limitation.
+	 * 
+	 * @return Log level: after adjusting.
+	 */
+	private Level adjustTransformationByDistance(Level currentLevel, Level rejuvenatedLogLevel) {
+
+		// Discard all transformations if allowed max transformation distance is
+		// negative or equal to 0.
+		if (maxTransDistance <= 0)
+			return null;
+
+		int transformationDistance = this.levelToInt.get(rejuvenatedLogLevel) - this.levelToInt.get(currentLevel);
+
+		// if it's over the max transformation distance which are allowed by users
+		if (Math.abs(transformationDistance) > this.maxTransDistance) {
+			if (transformationDistance > 0)
+				transformationDistance = this.maxTransDistance;
+			else
+				transformationDistance = -this.maxTransDistance;
+		}
+
+		int rejuveLogLevelValue = this.levelToInt.get(currentLevel) + transformationDistance;
+		for (Map.Entry<Level, Integer> entry : this.levelToInt.entrySet()) {
+			if (entry.getValue() == rejuveLogLevelValue)
+				return entry.getKey();
+		}
+
+		return null;
+	}
+
+	/**
+	 * Maintain a map from log level to an integer value. We are using this map to
+	 * calculate transformation distance.
+	 */
+	private void createLevelToInt() {
+		if (this.useLogCategory) {
+			this.levelToInt.put(Level.FINEST, 0);
+			this.levelToInt.put(Level.FINER, 1);
+			this.levelToInt.put(Level.FINE, 2);
+			this.levelToInt.put(Level.INFO, 3);
+		} else if (this.useLogCategoryWithConfig) {
+			this.levelToInt.put(Level.FINEST, 0);
+			this.levelToInt.put(Level.FINER, 1);
+			this.levelToInt.put(Level.FINE, 2);
+			this.levelToInt.put(Level.INFO, 3);
+			this.levelToInt.put(Level.WARNING, 4);
+			this.levelToInt.put(Level.SEVERE, 5);
+		} else {
+			this.levelToInt.put(Level.FINEST, 0);
+			this.levelToInt.put(Level.FINER, 1);
+			this.levelToInt.put(Level.FINE, 2);
+			this.levelToInt.put(Level.CONFIG, 3);
+			this.levelToInt.put(Level.INFO, 4);
+			this.levelToInt.put(Level.WARNING, 5);
+			this.levelToInt.put(Level.SEVERE, 6);
+		}
 	}
 
 	/**
