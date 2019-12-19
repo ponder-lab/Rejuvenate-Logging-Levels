@@ -1,6 +1,6 @@
 package edu.cuny.hunter.log.core.analysis;
 
-public enum Action {
+public enum Action{
 	NONE,
 	CONVERT_TO_SEVERE,
 	CONVERT_TO_WARNING,

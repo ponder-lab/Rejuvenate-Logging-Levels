@@ -134,6 +134,18 @@ public final class Util {
 	}
 
 	/**
+	 * For slf4j.
+	 * 
+	 * Check whether the logging method contains logging level
+	 */
+	public static boolean isLoggingLevelMethodSlf4J(String methodName) {
+		if (methodName.equals("error") || methodName.equals("warn") || methodName.equals("info")
+				|| methodName.equals("debug") || methodName.equals("trace"))
+			return true;
+		return false;
+	}
+
+	/**
 	 * Clear the active task context.
 	 * 
 	 * @throws NonActiveMylynTaskException
