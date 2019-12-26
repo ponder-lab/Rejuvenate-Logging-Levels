@@ -142,6 +142,7 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 	private HashSet<LogInvocation> logInvsNotTransformedInIf;
 	private HashSet<LogInvocation> logInvsNotLoweredInCatch;
 	private HashSet<LogInvocation> logInvsNotLoweredInIf;
+	private HashSet<LogInvocation> logInvsAdjustedByDis;
 	private HashSet<LogInvocation> logInvsNotLoweredWithKeywords;
 	private HashSet<LogInvocation> logInvsNotRaisedWithoutKeywords;
 	private Map<IMethod, Float> methodToDOI;
@@ -315,6 +316,7 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 
 			analyzer.analyze(methodDeclsForAnalyzedMethod);
 
+			this.setLogInvsAdjustedByDis(analyzer.getLogInvsAdjustedByDis());
 			this.setLogInvsNotLoweredInCatch(analyzer.getLogInvsNotLoweredInCatch());
 			this.setLogInvsNotTransformedInIf(analyzer.getLogInvsNotTransformedInIf());
 			this.setLogInvsNotLoweredInIf(analyzer.getLogInvsNotLoweredInIfStatement());
@@ -815,5 +817,13 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 
 	public int getDecayFactor() {
 		return Util.getDecayFactor();
+	}
+
+	public HashSet<LogInvocation> getLogInvsAdjustedByDis() {
+		return logInvsAdjustedByDis;
+	}
+
+	public void setLogInvsAdjustedByDis(HashSet<LogInvocation> logInvsAdjustedByDis) {
+		this.logInvsAdjustedByDis = logInvsAdjustedByDis;
 	}
 }
