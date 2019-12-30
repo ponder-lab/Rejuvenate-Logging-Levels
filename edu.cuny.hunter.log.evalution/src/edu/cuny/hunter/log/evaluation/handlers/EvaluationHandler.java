@@ -204,19 +204,20 @@ public class EvaluationHandler extends AbstractHandler {
 				candidatePrinter = EvaluationUtil.createCSVPrinter("candidate_log_invocations.csv",
 						new String[] { "sequence", "subject", "log expression", "start pos", "log level", "type FQN",
 								"enclosing method", "logging framework", "DOI value" });
-				notLowerLevelsInCatchBlockPrinter = EvaluationUtil.createCSVPrinter("not_lower_levels_in_catch_blocks.csv",
-						new String[] { "sequence", "subject", "log expression", "start pos", "log level", "type FQN",
-								"enclosing method", "logging framework" });
-				notLowerLevelsInIfStatementPrinter = EvaluationUtil.createCSVPrinter("not_lower_levels_in_if_statements.csv",
-						new String[] { "sequence", "subject", "log expression", "start pos", "log level", "type FQN",
-								"enclosing method", "logging framework" });
-				notLowerLevelsDueToKeywordsPrinter = EvaluationUtil.createCSVPrinter("not_lower_levels_due_to_keywords.csv",
-						new String[] { "sequence", "subject", "log expression", "start pos", "log level", "type FQN",
-								"enclosing method", "logging framework" });
-				notRaiseLevelDueToKeywordsPrinter = EvaluationUtil.createCSVPrinter("not_raise_levels_due_to_keywords.csv",
-						new String[] { "sequence", "subject", "log expression", "start pos", "log level", "type FQN",
-								"enclosing method", "logging framework" });
-				considerIfConditionPrinter = EvaluationUtil.createCSVPrinter("not_transform_levels_due_to_if_condition.csv",
+				notLowerLevelsInCatchBlockPrinter = EvaluationUtil.createCSVPrinter(
+						"not_lower_levels_in_catch_blocks.csv", new String[] { "sequence", "subject", "log expression",
+								"start pos", "log level", "type FQN", "enclosing method", "logging framework" });
+				notLowerLevelsInIfStatementPrinter = EvaluationUtil.createCSVPrinter(
+						"not_lower_levels_in_if_statements.csv", new String[] { "sequence", "subject", "log expression",
+								"start pos", "log level", "type FQN", "enclosing method", "logging framework" });
+				notLowerLevelsDueToKeywordsPrinter = EvaluationUtil.createCSVPrinter(
+						"not_lower_levels_due_to_keywords.csv", new String[] { "sequence", "subject", "log expression",
+								"start pos", "log level", "type FQN", "enclosing method", "logging framework" });
+				notRaiseLevelDueToKeywordsPrinter = EvaluationUtil.createCSVPrinter(
+						"not_raise_levels_due_to_keywords.csv", new String[] { "sequence", "subject", "log expression",
+								"start pos", "log level", "type FQN", "enclosing method", "logging framework" });
+				considerIfConditionPrinter = EvaluationUtil.createCSVPrinter(
+						"not_transform_levels_due_to_if_condition.csv",
 						new String[] { "sequence", "subject", "log expression", "start pos", "log level", "type FQN",
 								"enclosing method", "logging framework" });
 
@@ -740,41 +741,54 @@ public class EvaluationHandler extends AbstractHandler {
 	private void printBoundarySlf4j(long sequence, String subject, ArrayList<Float> boundarySlf4j,
 			CSVPrinter doiPrinter) throws IOException {
 		doiPrinter.printRecord(sequence, subject, boundarySlf4j.get(0), boundarySlf4j.get(1),
-				org.slf4j.event.Level.TRACE);
+				org.slf4j.event.Level.TRACE, LoggingFramework.SLF4J);
 		doiPrinter.printRecord(sequence, subject, boundarySlf4j.get(1), boundarySlf4j.get(2),
-				org.slf4j.event.Level.DEBUG);
+				org.slf4j.event.Level.DEBUG, LoggingFramework.SLF4J);
 		doiPrinter.printRecord(sequence, subject, boundarySlf4j.get(2), boundarySlf4j.get(3),
-				org.slf4j.event.Level.INFO);
+				org.slf4j.event.Level.INFO, LoggingFramework.SLF4J);
 		doiPrinter.printRecord(sequence, subject, boundarySlf4j.get(3), boundarySlf4j.get(4),
-				org.slf4j.event.Level.WARN);
+				org.slf4j.event.Level.WARN, LoggingFramework.SLF4J);
 		doiPrinter.printRecord(sequence, subject, boundarySlf4j.get(4), boundarySlf4j.get(5),
-				org.slf4j.event.Level.ERROR);
+				org.slf4j.event.Level.ERROR, LoggingFramework.SLF4J);
 	}
 
 	private void printBoundaryLogCategory(long sequence, String subject, ArrayList<Float> boundary,
 			CSVPrinter doiPrinter) throws IOException {
-		doiPrinter.printRecord(sequence, subject, boundary.get(0), boundary.get(1), Level.FINEST);
-		doiPrinter.printRecord(sequence, subject, boundary.get(1), boundary.get(2), Level.FINER);
-		doiPrinter.printRecord(sequence, subject, boundary.get(2), boundary.get(3), Level.FINE);
-		doiPrinter.printRecord(sequence, subject, boundary.get(3), boundary.get(4), Level.INFO);
+		doiPrinter.printRecord(sequence, subject, boundary.get(0), boundary.get(1), Level.FINEST,
+				LoggingFramework.JAVA_UTIL_LOGGING);
+		doiPrinter.printRecord(sequence, subject, boundary.get(1), boundary.get(2), Level.FINER,
+				LoggingFramework.JAVA_UTIL_LOGGING);
+		doiPrinter.printRecord(sequence, subject, boundary.get(2), boundary.get(3), Level.FINE,
+				LoggingFramework.JAVA_UTIL_LOGGING);
+		doiPrinter.printRecord(sequence, subject, boundary.get(3), boundary.get(4), Level.INFO,
+				LoggingFramework.JAVA_UTIL_LOGGING);
 	}
 
 	private void printBoundaryWithConfig(long sequence, String subject, ArrayList<Float> boundary,
 			CSVPrinter doiPrinter) throws IOException {
 		this.printBoundaryLogCategory(sequence, subject, boundary, doiPrinter);
-		doiPrinter.printRecord(sequence, subject, boundary.get(4), boundary.get(5), Level.WARNING);
-		doiPrinter.printRecord(sequence, subject, boundary.get(5), boundary.get(6), Level.SEVERE);
+		doiPrinter.printRecord(sequence, subject, boundary.get(4), boundary.get(5), Level.WARNING,
+				LoggingFramework.JAVA_UTIL_LOGGING);
+		doiPrinter.printRecord(sequence, subject, boundary.get(5), boundary.get(6), Level.SEVERE,
+				LoggingFramework.JAVA_UTIL_LOGGING);
 	}
 
 	private void printBoundaryDefault(long sequence, String subject, ArrayList<Float> boundary, CSVPrinter doiPrinter)
 			throws IOException {
-		doiPrinter.printRecord(sequence, subject, boundary.get(0), boundary.get(1), Level.FINEST);
-		doiPrinter.printRecord(sequence, subject, boundary.get(1), boundary.get(2), Level.FINER);
-		doiPrinter.printRecord(sequence, subject, boundary.get(2), boundary.get(3), Level.FINE);
-		doiPrinter.printRecord(sequence, subject, boundary.get(3), boundary.get(4), Level.CONFIG);
-		doiPrinter.printRecord(sequence, subject, boundary.get(4), boundary.get(5), Level.INFO);
-		doiPrinter.printRecord(sequence, subject, boundary.get(5), boundary.get(6), Level.WARNING);
-		doiPrinter.printRecord(sequence, subject, boundary.get(6), boundary.get(7), Level.SEVERE);
+		doiPrinter.printRecord(sequence, subject, boundary.get(0), boundary.get(1), Level.FINEST,
+				LoggingFramework.JAVA_UTIL_LOGGING);
+		doiPrinter.printRecord(sequence, subject, boundary.get(1), boundary.get(2), Level.FINER,
+				LoggingFramework.JAVA_UTIL_LOGGING);
+		doiPrinter.printRecord(sequence, subject, boundary.get(2), boundary.get(3), Level.FINE,
+				LoggingFramework.JAVA_UTIL_LOGGING);
+		doiPrinter.printRecord(sequence, subject, boundary.get(3), boundary.get(4), Level.CONFIG,
+				LoggingFramework.JAVA_UTIL_LOGGING);
+		doiPrinter.printRecord(sequence, subject, boundary.get(4), boundary.get(5), Level.INFO,
+				LoggingFramework.JAVA_UTIL_LOGGING);
+		doiPrinter.printRecord(sequence, subject, boundary.get(5), boundary.get(6), Level.WARNING,
+				LoggingFramework.JAVA_UTIL_LOGGING);
+		doiPrinter.printRecord(sequence, subject, boundary.get(6), boundary.get(7), Level.SEVERE,
+				LoggingFramework.JAVA_UTIL_LOGGING);
 	}
 
 	@SuppressWarnings("unused")

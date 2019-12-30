@@ -38,7 +38,8 @@ Export-Package: edu.cuny.hunter.log.core.analysis,
  edu.cuny.hunter.log.core.descriptors,
  edu.cuny.hunter.log.core.messages,
  edu.cuny.hunter.log.core.refactorings,
- edu.cuny.hunter.log.core.utils
+ edu.cuny.hunter.log.core.utils,
+ org.slf4j.event
 Require-Bundle: org.eclipse.mylyn.context.core;bundle-version="3.23.2",
  org.eclipse.mylyn.monitor.core;bundle-version="3.23.2",
  org.eclipse.mylyn.tasks.ui;bundle-version="3.23.2",

@@ -729,7 +729,7 @@ public class LogAnalyzer extends ASTVisitor {
 		ArrayList<Float> boundarySlf4j = new ArrayList<>();
 		if (min < max) {
 			float interval = (max - min) / 5;
-			IntStream.range(0, 4).forEach(i -> boundarySlf4j.add(min + i * interval));
+			IntStream.range(0, 5).forEach(i -> boundarySlf4j.add(min + i * interval));
 			boundarySlf4j.add(max);
 			return boundarySlf4j;
 		} else
@@ -1064,7 +1064,6 @@ public class LogAnalyzer extends ASTVisitor {
 	}
 
 	public ArrayList<Float> getBoundarySlf4j() {
-		// TODO Auto-generated method stub
-		return null;
+		return this.boundarySlf4j;
 	}
 }

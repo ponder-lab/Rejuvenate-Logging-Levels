@@ -350,7 +350,7 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 
 			// Get boundary
 			this.boundary = analyzer.getBoundary();
-			this.setBoundarySlf4j(analyzer.getBoundarySlf4j());
+			this.boundarySlf4j = analyzer.getBoundarySlf4j();
 
 			// Get all log invocations.
 			this.addLogInvocationSet(analyzer.getLogInvocationSet());
@@ -970,7 +970,7 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 	}
 
 	public ArrayList<Float> getBoundarySlf4j() {
-		return boundarySlf4j;
+		return this.boundarySlf4j;
 	}
 
 	public void setBoundarySlf4j(ArrayList<Float> boundarySlf4j) {
