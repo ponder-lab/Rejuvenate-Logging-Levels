@@ -1012,6 +1012,9 @@ public class LogAnalyzer extends ASTVisitor {
 		this.getLogInvocationSet().forEach(inv -> {
 			inv.updateDOI();
 		});
+		this.getLogInvocationSlf4js().forEach(inv -> {
+			inv.updateDOI();
+		});
 	}
 
 	public HashSet<LogInvocation> getLogInvsNotTransformedInIf() {
