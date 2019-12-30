@@ -995,7 +995,10 @@ public class LogAnalyzer extends ASTVisitor {
 	 * Create a set of input log invocations.
 	 */
 	private void createLogInvocation(MethodInvocation node, LogLevel logLevel, boolean inCatchBlock) {
-		if (logLevel.framework.equals(LoggingFramework.JAVA_UTIL_LOGGING)) {
+		if (logLevel == null) {
+			LogInvocation logInvocation = new LogInvocation(node, null, inCatchBlock);
+			this.getLogInvocationSet().add(logInvocation);
+		} else if(logLevel.framework.equals(LoggingFramework.JAVA_UTIL_LOGGING)) {
 			LogInvocation logInvocation = new LogInvocation(node, logLevel.getLogLevel(), inCatchBlock);
 			this.getLogInvocationSet().add(logInvocation);
 		} else if (logLevel.framework.equals(LoggingFramework.SLF4J)) {
