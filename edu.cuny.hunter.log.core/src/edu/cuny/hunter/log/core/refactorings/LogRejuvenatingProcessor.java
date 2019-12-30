@@ -389,7 +389,7 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 		status.merge(collectedStatusSlf4j);
 
 		if (!status.hasFatalError()) {
-			if (logInvocationSet.isEmpty()) {
+			if (logInvocationSet.isEmpty() && logInvocationSlf4j.isEmpty()) {
 				status.addWarning(Messages.NoInputLogInvs);
 			}
 		}
@@ -462,7 +462,7 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 	public Set<LogInvocationSlf4j> getRoughCandidateSetSlf4j() {
 		return this.candidateSlf4j;
 	}
-	
+
 	/**
 	 * Call mylyngit plugin to process git history.
 	 * 

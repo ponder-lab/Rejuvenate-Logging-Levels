@@ -243,7 +243,7 @@ public final class Util {
 
 		LogLevel logLevel = new LogLevel();
 
-		logLevel.setLoggingFramework(LoggingFramework.valueOf("JAVA_LOGGING"));
+		logLevel.setLoggingFramework(LoggingFramework.valueOf("JAVA_UTIL_LOGGING"));
 
 		switch (methodName) {
 		case "config":
