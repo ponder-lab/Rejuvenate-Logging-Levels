@@ -168,7 +168,7 @@ public class EvaluationHandler extends AbstractHandler {
 								"not raise log levels in their message without keywords",
 								"consider if condition having log level", "logging framework", "time (s)" });
 
-				resultSlf4jPrinter = EvaluationUtil.createCSVPrinter("result.csv", new String[] { "sequence", "subject",
+				resultSlf4jPrinter = EvaluationUtil.createCSVPrinter("result_slf4j.csv", new String[] { "sequence", "subject",
 						"repo URL", "decay factor", "input logging statements", "candidate logging statements",
 						"passing logging statements", "failures", "transformed logging statements",
 						"log level not lowered in catch blocks", "log level not lowered in if statements",
@@ -393,7 +393,7 @@ public class EvaluationHandler extends AbstractHandler {
 							Set<LogInvocation> transformedLogInvocationSet = logRejuvenatingProcessor
 									.getTransformedLog();
 							Set<LogInvocationSlf4j> transformedInvocationSlf4js = logRejuvenatingProcessor
-									.getLogInvocationSlf4j();
+									.getSlf4jTransformedLog();
 
 							for (LogInvocation logInvocation : transformedLogInvocationSet)
 								// print actions
