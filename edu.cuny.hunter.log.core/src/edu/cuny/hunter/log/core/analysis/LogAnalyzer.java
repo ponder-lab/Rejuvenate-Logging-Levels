@@ -53,7 +53,7 @@ public class LogAnalyzer extends ASTVisitor {
 	private HashSet<LogInvocationSlf4j> logInvsNotLoweredByKeywordsSlf4j = new HashSet<LogInvocationSlf4j>();
 	private HashSet<LogInvocationSlf4j> logInvsNotRaisedByKeywordsSlf4j = new HashSet<LogInvocationSlf4j>();
 	private Set<LogInvocationSlf4j> logInvocationSlf4j = new HashSet<LogInvocationSlf4j>();
-	
+
 	private HashMap<Level, Integer> levelToInt = new HashMap<Level, Integer>();
 
 	private boolean notLowerLogLevelInIfStatement;
@@ -531,7 +531,7 @@ public class LogAnalyzer extends ASTVisitor {
 	 */
 	private boolean processNotLowerLogLevelWithKeyWords(LogInvocationSlf4j logInvocation, boolean isLowered) {
 		if (this.notLowerLogLevelWithKeyWords) {
-			if (Util.isLogMessageWithKeywords(logInvocation.getExpression(), KEYWORDS_IN_LOG_MESSAGES_FOR_LOWERING)
+			if (Util.isLogMessageWithKeywordsSlf4j(logInvocation.getExpression(), KEYWORDS_IN_LOG_MESSAGES_FOR_LOWERING)
 					&& isLowered) {
 				logInvocation.setAction(ActionSlf4j.NONE, null);
 				this.logInvsNotLoweredByKeywordsSlf4j.add(logInvocation);
@@ -998,7 +998,7 @@ public class LogAnalyzer extends ASTVisitor {
 		if (logLevel == null) {
 			LogInvocation logInvocation = new LogInvocation(node, null, inCatchBlock);
 			this.getLogInvocationSet().add(logInvocation);
-		} else if(logLevel.framework.equals(LoggingFramework.JAVA_UTIL_LOGGING)) {
+		} else if (logLevel.framework.equals(LoggingFramework.JAVA_UTIL_LOGGING)) {
 			LogInvocation logInvocation = new LogInvocation(node, logLevel.getLogLevel(), inCatchBlock);
 			this.getLogInvocationSet().add(logInvocation);
 		} else if (logLevel.framework.equals(LoggingFramework.SLF4J)) {

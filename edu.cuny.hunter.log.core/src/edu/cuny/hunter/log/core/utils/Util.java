@@ -173,6 +173,24 @@ public final class Util {
 		}
 		return false;
 	}
+	
+	@SuppressWarnings("unchecked")
+	public static boolean isLogMessageWithKeywordsSlf4j(MethodInvocation node, Set<String> keyWordsInLogMessages) {
+
+		String logMessage = "";
+
+		List<Expression> arguments = new LinkedList<Expression>();
+		arguments.addAll(node.arguments());
+
+		for (Expression argument : arguments)
+			logMessage += argument.toString().toLowerCase();
+
+		for (String key : keyWordsInLogMessages) {
+			if (logMessage.contains(key.toLowerCase()))
+				return true;
+		}
+		return false;
+	}
 
 	/**
 	 * We only focus on the logging level, which is set by the developer. Hence, we
