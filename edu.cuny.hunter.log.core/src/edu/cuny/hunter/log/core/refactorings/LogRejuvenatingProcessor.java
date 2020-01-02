@@ -67,8 +67,6 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 
 	private static final Logger LOGGER = Logger.getLogger(LoggerNames.LOGGER_NAME);
 
-	private Set<LogInvocation> logInvocationSet = new HashSet<>();
-
 	private LinkedList<Commit> commits = new LinkedList<>();
 
 	/**
@@ -161,6 +159,7 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 	private HashSet<LogInvocation> logInvsNotLoweredInIf;
 	private HashSet<LogInvocation> logInvsNotLoweredWithKeywords;
 	private HashSet<LogInvocation> logInvsNotRaisedWithoutKeywords;
+	private Set<LogInvocation> logInvocationSet = new HashSet<>();
 
 	// Sets of log invocations for slf4j.
 	private HashSet<LogInvocationSlf4j> logInvsNotTransformedInIfSlf4j = new HashSet<LogInvocationSlf4j>();
@@ -354,7 +353,7 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 
 			// Get all log invocations.
 			this.addLogInvocationSet(analyzer.getLogInvocationSet());
-			this.setLogInvocationSlf4j(analyzer.getLogInvocationSlf4js());
+			this.addLogInvocationSlf4j(analyzer.getLogInvocationSlf4js());
 
 			this.estimateCandidates();
 			this.estimateCandidatesSlf4j();
@@ -395,6 +394,10 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 		}
 
 		return status;
+	}
+
+	private void addLogInvocationSlf4j(Set<LogInvocationSlf4j> logInvocationSlf4js) {
+		this.logInvocationSlf4j.addAll(logInvocationSlf4js);
 	}
 
 	/**
