@@ -40,6 +40,8 @@ public class LogWizard extends RefactoringWizard {
 
 		private static final String NOT_LOWER_LOG_LEVEL_IF_STATEMENT = "notLowerLogLevelInIfStatement";
 
+		private static final String CONSISTENT_LEVEL_IN_INHERITANCE = "consistentLevelInInheritance";
+
 		private static final String NOT_LOWER_LOG_LEVEL_CATCH_BLOCK = "notLowerLogLevelInCatchBlock";
 
 		private static final String NOT_LOWER_LOG_LEVEL_KEY_WORDS = "notLowerLogLevelKeyWords";
@@ -159,6 +161,10 @@ public class LogWizard extends RefactoringWizard {
 					"Do not change a log level if its if statement condition/case label contains a log level.",
 					CHECK_IF_CONDITION, this.getProcessor()::setCheckIfCondition, result, SWT.CHECK);
 
+			this.addBooleanButton("Consistent log level transformations between overriding methods.",
+					CONSISTENT_LEVEL_IN_INHERITANCE, this.getProcessor()::setConsistentLevelInInheritance, result,
+					SWT.CHECK);
+
 			this.addIntegerButton("Max transformation distance:", MAX_TRANSFORMATION_DISTANCE,
 					this.getProcessor()::setMaxTransDistance, this.addIntegerButton(result));
 
@@ -224,7 +230,10 @@ public class LogWizard extends RefactoringWizard {
 						this.getProcessor().getNotLowerLogLevelInCatchBlock());
 				this.settings.put(NOT_LOWER_LOG_LEVEL_IF_STATEMENT,
 						this.getProcessor().isNotLowerLogLevelInIfStatement());
+				this.settings.put(CONSISTENT_LEVEL_IN_INHERITANCE,
+						this.getProcessor().isConsistentLevelInInheritance());
 			}
+			this.processor.setConsistentLevelInInheritance(this.settings.getBoolean(CONSISTENT_LEVEL_IN_INHERITANCE));
 			this.processor.setNotLowerLogLevelInIfStatement(this.settings.getBoolean(NOT_LOWER_LOG_LEVEL_IF_STATEMENT));
 			this.processor.setNotLowerLogLevelInCatchBlock(this.settings.getBoolean(NOT_LOWER_LOG_LEVEL_CATCH_BLOCK));
 			this.processor.setNotRaiseLogLevelWithoutKeyWords(this.settings.getBoolean(NOT_RAISE_LOG_LEVEL_KEY_WORDS));
