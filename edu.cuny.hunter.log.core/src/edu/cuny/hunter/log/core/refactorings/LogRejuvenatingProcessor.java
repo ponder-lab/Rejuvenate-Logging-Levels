@@ -113,6 +113,11 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 	private boolean notRaiseLogLevelWithoutKeywords;
 
 	/**
+	 * Log level transformations between overriding methods should be consistent.
+	 */
+	private boolean consistentLevelInInheritance;
+
+	/**
 	 * Limit number of commits
 	 */
 	private int NToUseForCommits = 100;
@@ -152,6 +157,10 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 
 	public LogRejuvenatingProcessor(final CodeGenerationSettings settings) {
 		super(settings);
+	}
+
+	public void setConsistentLevelInInheritance(boolean consistentLevelInInheritance) {
+		this.consistentLevelInInheritance = consistentLevelInInheritance;
 	}
 
 	public void setParticularConfigLogLevel(boolean useConfigLogLevelCategory) {
@@ -215,8 +224,9 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 	public LogRejuvenatingProcessor(IJavaProject[] javaProjects, boolean useLogLevelCategory,
 			boolean useConfigLogLevelCategory, boolean useGitHistory, boolean notLowerLogLevelInCatchBlock,
 			boolean notLowerLogLevelInIfStatement, boolean notLowerLogLevelWithKeywords,
-			boolean notRaiseLogLevelWithoutKeywords, boolean checkIfCondtion, int maxTransDistance,
-			int NToUseForCommits, final CodeGenerationSettings settings, Optional<IProgressMonitor> monitor) {
+			boolean notRaiseLogLevelWithoutKeywords, boolean checkIfCondtion, boolean consistentLevelInInheritance,
+			int maxTransDistance, int NToUseForCommits, final CodeGenerationSettings settings,
+			Optional<IProgressMonitor> monitor) {
 		super(settings);
 		try {
 			this.javaProjects = javaProjects;
@@ -227,6 +237,7 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 			this.notLowerLogLevelInIfStatement = notLowerLogLevelInIfStatement;
 			this.notLowerLogLevelWithKeyWords = notLowerLogLevelWithKeywords;
 			this.notRaiseLogLevelWithoutKeywords = notRaiseLogLevelWithoutKeywords;
+			this.consistentLevelInInheritance = consistentLevelInInheritance;
 			this.checkIfCondition = checkIfCondtion;
 			this.NToUseForCommits = NToUseForCommits;
 			this.maxTransDistance = maxTransDistance;
@@ -238,12 +249,12 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 	public LogRejuvenatingProcessor(IJavaProject[] javaProjects, boolean useLogLevelCategory,
 			boolean useConfigLogLevelCategory, boolean useGitHistory, boolean notLowerLogLevelInCatchBlock,
 			boolean notLowerLogLevelInIfStatement, boolean notLowerLogLevelWithKeywords,
-			boolean notRaiseLogLevelWithoutKeywords, boolean checkIfCondtion, int maxTransDistance,
-			int NToUseForCommits, final CodeGenerationSettings settings, Optional<IProgressMonitor> monitor,
-			boolean isEvaluation) {
+			boolean notRaiseLogLevelWithoutKeywords, boolean checkIfCondtion, boolean consistentLevelInInheritance,
+			int maxTransDistance, int NToUseForCommits, final CodeGenerationSettings settings,
+			Optional<IProgressMonitor> monitor, boolean isEvaluation) {
 		this(javaProjects, useLogLevelCategory, useConfigLogLevelCategory, useGitHistory, notLowerLogLevelInCatchBlock,
 				notLowerLogLevelInIfStatement, notLowerLogLevelWithKeywords, notRaiseLogLevelWithoutKeywords,
-				checkIfCondtion, maxTransDistance, NToUseForCommits, settings, monitor);
+				checkIfCondtion, consistentLevelInInheritance, maxTransDistance, NToUseForCommits, settings, monitor);
 		this.isEvaluation = isEvaluation;
 	}
 
@@ -615,7 +626,8 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 		try {
 			final TextEditBasedChangeManager manager = new TextEditBasedChangeManager();
 
-			this.inheritanceChecking(this.logInvocationSet, pm);
+			if (this.consistentLevelInInheritance)
+				this.inheritanceChecking(this.logInvocationSet, pm);
 
 			Set<LogInvocation> transformedLogs = this.getTransformedLog();
 
@@ -724,6 +736,10 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 
 	public boolean isCheckIfCondition() {
 		return checkIfCondition;
+	}
+	
+	public boolean isConsistentLevelInInheritance() {
+		return this.consistentLevelInInheritance;
 	}
 
 	public void setCheckIfCondition(boolean checkIfCondition) {
