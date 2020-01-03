@@ -150,6 +150,7 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 	private HashSet<LogInvocation> logInvsAdjustedByDis;
 	private HashSet<LogInvocation> logInvsNotLoweredWithKeywords;
 	private HashSet<LogInvocation> logInvsNotRaisedWithoutKeywords;
+	private HashSet<LogInvocation> logInvsAdjustedByInheritance = new HashSet<LogInvocation>();
 	private Map<IMethod, Float> methodToDOI;
 	private Set<IMethod> enclosingMethods;
 
@@ -327,6 +328,11 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 
 			analyzer.analyze(methodDeclsForAnalyzedMethod);
 
+			this.addLogInvocationSet(analyzer.getLogInvocationSet());
+
+			if (this.consistentLevelInInheritance)
+				this.inheritanceChecking(this.logInvocationSet, monitor);
+
 			this.setLogInvsAdjustedByDis(analyzer.getLogInvsAdjustedByDis());
 			this.setLogInvsNotLoweredInCatch(analyzer.getLogInvsNotLoweredInCatch());
 			this.setLogInvsNotTransformedInIf(analyzer.getLogInvsNotTransformedInIf());
@@ -338,8 +344,6 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 
 			// Get boundary
 			this.boundary = analyzer.getBoundary();
-
-			this.addLogInvocationSet(analyzer.getLogInvocationSet());
 
 			this.estimateCandidates();
 
@@ -557,6 +561,10 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 				action = Action.valueOf("NONE");
 			else
 				action = Action.valueOf("CONVERT_TO_" + newLevel.getName());
+
+			if ((newLevel == null && logInv == null) || (newLevel != null && !newLevel.equals(logInv.getNewLogLevel())))
+				this.logInvsAdjustedByInheritance.add(logInv);
+
 			logInv.setAction(action, newLevel);
 		});
 	}
@@ -625,9 +633,6 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 	public Change createChange(IProgressMonitor pm) throws CoreException, OperationCanceledException {
 		try {
 			final TextEditBasedChangeManager manager = new TextEditBasedChangeManager();
-
-			if (this.consistentLevelInInheritance)
-				this.inheritanceChecking(this.logInvocationSet, pm);
 
 			Set<LogInvocation> transformedLogs = this.getTransformedLog();
 
@@ -737,7 +742,7 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 	public boolean isCheckIfCondition() {
 		return checkIfCondition;
 	}
-	
+
 	public boolean isConsistentLevelInInheritance() {
 		return this.consistentLevelInInheritance;
 	}
@@ -841,5 +846,9 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 
 	public void setLogInvsAdjustedByDis(HashSet<LogInvocation> logInvsAdjustedByDis) {
 		this.logInvsAdjustedByDis = logInvsAdjustedByDis;
+	}
+
+	public HashSet<LogInvocation> getLogInvsAdjustedByInheritance() {
+		return this.logInvsAdjustedByInheritance;
 	}
 }

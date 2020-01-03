@@ -164,8 +164,9 @@ public class EvaluationHandler extends AbstractHandler {
 						"passing logging statements", "failures", "transformed logging statements",
 						"log level not lowered in catch blocks", "log level not lowered in if statements",
 						"log level not transformed due to if condition", "log level not lowered due to keywords",
-						"log level adjusted by max transformation distance", "use log category (SEVERE/WARNING/CONFIG)",
-						"use log category (CONFIG)", "not lower log levels of logs inside of catch blocks",
+						"log level adjusted by max transformation distance", "log level adjusted by inheritance",
+						"use log category (SEVERE/WARNING/CONFIG)", "use log category (CONFIG)",
+						"not lower log levels of logs inside of catch blocks",
 						"not lower log levels of logs inside of if statements",
 						"not lower log levels in their messages with keywords",
 						"not raise log levels in their message without keywords",
@@ -394,11 +395,13 @@ public class EvaluationHandler extends AbstractHandler {
 									logRejuvenatingProcessor.getLogInvsNotLoweredInIf().size(),
 									logRejuvenatingProcessor.getLogInvsNotTransformedInIf().size(),
 									logRejuvenatingProcessor.getLogInvsNotLoweredWithKeywords().size(),
-									logRejuvenatingProcessor.getLogInvsAdjustedByDis().size(), this.isUseLogCategory(),
-									this.isUseLogCategoryWithConfig(), this.isNotLowerLogLevelInCatchBlock(),
-									this.isNotLowerLogLevelInIfStatement(), this.isNotLowerLogLevelWithKeywords(),
-									this.isNotRaiseLogLevelWithoutKeywords(), this.isCheckIfCondition(),
-									this.isConsistentLevelInInheritance(), resultsTimeCollector.getCollectedTime());
+									logRejuvenatingProcessor.getLogInvsAdjustedByDis().size(),
+									logRejuvenatingProcessor.getLogInvsAdjustedByInheritance().size(),
+									this.isUseLogCategory(), this.isUseLogCategoryWithConfig(),
+									this.isNotLowerLogLevelInCatchBlock(), this.isNotLowerLogLevelInIfStatement(),
+									this.isNotLowerLogLevelWithKeywords(), this.isNotRaiseLogLevelWithoutKeywords(),
+									this.isCheckIfCondition(), this.isConsistentLevelInInheritance(),
+									resultsTimeCollector.getCollectedTime());
 
 							for (LogInvocation logInvocation : logRejuvenatingProcessor.getLogInvsNotLoweredInCatch())
 								notLowerLevelsInCatchBlockPrinter.printRecord(sequence, project.getElementName(),
