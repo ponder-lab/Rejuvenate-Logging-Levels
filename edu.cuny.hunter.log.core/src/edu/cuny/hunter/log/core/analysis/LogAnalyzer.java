@@ -815,8 +815,8 @@ public class LogAnalyzer extends ASTVisitor {
 			// Don't consider ERROR and WARN, i.e., we only consider INFO, DEBUG and TRACE
 			if (this.useLogCategory) {
 				float interval = (max - min) / 3;
-				IntStream.range(0, 3).forEach(i -> boundary.add(min + i * interval));
-				boundary.add(max);
+				IntStream.range(0, 3).forEach(i -> boundarySlf4j.add(min + i * interval));
+				boundarySlf4j.add(max);
 			} else {
 				float interval = (max - min) / 5;
 				IntStream.range(0, 5).forEach(i -> boundarySlf4j.add(min + i * interval));
