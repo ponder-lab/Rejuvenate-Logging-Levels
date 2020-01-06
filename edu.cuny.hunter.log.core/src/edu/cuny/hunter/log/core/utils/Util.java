@@ -173,7 +173,7 @@ public final class Util {
 		}
 		return false;
 	}
-	
+
 	@SuppressWarnings("unchecked")
 	public static boolean isLogMessageWithKeywordsSlf4j(MethodInvocation node, Set<String> keyWordsInLogMessages) {
 
@@ -215,9 +215,10 @@ public final class Util {
 			if (methodBinding.getDeclaringClass().getQualifiedName().equals("org.slf4j.Logger"))
 				return getLogLevelForSlf4J(node);
 
-		}
+			return null;
 
-		return getLogLevelForLogging(node, isTest);
+		} else
+			return getLogLevelForLogging(node, isTest);
 
 	}
 
@@ -250,7 +251,7 @@ public final class Util {
 			return logLevel;
 
 		default:
-			return logLevel;
+			return null;
 		}
 	}
 
