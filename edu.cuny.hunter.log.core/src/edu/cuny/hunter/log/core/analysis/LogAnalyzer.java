@@ -84,15 +84,14 @@ public class LogAnalyzer extends ASTVisitor {
 	/**
 	 * A set of keywords in log messages for lowering log levels.
 	 */
-	private static final Set<String> KEYWORDS_IN_LOG_MESSAGES_FOR_LOWERING = Stream
-			.of("fail", "disabl", "error", "exception", "collision", "reboot", "terminat", "throw", "should", "start",
-					"tried", "try", "empty", "launch", "init", "does not", "doesn't", "did not", "didn't", "stop",
-					"shut", "run", "deprecat", "kill", "finish", "ready", "wait", "dead", "alive", "creat", "debug",
-					"info", "warn", "fatal", "severe", "config ", "fine", "trace", "FYI", "unknown", "could not",
-					"cannot", "couldn't", "can't", "can not", "interrupt", "have no", "has no", "had no", "unsupport",
-					"not support", "wrong", "reject", "cancel", "not recognize", "invalid", "timed out", "unable",
-					"trigger", "expected", "unavailable", "not available", "reset", "too many")
-			.collect(Collectors.toSet());
+	private static final Set<String> KEYWORDS_IN_LOG_MESSAGES_FOR_LOWERING = Stream.of("fail", "disabl", "error",
+			"exception", "collision", "reboot", "terminat", "throw", "should", "start", "tried", "try", "empty",
+			"launch", "init", "does not", "doesn't", "did not", "didn't", "stop", "shut", "run", "deprecat", "kill",
+			"finish", "ready", "wait", "dead", "alive", "creat", "debug", "info", "warn", "fatal", "severe", "config ",
+			"fine", "trace", "FYI", "unknown", "could not", "cannot", "couldn't", "can't", "can not", "interrupt",
+			"have no", "has no", "had no", "unsupport", "not support", "wrong", "reject", "cancel", "not recognize",
+			"invalid", "timed out", "unable", "trigger", "expected", "unavailable", "not available", "reset",
+			"too many", "expired", "not allowed").collect(Collectors.toSet());
 	/**
 	 * A set of keywords in log messages for raising log levels.
 	 */
