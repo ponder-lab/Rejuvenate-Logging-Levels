@@ -89,7 +89,7 @@ public class LogAnalyzer extends ASTVisitor {
 					"info", "warn", "fatal", "severe", "config ", "fine", "trace", "FYI", "unknown", "could not",
 					"cannot", "couldn't", "can't", "can not", "interrupt", "have no", "has no", "had no","unsupport", "not support",
 					"wrong", "reject", "cancel", "not recognize", "invalid", "timed out", "unable", "trigger", "expected",
-					"unavailable", "not available")
+					"unavailable", "not available", "reset", "too many")
 			.collect(Collectors.toSet());
 	/**
 	 * A set of keywords in log messages for raising log levels.
