@@ -484,7 +484,7 @@ public class LogAnalyzer extends ASTVisitor {
 	 */
 	private boolean processNotRaiseLogLevelWithKeywords(LogInvocationSlf4j logInvocation, boolean isRaised) {
 		if (this.notRaiseLogLevelWithoutKeyWords) {
-			if (!Util.isLogMessageWithKeywords(logInvocation.getExpression(), KEYWORDS_IN_LOG_MESSAGES_FOR_RAISING)
+			if (!Util.isLogMessageWithKeywordsSlf4j(logInvocation.getExpression(), KEYWORDS_IN_LOG_MESSAGES_FOR_RAISING)
 					&& isRaised) {
 				logInvocation.setAction(ActionSlf4j.NONE, null);
 				this.logInvsNotRaisedByKeywordsSlf4j.add(logInvocation);
@@ -571,7 +571,7 @@ public class LogAnalyzer extends ASTVisitor {
 	 */
 	private org.slf4j.event.Level getRejuvenatedLogLevel(ArrayList<Float> boundary, LogInvocationSlf4j logInvocation) {
 		float DOI = logInvocation.getDegreeOfInterestValue();
-		if (boundary == null)
+		if (boundary == null || boundary.isEmpty())
 			return null;
 
 		// If we don't consider ERROR and WARN.
@@ -722,7 +722,7 @@ public class LogAnalyzer extends ASTVisitor {
 	 */
 	private Level getRejuvenatedLogLevel(ArrayList<Float> boundary, LogInvocation logInvocation) {
 		float DOI = logInvocation.getDegreeOfInterestValue();
-		if (boundary == null)
+		if (boundary == null || boundary.isEmpty())
 			return null;
 
 		if (this.useLogCategory) {
