@@ -54,6 +54,8 @@ public class LogAnalyzer extends ASTVisitor {
 	private HashSet<LogInvocationSlf4j> logInvsNotRaisedByKeywordsSlf4j = new HashSet<LogInvocationSlf4j>();
 	private Set<LogInvocationSlf4j> logInvocationSlf4j = new HashSet<LogInvocationSlf4j>();
 
+	private HashMap<org.slf4j.event.Level, Integer> levelToIntSlf4j = new HashMap<org.slf4j.event.Level, Integer>();
+
 	private HashMap<Level, Integer> levelToInt = new HashMap<Level, Integer>();
 
 	private boolean notLowerLogLevelInIfStatement;
@@ -87,9 +89,9 @@ public class LogAnalyzer extends ASTVisitor {
 					"tried", "try", "empty", "launch", "init", "does not", "doesn't", "did not", "didn't", "stop",
 					"shut", "run", "deprecat", "kill", "finish", "ready", "wait", "dead", "alive", "creat", "debug",
 					"info", "warn", "fatal", "severe", "config ", "fine", "trace", "FYI", "unknown", "could not",
-					"cannot", "couldn't", "can't", "can not", "interrupt", "have no", "has no", "had no","unsupport", "not support",
-					"wrong", "reject", "cancel", "not recognize", "invalid", "timed out", "unable", "trigger", "expected",
-					"unavailable", "not available", "reset", "too many")
+					"cannot", "couldn't", "can't", "can not", "interrupt", "have no", "has no", "had no", "unsupport",
+					"not support", "wrong", "reject", "cancel", "not recognize", "invalid", "timed out", "unable",
+					"trigger", "expected", "unavailable", "not available", "reset", "too many")
 			.collect(Collectors.toSet());
 	/**
 	 * A set of keywords in log messages for raising log levels.
@@ -150,6 +152,7 @@ public class LogAnalyzer extends ASTVisitor {
 
 		// It's used by the limitation of max transformation distance.
 		this.createLevelToInt();
+		this.createLevelToIntSlf4j();
 
 		// check whether action is needed
 		for (LogInvocation logInvocation : this.logInvocationSet) {
@@ -198,9 +201,13 @@ public class LogAnalyzer extends ASTVisitor {
 		if (rejuvenatedLogLevel == null)
 			return false;
 
-		if (currentLogLevel == rejuvenatedLogLevel) // current log level is
-													// same to transformed
-													// log level{
+		if ((currentLogLevel == rejuvenatedLogLevel) // current log level is
+														// same to transformed
+														// log level{
+				|| (this.useLogCategory && (currentLogLevel == org.slf4j.event.Level.ERROR
+						|| currentLogLevel == org.slf4j.event.Level.WARN))) // process log
+																			// category
+																			// ERROR/WARN
 		{
 			logInvocationSlf4j.setAction(ActionSlf4j.NONE, null);
 			return false;
@@ -221,6 +228,14 @@ public class LogAnalyzer extends ASTVisitor {
 		if (this.proceeNotLowerLogLevelInIfStatement(logInvocationSlf4j,
 				currentLogLevel.compareTo(rejuvenatedLogLevel) < 0))
 			return false;
+
+		// Adjust transformations by the max transformation distance.
+		rejuvenatedLogLevel = this.adjustTransformationByDistanceSlf4j(currentLogLevel, rejuvenatedLogLevel);
+
+		if (rejuvenatedLogLevel == null) {
+			logInvocationSlf4j.setAction(ActionSlf4j.NONE, null);
+			return false;
+		}
 
 		if (rejuvenatedLogLevel == org.slf4j.event.Level.TRACE)
 			logInvocationSlf4j.setAction(ActionSlf4j.CONVERT_TO_TRACE, org.slf4j.event.Level.TRACE);
@@ -559,17 +574,26 @@ public class LogAnalyzer extends ASTVisitor {
 		if (boundary == null)
 			return null;
 
-		if (DOI >= boundary.get(0) && DOI < boundary.get(1))
-			return org.slf4j.event.Level.TRACE;
-		if (DOI < boundary.get(2))
-			return org.slf4j.event.Level.DEBUG;
-		if (DOI < boundary.get(3))
-			return org.slf4j.event.Level.INFO;
-		if (DOI < boundary.get(4))
-			return org.slf4j.event.Level.WARN;
-		if (DOI < boundary.get(5))
-			return org.slf4j.event.Level.ERROR;
-
+		// If we don't consider ERROR and WARN.
+		if (this.useLogCategory) {
+			if (DOI >= boundary.get(0) && DOI < boundary.get(1))
+				return org.slf4j.event.Level.TRACE;
+			if (DOI < boundary.get(2))
+				return org.slf4j.event.Level.DEBUG;
+			if (DOI < boundary.get(3))
+				return org.slf4j.event.Level.INFO;
+		} else {
+			if (DOI >= boundary.get(0) && DOI < boundary.get(1))
+				return org.slf4j.event.Level.TRACE;
+			if (DOI < boundary.get(2))
+				return org.slf4j.event.Level.DEBUG;
+			if (DOI < boundary.get(3))
+				return org.slf4j.event.Level.INFO;
+			if (DOI < boundary.get(4))
+				return org.slf4j.event.Level.WARN;
+			if (DOI < boundary.get(5))
+				return org.slf4j.event.Level.ERROR;
+		}
 		return null;
 	}
 
@@ -606,6 +630,42 @@ public class LogAnalyzer extends ASTVisitor {
 	}
 
 	/**
+	 * For slf4j.
+	 * 
+	 * Adjust transformations if their transformation distance is over the distance
+	 * limitation.
+	 * 
+	 * @return Log level: after adjusting.
+	 */
+	private org.slf4j.event.Level adjustTransformationByDistanceSlf4j(org.slf4j.event.Level currentLevel,
+			org.slf4j.event.Level rejuvenatedLogLevel) {
+
+		// Discard all transformations if allowed max transformation distance is
+		// negative or equal to 0.
+		if (maxTransDistance <= 0)
+			return null;
+
+		int transformationDistance = this.levelToIntSlf4j.get(rejuvenatedLogLevel)
+				- this.levelToIntSlf4j.get(currentLevel);
+
+		// if it's over the max transformation distance which are allowed by users
+		if (Math.abs(transformationDistance) > this.maxTransDistance) {
+			if (transformationDistance > 0)
+				transformationDistance = this.maxTransDistance;
+			else
+				transformationDistance = -this.maxTransDistance;
+		}
+
+		int rejuveLogLevelValue = this.levelToIntSlf4j.get(currentLevel) + transformationDistance;
+		for (Map.Entry<org.slf4j.event.Level, Integer> entry : this.levelToIntSlf4j.entrySet()) {
+			if (entry.getValue() == rejuveLogLevelValue)
+				return entry.getKey();
+		}
+
+		return null;
+	}
+
+	/**
 	 * Maintain a map from log level to an integer value. We are using this map to
 	 * calculate transformation distance.
 	 */
@@ -630,6 +690,26 @@ public class LogAnalyzer extends ASTVisitor {
 			this.levelToInt.put(Level.INFO, 4);
 			this.levelToInt.put(Level.WARNING, 5);
 			this.levelToInt.put(Level.SEVERE, 6);
+		}
+	}
+
+	/**
+	 * Maintain a map from log level to an integer value. We are using this map to
+	 * calculate transformation distance.
+	 * 
+	 * For slf4j.
+	 */
+	private void createLevelToIntSlf4j() {
+		if (this.useLogCategory) {
+			this.levelToIntSlf4j.put(org.slf4j.event.Level.TRACE, 0);
+			this.levelToIntSlf4j.put(org.slf4j.event.Level.DEBUG, 1);
+			this.levelToIntSlf4j.put(org.slf4j.event.Level.INFO, 2);
+		} else {
+			this.levelToIntSlf4j.put(org.slf4j.event.Level.TRACE, 0);
+			this.levelToIntSlf4j.put(org.slf4j.event.Level.DEBUG, 1);
+			this.levelToIntSlf4j.put(org.slf4j.event.Level.INFO, 2);
+			this.levelToIntSlf4j.put(org.slf4j.event.Level.WARN, 3);
+			this.levelToIntSlf4j.put(org.slf4j.event.Level.ERROR, 2);
 		}
 	}
 
@@ -732,9 +812,16 @@ public class LogAnalyzer extends ASTVisitor {
 		float max = getMaxDOI(degreeOfInterests);
 		ArrayList<Float> boundarySlf4j = new ArrayList<>();
 		if (min < max) {
-			float interval = (max - min) / 5;
-			IntStream.range(0, 5).forEach(i -> boundarySlf4j.add(min + i * interval));
-			boundarySlf4j.add(max);
+			// Don't consider ERROR and WARN, i.e., we only consider INFO, DEBUG and TRACE
+			if (this.useLogCategory) {
+				float interval = (max - min) / 3;
+				IntStream.range(0, 3).forEach(i -> boundary.add(min + i * interval));
+				boundary.add(max);
+			} else {
+				float interval = (max - min) / 5;
+				IntStream.range(0, 5).forEach(i -> boundarySlf4j.add(min + i * interval));
+				boundarySlf4j.add(max);
+			}
 			return boundarySlf4j;
 		} else
 			return null;
