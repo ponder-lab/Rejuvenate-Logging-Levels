@@ -54,6 +54,8 @@ public class LogAnalyzer extends ASTVisitor {
 	private HashSet<LogInvocationSlf4j> logInvsNotLoweredInIfStatementSlf4j = new HashSet<LogInvocationSlf4j>();
 	private HashSet<LogInvocationSlf4j> logInvsNotLoweredByKeywordsSlf4j = new HashSet<LogInvocationSlf4j>();
 	private HashSet<LogInvocationSlf4j> logInvsNotRaisedByKeywordsSlf4j = new HashSet<LogInvocationSlf4j>();
+	private HashSet<LogInvocationSlf4j> logInvsAdjustedByDisSlf4j = new HashSet<LogInvocationSlf4j>();
+
 	private Set<LogInvocationSlf4j> logInvocationSlf4j = new HashSet<LogInvocationSlf4j>();
 
 	private HashMap<org.slf4j.event.Level, Integer> levelToIntSlf4j = new HashMap<org.slf4j.event.Level, Integer>();
@@ -231,7 +233,12 @@ public class LogAnalyzer extends ASTVisitor {
 			return false;
 
 		// Adjust transformations by the max transformation distance.
-		rejuvenatedLogLevel = this.adjustTransformationByDistanceSlf4j(currentLogLevel, rejuvenatedLogLevel);
+		org.slf4j.event.Level adjustedLogLevel = this.adjustTransformationByDistanceSlf4j(currentLogLevel,
+				rejuvenatedLogLevel);
+		if (!rejuvenatedLogLevel.equals(adjustedLogLevel)) {
+			this.logInvsAdjustedByDisSlf4j.add(logInvocationSlf4j);
+			rejuvenatedLogLevel = adjustedLogLevel;
+		}
 
 		if (rejuvenatedLogLevel == null) {
 			logInvocationSlf4j.setAction(ActionSlf4j.NONE, null);
@@ -985,8 +992,8 @@ public class LogAnalyzer extends ASTVisitor {
 
 		if (parent instanceof IfStatement) {
 			IfStatement ifStatement = (IfStatement) parent;
-			return checkFirstStatementInIf(ifStatement.getThenStatement(), loggingExpression) ||
-					checkFirstStatementInIf(ifStatement.getElseStatement(), loggingExpression);
+			return checkFirstStatementInIf(ifStatement.getThenStatement(), loggingExpression)
+					|| checkFirstStatementInIf(ifStatement.getElseStatement(), loggingExpression);
 		} else
 			return false;
 	}
@@ -994,12 +1001,10 @@ public class LogAnalyzer extends ASTVisitor {
 	/**
 	 * Check whether first statement in if-clause/else clause is logging statement.
 	 * 
-	 * @return 	boolean. 
-	 * 			True: first statement is a logging statement. 
-	 * 			False: first statement is not a logging statement.
+	 * @return boolean. True: first statement is a logging statement. False: first
+	 *         statement is not a logging statement.
 	 */
-	private static boolean checkFirstStatementInIf(Statement statement,
-			MethodInvocation loggingExpression) {
+	private static boolean checkFirstStatementInIf(Statement statement, MethodInvocation loggingExpression) {
 		// if it's a block.
 		if (statement.getNodeType() == ASTNode.BLOCK) {
 			Block block = (Block) statement;
@@ -1138,10 +1143,10 @@ public class LogAnalyzer extends ASTVisitor {
 		return this.logInvsNotRaisedByKeywords;
 	}
 
-	public HashSet<LogInvocation> getLogInvsAdjustedByDis(){
+	public HashSet<LogInvocation> getLogInvsAdjustedByDis() {
 		return this.logInvsAdjustedByDis;
 	}
-	
+
 	public Map<IMethod, Float> getMethodToDOI() {
 		return this.methodToDOI;
 	}
@@ -1176,5 +1181,13 @@ public class LogAnalyzer extends ASTVisitor {
 
 	public ArrayList<Float> getBoundarySlf4j() {
 		return this.boundarySlf4j;
+	}
+
+	public HashSet<LogInvocationSlf4j> getLogInvsAdjustedByDisSlf4j() {
+		return logInvsAdjustedByDisSlf4j;
+	}
+
+	public void setLogInvsAdjustedByDisSlf4j(HashSet<LogInvocationSlf4j> logInvsAdjustedByDisSlf4j) {
+		this.logInvsAdjustedByDisSlf4j = logInvsAdjustedByDisSlf4j;
 	}
 }
