@@ -1187,4 +1187,12 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 	public void setLogInvsAdjustedByDistanceSlf4j(HashSet<LogInvocationSlf4j> logInvsAdjustedByDistanceSlf4j) {
 		this.logInvsAdjustedByDistanceSlf4j = logInvsAdjustedByDistanceSlf4j;
 	}
+
+	public HashSet<LogInvocationSlf4j> getLogInvsAdjustedByInheritanceSlf4j() {
+		return this.logInvsAdjustedByInheritanceSlf4j;
+	}
+
+	public void setLogInvsAdjustedByInheritanceSlf4j(HashSet<LogInvocationSlf4j> logInvsAdjustedByInheritanceSlf4j) {
+		this.logInvsAdjustedByInheritanceSlf4j = logInvsAdjustedByInheritanceSlf4j;
+	}
 }
