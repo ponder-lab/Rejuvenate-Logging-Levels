@@ -54,6 +54,8 @@ public class LogAnalyzer extends ASTVisitor {
 
 	private HashSet<LogInvocation> logInvsNotRaisedByKeywords = new HashSet<LogInvocation>();
 
+	private HashSet<LogInvocation> logInvsAdjustedByDis = new HashSet<LogInvocation>();
+
 	private Set<LogInvocation> logInvocationSet = new HashSet<>();
 
 	private HashMap<Level, Integer> levelToInt = new HashMap<Level, Integer>();
@@ -273,7 +275,11 @@ public class LogAnalyzer extends ASTVisitor {
 		}
 
 		// Adjust transformations by the max transformation distance.
-		rejuvenatedLogLevel = this.adjustTransformationByDistance(currentLogLevel, rejuvenatedLogLevel);
+		Level adjustedLogLevel = this.adjustTransformationByDistance(currentLogLevel, rejuvenatedLogLevel);
+		if (!rejuvenatedLogLevel.equals(adjustedLogLevel)) {
+			this.logInvsAdjustedByDis.add(logInvocation);
+			rejuvenatedLogLevel = adjustedLogLevel;
+		}
 
 		if (rejuvenatedLogLevel == null) {
 			logInvocation.setAction(Action.NONE, null);
@@ -735,6 +741,10 @@ public class LogAnalyzer extends ASTVisitor {
 		return this.logInvsNotRaisedByKeywords;
 	}
 
+	public HashSet<LogInvocation> getLogInvsAdjustedByDis(){
+		return this.logInvsAdjustedByDis;
+	}
+	
 	public Map<IMethod, Float> getMethodToDOI() {
 		return this.methodToDOI;
 	}
