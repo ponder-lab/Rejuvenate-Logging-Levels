@@ -429,24 +429,29 @@ public class EvaluationHandler extends AbstractHandler {
 							}
 
 							ArrayList<Float> boundary = logRejuvenatingProcessor.getBoundary();
+							ArrayList<Float> boundarySlf4j = logRejuvenatingProcessor.getBoundarySlf4j();
 							if (boundary != null && boundary.size() > 0)
 								if (this.isUseLogCategory()) {
 									this.printBoundaryLogCategory(sequence, project.getElementName(), boundary,
 											doiPrinter);
-								} else if (this.isUseLogCategoryWithConfig()) { // Do
+									this.printBoundaryLogCategorySlf4j(sequence, project.getElementName(),
+											boundarySlf4j, doiPrinter);
+								} else {
+
+									this.printBoundarySlf4j(sequence, project.getElementName(), boundarySlf4j,
+											doiPrinter);
+									if (this.isUseLogCategoryWithConfig()) { // Do
 																				// not
 																				// consider
 																				// config
-									this.printBoundaryWithConfig(sequence, project.getElementName(), boundary,
-											doiPrinter);
-								} else {// Treat log levels as traditional log
-										// levels
-									this.printBoundaryDefault(sequence, project.getElementName(), boundary, doiPrinter);
+										this.printBoundaryWithConfig(sequence, project.getElementName(), boundary,
+												doiPrinter);
+									} else {// Treat log levels as traditional log
+											// levels
+										this.printBoundaryDefault(sequence, project.getElementName(), boundary,
+												doiPrinter);
+									}
 								}
-
-							ArrayList<Float> boundarySlf4j = logRejuvenatingProcessor.getBoundarySlf4j();
-							if (boundarySlf4j != null && boundary.size() > 0)
-								this.printBoundarySlf4j(sequence, project.getElementName(), boundarySlf4j, doiPrinter);
 
 							ResultForCommit resultCommit = new ResultForCommit();
 							String repoURL = logRejuvenatingProcessor.getRepoURL();
@@ -509,11 +514,11 @@ public class EvaluationHandler extends AbstractHandler {
 									logRejuvenatingProcessor.getLogInvsNotLoweredByKeywordsSlf4j().size(),
 									logRejuvenatingProcessor.getLogInvsAdjustedByDistanceSlf4j().size(),
 									logRejuvenatingProcessor.getLogInvsAdjustedByInheritanceSlf4j().size(),
-									this.isUseLogCategory(),
-									this.isNotLowerLogLevelInCatchBlock(), this.isNotLowerLogLevelInIfStatement(),
-									this.isNotLowerLogLevelWithKeywords(), this.isNotRaiseLogLevelWithoutKeywords(),
-									this.isCheckIfCondition(), this.isConsistentLevelInInheritance(),
-									LoggingFramework.SLF4J, resultsTimeCollector.getCollectedTime());
+									this.isUseLogCategory(), this.isNotLowerLogLevelInCatchBlock(),
+									this.isNotLowerLogLevelInIfStatement(), this.isNotLowerLogLevelWithKeywords(),
+									this.isNotRaiseLogLevelWithoutKeywords(), this.isCheckIfCondition(),
+									this.isConsistentLevelInInheritance(), LoggingFramework.SLF4J,
+									resultsTimeCollector.getCollectedTime());
 
 							for (LogInvocation logInvocation : logRejuvenatingProcessor.getLogInvsNotLoweredInCatch())
 								notLowerLevelsInCatchBlockPrinter.printRecord(sequence, project.getElementName(),
@@ -767,6 +772,20 @@ public class EvaluationHandler extends AbstractHandler {
 				org.slf4j.event.Level.WARN, LoggingFramework.SLF4J);
 		doiPrinter.printRecord(sequence, subject, boundarySlf4j.get(4), boundarySlf4j.get(5),
 				org.slf4j.event.Level.ERROR, LoggingFramework.SLF4J);
+	}
+
+	/**
+	 * Print DOI boundary set for Slf4j, if the setting "don't consider ERROR/WARN"
+	 * is checked.
+	 */
+	private void printBoundaryLogCategorySlf4j(long sequence, String subject, ArrayList<Float> boundarySlf4j,
+			CSVPrinter doiPrinter) throws IOException {
+		doiPrinter.printRecord(sequence, subject, boundarySlf4j.get(0), boundarySlf4j.get(1),
+				org.slf4j.event.Level.TRACE, LoggingFramework.SLF4J);
+		doiPrinter.printRecord(sequence, subject, boundarySlf4j.get(1), boundarySlf4j.get(2),
+				org.slf4j.event.Level.DEBUG, LoggingFramework.SLF4J);
+		doiPrinter.printRecord(sequence, subject, boundarySlf4j.get(2), boundarySlf4j.get(3),
+				org.slf4j.event.Level.INFO, LoggingFramework.SLF4J);
 	}
 
 	private void printBoundaryLogCategory(long sequence, String subject, ArrayList<Float> boundary,

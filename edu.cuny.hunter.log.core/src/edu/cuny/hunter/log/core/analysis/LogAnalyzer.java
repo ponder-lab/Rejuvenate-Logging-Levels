@@ -721,7 +721,7 @@ public class LogAnalyzer extends ASTVisitor {
 			this.levelToIntSlf4j.put(org.slf4j.event.Level.DEBUG, 1);
 			this.levelToIntSlf4j.put(org.slf4j.event.Level.INFO, 2);
 			this.levelToIntSlf4j.put(org.slf4j.event.Level.WARN, 3);
-			this.levelToIntSlf4j.put(org.slf4j.event.Level.ERROR, 2);
+			this.levelToIntSlf4j.put(org.slf4j.event.Level.ERROR, 4);
 		}
 	}
 

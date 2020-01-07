@@ -610,7 +610,7 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 	 * Get a set of enclosing methods for transformed logs.
 	 */
 	private Set<IMethod> getEnclosingMethodForLogs(Set<LogInvocation> transformedLogs) {
-		return this.logInvocationSet.parallelStream().map(log -> log.getEnclosingEclipseMethod())
+		return transformedLogs.parallelStream().map(log -> log.getEnclosingEclipseMethod())
 				.filter(Objects::nonNull).collect(Collectors.toSet());
 	}
 
@@ -620,7 +620,7 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 	 * Get a set of enclosing methods for transformed logs.
 	 */
 	private Set<IMethod> getEnclosingMethodForLogsSlf4j(Set<LogInvocationSlf4j> transformedLogs) {
-		return this.logInvocationSet.parallelStream().map(log -> log.getEnclosingEclipseMethod())
+		return transformedLogs.parallelStream().map(log -> log.getEnclosingEclipseMethod())
 				.filter(Objects::nonNull).collect(Collectors.toSet());
 	}
 
