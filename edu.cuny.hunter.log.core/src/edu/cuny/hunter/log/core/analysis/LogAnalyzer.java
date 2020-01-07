@@ -1005,6 +1005,8 @@ public class LogAnalyzer extends ASTVisitor {
 	 *         statement is not a logging statement.
 	 */
 	private static boolean checkFirstStatementInIf(Statement statement, MethodInvocation loggingExpression) {
+		if (statement == null) return false;
+		
 		// if it's a block.
 		if (statement.getNodeType() == ASTNode.BLOCK) {
 			Block block = (Block) statement;
