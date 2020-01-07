@@ -597,37 +597,42 @@ public class LogAnalyzer extends ASTVisitor {
 
 		if (parent instanceof IfStatement) {
 			IfStatement ifStatement = (IfStatement) parent;
-			Statement elseStatement = ifStatement.getElseStatement();
-
-			// if there's no else clause
-			if (elseStatement == null) {
-				// is it the first statement of the then statement?
-				Statement thenStatement = ifStatement.getThenStatement();
-
-				// if it's a block.
-				if (thenStatement.getNodeType() == ASTNode.BLOCK) {
-					Block block = (Block) thenStatement;
-
-					// if the block is non-empty.
-					if (block.statements().size() > 0) {
-						// if it's in the first statement of the block.
-						Statement firstStatement = (Statement) block.statements().get(0);
-
-						return firstStatement.getNodeType() != ASTNode.BLOCK
-								&& contains(firstStatement, loggingExpression);
-					} else
-						// it's an empty block.
-						throw new IllegalStateException("Block shouldn't be empty.");
-				} else
-					// it's not a block. Just check the statement.
-					return contains(thenStatement, loggingExpression);
-			} else
-				// there's an else clause. It's not a guarded comment.
-				return false;
+			return checkFirstStatementInIf(ifStatement.getThenStatement(), loggingExpression) ||
+					checkFirstStatementInIf(ifStatement.getElseStatement(), loggingExpression);
 		} else
 			return false;
 	}
 
+	/**
+	 * Check whether first statement in if-clause/else clause is logging statement.
+	 * 
+	 * @return 	boolean. 
+	 * 			True: first statement is a logging statement. 
+	 * 			False: first statement is not a logging statement.
+	 */
+	private static boolean checkFirstStatementInIf(Statement statement,
+			MethodInvocation loggingExpression) {
+		// if it's a block.
+		if (statement.getNodeType() == ASTNode.BLOCK) {
+			Block block = (Block) statement;
+
+			// if the block is non-empty.
+			if (block.statements().size() > 0) {
+				// if it's in the first statement of the block.
+				Statement firstStatement = (Statement) block.statements().get(0);
+
+				return firstStatement.getNodeType() != ASTNode.BLOCK && contains(firstStatement, loggingExpression);
+			} else
+				// it's an empty block.
+				throw new IllegalStateException("Block shouldn't be empty.");
+		} else
+			// it's not a block. Just check the statement.
+			return contains(statement, loggingExpression);
+	}
+
+	/**
+	 * Check whether the statement contains a logging expression.
+	 */
 	private static boolean contains(Statement statement, MethodInvocation loggingExpression) {
 		if (statement == null || loggingExpression == null)
 			return false;
