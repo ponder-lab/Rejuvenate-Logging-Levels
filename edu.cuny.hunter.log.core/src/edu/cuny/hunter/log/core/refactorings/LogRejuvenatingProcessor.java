@@ -127,6 +127,11 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 	private boolean notRaiseLogLevelWithoutKeywords;
 
 	/**
+	 * Log level transformations between overriding methods should be consistent.
+	 */
+	private boolean consistentLevelInInheritance;
+
+	/**
 	 * Limit number of commits
 	 */
 	private int NToUseForCommits = 100;
@@ -157,6 +162,7 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 	private HashSet<LogInvocation> logInvsNotTransformedInIf;
 	private HashSet<LogInvocation> logInvsNotLoweredInCatch;
 	private HashSet<LogInvocation> logInvsNotLoweredInIf;
+	private HashSet<LogInvocation> logInvsAdjustedByDis;
 	private HashSet<LogInvocation> logInvsNotLoweredWithKeywords;
 	private HashSet<LogInvocation> logInvsNotRaisedWithoutKeywords;
 	private Set<LogInvocation> logInvocationSet = new HashSet<>();
@@ -169,6 +175,7 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 	private HashSet<LogInvocationSlf4j> logInvsNotRaisedWithoutKeywordsSlf4j = new HashSet<LogInvocationSlf4j>();
 	private Set<LogInvocationSlf4j> logInvocationSlf4j = new HashSet<LogInvocationSlf4j>();
 
+	private HashSet<LogInvocation> logInvsAdjustedByInheritance = new HashSet<LogInvocation>();
 	private Map<IMethod, Float> methodToDOI;
 	private Set<IMethod> enclosingMethods;
 
@@ -176,6 +183,10 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 
 	public LogRejuvenatingProcessor(final CodeGenerationSettings settings) {
 		super(settings);
+	}
+
+	public void setConsistentLevelInInheritance(boolean consistentLevelInInheritance) {
+		this.consistentLevelInInheritance = consistentLevelInInheritance;
 	}
 
 	public void setParticularConfigLogLevel(boolean useConfigLogLevelCategory) {
@@ -239,8 +250,9 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 	public LogRejuvenatingProcessor(IJavaProject[] javaProjects, boolean useLogLevelCategory,
 			boolean useConfigLogLevelCategory, boolean useGitHistory, boolean notLowerLogLevelInCatchBlock,
 			boolean notLowerLogLevelInIfStatement, boolean notLowerLogLevelWithKeywords,
-			boolean notRaiseLogLevelWithoutKeywords, boolean checkIfCondtion, int maxTransDistance,
-			int NToUseForCommits, final CodeGenerationSettings settings, Optional<IProgressMonitor> monitor) {
+			boolean notRaiseLogLevelWithoutKeywords, boolean checkIfCondtion, boolean consistentLevelInInheritance,
+			int maxTransDistance, int NToUseForCommits, final CodeGenerationSettings settings,
+			Optional<IProgressMonitor> monitor) {
 		super(settings);
 		try {
 			this.javaProjects = javaProjects;
@@ -251,6 +263,7 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 			this.notLowerLogLevelInIfStatement = notLowerLogLevelInIfStatement;
 			this.notLowerLogLevelWithKeyWords = notLowerLogLevelWithKeywords;
 			this.notRaiseLogLevelWithoutKeywords = notRaiseLogLevelWithoutKeywords;
+			this.consistentLevelInInheritance = consistentLevelInInheritance;
 			this.checkIfCondition = checkIfCondtion;
 			this.NToUseForCommits = NToUseForCommits;
 			this.maxTransDistance = maxTransDistance;
@@ -262,12 +275,12 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 	public LogRejuvenatingProcessor(IJavaProject[] javaProjects, boolean useLogLevelCategory,
 			boolean useConfigLogLevelCategory, boolean useGitHistory, boolean notLowerLogLevelInCatchBlock,
 			boolean notLowerLogLevelInIfStatement, boolean notLowerLogLevelWithKeywords,
-			boolean notRaiseLogLevelWithoutKeywords, boolean checkIfCondtion, int maxTransDistance,
-			int NToUseForCommits, final CodeGenerationSettings settings, Optional<IProgressMonitor> monitor,
-			boolean isEvaluation) {
+			boolean notRaiseLogLevelWithoutKeywords, boolean checkIfCondtion, boolean consistentLevelInInheritance,
+			int maxTransDistance, int NToUseForCommits, final CodeGenerationSettings settings,
+			Optional<IProgressMonitor> monitor, boolean isEvaluation) {
 		this(javaProjects, useLogLevelCategory, useConfigLogLevelCategory, useGitHistory, notLowerLogLevelInCatchBlock,
 				notLowerLogLevelInIfStatement, notLowerLogLevelWithKeywords, notRaiseLogLevelWithoutKeywords,
-				checkIfCondtion, maxTransDistance, NToUseForCommits, settings, monitor);
+				checkIfCondtion, consistentLevelInInheritance, maxTransDistance, NToUseForCommits, settings, monitor);
 		this.isEvaluation = isEvaluation;
 	}
 
@@ -344,6 +357,17 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 			this.setDataForJUL(analyzer);
 			this.setDataForSlf4j(analyzer);
 
+			this.addLogInvocationSet(analyzer.getLogInvocationSet());
+
+			if (this.consistentLevelInInheritance)
+				this.inheritanceChecking(this.logInvocationSet, monitor);
+
+			this.setLogInvsAdjustedByDis(analyzer.getLogInvsAdjustedByDis());
+			this.setLogInvsNotLoweredInCatch(analyzer.getLogInvsNotLoweredInCatch());
+			this.setLogInvsNotTransformedInIf(analyzer.getLogInvsNotTransformedInIf());
+			this.setLogInvsNotLoweredInIf(analyzer.getLogInvsNotLoweredInIfStatement());
+			this.setLogInvsNotLoweredWithKeywords(analyzer.getLogInvsNotLoweredByKeywords());
+			this.setLogInvsNotRaisedWithoutKeywords(analyzer.getLogInvsNotRaisedByKeywords());
 			this.setMethodToDOI(analyzer.getMethodToDOI());
 			this.setEnclosingMethods(analyzer.getEnclosingMethods());
 
@@ -642,6 +666,10 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 				action = Action.valueOf("NONE");
 			else
 				action = Action.valueOf("CONVERT_TO_" + newLevel.getName());
+
+			if ((newLevel == null && logInv == null) || (newLevel != null && !newLevel.equals(logInv.getNewLogLevel())))
+				this.logInvsAdjustedByInheritance.add(logInv);
+
 			logInv.setAction(action, newLevel);
 		});
 	}
@@ -710,8 +738,6 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 	public Change createChange(IProgressMonitor pm) throws CoreException, OperationCanceledException {
 		try {
 			final TextEditBasedChangeManager manager = new TextEditBasedChangeManager();
-
-			this.inheritanceChecking(this.logInvocationSet, pm);
 
 			Set<LogInvocation> transformedLogs = this.getTransformedLog();
 			Set<LogInvocationSlf4j> transformedSlf4jLogs = this.getSlf4jTransformedLog();
@@ -828,6 +854,10 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 
 	public boolean isCheckIfCondition() {
 		return checkIfCondition;
+	}
+
+	public boolean isConsistentLevelInInheritance() {
+		return this.consistentLevelInInheritance;
 	}
 
 	public void setCheckIfCondition(boolean checkIfCondition) {
@@ -978,5 +1008,17 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 
 	public void setBoundarySlf4j(ArrayList<Float> boundarySlf4j) {
 		this.boundarySlf4j = boundarySlf4j;
+	}
+	
+	public HashSet<LogInvocation> getLogInvsAdjustedByDis() {
+		return logInvsAdjustedByDis;
+	}
+
+	public void setLogInvsAdjustedByDis(HashSet<LogInvocation> logInvsAdjustedByDis) {
+		this.logInvsAdjustedByDis = logInvsAdjustedByDis;
+	}
+
+	public HashSet<LogInvocation> getLogInvsAdjustedByInheritance() {
+		return this.logInvsAdjustedByInheritance;
 	}
 }
