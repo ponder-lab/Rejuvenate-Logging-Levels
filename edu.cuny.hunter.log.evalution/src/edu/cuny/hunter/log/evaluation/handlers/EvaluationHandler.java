@@ -64,6 +64,7 @@ public class EvaluationHandler extends AbstractHandler {
 	private static final String NOT_LOWER_LOG_LEVEL_CATCH_BLOCK_KEY = "edu.cuny.hunter.log.evaluation.notLowerLogLevelInCatchBlock";
 	private static final String NOT_LOWER_LOG_LEVEL_KEYWORDS_KEY = "edu.cuny.hunter.log.evaluation.notLowerLogLevelWithKeywords";
 	private static final String NOT_RAISE_LOG_LEVEL_KEYWORKS_KEY = "edu.cuny.hunter.log.evaluation.notRaiseLogLevelWithoutKeywords";
+	private static final String CONSISTENT_LEVEL_IN_INHERITANCE_KEY = "edu.cuny.hunter.log.evaluation.consistentLevelInInheritance";
 	private static final String USE_LOG_CATEGORY_CONFIG_KEY = "edu.cuny.hunter.log.evaluation.useLogCategoryWithConfig";
 	private static final String MAX_TRANSFORMATION_DISTANCE_KEY = "edu.cuny.hunter.log.evaluation.maxTransDistance";
 	private static final String CHECK_IF_CONDITION_KEY = "edu.cuny.hunter.log.evaluation.checkIfCondition";
@@ -73,6 +74,7 @@ public class EvaluationHandler extends AbstractHandler {
 	private static final int N_TO_USE_FOR_COMMITS_DEFAULT = 100;
 	private static final int MAX_TRANSFORMATION_DISTANCE__DEFUALT = Integer.MAX_VALUE;
 	private static final boolean NOT_LOWER_LOG_LEVEL_IF_STATEMENT_DEFAULT = false;
+	private static final boolean CONSISTENT_LEVEL_IN_INHERITANCE_DEFAULT = false;
 	private static final boolean NOT_LOWER_LOG_LEVEL_KEYWORDS_DEFAULT = false;
 	private static final boolean NOT_RAISE_LOG_LEVEL_KEYWORDS_DEFAULT = false;
 	private static final boolean NOT_LOWER_LOG_LEVEL_CATCH_BLOCK_DEFAULT = false;
@@ -114,6 +116,11 @@ public class EvaluationHandler extends AbstractHandler {
 	private boolean notRaiseLogLevelWithoutKeywords;
 
 	/**
+	 * Log level transformations between overriding methods should be consistent.
+	 */
+	private boolean consistentLevelInInheritance;
+
+	/**
 	 * Do not change a log level in a logging statement if there exists an immediate
 	 * if statement whose condition contains a log level.
 	 */
@@ -152,18 +159,18 @@ public class EvaluationHandler extends AbstractHandler {
 
 				CodeGenerationSettings settings = JavaPreferencesSettings.getCodeGenerationSettings(javaProjects[0]);
 
-				resultPrinter = EvaluationUtil.createCSVPrinter("result.csv",
-						new String[] { "sequence", "subject", "repo URL", "decay factor", "input logging statements",
-								"candidate logging statements", "passing logging statements", "failures",
-								"transformed logging statements", "log level not lowered in catch blocks",
-								"log level not lowered in if statements",
-								"log level not transformed due to if condition",
-								"log level not lowered due to keywords", "use log category (SEVERE/WARNING/CONFIG)",
-								"use log category (CONFIG)", "not lower log levels of logs inside of catch blocks",
-								"not lower log levels of logs inside of if statements",
-								"not lower log levels in their messages with keywords",
-								"not raise log levels in their message without keywords",
-								"consider if condition having log level", "time (s)" });
+				resultPrinter = EvaluationUtil.createCSVPrinter("result.csv", new String[] { "sequence", "subject",
+						"repo URL", "decay factor", "input logging statements", "candidate logging statements",
+						"passing logging statements", "failures", "transformed logging statements",
+						"log level not lowered in catch blocks", "log level not lowered in if statements",
+						"log level not transformed due to if condition", "log level not lowered due to keywords",
+						"log level adjusted by max transformation distance", "log level adjusted by inheritance",
+						"use log category (SEVERE/WARNING/CONFIG)", "use log category (CONFIG)",
+						"not lower log levels of logs inside of catch blocks",
+						"not lower log levels of logs inside of if statements",
+						"not lower log levels in their messages with keywords",
+						"not raise log levels in their message without keywords",
+						"consider if condition having log level", "consistent log level in inheritance", "time (s)" });
 
 				repoPrinter = EvaluationUtil.createCSVPrinter("repos.csv",
 						new String[] { "sequence", "repo URL", "SHA-1 of head", "N for commits",
@@ -231,8 +238,9 @@ public class EvaluationHandler extends AbstractHandler {
 									this.isUseLogCategoryWithConfig(), this.getValueOfUseGitHistory(),
 									this.isNotLowerLogLevelInCatchBlock(), this.isNotLowerLogLevelInIfStatement(),
 									this.isNotLowerLogLevelWithKeywords(), this.isNotRaiseLogLevelWithoutKeywords(),
-									this.isCheckIfCondition(), this.getMaxTransDistance(), NToUseCommit, settings,
-									Optional.ofNullable(monitor), true);
+									this.isCheckIfCondition(), this.isConsistentLevelInInheritance(),
+									this.getMaxTransDistance(), NToUseCommit, settings, Optional.ofNullable(monitor),
+									true);
 
 							RefactoringStatus status = new ProcessorBasedRefactoring(
 									(RefactoringProcessor) logRejuvenatingProcessor)
@@ -387,10 +395,13 @@ public class EvaluationHandler extends AbstractHandler {
 									logRejuvenatingProcessor.getLogInvsNotLoweredInIf().size(),
 									logRejuvenatingProcessor.getLogInvsNotTransformedInIf().size(),
 									logRejuvenatingProcessor.getLogInvsNotLoweredWithKeywords().size(),
+									logRejuvenatingProcessor.getLogInvsAdjustedByDis().size(),
+									logRejuvenatingProcessor.getLogInvsAdjustedByInheritance().size(),
 									this.isUseLogCategory(), this.isUseLogCategoryWithConfig(),
 									this.isNotLowerLogLevelInCatchBlock(), this.isNotLowerLogLevelInIfStatement(),
 									this.isNotLowerLogLevelWithKeywords(), this.isNotRaiseLogLevelWithoutKeywords(),
-									this.isCheckIfCondition(), resultsTimeCollector.getCollectedTime());
+									this.isCheckIfCondition(), this.isConsistentLevelInInheritance(),
+									resultsTimeCollector.getCollectedTime());
 
 							for (LogInvocation logInvocation : logRejuvenatingProcessor.getLogInvsNotLoweredInCatch())
 								notLowerLevelsInCatchBlockPrinter.printRecord(sequence, project.getElementName(),
@@ -597,12 +608,22 @@ public class EvaluationHandler extends AbstractHandler {
 
 		this.setNotLowerLogLevelInIfStatement(this.getValueOfNotLowerLogLevelInIfStatement());
 		this.setNotLowerLogLevelWithKeywords(this.getValueOfNotLowerLogLevelWithKeywords());
+		this.setConsistentLevelInInheritance(this.getValueOfConsistentLogLevel());
 		this.setNotRaiseLogLevelWithoutKeywords(this.getValueOfNotRaiseLogLevelWithoutKeywords());
 		this.setCheckIfCondition(this.getValueOfCheckIfCondition());
 		this.setMaxTransDistance(this.getValueOfMaxTransDistance());
 
 		if (this.isUseLogCategory() && this.isUseLogCategoryWithConfig())
 			throw new IllegalStateException("You cannot choose two log categories in the same time");
+	}
+
+	private boolean getValueOfConsistentLogLevel() {
+		String consistentLogLevel = System.getenv(CONSISTENT_LEVEL_IN_INHERITANCE_KEY);
+
+		if (consistentLogLevel == null)
+			return CONSISTENT_LEVEL_IN_INHERITANCE_DEFAULT;
+		else
+			return Boolean.valueOf(consistentLogLevel);
 	}
 
 	private boolean getValueOfUseLogCategory() {
@@ -749,6 +770,14 @@ public class EvaluationHandler extends AbstractHandler {
 
 	public boolean isNotRaiseLogLevelWithoutKeywords() {
 		return this.notRaiseLogLevelWithoutKeywords;
+	}
+
+	public boolean isConsistentLevelInInheritance() {
+		return this.consistentLevelInInheritance;
+	}
+
+	public void setConsistentLevelInInheritance(boolean consistentLevelInInheritance) {
+		this.consistentLevelInInheritance = consistentLevelInInheritance;
 	}
 
 }
