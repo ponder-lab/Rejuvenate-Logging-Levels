@@ -83,16 +83,20 @@ public class LogAnalyzer extends ASTVisitor {
 	/**
 	 * A set of keywords in log messages for lowering log levels.
 	 */
-	private static final Set<String> KEYWORDS_IN_LOG_MESSAGES_FOR_LOWERING = Stream.of("fail", "disable", "error",
-			"exception", "collision", "reboot", "terminate", "throw", "should", "start", "tried", "empty", "launch",
-			"init", "does not", "doesn't", "stop", "shut", "run", "deprecate", "kill", "finish", "ready", "wait",
-			"dead", "alive", "creat", "debug", "info", "warn", "fatal", "severe", "config ", "fine", "trace", "FYI")
+	private static final Set<String> KEYWORDS_IN_LOG_MESSAGES_FOR_LOWERING = Stream
+			.of("fail", "disabl", "error", "exception", "collision", "reboot", "terminat", "throw", "should", "start",
+					"tried", "try", "empty", "launch", "init", "does not", "doesn't", "did not", "didn't", "stop",
+					"shut", "run", "deprecat", "kill", "finish", "ready", "wait", "dead", "alive", "creat", "debug",
+					"info", "warn", "fatal", "severe", "config ", "fine", "trace", "FYI", "unknown", "could not",
+					"cannot", "couldn't", "can't", "can not", "interrupt", "have no", "has no", "had no","unsupport", "not support",
+					"wrong", "reject", "cancel", "not recognize", "invalid", "timed out", "unable", "trigger", "expected",
+					"unavailable", "not available", "reset", "too many", "expired", "not allowed")
 			.collect(Collectors.toSet());
 	/**
 	 * A set of keywords in log messages for raising log levels.
 	 */
 	private static final Set<String> KEYWORDS_IN_LOG_MESSAGES_FOR_RAISING = Stream
-			.of("fail", "disable", "error", "exception", "collision", "reboot", "terminate", "throw", "should have",
+			.of("fail", "disabl", "error", "exception", "collision", "reboot", "terminat", "throw", "should have",
 					"should've", "tried", "empty", "does not", "doesn't", "stop", "shut", "kill", "dead", "not alive")
 			.collect(Collectors.toSet());
 
