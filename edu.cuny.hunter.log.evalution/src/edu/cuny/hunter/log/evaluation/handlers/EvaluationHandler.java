@@ -164,6 +164,7 @@ public class EvaluationHandler extends AbstractHandler {
 						"passing logging statements", "failures", "transformed logging statements",
 						"log level not lowered in catch blocks", "log level not lowered in if statements",
 						"log level not transformed due to if condition", "log level not lowered due to keywords",
+						"log level adjusted by max transformation distance", "log level adjusted by inheritance",
 						"use log category (SEVERE/WARNING/CONFIG)", "use log category (CONFIG)",
 						"not lower log levels of logs inside of catch blocks",
 						"not lower log levels of logs inside of if statements",
@@ -394,6 +395,8 @@ public class EvaluationHandler extends AbstractHandler {
 									logRejuvenatingProcessor.getLogInvsNotLoweredInIf().size(),
 									logRejuvenatingProcessor.getLogInvsNotTransformedInIf().size(),
 									logRejuvenatingProcessor.getLogInvsNotLoweredWithKeywords().size(),
+									logRejuvenatingProcessor.getLogInvsAdjustedByDis().size(),
+									logRejuvenatingProcessor.getLogInvsAdjustedByInheritance().size(),
 									this.isUseLogCategory(), this.isUseLogCategoryWithConfig(),
 									this.isNotLowerLogLevelInCatchBlock(), this.isNotLowerLogLevelInIfStatement(),
 									this.isNotLowerLogLevelWithKeywords(), this.isNotRaiseLogLevelWithoutKeywords(),
@@ -511,13 +514,13 @@ public class EvaluationHandler extends AbstractHandler {
 
 		if (this.isUseLogCategoryWithConfig()) {
 			for (LogInvocation inv : logInvocationSet)
-				if (inv.getLogLevel() == null || !inv.getLogLevel().equals(Level.CONFIG))
+				if (inv.getLogLevel() != null && !inv.getLogLevel().equals(Level.CONFIG))
 					candidates.add(inv);
 		}
 
 		if (this.isUseLogCategory()) {
 			for (LogInvocation inv : logInvocationSet)
-				if (inv.getLogLevel() == null || !(inv.getLogLevel().equals(Level.CONFIG)
+				if (inv.getLogLevel() != null && !(inv.getLogLevel().equals(Level.CONFIG)
 						|| inv.getLogLevel().equals(Level.WARNING) || inv.getLogLevel().equals(Level.SEVERE)))
 					candidates.add(inv);
 		}
