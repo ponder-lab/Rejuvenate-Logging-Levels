@@ -597,8 +597,8 @@ public class LogAnalyzer extends ASTVisitor {
 
 		if (parent instanceof IfStatement) {
 			IfStatement ifStatement = (IfStatement) parent;
-			return checkFirstStatementInIf(ifStatement.getThenStatement(), loggingExpression) ||
-					checkFirstStatementInIf(ifStatement.getElseStatement(), loggingExpression);
+			return checkFirstStatementInIf(ifStatement.getThenStatement(), loggingExpression)
+					|| checkFirstStatementInIf(ifStatement.getElseStatement(), loggingExpression);
 		} else
 			return false;
 	}
@@ -606,12 +606,13 @@ public class LogAnalyzer extends ASTVisitor {
 	/**
 	 * Check whether first statement in if-clause/else clause is logging statement.
 	 * 
-	 * @return 	boolean. 
-	 * 			True: first statement is a logging statement. 
-	 * 			False: first statement is not a logging statement.
+	 * @return boolean. True: first statement is a logging statement. False: first
+	 *         statement is not a logging statement.
 	 */
-	private static boolean checkFirstStatementInIf(Statement statement,
-			MethodInvocation loggingExpression) {
+	private static boolean checkFirstStatementInIf(Statement statement, MethodInvocation loggingExpression) {
+		if (statement == null)
+			return false;
+
 		// if it's a block.
 		if (statement.getNodeType() == ASTNode.BLOCK) {
 			Block block = (Block) statement;
