@@ -40,6 +40,15 @@ public abstract class AbstractLogInvocation {
 
 	private static final String PLUGIN_ID = FrameworkUtil.getBundle(LogInvocation.class).getSymbolicName();
 
+	public abstract void logInfo();
+
+	public abstract void transform(CompilationUnitRewrite rewrite);
+
+	/**
+	 * Basic method to do transformation.
+	 */
+	public abstract void convert(String target, String targetLogLevel, CompilationUnitRewrite rewrite);
+
 	public float getDegreeOfInterestValue() {
 		return this.degreeOfInterestValue;
 	}
@@ -107,17 +116,8 @@ public abstract class AbstractLogInvocation {
 		return this.logExpression.getStartPosition();
 	}
 
-	public void logInfo() {
-	}
-
 	public CompilationUnit getEnclosingCompilationUnit() {
 		return (CompilationUnit) ASTNodes.getParent(this.getExpression(), ASTNode.COMPILATION_UNIT);
-	}
-
-	/**
-	 * Basic method to do transformation.
-	 */
-	public void convert(String target, String targetLogLevel, CompilationUnitRewrite rewrite) {
 	}
 
 	/**
@@ -133,9 +133,6 @@ public abstract class AbstractLogInvocation {
 
 	public boolean getInCatchBlock() {
 		return this.inCatchBlock;
-	}
-
-	public void transform(CompilationUnitRewrite rewrite) {
 	}
 
 	/**
