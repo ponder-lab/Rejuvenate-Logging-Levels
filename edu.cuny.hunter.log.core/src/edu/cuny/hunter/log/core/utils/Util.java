@@ -1,7 +1,7 @@
 package edu.cuny.hunter.log.core.utils;
 
+import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -156,7 +156,7 @@ public final class Util {
 		String identifier = node.getName().getIdentifier();
 		String logMessage = "";
 
-		List<Expression> arguments = new LinkedList<Expression>();
+		List<Expression> arguments = new ArrayList<Expression>();
 		arguments.addAll(node.arguments());
 
 		// log(Level.INFO, "...");
@@ -179,7 +179,7 @@ public final class Util {
 
 		String logMessage = "";
 
-		List<Expression> arguments = new LinkedList<Expression>();
+		List<Expression> arguments = new ArrayList<Expression>();
 		arguments.addAll(node.arguments());
 
 		for (Expression argument : arguments)
