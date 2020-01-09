@@ -7,6 +7,7 @@
 	</classpathentry>
 	<classpathentry kind="con" path="org.eclipse.pde.core.requiredPlugins"/>
 	<classpathentry kind="lib" path="lib/commons-csv-1.1.jar" sourcepath="lib/commons-csv-1.1.jar"/>
-	<classpathentry kind="src" path="src/"/>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="lib" path="/edu.cuny.hunter.log.core/lib/slf4j-api-2.0.0-alpha1.jar"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>

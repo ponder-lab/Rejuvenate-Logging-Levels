@@ -20,7 +20,8 @@ Import-Package: edu.cuny.citytech.refactoring.common.core,
  org.eclipse.jdt.internal.corext.codemanipulation,
  org.eclipse.jdt.internal.ui.preferences,
  org.eclipse.ltk.core.refactoring,
- org.eclipse.ltk.core.refactoring.participants
+ org.eclipse.ltk.core.refactoring.participants,
+ org.slf4j.event
 Bundle-ClassPath: lib/commons-csv-1.1.jar,
  .
 Automatic-Module-Name: edu.cuny.hunter.log.evaluation

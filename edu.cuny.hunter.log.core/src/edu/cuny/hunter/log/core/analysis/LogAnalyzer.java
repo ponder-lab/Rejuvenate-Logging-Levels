@@ -38,25 +38,27 @@ public class LogAnalyzer extends ASTVisitor {
 
 	private static final Logger LOGGER = Logger.getLogger(LoggerNames.LOGGER_NAME);
 
-	/**
-	 * Set of log invocations not transformed due to if condition.
-	 */
+	// Sets of log invocations for java.util.logging.
 	private HashSet<LogInvocation> logInvsNotTransformedInIf = new HashSet<LogInvocation>();
-
-	/**
-	 * Set of log invocations that their log levels are not lower in catch blocks
-	 */
 	private HashSet<LogInvocation> logInvsNotLoweredInCatch = new HashSet<LogInvocation>();
-
 	private HashSet<LogInvocation> logInvsNotLoweredInIfStatement = new HashSet<LogInvocation>();
-
 	private HashSet<LogInvocation> logInvsNotLoweredByKeywords = new HashSet<LogInvocation>();
-
 	private HashSet<LogInvocation> logInvsNotRaisedByKeywords = new HashSet<LogInvocation>();
-
 	private HashSet<LogInvocation> logInvsAdjustedByDis = new HashSet<LogInvocation>();
 
 	private Set<LogInvocation> logInvocationSet = new HashSet<>();
+
+	// Sets of log invocations for slf4j.
+	private HashSet<LogInvocationSlf4j> logInvsNotTransformedInIfSlf4j = new HashSet<LogInvocationSlf4j>();
+	private HashSet<LogInvocationSlf4j> logInvsNotLoweredInCatchSlf4j = new HashSet<LogInvocationSlf4j>();
+	private HashSet<LogInvocationSlf4j> logInvsNotLoweredInIfStatementSlf4j = new HashSet<LogInvocationSlf4j>();
+	private HashSet<LogInvocationSlf4j> logInvsNotLoweredByKeywordsSlf4j = new HashSet<LogInvocationSlf4j>();
+	private HashSet<LogInvocationSlf4j> logInvsNotRaisedByKeywordsSlf4j = new HashSet<LogInvocationSlf4j>();
+	private HashSet<LogInvocationSlf4j> logInvsAdjustedByDisSlf4j = new HashSet<LogInvocationSlf4j>();
+
+	private Set<LogInvocationSlf4j> logInvocationSlf4j = new HashSet<LogInvocationSlf4j>();
+
+	private HashMap<org.slf4j.event.Level, Integer> levelToIntSlf4j = new HashMap<org.slf4j.event.Level, Integer>();
 
 	private HashMap<Level, Integer> levelToInt = new HashMap<Level, Integer>();
 
@@ -78,20 +80,22 @@ public class LogAnalyzer extends ASTVisitor {
 
 	private Map<IMethod, Float> methodToDOI = new HashMap<>();
 
+	// A list of boundary for J.U.L
 	private ArrayList<Float> boundary;
+	// A list of boundary for slf4j.
+	private ArrayList<Float> boundarySlf4j;
 
 	/**
 	 * A set of keywords in log messages for lowering log levels.
 	 */
-	private static final Set<String> KEYWORDS_IN_LOG_MESSAGES_FOR_LOWERING = Stream
-			.of("fail", "disabl", "error", "exception", "collision", "reboot", "terminat", "throw", "should", "start",
-					"tried", "try", "empty", "launch", "init", "does not", "doesn't", "did not", "didn't", "stop",
-					"shut", "run", "deprecat", "kill", "finish", "ready", "wait", "dead", "alive", "creat", "debug",
-					"info", "warn", "fatal", "severe", "config ", "fine", "trace", "FYI", "unknown", "could not",
-					"cannot", "couldn't", "can't", "can not", "interrupt", "have no", "has no", "had no","unsupport", "not support",
-					"wrong", "reject", "cancel", "not recognize", "invalid", "timed out", "unable", "trigger", "expected",
-					"unavailable", "not available", "reset", "too many", "expired", "not allowed")
-			.collect(Collectors.toSet());
+	private static final Set<String> KEYWORDS_IN_LOG_MESSAGES_FOR_LOWERING = Stream.of("fail", "disabl", "error",
+			"exception", "collision", "reboot", "terminat", "throw", "should", "start", "tried", "try", "empty",
+			"launch", "init", "does not", "doesn't", "did not", "didn't", "stop", "shut", "run", "deprecat", "kill",
+			"finish", "ready", "wait", "dead", "alive", "creat", "debug", "info", "warn", "fatal", "severe", "config ",
+			"fine", "trace", "FYI", "unknown", "could not", "cannot", "couldn't", "can't", "can not", "interrupt",
+			"have no", "has no", "had no", "unsupport", "not support", "wrong", "reject", "cancel", "not recognize",
+			"invalid", "timed out", "unable", "trigger", "expected", "unavailable", "not available", "reset",
+			"too many", "expired", "not allowed").collect(Collectors.toSet());
 	/**
 	 * A set of keywords in log messages for raising log levels.
 	 */
@@ -144,12 +148,14 @@ public class LogAnalyzer extends ASTVisitor {
 	 */
 	private void analyzeLogInvs(Set<MethodDeclaration> methodDecsForAnalyzedMethod) {
 		// build boundary
-		boundary = this.buildBoundary(this.methodToDOI.values());
+		this.boundary = this.buildBoundary(this.methodToDOI.values());
+		this.boundarySlf4j = this.buildBoundarySlf4j(this.methodToDOI.values());
 
 		Set<IMethod> validMethods = this.methodToDOI.keySet();
 
 		// It's used by the limitation of max transformation distance.
 		this.createLevelToInt();
+		this.createLevelToIntSlf4j();
 
 		// check whether action is needed
 		for (LogInvocation logInvocation : this.logInvocationSet) {
@@ -163,12 +169,175 @@ public class LogAnalyzer extends ASTVisitor {
 								+ logInvocation.getExpression());
 			}
 		}
+
+		for (LogInvocationSlf4j logInvocationSlf4j : this.logInvocationSlf4j) {
+			// Methods not analyzed will not be considered for transformation.
+			if (!validMethods.contains(logInvocationSlf4j.getEnclosingEclipseMethod()))
+				logInvocationSlf4j.setAction(ActionSlf4j.NONE, null);
+			else {
+				if (this.checkCodeModification(logInvocationSlf4j) && this.checkEnoughData(logInvocationSlf4j))
+					if (this.doAction(logInvocationSlf4j))
+						LOGGER.info("Do action: " + logInvocationSlf4j.getAction() + "! The changed log expression is "
+								+ logInvocationSlf4j.getExpression());
+			}
+		}
+	}
+
+	private boolean doAction(LogInvocationSlf4j logInvocationSlf4j) {
+
+		if (this.checkEnclosingMethod(logInvocationSlf4j))
+			return false;
+		if (this.checkBoundarySize(logInvocationSlf4j))
+			return false;
+
+		if (this.checkIfConditionForLogging(logInvocationSlf4j))
+			return false;
+
+		org.slf4j.event.Level currentLogLevel = logInvocationSlf4j.getLogLevel();
+
+		// Cannot get valid log level from log invocations.
+		if (currentLogLevel == null)
+			return false;
+
+		org.slf4j.event.Level rejuvenatedLogLevel = this.getRejuvenatedLogLevel(this.boundarySlf4j, logInvocationSlf4j);
+
+		if (rejuvenatedLogLevel == null)
+			return false;
+
+		if ((currentLogLevel == rejuvenatedLogLevel) // current log level is
+														// same to transformed
+														// log level{
+				|| (this.useLogCategory && (currentLogLevel == org.slf4j.event.Level.ERROR
+						|| currentLogLevel == org.slf4j.event.Level.WARN))) // process log
+																			// category
+																			// ERROR/WARN
+		{
+			logInvocationSlf4j.setAction(ActionSlf4j.NONE, null);
+			return false;
+		}
+
+		if (this.processNotLowerLogLevelWithKeyWords(logInvocationSlf4j,
+				currentLogLevel.compareTo(rejuvenatedLogLevel) < 0))
+			return false;
+
+		if (this.processNotRaiseLogLevelWithKeywords(logInvocationSlf4j,
+				currentLogLevel.compareTo(rejuvenatedLogLevel) > 0))
+			return false;
+
+		if (this.processNotLowerLevelInCatchBlocks(logInvocationSlf4j,
+				currentLogLevel.compareTo(rejuvenatedLogLevel) < 0))
+			return false;
+
+		if (this.proceeNotLowerLogLevelInIfStatement(logInvocationSlf4j,
+				currentLogLevel.compareTo(rejuvenatedLogLevel) < 0))
+			return false;
+
+		// Adjust transformations by the max transformation distance.
+		org.slf4j.event.Level adjustedLogLevel = this.adjustTransformationByDistanceSlf4j(currentLogLevel,
+				rejuvenatedLogLevel);
+		if (!rejuvenatedLogLevel.equals(adjustedLogLevel)) {
+			this.logInvsAdjustedByDisSlf4j.add(logInvocationSlf4j);
+			rejuvenatedLogLevel = adjustedLogLevel;
+		}
+
+		if (rejuvenatedLogLevel == null) {
+			logInvocationSlf4j.setAction(ActionSlf4j.NONE, null);
+			return false;
+		}
+
+		if (rejuvenatedLogLevel == org.slf4j.event.Level.TRACE)
+			logInvocationSlf4j.setAction(ActionSlf4j.CONVERT_TO_TRACE, org.slf4j.event.Level.TRACE);
+		if (rejuvenatedLogLevel == org.slf4j.event.Level.DEBUG)
+			logInvocationSlf4j.setAction(ActionSlf4j.CONVERT_TO_DEBUG, org.slf4j.event.Level.DEBUG);
+		if (rejuvenatedLogLevel == org.slf4j.event.Level.INFO)
+			logInvocationSlf4j.setAction(ActionSlf4j.CONVERT_TO_INFO, org.slf4j.event.Level.INFO);
+		if (rejuvenatedLogLevel == org.slf4j.event.Level.WARN)
+			logInvocationSlf4j.setAction(ActionSlf4j.CONVERT_TO_WARN, org.slf4j.event.Level.WARN);
+		if (rejuvenatedLogLevel == org.slf4j.event.Level.ERROR)
+			logInvocationSlf4j.setAction(ActionSlf4j.CONVERT_TO_ERROR, org.slf4j.event.Level.ERROR);
+
+		return true;
+	}
+
+	/**
+	 * Do not change a log level in a logging statement if there exists an immediate
+	 * if statement whose condition contains a log level or a case label mentioning
+	 * a log level.
+	 * 
+	 * For log invocations in slf4j.
+	 */
+	private boolean checkIfConditionForLogging(LogInvocationSlf4j logInvocation) {
+		if (this.checkIfCondition) {
+			if (checkIfConditionHavingLevel(logInvocation.getExpression())
+					|| checkCaseHavingLevel(logInvocation.getExpression())) {
+				logInvocation.setAction(ActionSlf4j.NONE, null);
+				this.logInvsNotTransformedInIfSlf4j.add(logInvocation);
+				return true;
+			}
+		}
+		return false;
+	}
+
+	/**
+	 * Do not change a log level in a logging statement if there exists an immediate
+	 * if statement whose condition contains a log level or a case label mentioning
+	 * a log level.
+	 * 
+	 * For log invocations in J.U.L.
+	 */
+	private boolean checkIfConditionForLogging(LogInvocation logInvocation) {
+		if (this.checkIfCondition) {
+			if (checkIfConditionHavingLevel(logInvocation.getExpression())
+					|| checkCaseHavingLevel(logInvocation.getExpression())) {
+				logInvocation.setAction(Action.NONE, null);
+				this.logInvsNotTransformedInIf.add(logInvocation);
+				return true;
+			}
+		}
+		return false;
+	}
+
+	private boolean checkBoundarySize(LogInvocation logInvocation) {
+		// DOI not in intervals
+		if (logInvocation.getDegreeOfInterestValue() < this.boundary.get(0)
+				|| logInvocation.getDegreeOfInterestValue() > this.boundary.get(this.boundary.size() - 1)) {
+			logInvocation.setAction(Action.NONE, null);
+			return true;
+		}
+		return false;
+	}
+
+	/**
+	 * For slf4j.
+	 */
+	private boolean checkBoundarySize(LogInvocationSlf4j logInvocation) {
+		// DOI not in intervals
+		if (logInvocation.getDegreeOfInterestValue() < this.boundary.get(0)
+				|| logInvocation.getDegreeOfInterestValue() > this.boundary.get(this.boundary.size() - 1)) {
+			logInvocation.setAction(ActionSlf4j.NONE, null);
+			return true;
+		}
+		return false;
+	}
+
+	/**
+	 * If log invocation has no enclosing method, the tool cannot currently handle
+	 * it.
+	 */
+	private boolean checkEnclosingMethod(AbstractLogInvocation logInvocation) {
+		// No enclosing method.
+		if (logInvocation.getEnclosingEclipseMethod() == null) {
+			logInvocation.addStatusEntry(Failure.CURRENTLY_NOT_HANDLED,
+					logInvocation.getExpression() + " has no enclosing method.");
+			return true;
+		}
+		return false;
 	}
 
 	/**
 	 * Check whether all DOI values are the same.
 	 */
-	private boolean checkEnoughData(LogInvocation logInvocation) {
+	private boolean checkEnoughData(AbstractLogInvocation logInvocation) {
 		if (this.boundary == null) {
 			logInvocation.addStatusEntry(Failure.NO_ENOUGH_DATA,
 					"The DOI values are all same or no DOI values. Cannot get valid results.");
@@ -179,80 +348,44 @@ public class LogAnalyzer extends ASTVisitor {
 	}
 
 	/**
-	 * Do transformation action.
+	 * Do transformation action for J.U.L framework.
 	 */
 	private boolean doAction(LogInvocation logInvocation) {
-		// No enclosing method.
-		if (logInvocation.getEnclosingEclipseMethod() == null) {
-			logInvocation.addStatusEntry(Failure.CURRENTLY_NOT_HANDLED,
-					logInvocation.getExpression() + " has no enclosing method.");
+
+		if (this.checkEnclosingMethod(logInvocation))
 			return false;
-		}
+		if (this.checkBoundarySize(logInvocation))
+			return false;
+
+		if (this.checkIfConditionForLogging(logInvocation))
+			return false;
 
 		Level currentLogLevel = logInvocation.getLogLevel();
+
 		// Cannot get valid log level from log invocations.
 		if (currentLogLevel == null)
 			return false;
 
-		// DOI not in intervals
-		if (logInvocation.getDegreeOfInterestValue() < this.boundary.get(0)
-				|| logInvocation.getDegreeOfInterestValue() > this.boundary.get(this.boundary.size() - 1)) {
-			logInvocation.setAction(Action.NONE, null);
-			return false;
-		}
-
-		/**
-		 * Do not change a log level in a logging statement if there exists an immediate
-		 * if statement whose condition contains a log level or a case label mentioning
-		 * a log level.
-		 */
-		if (this.checkIfCondition) {
-			if (checkIfConditionHavingLevel(logInvocation.getExpression())
-					|| checkCaseHavingLevel(logInvocation.getExpression())) {
-				logInvocation.setAction(Action.NONE, null);
-				this.logInvsNotTransformedInIf.add(logInvocation);
-				return false;
-			}
-		}
-
-		Level rejuvenatedLogLevel = getRejuvenatedLogLevel(this.boundary, logInvocation);
+		Level rejuvenatedLogLevel = this.getRejuvenatedLogLevel(this.boundary, logInvocation);
 
 		if (rejuvenatedLogLevel == null)
 			return false;
 
-		if (this.notLowerLogLevelWithKeyWords) {
-			if (Util.isLogMessageWithKeywords(logInvocation.getExpression(), KEYWORDS_IN_LOG_MESSAGES_FOR_LOWERING)
-					&& currentLogLevel.intValue() > rejuvenatedLogLevel.intValue()) {
-				logInvocation.setAction(Action.NONE, null);
-				this.logInvsNotLoweredByKeywords.add(logInvocation);
-				return false;
-			}
-		}
-
-		if (this.notRaiseLogLevelWithoutKeyWords) {
-			if (!Util.isLogMessageWithKeywords(logInvocation.getExpression(), KEYWORDS_IN_LOG_MESSAGES_FOR_RAISING)
-					&& currentLogLevel.intValue() < rejuvenatedLogLevel.intValue()) {
-				logInvocation.setAction(Action.NONE, null);
-				this.logInvsNotRaisedByKeywords.add(logInvocation);
-				return false;
-			}
-		}
-
-		// process not lower log levels in catch blocks
-		if (logInvocation.getInCatchBlock() && currentLogLevel.intValue() > rejuvenatedLogLevel.intValue()) {
-			this.logInvsNotLoweredInCatch.add(logInvocation);
-			logInvocation.setAction(Action.NONE, null);
+		if (this.processNotLowerLogLevelWithKeyWords(logInvocation,
+				currentLogLevel.intValue() > rejuvenatedLogLevel.intValue()))
 			return false;
-		}
 
-		if (this.notLowerLogLevelInIfStatement)
-			// process not lower log levels in if statements.
-			if (checkIfBlock(logInvocation.getExpression())
-					&& currentLogLevel.intValue() > rejuvenatedLogLevel.intValue()) {
-				this.logInvsNotLoweredInIfStatement.add(logInvocation);
-				logInvocation.setAction(Action.NONE, null);
-				return false;
-			}
+		if (this.processNotRaiseLogLevelWithKeywords(logInvocation,
+				currentLogLevel.intValue() < rejuvenatedLogLevel.intValue()))
+			return false;
+
+		if (this.processNotLowerLevelInCatchBlocks(logInvocation,
+				currentLogLevel.intValue() > rejuvenatedLogLevel.intValue()))
+			return false;
+
+		if (this.proceeNotLowerLogLevelInIfStatement(logInvocation,
+				currentLogLevel.intValue() > rejuvenatedLogLevel.intValue()))
+			return false;
 
 		if ((currentLogLevel == rejuvenatedLogLevel) // current log level is
 														// same to transformed
@@ -306,6 +439,174 @@ public class LogAnalyzer extends ASTVisitor {
 			logInvocation.setAction(Action.CONVERT_TO_SEVERE, Level.SEVERE);
 
 		return true;
+
+	}
+
+	/**
+	 * Should not lower log level if it's logging statement in a if statement.
+	 */
+	private boolean proceeNotLowerLogLevelInIfStatement(LogInvocation logInvocation, boolean isLowered) {
+		if (this.notLowerLogLevelInIfStatement)
+			// process not lower log levels in if statements.
+			if (checkIfBlock(logInvocation.getExpression()) && isLowered) {
+				this.logInvsNotLoweredInIfStatement.add(logInvocation);
+				logInvocation.setAction(Action.NONE, null);
+				return true;
+			}
+		return false;
+	}
+
+	/**
+	 * For slf4j.
+	 * 
+	 * Should not lower log level if it's logging statement in a if statement.
+	 */
+	private boolean proceeNotLowerLogLevelInIfStatement(LogInvocationSlf4j logInvocation, boolean isLowered) {
+		if (this.notLowerLogLevelInIfStatement)
+			// process not lower log levels in if statements.
+			if (checkIfBlock(logInvocation.getExpression()) && isLowered) {
+				this.logInvsNotLoweredInIfStatementSlf4j.add(logInvocation);
+				logInvocation.setAction(ActionSlf4j.NONE, null);
+				return true;
+			}
+		return false;
+	}
+
+	/**
+	 * Should not raise log level if its corresponding log message contains
+	 * keywords.
+	 */
+	private boolean processNotRaiseLogLevelWithKeywords(LogInvocation logInvocation, boolean isRaised) {
+		if (this.notRaiseLogLevelWithoutKeyWords) {
+			if (!Util.isLogMessageWithKeywords(logInvocation.getExpression(), KEYWORDS_IN_LOG_MESSAGES_FOR_RAISING)
+					&& isRaised) {
+				logInvocation.setAction(Action.NONE, null);
+				this.logInvsNotRaisedByKeywords.add(logInvocation);
+				return true;
+			}
+		}
+		return false;
+	}
+
+	/**
+	 * For slf4j.
+	 * 
+	 * Should not raise log level if its corresponding log message contains
+	 * keywords.
+	 */
+	private boolean processNotRaiseLogLevelWithKeywords(LogInvocationSlf4j logInvocation, boolean isRaised) {
+		if (this.notRaiseLogLevelWithoutKeyWords) {
+			if (!Util.isLogMessageWithKeywordsSlf4j(logInvocation.getExpression(), KEYWORDS_IN_LOG_MESSAGES_FOR_RAISING)
+					&& isRaised) {
+				logInvocation.setAction(ActionSlf4j.NONE, null);
+				this.logInvsNotRaisedByKeywordsSlf4j.add(logInvocation);
+				return true;
+			}
+		}
+		return false;
+	}
+
+	/**
+	 * Should not lower log level if the logging statement in catch block.
+	 */
+	private boolean processNotLowerLevelInCatchBlocks(LogInvocation logInvocation, boolean isLowered) {
+		// process not lower log levels in catch blocks
+		if (logInvocation.getInCatchBlock() && isLowered) {
+			this.logInvsNotLoweredInCatch.add(logInvocation);
+			logInvocation.setAction(Action.NONE, null);
+			return true;
+		}
+		return false;
+	}
+
+	/**
+	 * For slf4j.
+	 * 
+	 * Should not lower log level if the logging statement in catch block.
+	 */
+	private boolean processNotLowerLevelInCatchBlocks(LogInvocationSlf4j logInvocation, boolean isLowered) {
+		// process not lower log levels in catch blocks
+		if (logInvocation.getInCatchBlock() && isLowered) {
+			this.logInvsNotLoweredInCatchSlf4j.add(logInvocation);
+			logInvocation.setAction(ActionSlf4j.NONE, null);
+			return true;
+		}
+		return false;
+	}
+
+	/**
+	 * Should not lower log level if the log message includes a keyword.
+	 * 
+	 * @return boolean: true means the log level is not transformed due to the
+	 *         keywords
+	 */
+	private boolean processNotLowerLogLevelWithKeyWords(LogInvocation logInvocation, boolean isLowered) {
+		if (this.notLowerLogLevelWithKeyWords) {
+			if (Util.isLogMessageWithKeywords(logInvocation.getExpression(), KEYWORDS_IN_LOG_MESSAGES_FOR_LOWERING)
+					&& isLowered) {
+				logInvocation.setAction(Action.NONE, null);
+				this.logInvsNotLoweredByKeywords.add(logInvocation);
+				return true;
+			}
+		}
+		return false;
+	}
+
+	/**
+	 * For slf4j.
+	 * 
+	 * Should not lower log level if the log message includes a keyword.
+	 * 
+	 * @return boolean: true means the log level is not transformed due to the
+	 *         keywords
+	 */
+	private boolean processNotLowerLogLevelWithKeyWords(LogInvocationSlf4j logInvocation, boolean isLowered) {
+		if (this.notLowerLogLevelWithKeyWords) {
+			if (Util.isLogMessageWithKeywordsSlf4j(logInvocation.getExpression(), KEYWORDS_IN_LOG_MESSAGES_FOR_LOWERING)
+					&& isLowered) {
+				logInvocation.setAction(ActionSlf4j.NONE, null);
+				this.logInvsNotLoweredByKeywordsSlf4j.add(logInvocation);
+				return true;
+			}
+		}
+		return false;
+	}
+
+	/**
+	 * Get the target log level based on boundary.
+	 * 
+	 * We don't need log category for slf4j now.
+	 * 
+	 * @param boundary
+	 * @param DOI
+	 * @return the target log level
+	 */
+	private org.slf4j.event.Level getRejuvenatedLogLevel(ArrayList<Float> boundary, LogInvocationSlf4j logInvocation) {
+		float doiValue = logInvocation.getDegreeOfInterestValue();
+		if (boundary == null || boundary.isEmpty())
+			return null;
+
+		// If we don't consider ERROR and WARN.
+		if (this.useLogCategory) {
+			if (doiValue >= boundary.get(0) && doiValue < boundary.get(1))
+				return org.slf4j.event.Level.TRACE;
+			if (doiValue < boundary.get(2))
+				return org.slf4j.event.Level.DEBUG;
+			if (doiValue < boundary.get(3))
+				return org.slf4j.event.Level.INFO;
+		} else {
+			if (doiValue >= boundary.get(0) && doiValue < boundary.get(1))
+				return org.slf4j.event.Level.TRACE;
+			if (doiValue < boundary.get(2))
+				return org.slf4j.event.Level.DEBUG;
+			if (doiValue < boundary.get(3))
+				return org.slf4j.event.Level.INFO;
+			if (doiValue < boundary.get(4))
+				return org.slf4j.event.Level.WARN;
+			if (doiValue < boundary.get(5))
+				return org.slf4j.event.Level.ERROR;
+		}
+		return null;
 	}
 
 	/**
@@ -333,6 +634,42 @@ public class LogAnalyzer extends ASTVisitor {
 
 		int rejuveLogLevelValue = this.levelToInt.get(currentLevel) + transformationDistance;
 		for (Map.Entry<Level, Integer> entry : this.levelToInt.entrySet()) {
+			if (entry.getValue() == rejuveLogLevelValue)
+				return entry.getKey();
+		}
+
+		return null;
+	}
+
+	/**
+	 * For slf4j.
+	 * 
+	 * Adjust transformations if their transformation distance is over the distance
+	 * limitation.
+	 * 
+	 * @return Log level: after adjusting.
+	 */
+	private org.slf4j.event.Level adjustTransformationByDistanceSlf4j(org.slf4j.event.Level currentLevel,
+			org.slf4j.event.Level rejuvenatedLogLevel) {
+
+		// Discard all transformations if allowed max transformation distance is
+		// negative or equal to 0.
+		if (maxTransDistance <= 0)
+			return null;
+
+		int transformationDistance = this.levelToIntSlf4j.get(rejuvenatedLogLevel)
+				- this.levelToIntSlf4j.get(currentLevel);
+
+		// if it's over the max transformation distance which are allowed by users
+		if (Math.abs(transformationDistance) > this.maxTransDistance) {
+			if (transformationDistance > 0)
+				transformationDistance = this.maxTransDistance;
+			else
+				transformationDistance = -this.maxTransDistance;
+		}
+
+		int rejuveLogLevelValue = this.levelToIntSlf4j.get(currentLevel) + transformationDistance;
+		for (Map.Entry<org.slf4j.event.Level, Integer> entry : this.levelToIntSlf4j.entrySet()) {
 			if (entry.getValue() == rejuveLogLevelValue)
 				return entry.getKey();
 		}
@@ -369,6 +706,26 @@ public class LogAnalyzer extends ASTVisitor {
 	}
 
 	/**
+	 * Maintain a map from log level to an integer value. We are using this map to
+	 * calculate transformation distance.
+	 * 
+	 * For slf4j.
+	 */
+	private void createLevelToIntSlf4j() {
+		if (this.useLogCategory) {
+			this.levelToIntSlf4j.put(org.slf4j.event.Level.TRACE, 0);
+			this.levelToIntSlf4j.put(org.slf4j.event.Level.DEBUG, 1);
+			this.levelToIntSlf4j.put(org.slf4j.event.Level.INFO, 2);
+		} else {
+			this.levelToIntSlf4j.put(org.slf4j.event.Level.TRACE, 0);
+			this.levelToIntSlf4j.put(org.slf4j.event.Level.DEBUG, 1);
+			this.levelToIntSlf4j.put(org.slf4j.event.Level.INFO, 2);
+			this.levelToIntSlf4j.put(org.slf4j.event.Level.WARN, 3);
+			this.levelToIntSlf4j.put(org.slf4j.event.Level.ERROR, 4);
+		}
+	}
+
+	/**
 	 * Get the rejuvenated log level based on boundary.
 	 * 
 	 * @param boundary
@@ -376,49 +733,49 @@ public class LogAnalyzer extends ASTVisitor {
 	 * @return the rejuvenated log level
 	 */
 	private Level getRejuvenatedLogLevel(ArrayList<Float> boundary, LogInvocation logInvocation) {
-		float DOI = logInvocation.getDegreeOfInterestValue();
-		if (boundary == null)
+		float doiValue = logInvocation.getDegreeOfInterestValue();
+		if (boundary == null || boundary.isEmpty())
 			return null;
 
 		if (this.useLogCategory) {
 			LOGGER.info("Use log category: do not consider config/warning/severe.");
-			if (DOI >= boundary.get(0) && DOI < boundary.get(1))
+			if (doiValue >= boundary.get(0) && doiValue < boundary.get(1))
 				return Level.FINEST;
-			if (DOI < boundary.get(2))
+			if (doiValue < boundary.get(2))
 				return Level.FINER;
-			if (DOI < boundary.get(3))
+			if (doiValue < boundary.get(3))
 				return Level.FINE;
-			if (DOI <= boundary.get(4))
+			if (doiValue <= boundary.get(4))
 				return Level.INFO;
 		} else if (this.useLogCategoryWithConfig) {
 			LOGGER.info("Use log category: do not consider config.");
-			if (DOI >= boundary.get(0) && DOI < boundary.get(1))
+			if (doiValue >= boundary.get(0) && doiValue < boundary.get(1))
 				return Level.FINEST;
-			if (DOI < boundary.get(2))
+			if (doiValue < boundary.get(2))
 				return Level.FINER;
-			if (DOI < boundary.get(3))
+			if (doiValue < boundary.get(3))
 				return Level.FINE;
-			if (DOI < boundary.get(4))
+			if (doiValue < boundary.get(4))
 				return Level.INFO;
-			if (DOI < boundary.get(5))
+			if (doiValue < boundary.get(5))
 				return Level.WARNING;
-			if (DOI <= boundary.get(6))
+			if (doiValue <= boundary.get(6))
 				return Level.SEVERE;
 		} else {
 			LOGGER.info("Default log category.");
-			if (DOI >= boundary.get(0) && DOI < boundary.get(1))
+			if (doiValue >= boundary.get(0) && doiValue < boundary.get(1))
 				return Level.FINEST;
-			if (DOI < boundary.get(2))
+			if (doiValue < boundary.get(2))
 				return Level.FINER;
-			if (DOI < boundary.get(3))
+			if (doiValue < boundary.get(3))
 				return Level.FINE;
-			if (DOI < boundary.get(4))
+			if (doiValue < boundary.get(4))
 				return Level.CONFIG;
-			if (DOI < boundary.get(5))
+			if (doiValue < boundary.get(5))
 				return Level.INFO;
-			if (DOI < boundary.get(6))
+			if (doiValue < boundary.get(6))
 				return Level.WARNING;
-			if (DOI <= boundary.get(7))
+			if (doiValue <= boundary.get(7))
 				return Level.SEVERE;
 		}
 		return null;
@@ -450,6 +807,34 @@ public class LogAnalyzer extends ASTVisitor {
 				boundary.add(max);
 			}
 			return boundary;
+		} else
+			return null;
+	}
+
+	/**
+	 * Build a list of boundary for the log transformations in Slf4j. The DOI values
+	 * could be divided into 5 groups. Each group is corresponding to log level
+	 * ERROR, WARN, INFO, DEBUG and TRACE respectively.
+	 * 
+	 * @param degreeOfInterests: a list of DOI values for all methods.
+	 * @return a list of boundary for slf4j.
+	 */
+	private ArrayList<Float> buildBoundarySlf4j(Collection<Float> degreeOfInterests) {
+		float min = getMinDOI(degreeOfInterests);
+		float max = getMaxDOI(degreeOfInterests);
+		ArrayList<Float> boundarySlf4j = new ArrayList<>();
+		if (min < max) {
+			// Don't consider ERROR and WARN, i.e., we only consider INFO, DEBUG and TRACE
+			if (this.useLogCategory) {
+				float interval = (max - min) / 3;
+				IntStream.range(0, 3).forEach(i -> boundarySlf4j.add(min + i * interval));
+				boundarySlf4j.add(max);
+			} else {
+				float interval = (max - min) / 5;
+				IntStream.range(0, 5).forEach(i -> boundarySlf4j.add(min + i * interval));
+				boundarySlf4j.add(max);
+			}
+			return boundarySlf4j;
 		} else
 			return null;
 	}
@@ -489,7 +874,7 @@ public class LogAnalyzer extends ASTVisitor {
 	@Override
 	public boolean visit(MethodInvocation node) {
 
-		Level logLevel = null;
+		LogLevel logLevel = null;
 
 		try {
 			logLevel = Util.isLogExpression(node, test);
@@ -620,9 +1005,8 @@ public class LogAnalyzer extends ASTVisitor {
 	 *         statement is not a logging statement.
 	 */
 	private static boolean checkFirstStatementInIf(Statement statement, MethodInvocation loggingExpression) {
-		if (statement == null)
-			return false;
-
+		if (statement == null) return false;
+		
 		// if it's a block.
 		if (statement.getNodeType() == ASTNode.BLOCK) {
 			Block block = (Block) statement;
@@ -681,7 +1065,7 @@ public class LogAnalyzer extends ASTVisitor {
 	/**
 	 * Whether the code is read-only, generated code and in a .class file.
 	 */
-	public boolean checkCodeModification(LogInvocation logInvocation) {
+	public boolean checkCodeModification(AbstractLogInvocation logInvocation) {
 
 		CompilationUnit cu = logInvocation.getEnclosingCompilationUnit();
 		if (cu != null) {
@@ -715,13 +1099,28 @@ public class LogAnalyzer extends ASTVisitor {
 
 	}
 
-	private void createLogInvocation(MethodInvocation node, Level logLevel, boolean inCatchBlock) {
-		LogInvocation logInvocation = new LogInvocation(node, logLevel, inCatchBlock);
-		this.getLogInvocationSet().add(logInvocation);
+	/**
+	 * Create a set of input log invocations.
+	 */
+	private void createLogInvocation(MethodInvocation node, LogLevel logLevel, boolean inCatchBlock) {
+		if (logLevel == null) {
+			LogInvocation logInvocation = new LogInvocation(node, null, inCatchBlock);
+			this.getLogInvocationSet().add(logInvocation);
+		} else if (logLevel.framework.equals(LoggingFramework.JAVA_UTIL_LOGGING)) {
+			LogInvocation logInvocation = new LogInvocation(node, logLevel.getLogLevel(), inCatchBlock);
+			this.getLogInvocationSet().add(logInvocation);
+		} else if (logLevel.framework.equals(LoggingFramework.SLF4J)) {
+			LogInvocationSlf4j logInvocationSlf4j = new LogInvocationSlf4j(node, logLevel.getSlf4jLevel(),
+					inCatchBlock);
+			this.getLogInvocationSlf4js().add(logInvocationSlf4j);
+		}
 	}
 
 	public void updateDOI() {
 		this.getLogInvocationSet().forEach(inv -> {
+			inv.updateDOI();
+		});
+		this.getLogInvocationSlf4js().forEach(inv -> {
 			inv.updateDOI();
 		});
 	}
@@ -746,11 +1145,51 @@ public class LogAnalyzer extends ASTVisitor {
 		return this.logInvsNotRaisedByKeywords;
 	}
 
-	public HashSet<LogInvocation> getLogInvsAdjustedByDis(){
+	public HashSet<LogInvocation> getLogInvsAdjustedByDis() {
 		return this.logInvsAdjustedByDis;
 	}
-	
+
 	public Map<IMethod, Float> getMethodToDOI() {
 		return this.methodToDOI;
+	}
+
+	public Set<LogInvocationSlf4j> getLogInvocationSlf4js() {
+		return this.logInvocationSlf4j;
+	}
+
+	public void setLogInvocationsSlf4js(Set<LogInvocationSlf4j> logInvocationSlf4j) {
+		this.logInvocationSlf4j = logInvocationSlf4j;
+	}
+
+	public HashSet<LogInvocationSlf4j> getLogInvsNotLoweredByKeywordsSlf4j() {
+		return this.logInvsNotLoweredByKeywordsSlf4j;
+	}
+
+	public HashSet<LogInvocationSlf4j> getLogInvsNotLoweredInCatchSlf4j() {
+		return this.logInvsNotLoweredInCatchSlf4j;
+	}
+
+	public HashSet<LogInvocationSlf4j> getLogInvsNotLoweredInIfStatementsSlf4j() {
+		return this.logInvsNotLoweredInIfStatementSlf4j;
+	}
+
+	public HashSet<LogInvocationSlf4j> getLogInvsNotRaisedByKeywordsSlf4j() {
+		return this.logInvsNotRaisedByKeywordsSlf4j;
+	}
+
+	public HashSet<LogInvocationSlf4j> getLogInvsNotTransformedInIfSlf4j() {
+		return this.logInvsNotTransformedInIfSlf4j;
+	}
+
+	public ArrayList<Float> getBoundarySlf4j() {
+		return this.boundarySlf4j;
+	}
+
+	public HashSet<LogInvocationSlf4j> getLogInvsAdjustedByDisSlf4j() {
+		return logInvsAdjustedByDisSlf4j;
+	}
+
+	public void setLogInvsAdjustedByDisSlf4j(HashSet<LogInvocationSlf4j> logInvsAdjustedByDisSlf4j) {
+		this.logInvsAdjustedByDisSlf4j = logInvsAdjustedByDisSlf4j;
 	}
 }

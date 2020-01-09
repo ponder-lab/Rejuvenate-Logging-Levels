@@ -36,6 +36,8 @@ import org.osgi.framework.FrameworkUtil;
 
 import edu.cuny.citytech.refactoring.common.core.RefactoringProcessor;
 import edu.cuny.hunter.log.core.analysis.LogInvocation;
+import edu.cuny.hunter.log.core.analysis.LogInvocationSlf4j;
+import edu.cuny.hunter.log.core.analysis.LoggingFramework;
 import edu.cuny.hunter.log.core.refactorings.LogRejuvenatingProcessor;
 import edu.cuny.hunter.log.core.utils.LoggerNames;
 import edu.cuny.hunter.log.core.utils.Util;
@@ -136,6 +138,7 @@ public class EvaluationHandler extends AbstractHandler {
 	public Object execute(ExecutionEvent event) throws ExecutionException {
 		Job.create("Evaluating log level rejuventation ...", monitor -> {
 			CSVPrinter resultPrinter = null;
+			CSVPrinter resultSlf4jPrinter = null;
 			CSVPrinter repoPrinter = null;
 			CSVPrinter actionPrinter = null;
 			CSVPrinter inputLogInvPrinter = null;
@@ -170,7 +173,22 @@ public class EvaluationHandler extends AbstractHandler {
 						"not lower log levels of logs inside of if statements",
 						"not lower log levels in their messages with keywords",
 						"not raise log levels in their message without keywords",
-						"consider if condition having log level", "consistent log level in inheritance", "time (s)" });
+						"consider if condition having log level", "consistent log level in inheritance",
+						"logging framework", "time (s)" });
+
+				resultSlf4jPrinter = EvaluationUtil.createCSVPrinter("result_slf4j.csv", new String[] { "sequence",
+						"subject", "repo URL", "decay factor", "input logging statements",
+						"candidate logging statements", "passing logging statements", "failures",
+						"transformed logging statements", "log level not lowered in catch blocks",
+						"log level not lowered in if statements", "log level not transformed due to if condition",
+						"log level not lowered due to keywords", "log level adjusted by max transformation distance",
+						"log level adjusted by inheritance", "use log category (ERROR/WARN)",
+						"not lower log levels of logs inside of catch blocks",
+						"not lower log levels of logs inside of if statements",
+						"not lower log levels in their messages with keywords",
+						"not raise log levels in their message without keywords",
+						"consider if condition having log level", "consistent log level in inheritance",
+						"logging framework", "time (s)" });
 
 				repoPrinter = EvaluationUtil.createCSVPrinter("repos.csv",
 						new String[] { "sequence", "repo URL", "SHA-1 of head", "N for commits",
@@ -178,40 +196,41 @@ public class EvaluationHandler extends AbstractHandler {
 								"average Java lines removed" });
 				actionPrinter = EvaluationUtil.createCSVPrinter("log_transformation_actions.csv",
 						new String[] { "sequence", "subject", "log expression", "start pos", "log level", "type FQN",
-								"enclosing method", "DOI value", "action", "new level" });
+								"enclosing method", "DOI value", "action", "new level", "logging framework" });
 				inputLogInvPrinter = EvaluationUtil.createCSVPrinter("input_log_invocations.csv",
 						new String[] { "subject", "log expression", "start pos", "log level", "type FQN",
-								"enclosing method", "DOI value" });
+								"enclosing method", "logging framework", "DOI value" });
 
 				nonenclosingMethodPrinter = EvaluationUtil.createCSVPrinter("nonenclosing_methods.csv",
 						new String[] { "subject", "type FQN", "method", "DOI" });
 
 				failurePrinter = EvaluationUtil.createCSVPrinter("failures.csv",
 						new String[] { "sequence", "subject", "log expression", "start pos", "log level", "type FQN",
-								"enclosing method", "code", "message" });
+								"enclosing method", "code", "message", "logging framework" });
 				doiPrinter = EvaluationUtil.createCSVPrinter("DOI_boundaries.csv", new String[] { "sequence", "subject",
-						"low boundary inclusive", "high boundary exclusive", "log level" });
+						"low boundary inclusive", "high boundary exclusive", "log level", "logging framework" });
 				gitCommitPrinter = EvaluationUtil.createCSVPrinter("git_commits.csv",
 						new String[] { "subject", "SHA1", "Java lines added", "Java lines removed", "methods found",
 								"interaction events", "run time (s)" });
 				candidatePrinter = EvaluationUtil.createCSVPrinter("candidate_log_invocations.csv",
 						new String[] { "sequence", "subject", "log expression", "start pos", "log level", "type FQN",
-								"enclosing method", "DOI value" });
-				notLowerLevelsInCatchBlockPrinter = EvaluationUtil
-						.createCSVPrinter("not_lower_levels_in_catch_blocks.csv", new String[] { "sequence", "subject",
-								"log expression", "start pos", "log level", "type FQN", "enclosing method" });
-				notLowerLevelsInIfStatementPrinter = EvaluationUtil
-						.createCSVPrinter("not_lower_levels_in_if_statements.csv", new String[] { "sequence", "subject",
-								"log expression", "start pos", "log level", "type FQN", "enclosing method" });
-				notLowerLevelsDueToKeywordsPrinter = EvaluationUtil
-						.createCSVPrinter("not_lower_levels_due_to_keywords.csv", new String[] { "sequence", "subject",
-								"log expression", "start pos", "log level", "type FQN", "enclosing method" });
-				notRaiseLevelDueToKeywordsPrinter = EvaluationUtil
-						.createCSVPrinter("not_raise_levels_due_to_keywords.csv", new String[] { "sequence", "subject",
-								"log expression", "start pos", "log level", "type FQN", "enclosing method" });
+								"enclosing method", "logging framework", "DOI value" });
+				notLowerLevelsInCatchBlockPrinter = EvaluationUtil.createCSVPrinter(
+						"not_lower_levels_in_catch_blocks.csv", new String[] { "sequence", "subject", "log expression",
+								"start pos", "log level", "type FQN", "enclosing method", "logging framework" });
+				notLowerLevelsInIfStatementPrinter = EvaluationUtil.createCSVPrinter(
+						"not_lower_levels_in_if_statements.csv", new String[] { "sequence", "subject", "log expression",
+								"start pos", "log level", "type FQN", "enclosing method", "logging framework" });
+				notLowerLevelsDueToKeywordsPrinter = EvaluationUtil.createCSVPrinter(
+						"not_lower_levels_due_to_keywords.csv", new String[] { "sequence", "subject", "log expression",
+								"start pos", "log level", "type FQN", "enclosing method", "logging framework" });
+				notRaiseLevelDueToKeywordsPrinter = EvaluationUtil.createCSVPrinter(
+						"not_raise_levels_due_to_keywords.csv", new String[] { "sequence", "subject", "log expression",
+								"start pos", "log level", "type FQN", "enclosing method", "logging framework" });
 				considerIfConditionPrinter = EvaluationUtil.createCSVPrinter(
-						"not_transform_levels_due_to_if_condition.csv", new String[] { "sequence", "subject",
-								"log expression", "start pos", "log level", "type FQN", "enclosing method" });
+						"not_transform_levels_due_to_if_condition.csv",
+						new String[] { "sequence", "subject", "log expression", "start pos", "log level", "type FQN",
+								"enclosing method", "logging framework" });
 
 				// we are using 6 settings
 				for (int i = 0; i < 6; ++i) {
@@ -255,11 +274,13 @@ public class EvaluationHandler extends AbstractHandler {
 							resultsTimeCollector.stop();
 
 							Set<LogInvocation> logInvocationSet = logRejuvenatingProcessor.getLogInvocationSet();
+							Set<LogInvocationSlf4j> logInvocationSlf4js = logRejuvenatingProcessor
+									.getLogInvocationSlf4j();
 
 							// Just print once.
 							// Using 1 here because both settings are enabled
 							// for this index.
-							if (i == 1)
+							if (i == 1) {
 								// print input log invocations
 								for (LogInvocation logInvocation : logInvocationSet) {
 									// Print input log invocations
@@ -268,8 +289,21 @@ public class EvaluationHandler extends AbstractHandler {
 											logInvocation.getLogLevel(),
 											logInvocation.getEnclosingType().getFullyQualifiedName(),
 											Util.getMethodIdentifier(logInvocation.getEnclosingEclipseMethod()),
+											LoggingFramework.JAVA_UTIL_LOGGING,
 											logInvocation.getDegreeOfInterestValue());
 								}
+
+								// print input log invocations for slf4j.
+								for (LogInvocationSlf4j logInvocationSlf4j : logInvocationSlf4js) {
+									inputLogInvPrinter.printRecord(project.getElementName(),
+											logInvocationSlf4j.getExpression(), logInvocationSlf4j.getStartPosition(),
+											logInvocationSlf4j.getLogLevel(),
+											logInvocationSlf4j.getEnclosingType().getFullyQualifiedName(),
+											Util.getMethodIdentifier(logInvocationSlf4j.getEnclosingEclipseMethod()),
+											LoggingFramework.SLF4J, logInvocationSlf4j.getDegreeOfInterestValue());
+								}
+
+							}
 
 							Map<IMethod, Float> nonenclosingMethodToDOI = logRejuvenatingProcessor
 									.getNonenclosingMethodToDOI();
@@ -280,8 +314,11 @@ public class EvaluationHandler extends AbstractHandler {
 										Util.getMethodIdentifier(method), nonenclosingMethodToDOI.get(method));
 							}
 
-							Set<LogInvocation> candidates = computeCandidateLogs(
-									logRejuvenatingProcessor.getRoughCandidateSet());
+							// Print candidates.
+							Set<LogInvocation> candidates = this
+									.computeCandidateLogs(logRejuvenatingProcessor.getRoughCandidateSet());
+							Set<LogInvocationSlf4j> candidateSlf4js = this
+									.computeCandidateLogsSlf4j(logRejuvenatingProcessor.getRoughCandidateSetSlf4j());
 
 							for (LogInvocation logInvocation : candidates)
 								candidatePrinter.printRecord(sequence, project.getElementName(),
@@ -289,7 +326,16 @@ public class EvaluationHandler extends AbstractHandler {
 										logInvocation.getLogLevel(),
 										logInvocation.getEnclosingType().getFullyQualifiedName(),
 										Util.getMethodIdentifier(logInvocation.getEnclosingEclipseMethod()),
-										logInvocation.getDegreeOfInterestValue());
+										LoggingFramework.JAVA_UTIL_LOGGING, logInvocation.getDegreeOfInterestValue());
+
+							for (LogInvocationSlf4j logInvocationSlf4j : candidateSlf4js) {
+								candidatePrinter.printRecord(sequence, project.getElementName(),
+										logInvocationSlf4j.getExpression(), logInvocationSlf4j.getStartPosition(),
+										logInvocationSlf4j.getLogLevel(),
+										logInvocationSlf4j.getEnclosingType().getFullyQualifiedName(),
+										Util.getMethodIdentifier(logInvocationSlf4j.getEnclosingEclipseMethod()),
+										LoggingFramework.SLF4J, logInvocationSlf4j.getDegreeOfInterestValue());
+							}
 
 							// get the difference of log invocations and passing
 							// log invocations
@@ -297,6 +343,14 @@ public class EvaluationHandler extends AbstractHandler {
 							failures.addAll(candidates);
 							HashSet<LogInvocation> passingLogInvocationSet = this.getPassingLogInvocation(candidates);
 							failures.removeAll(passingLogInvocationSet);
+
+							// get the difference of log invocations and passing
+							// log invocations for slf4j
+							HashSet<LogInvocationSlf4j> failuresSlf4j = new HashSet<LogInvocationSlf4j>();
+							failuresSlf4j.addAll(candidateSlf4js);
+							HashSet<LogInvocationSlf4j> passingLogInvocationSlf4js = this
+									.getPassingLogInvocationSlf4j(candidateSlf4js);
+							failuresSlf4j.removeAll(passingLogInvocationSlf4js);
 
 							// failures.
 							Collection<RefactoringStatusEntry> errorEntries = failures.parallelStream()
@@ -320,13 +374,40 @@ public class EvaluationHandler extends AbstractHandler {
 											failedLogInvocation.getLogLevel(),
 											failedLogInvocation.getEnclosingType().getFullyQualifiedName(),
 											Util.getMethodIdentifier(failedLogInvocation.getEnclosingEclipseMethod()),
-											entry.getCode(), entry.getMessage());
+											entry.getCode(), entry.getMessage(), LoggingFramework.JAVA_UTIL_LOGGING);
+								}
+
+							// failures.
+							Collection<RefactoringStatusEntry> errorEntriesSlf4j = failuresSlf4j.parallelStream()
+									.map(LogInvocationSlf4j::getStatus).flatMap(s -> Arrays.stream(s.getEntries()))
+									.filter(RefactoringStatusEntry::isError).collect(Collectors.toSet());
+
+							// print failures.
+							for (RefactoringStatusEntry entry : errorEntriesSlf4j)
+								if (!entry.isFatalError()) {
+									Object correspondingElement = entry.getData();
+
+									if (!(correspondingElement instanceof LogInvocation))
+										throw new IllegalStateException("The element: " + correspondingElement
+												+ " corresponding to a failure is not a log inovation."
+												+ correspondingElement.getClass());
+
+									LogInvocationSlf4j failedLogInvocation = (LogInvocationSlf4j) correspondingElement;
+
+									failurePrinter.printRecord(sequence, project.getElementName(),
+											failedLogInvocation.getExpression(), failedLogInvocation.getStartPosition(),
+											failedLogInvocation.getLogLevel(),
+											failedLogInvocation.getEnclosingType().getFullyQualifiedName(),
+											Util.getMethodIdentifier(failedLogInvocation.getEnclosingEclipseMethod()),
+											entry.getCode(), entry.getMessage(), LoggingFramework.SLF4J);
 								}
 
 							Set<LogInvocation> transformedLogInvocationSet = logRejuvenatingProcessor
 									.getTransformedLog();
+							Set<LogInvocationSlf4j> transformedInvocationSlf4js = logRejuvenatingProcessor
+									.getSlf4jTransformedLog();
 
-							for (LogInvocation logInvocation : transformedLogInvocationSet) {
+							for (LogInvocation logInvocation : transformedLogInvocationSet)
 								// print actions
 								actionPrinter.printRecord(sequence, project.getElementName(),
 										logInvocation.getExpression(), logInvocation.getStartPosition(),
@@ -334,23 +415,42 @@ public class EvaluationHandler extends AbstractHandler {
 										logInvocation.getEnclosingType().getFullyQualifiedName(),
 										Util.getMethodIdentifier(logInvocation.getEnclosingEclipseMethod()),
 										logInvocation.getDegreeOfInterestValue(), logInvocation.getAction(),
-										logInvocation.getNewLogLevel());
+										logInvocation.getNewLogLevel(), LoggingFramework.JAVA_UTIL_LOGGING);
+
+							for (LogInvocationSlf4j logInvocationSlf4j : transformedInvocationSlf4js) {
+								// print actions for slf4j
+								actionPrinter.printRecord(sequence, project.getElementName(),
+										logInvocationSlf4j.getExpression(), logInvocationSlf4j.getStartPosition(),
+										logInvocationSlf4j.getLogLevel(),
+										logInvocationSlf4j.getEnclosingType().getFullyQualifiedName(),
+										Util.getMethodIdentifier(logInvocationSlf4j.getEnclosingEclipseMethod()),
+										logInvocationSlf4j.getDegreeOfInterestValue(), logInvocationSlf4j.getAction(),
+										logInvocationSlf4j.getNewLogLevel(), LoggingFramework.SLF4J);
 							}
 
 							ArrayList<Float> boundary = logRejuvenatingProcessor.getBoundary();
+							ArrayList<Float> boundarySlf4j = logRejuvenatingProcessor.getBoundarySlf4j();
 							if (boundary != null && boundary.size() > 0)
 								if (this.isUseLogCategory()) {
 									this.printBoundaryLogCategory(sequence, project.getElementName(), boundary,
 											doiPrinter);
-								} else if (this.isUseLogCategoryWithConfig()) { // Do
+									this.printBoundaryLogCategorySlf4j(sequence, project.getElementName(),
+											boundarySlf4j, doiPrinter);
+								} else {
+
+									this.printBoundarySlf4j(sequence, project.getElementName(), boundarySlf4j,
+											doiPrinter);
+									if (this.isUseLogCategoryWithConfig()) { // Do
 																				// not
 																				// consider
 																				// config
-									this.printBoundaryWithConfig(sequence, project.getElementName(), boundary,
-											doiPrinter);
-								} else {// Treat log levels as traditional log
-										// levels
-									this.printBoundaryDefault(sequence, project.getElementName(), boundary, doiPrinter);
+										this.printBoundaryWithConfig(sequence, project.getElementName(), boundary,
+												doiPrinter);
+									} else {// Treat log levels as traditional log
+											// levels
+										this.printBoundaryDefault(sequence, project.getElementName(), boundary,
+												doiPrinter);
+									}
 								}
 
 							ResultForCommit resultCommit = new ResultForCommit();
@@ -401,6 +501,23 @@ public class EvaluationHandler extends AbstractHandler {
 									this.isNotLowerLogLevelInCatchBlock(), this.isNotLowerLogLevelInIfStatement(),
 									this.isNotLowerLogLevelWithKeywords(), this.isNotRaiseLogLevelWithoutKeywords(),
 									this.isCheckIfCondition(), this.isConsistentLevelInInheritance(),
+									LoggingFramework.JAVA_UTIL_LOGGING, resultsTimeCollector.getCollectedTime());
+
+							resultSlf4jPrinter.printRecord(sequence, project.getElementName(),
+									logRejuvenatingProcessor.getRepoURL(), logRejuvenatingProcessor.getDecayFactor(),
+									logInvocationSlf4js.size(), candidateSlf4js.size(),
+									passingLogInvocationSlf4js.size(), errorEntriesSlf4j.size(),
+									transformedInvocationSlf4js.size(),
+									logRejuvenatingProcessor.getLogInvsNotLoweredInCatchSlf4j().size(),
+									logRejuvenatingProcessor.getLogInvsNotLoweredInIfStatementSlf4j().size(),
+									logRejuvenatingProcessor.getLogInvsNotTransformedInIfSlf4j().size(),
+									logRejuvenatingProcessor.getLogInvsNotLoweredByKeywordsSlf4j().size(),
+									logRejuvenatingProcessor.getLogInvsAdjustedByDistanceSlf4j().size(),
+									logRejuvenatingProcessor.getLogInvsAdjustedByInheritanceSlf4j().size(),
+									this.isUseLogCategory(), this.isNotLowerLogLevelInCatchBlock(),
+									this.isNotLowerLogLevelInIfStatement(), this.isNotLowerLogLevelWithKeywords(),
+									this.isNotRaiseLogLevelWithoutKeywords(), this.isCheckIfCondition(),
+									this.isConsistentLevelInInheritance(), LoggingFramework.SLF4J,
 									resultsTimeCollector.getCollectedTime());
 
 							for (LogInvocation logInvocation : logRejuvenatingProcessor.getLogInvsNotLoweredInCatch())
@@ -408,14 +525,34 @@ public class EvaluationHandler extends AbstractHandler {
 										logInvocation.getExpression(), logInvocation.getStartPosition(),
 										logInvocation.getLogLevel(),
 										logInvocation.getEnclosingType().getFullyQualifiedName(),
-										Util.getMethodIdentifier(logInvocation.getEnclosingEclipseMethod()));
+										Util.getMethodIdentifier(logInvocation.getEnclosingEclipseMethod()),
+										LoggingFramework.JAVA_UTIL_LOGGING);
+
+							for (LogInvocationSlf4j logInvocationSlf4j : logRejuvenatingProcessor
+									.getLogInvsNotLoweredInCatchSlf4j())
+								notLowerLevelsInCatchBlockPrinter.printRecord(sequence, project.getElementName(),
+										logInvocationSlf4j.getExpression(), logInvocationSlf4j.getStartPosition(),
+										logInvocationSlf4j.getLogLevel(),
+										logInvocationSlf4j.getEnclosingType().getFullyQualifiedName(),
+										Util.getMethodIdentifier(logInvocationSlf4j.getEnclosingEclipseMethod()),
+										LoggingFramework.SLF4J);
 
 							for (LogInvocation logInvocation : logRejuvenatingProcessor.getLogInvsNotLoweredInIf())
 								notLowerLevelsInIfStatementPrinter.printRecord(sequence, project.getElementName(),
 										logInvocation.getExpression(), logInvocation.getStartPosition(),
 										logInvocation.getLogLevel(),
 										logInvocation.getEnclosingType().getFullyQualifiedName(),
-										Util.getMethodIdentifier(logInvocation.getEnclosingEclipseMethod()));
+										Util.getMethodIdentifier(logInvocation.getEnclosingEclipseMethod()),
+										LoggingFramework.JAVA_UTIL_LOGGING);
+
+							for (LogInvocationSlf4j logInvocation : logRejuvenatingProcessor
+									.getLogInvsNotLoweredInIfStatementSlf4j())
+								notLowerLevelsInIfStatementPrinter.printRecord(sequence, project.getElementName(),
+										logInvocation.getExpression(), logInvocation.getStartPosition(),
+										logInvocation.getLogLevel(),
+										logInvocation.getEnclosingType().getFullyQualifiedName(),
+										Util.getMethodIdentifier(logInvocation.getEnclosingEclipseMethod()),
+										LoggingFramework.SLF4J);
 
 							for (LogInvocation logInvocation : logRejuvenatingProcessor
 									.getLogInvsNotLoweredWithKeywords())
@@ -423,7 +560,17 @@ public class EvaluationHandler extends AbstractHandler {
 										logInvocation.getExpression(), logInvocation.getStartPosition(),
 										logInvocation.getLogLevel(),
 										logInvocation.getEnclosingType().getFullyQualifiedName(),
-										Util.getMethodIdentifier(logInvocation.getEnclosingEclipseMethod()));
+										Util.getMethodIdentifier(logInvocation.getEnclosingEclipseMethod()),
+										LoggingFramework.JAVA_UTIL_LOGGING);
+
+							for (LogInvocationSlf4j logInvocation : logRejuvenatingProcessor
+									.getLogInvsNotLoweredByKeywordsSlf4j())
+								notLowerLevelsDueToKeywordsPrinter.printRecord(sequence, project.getElementName(),
+										logInvocation.getExpression(), logInvocation.getStartPosition(),
+										logInvocation.getLogLevel(),
+										logInvocation.getEnclosingType().getFullyQualifiedName(),
+										Util.getMethodIdentifier(logInvocation.getEnclosingEclipseMethod()),
+										LoggingFramework.SLF4J);
 
 							for (LogInvocation logInvocation : logRejuvenatingProcessor
 									.getLogInvsNotRaisedWithoutKeywords())
@@ -431,14 +578,34 @@ public class EvaluationHandler extends AbstractHandler {
 										logInvocation.getExpression(), logInvocation.getStartPosition(),
 										logInvocation.getLogLevel(),
 										logInvocation.getEnclosingType().getFullyQualifiedName(),
-										Util.getMethodIdentifier(logInvocation.getEnclosingEclipseMethod()));
+										Util.getMethodIdentifier(logInvocation.getEnclosingEclipseMethod()),
+										LoggingFramework.JAVA_UTIL_LOGGING);
+
+							for (LogInvocationSlf4j logInvocation : logRejuvenatingProcessor
+									.getLogInvsNotRaisedWithoutKeywordsSlf4j())
+								notRaiseLevelDueToKeywordsPrinter.printRecord(sequence, project.getElementName(),
+										logInvocation.getExpression(), logInvocation.getStartPosition(),
+										logInvocation.getLogLevel(),
+										logInvocation.getEnclosingType().getFullyQualifiedName(),
+										Util.getMethodIdentifier(logInvocation.getEnclosingEclipseMethod()),
+										LoggingFramework.SLF4J);
 
 							for (LogInvocation logInvocation : logRejuvenatingProcessor.getLogInvsNotTransformedInIf())
 								considerIfConditionPrinter.printRecord(sequence, project.getElementName(),
 										logInvocation.getExpression(), logInvocation.getStartPosition(),
 										logInvocation.getLogLevel(),
 										logInvocation.getEnclosingType().getFullyQualifiedName(),
-										Util.getMethodIdentifier(logInvocation.getEnclosingEclipseMethod()));
+										Util.getMethodIdentifier(logInvocation.getEnclosingEclipseMethod()),
+										LoggingFramework.JAVA_UTIL_LOGGING);
+
+							for (LogInvocationSlf4j logInvocation : logRejuvenatingProcessor
+									.getLogInvsNotTransformedInIfSlf4j())
+								considerIfConditionPrinter.printRecord(sequence, project.getElementName(),
+										logInvocation.getExpression(), logInvocation.getStartPosition(),
+										logInvocation.getLogLevel(),
+										logInvocation.getEnclosingType().getFullyQualifiedName(),
+										Util.getMethodIdentifier(logInvocation.getEnclosingEclipseMethod()),
+										LoggingFramework.SLF4J);
 
 						}
 					}
@@ -452,6 +619,8 @@ public class EvaluationHandler extends AbstractHandler {
 				try {
 					if (resultPrinter != null)
 						resultPrinter.close();
+					if (resultSlf4jPrinter != null)
+						resultSlf4jPrinter.close();
 					if (repoPrinter != null)
 						repoPrinter.close();
 					if (actionPrinter != null)
@@ -504,6 +673,18 @@ public class EvaluationHandler extends AbstractHandler {
 	}
 
 	/**
+	 * Get passing log invocations for slf4j.
+	 */
+	public HashSet<LogInvocationSlf4j> getPassingLogInvocationSlf4j(Set<LogInvocationSlf4j> candidates) {
+		HashSet<LogInvocationSlf4j> passingLogInvocations = new HashSet<>();
+		candidates.forEach(inv -> {
+			if (inv.getAction() != null)
+				passingLogInvocations.add(inv);
+		});
+		return passingLogInvocations;
+	}
+
+	/**
 	 * @return Candidate logging statements.
 	 */
 	private Set<LogInvocation> computeCandidateLogs(Set<LogInvocation> logInvocationSet) {
@@ -524,6 +705,20 @@ public class EvaluationHandler extends AbstractHandler {
 						|| inv.getLogLevel().equals(Level.WARNING) || inv.getLogLevel().equals(Level.SEVERE)))
 					candidates.add(inv);
 		}
+		return candidates;
+	}
+
+	/**
+	 * @return Candidate logging statements for Slf4j.
+	 */
+	private Set<LogInvocationSlf4j> computeCandidateLogsSlf4j(Set<LogInvocationSlf4j> logInvocationSet) {
+		// Set of candidate log invocations.
+		Set<LogInvocationSlf4j> candidates = new HashSet<LogInvocationSlf4j>();
+		logInvocationSet.forEach(log -> {
+			if (log.getLogLevel() != null)
+				candidates.add(log);
+		});
+
 		return candidates;
 	}
 
@@ -562,30 +757,74 @@ public class EvaluationHandler extends AbstractHandler {
 		return System.currentTimeMillis();
 	}
 
+	/**
+	 * Print DOI boundary Set for Slf4j.
+	 */
+	private void printBoundarySlf4j(long sequence, String subject, ArrayList<Float> boundarySlf4j,
+			CSVPrinter doiPrinter) throws IOException {
+		doiPrinter.printRecord(sequence, subject, boundarySlf4j.get(0), boundarySlf4j.get(1),
+				org.slf4j.event.Level.TRACE, LoggingFramework.SLF4J);
+		doiPrinter.printRecord(sequence, subject, boundarySlf4j.get(1), boundarySlf4j.get(2),
+				org.slf4j.event.Level.DEBUG, LoggingFramework.SLF4J);
+		doiPrinter.printRecord(sequence, subject, boundarySlf4j.get(2), boundarySlf4j.get(3),
+				org.slf4j.event.Level.INFO, LoggingFramework.SLF4J);
+		doiPrinter.printRecord(sequence, subject, boundarySlf4j.get(3), boundarySlf4j.get(4),
+				org.slf4j.event.Level.WARN, LoggingFramework.SLF4J);
+		doiPrinter.printRecord(sequence, subject, boundarySlf4j.get(4), boundarySlf4j.get(5),
+				org.slf4j.event.Level.ERROR, LoggingFramework.SLF4J);
+	}
+
+	/**
+	 * Print DOI boundary set for Slf4j, if the setting "don't consider ERROR/WARN"
+	 * is checked.
+	 */
+	private void printBoundaryLogCategorySlf4j(long sequence, String subject, ArrayList<Float> boundarySlf4j,
+			CSVPrinter doiPrinter) throws IOException {
+		doiPrinter.printRecord(sequence, subject, boundarySlf4j.get(0), boundarySlf4j.get(1),
+				org.slf4j.event.Level.TRACE, LoggingFramework.SLF4J);
+		doiPrinter.printRecord(sequence, subject, boundarySlf4j.get(1), boundarySlf4j.get(2),
+				org.slf4j.event.Level.DEBUG, LoggingFramework.SLF4J);
+		doiPrinter.printRecord(sequence, subject, boundarySlf4j.get(2), boundarySlf4j.get(3),
+				org.slf4j.event.Level.INFO, LoggingFramework.SLF4J);
+	}
+
 	private void printBoundaryLogCategory(long sequence, String subject, ArrayList<Float> boundary,
 			CSVPrinter doiPrinter) throws IOException {
-		doiPrinter.printRecord(sequence, subject, boundary.get(0), boundary.get(1), Level.FINEST);
-		doiPrinter.printRecord(sequence, subject, boundary.get(1), boundary.get(2), Level.FINER);
-		doiPrinter.printRecord(sequence, subject, boundary.get(2), boundary.get(3), Level.FINE);
-		doiPrinter.printRecord(sequence, subject, boundary.get(3), boundary.get(4), Level.INFO);
+		doiPrinter.printRecord(sequence, subject, boundary.get(0), boundary.get(1), Level.FINEST,
+				LoggingFramework.JAVA_UTIL_LOGGING);
+		doiPrinter.printRecord(sequence, subject, boundary.get(1), boundary.get(2), Level.FINER,
+				LoggingFramework.JAVA_UTIL_LOGGING);
+		doiPrinter.printRecord(sequence, subject, boundary.get(2), boundary.get(3), Level.FINE,
+				LoggingFramework.JAVA_UTIL_LOGGING);
+		doiPrinter.printRecord(sequence, subject, boundary.get(3), boundary.get(4), Level.INFO,
+				LoggingFramework.JAVA_UTIL_LOGGING);
 	}
 
 	private void printBoundaryWithConfig(long sequence, String subject, ArrayList<Float> boundary,
 			CSVPrinter doiPrinter) throws IOException {
 		this.printBoundaryLogCategory(sequence, subject, boundary, doiPrinter);
-		doiPrinter.printRecord(sequence, subject, boundary.get(4), boundary.get(5), Level.WARNING);
-		doiPrinter.printRecord(sequence, subject, boundary.get(5), boundary.get(6), Level.SEVERE);
+		doiPrinter.printRecord(sequence, subject, boundary.get(4), boundary.get(5), Level.WARNING,
+				LoggingFramework.JAVA_UTIL_LOGGING);
+		doiPrinter.printRecord(sequence, subject, boundary.get(5), boundary.get(6), Level.SEVERE,
+				LoggingFramework.JAVA_UTIL_LOGGING);
 	}
 
 	private void printBoundaryDefault(long sequence, String subject, ArrayList<Float> boundary, CSVPrinter doiPrinter)
 			throws IOException {
-		doiPrinter.printRecord(sequence, subject, boundary.get(0), boundary.get(1), Level.FINEST);
-		doiPrinter.printRecord(sequence, subject, boundary.get(1), boundary.get(2), Level.FINER);
-		doiPrinter.printRecord(sequence, subject, boundary.get(2), boundary.get(3), Level.FINE);
-		doiPrinter.printRecord(sequence, subject, boundary.get(3), boundary.get(4), Level.CONFIG);
-		doiPrinter.printRecord(sequence, subject, boundary.get(4), boundary.get(5), Level.INFO);
-		doiPrinter.printRecord(sequence, subject, boundary.get(5), boundary.get(6), Level.WARNING);
-		doiPrinter.printRecord(sequence, subject, boundary.get(6), boundary.get(7), Level.SEVERE);
+		doiPrinter.printRecord(sequence, subject, boundary.get(0), boundary.get(1), Level.FINEST,
+				LoggingFramework.JAVA_UTIL_LOGGING);
+		doiPrinter.printRecord(sequence, subject, boundary.get(1), boundary.get(2), Level.FINER,
+				LoggingFramework.JAVA_UTIL_LOGGING);
+		doiPrinter.printRecord(sequence, subject, boundary.get(2), boundary.get(3), Level.FINE,
+				LoggingFramework.JAVA_UTIL_LOGGING);
+		doiPrinter.printRecord(sequence, subject, boundary.get(3), boundary.get(4), Level.CONFIG,
+				LoggingFramework.JAVA_UTIL_LOGGING);
+		doiPrinter.printRecord(sequence, subject, boundary.get(4), boundary.get(5), Level.INFO,
+				LoggingFramework.JAVA_UTIL_LOGGING);
+		doiPrinter.printRecord(sequence, subject, boundary.get(5), boundary.get(6), Level.WARNING,
+				LoggingFramework.JAVA_UTIL_LOGGING);
+		doiPrinter.printRecord(sequence, subject, boundary.get(6), boundary.get(7), Level.SEVERE,
+				LoggingFramework.JAVA_UTIL_LOGGING);
 	}
 
 	@SuppressWarnings("unused")

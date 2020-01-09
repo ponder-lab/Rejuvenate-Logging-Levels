@@ -48,9 +48,12 @@ import org.eclipse.ltk.core.refactoring.participants.RefactoringParticipant;
 import org.eclipse.ltk.core.refactoring.participants.SharableParticipants;
 
 import edu.cuny.citytech.refactoring.common.core.RefactoringProcessor;
+import edu.cuny.hunter.log.core.analysis.AbstractLogInvocation;
 import edu.cuny.hunter.log.core.analysis.Action;
+import edu.cuny.hunter.log.core.analysis.ActionSlf4j;
 import edu.cuny.hunter.log.core.analysis.LogAnalyzer;
 import edu.cuny.hunter.log.core.analysis.LogInvocation;
+import edu.cuny.hunter.log.core.analysis.LogInvocationSlf4j;
 import edu.cuny.hunter.log.core.descriptors.LogDescriptor;
 import edu.cuny.hunter.log.core.messages.Messages;
 import edu.cuny.hunter.log.core.utils.LoggerNames;
@@ -64,11 +67,17 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 
 	private static final Logger LOGGER = Logger.getLogger(LoggerNames.LOGGER_NAME);
 
-	private Set<LogInvocation> logInvocationSet = new HashSet<>();
-
 	private LinkedList<Commit> commits = new LinkedList<>();
 
+	/**
+	 * A set of candidates for J.U.L.
+	 */
 	private Set<LogInvocation> candidates = new HashSet<LogInvocation>();
+
+	/**
+	 * A set of candidates for slf4j.
+	 */
+	private Set<LogInvocationSlf4j> candidateSlf4j = new HashSet<LogInvocationSlf4j>();
 
 	private IJavaProject[] javaProjects;
 
@@ -76,6 +85,11 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 	 * Boundary for DOI values of enclosing methods
 	 */
 	private ArrayList<Float> boundary;
+
+	/**
+	 * For Slf4j. Boundary for DOI values of enclosing methods.
+	 */
+	private ArrayList<Float> boundarySlf4j;
 
 	/**
 	 * Treat CONFIG as category
@@ -144,6 +158,7 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 	 */
 	private boolean isEvaluation;
 
+	// Sets of log invocations for J.U.L.
 	private HashSet<LogInvocation> logInvsNotTransformedInIf;
 	private HashSet<LogInvocation> logInvsNotLoweredInCatch;
 	private HashSet<LogInvocation> logInvsNotLoweredInIf;
@@ -151,6 +166,20 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 	private HashSet<LogInvocation> logInvsNotLoweredWithKeywords;
 	private HashSet<LogInvocation> logInvsNotRaisedWithoutKeywords;
 	private HashSet<LogInvocation> logInvsAdjustedByInheritance = new HashSet<LogInvocation>();
+
+	private Set<LogInvocation> logInvocationSet = new HashSet<>();
+
+	// Sets of log invocations for slf4j.
+	private HashSet<LogInvocationSlf4j> logInvsNotTransformedInIfSlf4j = new HashSet<LogInvocationSlf4j>();
+	private HashSet<LogInvocationSlf4j> logInvsNotLoweredInCatchSlf4j = new HashSet<LogInvocationSlf4j>();
+	private HashSet<LogInvocationSlf4j> logInvsNotLoweredInIfStatementSlf4j = new HashSet<LogInvocationSlf4j>();
+	private HashSet<LogInvocationSlf4j> logInvsAdjustedByDistanceSlf4j = new HashSet<LogInvocationSlf4j>();
+	private HashSet<LogInvocationSlf4j> logInvsNotLoweredByKeywordsSlf4j = new HashSet<LogInvocationSlf4j>();
+	private HashSet<LogInvocationSlf4j> logInvsNotRaisedWithoutKeywordsSlf4j = new HashSet<LogInvocationSlf4j>();
+	private HashSet<LogInvocationSlf4j> logInvsAdjustedByInheritanceSlf4j = new HashSet<LogInvocationSlf4j>();
+
+	private Set<LogInvocationSlf4j> logInvocationSlf4j = new HashSet<LogInvocationSlf4j>();
+
 	private Map<IMethod, Float> methodToDOI;
 	private Set<IMethod> enclosingMethods;
 
@@ -328,24 +357,28 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 
 			analyzer.analyze(methodDeclsForAnalyzedMethod);
 
+			// Store all not transformed log invocations due to the settings.
+			this.setDataForJUL(analyzer);
+			this.setDataForSlf4j(analyzer);
+
+			// Get all log invocations.
 			this.addLogInvocationSet(analyzer.getLogInvocationSet());
+			this.addLogInvocationSlf4j(analyzer.getLogInvocationSlf4js());
 
-			if (this.consistentLevelInInheritance)
+			if (this.consistentLevelInInheritance) {
 				this.inheritanceChecking(this.logInvocationSet, monitor);
+				this.inheritanceCheckingSlf4j(this.logInvocationSlf4j, monitor);
+			}
 
-			this.setLogInvsAdjustedByDis(analyzer.getLogInvsAdjustedByDis());
-			this.setLogInvsNotLoweredInCatch(analyzer.getLogInvsNotLoweredInCatch());
-			this.setLogInvsNotTransformedInIf(analyzer.getLogInvsNotTransformedInIf());
-			this.setLogInvsNotLoweredInIf(analyzer.getLogInvsNotLoweredInIfStatement());
-			this.setLogInvsNotLoweredWithKeywords(analyzer.getLogInvsNotLoweredByKeywords());
-			this.setLogInvsNotRaisedWithoutKeywords(analyzer.getLogInvsNotRaisedByKeywords());
 			this.setMethodToDOI(analyzer.getMethodToDOI());
 			this.setEnclosingMethods(analyzer.getEnclosingMethods());
 
 			// Get boundary
 			this.boundary = analyzer.getBoundary();
+			this.boundarySlf4j = analyzer.getBoundarySlf4j();
 
 			this.estimateCandidates();
+			this.estimateCandidatesSlf4j();
 
 			// If we are using the git history.
 			if (this.useGitHistory) {
@@ -363,13 +396,21 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 		if (!isEvaluation)
 			MylynGitPredictionProvider.clearMappingData();
 
-		// get the status of each log invocation.
+		// get the status of each J.U.L log invocation.
 		RefactoringStatus collectedStatus = this.getLogInvocationSet().stream().map(LogInvocation::getStatus)
 				.collect(() -> new RefactoringStatus(), (a, b) -> a.merge(b), (a, b) -> a.merge(b));
+
 		status.merge(collectedStatus);
 
+		// get the status of each slf4j log invocation.
+		RefactoringStatus collectedStatusSlf4j = this.getLogInvocationSlf4j().stream()
+				.map(LogInvocationSlf4j::getStatus)
+				.collect(() -> new RefactoringStatus(), (a, b) -> a.merge(b), (a, b) -> a.merge(b));
+
+		status.merge(collectedStatusSlf4j);
+
 		if (!status.hasFatalError()) {
-			if (logInvocationSet.isEmpty()) {
+			if (logInvocationSet.isEmpty() && logInvocationSlf4j.isEmpty()) {
 				status.addWarning(Messages.NoInputLogInvs);
 			}
 		}
@@ -377,8 +418,38 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 		return status;
 	}
 
+	private void addLogInvocationSlf4j(Set<LogInvocationSlf4j> logInvocationSlf4js) {
+		this.logInvocationSlf4j.addAll(logInvocationSlf4js);
+	}
+
 	/**
-	 * Remove candidate log invocation whose enclosing method was not analyzed.
+	 * Store all not transformed log invocations due to the settings for
+	 * Java.Util.Logging framework.
+	 */
+	private void setDataForJUL(LogAnalyzer analyzer) {
+		this.setLogInvsAdjustedByDis(analyzer.getLogInvsAdjustedByDis());
+		this.setLogInvsNotLoweredInCatch(analyzer.getLogInvsNotLoweredInCatch());
+		this.setLogInvsNotTransformedInIf(analyzer.getLogInvsNotTransformedInIf());
+		this.setLogInvsNotLoweredInIf(analyzer.getLogInvsNotLoweredInIfStatement());
+		this.setLogInvsNotLoweredWithKeywords(analyzer.getLogInvsNotLoweredByKeywords());
+		this.setLogInvsNotRaisedWithoutKeywords(analyzer.getLogInvsNotRaisedByKeywords());
+	}
+
+	/**
+	 * Store all not transformed log invocations due to the settings for slf4j.
+	 */
+	private void setDataForSlf4j(LogAnalyzer analyzer) {
+		this.setLogInvsAdjustedByDistanceSlf4j(analyzer.getLogInvsAdjustedByDisSlf4j());
+		this.setLogInvsNotLoweredInCatchSlf4j(analyzer.getLogInvsNotLoweredInCatchSlf4j());
+		this.setLogInvsNotTransformedInIfSlf4j(analyzer.getLogInvsNotTransformedInIfSlf4j());
+		this.setLogInvsNotLoweredInIfStatementSlf4j(analyzer.getLogInvsNotLoweredInIfStatementsSlf4j());
+		this.setLogInvsNotLoweredByKeywordsSlf4j(analyzer.getLogInvsNotLoweredByKeywordsSlf4j());
+		this.setLogInvsNotRaisedWithoutKeywordsSlf4j(analyzer.getLogInvsNotRaisedByKeywordsSlf4j());
+	}
+
+	/**
+	 * Remove log invocations in candidate sets whose enclosing methods are not
+	 * analyzed.
 	 * 
 	 * @param methodDeclsForAnalyzedMethod: A set of method declarations is analyzed
 	 *                                      before.
@@ -386,7 +457,7 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 	private void estimateCandidates() {
 		Set<IMethod> validMethods = this.methodToDOI.keySet();
 
-		candidates.addAll(this.logInvocationSet);
+		this.candidates.addAll(this.logInvocationSet);
 		for (LogInvocation candidate : this.logInvocationSet) {
 			// if its enclosing method is not analyzed in the git history
 			if (!validMethods.contains(candidate.getEnclosingEclipseMethod()))
@@ -394,8 +465,29 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 		}
 	}
 
+	/**
+	 * For Slf4j.
+	 * 
+	 * Remove log invocations in candidate sets whose enclosing methods are not
+	 * analyzed.
+	 */
+	private void estimateCandidatesSlf4j() {
+		Set<IMethod> validMethods = this.methodToDOI.keySet();
+
+		this.candidateSlf4j.addAll(this.logInvocationSlf4j);
+		for (LogInvocationSlf4j candidate : this.logInvocationSlf4j) {
+			// if its enclosing method is not analyzed in the git history
+			if (!validMethods.contains(candidate.getEnclosingEclipseMethod()))
+				this.candidateSlf4j.remove(candidate);
+		}
+	}
+
 	public Set<LogInvocation> getRoughCandidateSet() {
 		return this.candidates;
+	}
+
+	public Set<LogInvocationSlf4j> getRoughCandidateSetSlf4j() {
+		return this.candidateSlf4j;
 	}
 
 	/**
@@ -423,12 +515,25 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 	}
 
 	/**
-	 * get a set of transformed log set
+	 * Get a set of transformed log set.
 	 */
 	public Set<LogInvocation> getTransformedLog() {
 		HashSet<LogInvocation> transformedSet = new HashSet<>();
 		for (LogInvocation logInvocation : this.logInvocationSet) {
 			if (logInvocation.getAction() != null && !logInvocation.getAction().equals(Action.NONE)
+					&& logInvocation.getStatus().isOK())
+				transformedSet.add(logInvocation);
+		}
+		return transformedSet;
+	}
+
+	/**
+	 * Get a set of slf4j transformed log set.
+	 */
+	public Set<LogInvocationSlf4j> getSlf4jTransformedLog() {
+		HashSet<LogInvocationSlf4j> transformedSet = new HashSet<>();
+		for (LogInvocationSlf4j logInvocation : this.logInvocationSlf4j) {
+			if (logInvocation.getAction() != null && !logInvocation.getAction().equals(ActionSlf4j.NONE)
 					&& logInvocation.getStatus().isOK())
 				transformedSet.add(logInvocation);
 		}
@@ -472,10 +577,50 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 	}
 
 	/**
+	 * For slf4j.
+	 * 
+	 * Process the inconsistent log level transformations in the overriding and
+	 * overridden methods.
+	 */
+	private void inheritanceCheckingSlf4j(Set<LogInvocationSlf4j> logInvocationSet, IProgressMonitor monitor)
+			throws JavaModelException {
+		Set<IMethod> enclosingMethodsForLogs = this.getEnclosingMethodForLogsSlf4j(logInvocationSet);
+		for (LogInvocationSlf4j log : logInvocationSet) {
+			IMethod enclosingMethod = log.getEnclosingEclipseMethod();
+			if (enclosingMethod == null)
+				continue;
+			IType declaringType = enclosingMethod.getDeclaringType();
+			ITypeHierarchy typeHierarchy = declaringType.newTypeHierarchy(monitor);
+
+			IType[] superTypes = typeHierarchy.getAllSupertypes(declaringType);
+
+			// Get all enclosing class types for all logs
+			Set<IType> enclosingTypes = this.getEnclosingClassTypesSlf4j(logInvocationSet);
+
+			// If we find an super-type with log invocation
+			if (this.checkTypes(superTypes, enclosingTypes)) {
+				this.processTypesSlf4j(superTypes, enclosingTypes, typeHierarchy, enclosingMethodsForLogs,
+						logInvocationSet, log);
+			}
+
+		}
+	}
+
+	/**
 	 * Get a set of enclosing methods for transformed logs.
 	 */
 	private Set<IMethod> getEnclosingMethodForLogs(Set<LogInvocation> transformedLogs) {
-		return this.logInvocationSet.parallelStream().map(log -> log.getEnclosingEclipseMethod())
+		return transformedLogs.parallelStream().map(log -> log.getEnclosingEclipseMethod())
+				.filter(Objects::nonNull).collect(Collectors.toSet());
+	}
+
+	/**
+	 * For slf4j.
+	 * 
+	 * Get a set of enclosing methods for transformed logs.
+	 */
+	private Set<IMethod> getEnclosingMethodForLogsSlf4j(Set<LogInvocationSlf4j> transformedLogs) {
+		return transformedLogs.parallelStream().map(log -> log.getEnclosingEclipseMethod())
 				.filter(Objects::nonNull).collect(Collectors.toSet());
 	}
 
@@ -518,10 +663,50 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 	}
 
 	/**
+	 * For slf4j.
+	 * 
+	 * Process super types.
+	 */
+	private void processTypesSlf4j(IType[] superTypes, Set<IType> enclosingTypes, ITypeHierarchy typeHierarchy,
+			Set<IMethod> enclosingMethodsForLogs, Set<LogInvocationSlf4j> logSet, LogInvocationSlf4j logInvocation)
+			throws JavaModelException {
+		// Store all log invocations in RootDefs.
+		HashSet<LogInvocationSlf4j> logInvsInRootDefs = new HashSet<LogInvocationSlf4j>();
+		// Store all log invocations in Hierarchy.
+		HashSet<LogInvocationSlf4j> logInvsInHierarchy = new HashSet<LogInvocationSlf4j>();
+		logInvsInHierarchy.add(logInvocation);
+
+		for (IType type : superTypes) {
+			// We find a super-type with log transformation
+			if (enclosingTypes.contains(type)) {
+
+				IMethod[] methods = type.getMethods();
+				for (IMethod method : methods) {
+					// The method should be an overridden method and includes a log invocation.
+					if (this.isOverriddenMethod(method, logInvocation.getEnclosingEclipseMethod())
+							&& enclosingMethodsForLogs.contains(method)) {
+						Set<LogInvocationSlf4j> logs = this.getInvocationsByMethodSlf4j(method, logSet);
+						logInvsInHierarchy.addAll(logs);
+						// Check whether it's a RootDef
+						if (this.isRootDef(typeHierarchy, method, enclosingTypes, logInvocation))
+							logInvsInRootDefs.addAll(logs);
+					}
+				}
+			}
+		}
+
+		if (!logInvsInRootDefs.isEmpty()) {
+			org.slf4j.event.Level newLevel = this.majorityVoteSlf4j(logInvsInRootDefs);
+			this.adjustTransformation(logInvsInHierarchy, newLevel);
+		}
+
+	}
+
+	/**
 	 * Check whether the current method is a RootDef.
 	 */
 	private boolean isRootDef(ITypeHierarchy typeHierarchy, IMethod enclosingMethod, Set<IType> enclosingTypes,
-			LogInvocation logInvocation) throws JavaModelException {
+			AbstractLogInvocation logInvocation) throws JavaModelException {
 		IType[] types = typeHierarchy.getAllSupertypes(enclosingMethod.getDeclaringType());
 		for (IType type : types) {
 			// We find a super-type with log transformation
@@ -551,6 +736,21 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 	}
 
 	/**
+	 * For slf4j.
+	 * 
+	 * Get a set of invocations, given an enclosing method.
+	 */
+	private Set<LogInvocationSlf4j> getInvocationsByMethodSlf4j(IMethod enclosingMethod,
+			Set<LogInvocationSlf4j> logSet) {
+		Set<LogInvocationSlf4j> logs = new HashSet<LogInvocationSlf4j>();
+		logSet.forEach(log -> {
+			if (log.getEnclosingEclipseMethod() != null && log.getEnclosingEclipseMethod().equals(enclosingMethod))
+				logs.add(log);
+		});
+		return logs;
+	}
+
+	/**
 	 * Adjust all transformations in the overriding method or overridden method in
 	 * same hierarchy. We should make all these transformations the same.
 	 */
@@ -564,6 +764,27 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 
 			if ((newLevel == null && logInv == null) || (newLevel != null && !newLevel.equals(logInv.getNewLogLevel())))
 				this.logInvsAdjustedByInheritance.add(logInv);
+
+			logInv.setAction(action, newLevel);
+		});
+	}
+
+	/**
+	 * For slf4j.
+	 * 
+	 * Adjust all transformations in the overriding method or overridden method in
+	 * same hierarchy. We should make all these transformations the same.
+	 */
+	private void adjustTransformation(Set<LogInvocationSlf4j> logInvocations, org.slf4j.event.Level newLevel) {
+		logInvocations.forEach(logInv -> {
+			ActionSlf4j action;
+			if (newLevel == null)
+				action = ActionSlf4j.valueOf("NONE");
+			else
+				action = ActionSlf4j.valueOf("CONVERT_TO_" + newLevel.name());
+
+			if ((newLevel == null && logInv == null) || (newLevel != null && !newLevel.equals(logInv.getNewLogLevel())))
+				this.logInvsAdjustedByInheritanceSlf4j.add(logInv);
 
 			logInv.setAction(action, newLevel);
 		});
@@ -587,6 +808,35 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 		int maxCounting = 0;
 
 		for (Map.Entry<Level, Integer> levelToCount : newLevelToCount.entrySet()) {
+			if (levelToCount.getValue() > maxCounting) {
+				maxCounting = levelToCount.getValue();
+				newLevel = levelToCount.getKey();
+			}
+		}
+
+		return newLevel;
+	}
+
+	/**
+	 * For slf4j.
+	 * 
+	 * Take a majority vote on transformations in the RootDefs
+	 */
+	private org.slf4j.event.Level majorityVoteSlf4j(Set<LogInvocationSlf4j> logInvs) {
+
+		HashMap<org.slf4j.event.Level, Integer> newLevelToCount = new HashMap<org.slf4j.event.Level, Integer>();
+		logInvs.parallelStream().forEach(logInv -> {
+			org.slf4j.event.Level newLogLevel = logInv.getNewLogLevel();
+			if (newLevelToCount.containsKey(newLogLevel))
+				newLevelToCount.put(newLogLevel, newLevelToCount.get(newLogLevel) + 1);
+			else
+				newLevelToCount.put(newLogLevel, 1);
+		});
+
+		org.slf4j.event.Level newLevel = null;
+		int maxCounting = 0;
+
+		for (Map.Entry<org.slf4j.event.Level, Integer> levelToCount : newLevelToCount.entrySet()) {
 			if (levelToCount.getValue() > maxCounting) {
 				maxCounting = levelToCount.getValue();
 				newLevel = levelToCount.getKey();
@@ -629,51 +879,35 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 		return types;
 	}
 
+	/**
+	 * For slf4j.
+	 * 
+	 * Get a set of enclosing types for all transformed logs
+	 */
+	private Set<IType> getEnclosingClassTypesSlf4j(Set<LogInvocationSlf4j> logSet) {
+		HashSet<IType> types = new HashSet<IType>();
+		logSet.forEach(log -> {
+			types.add(log.getEnclosingType());
+		});
+		return types;
+	}
+
 	@Override
 	public Change createChange(IProgressMonitor pm) throws CoreException, OperationCanceledException {
 		try {
 			final TextEditBasedChangeManager manager = new TextEditBasedChangeManager();
 
 			Set<LogInvocation> transformedLogs = this.getTransformedLog();
+			Set<LogInvocationSlf4j> transformedSlf4jLogs = this.getSlf4jTransformedLog();
 
-			pm.beginTask("Transforming logging levels ...", transformedLogs.size());
-			for (LogInvocation logInvocation : transformedLogs) {
-				CompilationUnitRewrite rewrite = this.getCompilationUnitRewrite(
-						logInvocation.getEnclosingEclipseMethod().getCompilationUnit(),
-						logInvocation.getEnclosingCompilationUnit());
+			pm.beginTask("Transforming logging levels ...", transformedLogs.size() + transformedSlf4jLogs.size());
 
-				ImportRewriteContext context = new ContextSensitiveImportRewriteContext(
-						logInvocation.getEnclosingCompilationUnit(), rewrite.getImportRewrite());
-
-				logInvocation.transform(rewrite);
-				pm.worked(1);
-
-				// add static imports if necessary.
-				// for each import statement in the enclosing compilation unit.
-				List<?> imports = logInvocation.getEnclosingCompilationUnit().imports();
-				for (Object obj : imports) {
-					ImportDeclaration importDeclaration = (ImportDeclaration) obj;
-					// if the import is static (this is the only case we need to
-					// worry about).
-					if (importDeclaration.isStatic()) {
-						Name name = importDeclaration.getName();
-						String matchName = "java.util.logging.Level."
-								+ logInvocation.getReplacedName().getFullyQualifiedName();
-
-						if (name.getFullyQualifiedName().equals(matchName)) {
-							// deal with imports.
-							// register the removed name.
-							rewrite.getImportRemover().registerRemovedNode(logInvocation.getReplacedName());
-
-							// we are replacing a log level that has been
-							// statically imported.
-							// then, add a static import for new log level.
-							rewrite.getImportRewrite().addStaticImport("java.util.logging.Level",
-									logInvocation.getNewTargetName().getFullyQualifiedName(), true, context);
-						}
-					}
-				}
-			}
+			transformedLogs.forEach(log -> {
+				this.createTransformation(log, pm, "java.util.logging.Level");
+			});
+			transformedSlf4jLogs.forEach(log -> {
+				this.createTransformation(log, pm, "org.slf4j.event.Level");
+			});
 
 			// save the source changes.
 			ICompilationUnit[] units = this.getCompilationUnitToCompilationUnitRewriteMap().keySet().stream()
@@ -696,6 +930,43 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 		} finally {
 			pm.done();
 			this.clearCaches();
+		}
+	}
+
+	private void createTransformation(AbstractLogInvocation logInvocation, IProgressMonitor pm, String importPrefix) {
+		CompilationUnitRewrite rewrite = this.getCompilationUnitRewrite(
+				logInvocation.getEnclosingEclipseMethod().getCompilationUnit(),
+				logInvocation.getEnclosingCompilationUnit());
+
+		ImportRewriteContext context = new ContextSensitiveImportRewriteContext(
+				logInvocation.getEnclosingCompilationUnit(), rewrite.getImportRewrite());
+
+		logInvocation.transform(rewrite);
+		pm.worked(1);
+
+		// add static imports if necessary.
+		// for each import statement in the enclosing compilation unit.
+		List<?> imports = logInvocation.getEnclosingCompilationUnit().imports();
+		for (Object obj : imports) {
+			ImportDeclaration importDeclaration = (ImportDeclaration) obj;
+			// if the import is static (this is the only case we need to
+			// worry about).
+			if (importDeclaration.isStatic()) {
+				Name name = importDeclaration.getName();
+				String matchName = importPrefix + "." + logInvocation.getReplacedName().getFullyQualifiedName();
+
+				if (name.getFullyQualifiedName().equals(matchName)) {
+					// deal with imports.
+					// register the removed name.
+					rewrite.getImportRemover().registerRemovedNode(logInvocation.getReplacedName());
+
+					// we are replacing a log level that has been
+					// statically imported.
+					// then, add a static import for new log level.
+					rewrite.getImportRewrite().addStaticImport(importPrefix,
+							logInvocation.getNewTargetName().getFullyQualifiedName(), true, context);
+				}
+			}
 		}
 	}
 
@@ -840,6 +1111,63 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 		return Util.getDecayFactor();
 	}
 
+	public HashSet<LogInvocationSlf4j> getLogInvsNotTransformedInIfSlf4j() {
+		return logInvsNotTransformedInIfSlf4j;
+	}
+
+	public void setLogInvsNotTransformedInIfSlf4j(HashSet<LogInvocationSlf4j> logInvsNotTransformedInIfSlf4j) {
+		this.logInvsNotTransformedInIfSlf4j = logInvsNotTransformedInIfSlf4j;
+	}
+
+	public HashSet<LogInvocationSlf4j> getLogInvsNotLoweredInCatchSlf4j() {
+		return logInvsNotLoweredInCatchSlf4j;
+	}
+
+	public void setLogInvsNotLoweredInCatchSlf4j(HashSet<LogInvocationSlf4j> logInvsNotLoweredInCatchSlf4j) {
+		this.logInvsNotLoweredInCatchSlf4j = logInvsNotLoweredInCatchSlf4j;
+	}
+
+	public HashSet<LogInvocationSlf4j> getLogInvsNotLoweredInIfStatementSlf4j() {
+		return logInvsNotLoweredInIfStatementSlf4j;
+	}
+
+	public void setLogInvsNotLoweredInIfStatementSlf4j(
+			HashSet<LogInvocationSlf4j> logInvsNotLoweredInIfStatementSlf4j) {
+		this.logInvsNotLoweredInIfStatementSlf4j = logInvsNotLoweredInIfStatementSlf4j;
+	}
+
+	public HashSet<LogInvocationSlf4j> getLogInvsNotLoweredByKeywordsSlf4j() {
+		return logInvsNotLoweredByKeywordsSlf4j;
+	}
+
+	public void setLogInvsNotLoweredByKeywordsSlf4j(HashSet<LogInvocationSlf4j> logInvsNotLoweredByKeywordsSlf4j) {
+		this.logInvsNotLoweredByKeywordsSlf4j = logInvsNotLoweredByKeywordsSlf4j;
+	}
+
+	public HashSet<LogInvocationSlf4j> getLogInvsNotRaisedWithoutKeywordsSlf4j() {
+		return logInvsNotRaisedWithoutKeywordsSlf4j;
+	}
+
+	public void setLogInvsNotRaisedWithoutKeywordsSlf4j(HashSet<LogInvocationSlf4j> logInvsNotRaisedByKeywordsSlf4j) {
+		this.logInvsNotRaisedWithoutKeywordsSlf4j = logInvsNotRaisedByKeywordsSlf4j;
+	}
+
+	public Set<LogInvocationSlf4j> getLogInvocationSlf4j() {
+		return logInvocationSlf4j;
+	}
+
+	public void setLogInvocationSlf4j(Set<LogInvocationSlf4j> logInvocationSlf4j) {
+		this.logInvocationSlf4j = logInvocationSlf4j;
+	}
+
+	public ArrayList<Float> getBoundarySlf4j() {
+		return this.boundarySlf4j;
+	}
+
+	public void setBoundarySlf4j(ArrayList<Float> boundarySlf4j) {
+		this.boundarySlf4j = boundarySlf4j;
+	}
+
 	public HashSet<LogInvocation> getLogInvsAdjustedByDis() {
 		return logInvsAdjustedByDis;
 	}
@@ -850,5 +1178,21 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 
 	public HashSet<LogInvocation> getLogInvsAdjustedByInheritance() {
 		return this.logInvsAdjustedByInheritance;
+	}
+
+	public HashSet<LogInvocationSlf4j> getLogInvsAdjustedByDistanceSlf4j() {
+		return this.logInvsAdjustedByDistanceSlf4j;
+	}
+
+	public void setLogInvsAdjustedByDistanceSlf4j(HashSet<LogInvocationSlf4j> logInvsAdjustedByDistanceSlf4j) {
+		this.logInvsAdjustedByDistanceSlf4j = logInvsAdjustedByDistanceSlf4j;
+	}
+
+	public HashSet<LogInvocationSlf4j> getLogInvsAdjustedByInheritanceSlf4j() {
+		return this.logInvsAdjustedByInheritanceSlf4j;
+	}
+
+	public void setLogInvsAdjustedByInheritanceSlf4j(HashSet<LogInvocationSlf4j> logInvsAdjustedByInheritanceSlf4j) {
+		this.logInvsAdjustedByInheritanceSlf4j = logInvsAdjustedByInheritanceSlf4j;
 	}
 }
