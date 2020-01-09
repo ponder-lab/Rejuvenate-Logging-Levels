@@ -184,7 +184,6 @@ public class LogAnalyzer extends ASTVisitor {
 	}
 
 	private boolean doAction(LogInvocationSlf4j logInvocationSlf4j) {
-
 		if (this.checkEnclosingMethod(logInvocationSlf4j))
 			return false;
 		if (this.checkBoundarySize(logInvocationSlf4j))
@@ -204,13 +203,13 @@ public class LogAnalyzer extends ASTVisitor {
 		if (rejuvenatedLogLevel == null)
 			return false;
 
-		if ((currentLogLevel == rejuvenatedLogLevel) // current log level is
-														// same to transformed
-														// log level{
-				|| (this.useLogCategory && (currentLogLevel == org.slf4j.event.Level.ERROR
-						|| currentLogLevel == org.slf4j.event.Level.WARN))) // process log
-																			// category
-																			// ERROR/WARN
+		if ((currentLogLevel.equals(rejuvenatedLogLevel)) // current log level is
+															// same to transformed
+															// log level{
+				|| (this.useLogCategory && (currentLogLevel.equals(org.slf4j.event.Level.ERROR)
+						|| currentLogLevel.equals(org.slf4j.event.Level.WARN)))) // process log
+																					// category
+																					// ERROR/WARN
 		{
 			logInvocationSlf4j.setAction(ActionSlf4j.NONE, null);
 			return false;
@@ -245,15 +244,15 @@ public class LogAnalyzer extends ASTVisitor {
 			return false;
 		}
 
-		if (rejuvenatedLogLevel == org.slf4j.event.Level.TRACE)
+		if (rejuvenatedLogLevel.equals(org.slf4j.event.Level.TRACE))
 			logInvocationSlf4j.setAction(ActionSlf4j.CONVERT_TO_TRACE, org.slf4j.event.Level.TRACE);
-		if (rejuvenatedLogLevel == org.slf4j.event.Level.DEBUG)
+		if (rejuvenatedLogLevel.equals(org.slf4j.event.Level.DEBUG))
 			logInvocationSlf4j.setAction(ActionSlf4j.CONVERT_TO_DEBUG, org.slf4j.event.Level.DEBUG);
-		if (rejuvenatedLogLevel == org.slf4j.event.Level.INFO)
+		if (rejuvenatedLogLevel.equals(org.slf4j.event.Level.INFO))
 			logInvocationSlf4j.setAction(ActionSlf4j.CONVERT_TO_INFO, org.slf4j.event.Level.INFO);
-		if (rejuvenatedLogLevel == org.slf4j.event.Level.WARN)
+		if (rejuvenatedLogLevel.equals(org.slf4j.event.Level.WARN))
 			logInvocationSlf4j.setAction(ActionSlf4j.CONVERT_TO_WARN, org.slf4j.event.Level.WARN);
-		if (rejuvenatedLogLevel == org.slf4j.event.Level.ERROR)
+		if (rejuvenatedLogLevel.equals(org.slf4j.event.Level.ERROR))
 			logInvocationSlf4j.setAction(ActionSlf4j.CONVERT_TO_ERROR, org.slf4j.event.Level.ERROR);
 
 		return true;
@@ -387,25 +386,26 @@ public class LogAnalyzer extends ASTVisitor {
 				currentLogLevel.intValue() > rejuvenatedLogLevel.intValue()))
 			return false;
 
-		if ((currentLogLevel == rejuvenatedLogLevel) // current log level is
-														// same to transformed
-														// log level
+		if ((currentLogLevel.equals(rejuvenatedLogLevel)) // current log level is
+															// same to transformed
+															// log level
 
-				|| (currentLogLevel == Level.ALL || currentLogLevel == Level.OFF) // not
-																					// consider
-																					// all
-																					// and
-																					// off
+				|| (currentLogLevel.equals(Level.ALL) || currentLogLevel.equals(Level.OFF)) // not
+																							// consider
+																							// all
+																							// and
+																							// off
 
-				|| (this.useLogCategory && (currentLogLevel == Level.CONFIG || currentLogLevel == Level.WARNING
-						|| currentLogLevel == Level.SEVERE)) // process log
-																// category
-																// (CONFIG/WARNING/SERVRE)
+				|| (this.useLogCategory && (currentLogLevel.equals(Level.CONFIG)
+						|| currentLogLevel.equals(Level.WARNING) || currentLogLevel.equals(Level.SEVERE))) // process
+																											// log
+																											// category
+																											// (CONFIG/WARNING/SERVRE)
 
-				|| (this.useLogCategoryWithConfig && (currentLogLevel == Level.CONFIG)) // process
-																						// log
-																						// category
-																						// (CONFIG)
+				|| (this.useLogCategoryWithConfig && (currentLogLevel.equals(Level.CONFIG))) // process
+																								// log
+																								// category
+																								// (CONFIG)
 		) {
 			logInvocation.setAction(Action.NONE, null);
 			return false;
@@ -423,19 +423,19 @@ public class LogAnalyzer extends ASTVisitor {
 			return false;
 		}
 
-		if (rejuvenatedLogLevel == Level.FINEST)
+		if (rejuvenatedLogLevel.equals(Level.FINEST))
 			logInvocation.setAction(Action.CONVERT_TO_FINEST, Level.FINEST);
-		if (rejuvenatedLogLevel == Level.FINER)
+		if (rejuvenatedLogLevel.equals(Level.FINER))
 			logInvocation.setAction(Action.CONVERT_TO_FINER, Level.FINER);
-		if (rejuvenatedLogLevel == Level.FINE)
+		if (rejuvenatedLogLevel.equals(Level.FINE))
 			logInvocation.setAction(Action.CONVERT_TO_FINE, Level.FINE);
-		if (rejuvenatedLogLevel == Level.CONFIG)
+		if (rejuvenatedLogLevel.equals(Level.CONFIG))
 			logInvocation.setAction(Action.CONVERT_TO_CONFIG, Level.CONFIG);
-		if (rejuvenatedLogLevel == Level.INFO)
+		if (rejuvenatedLogLevel.equals(Level.INFO))
 			logInvocation.setAction(Action.CONVERT_TO_INFO, Level.INFO);
-		if (rejuvenatedLogLevel == Level.WARNING)
+		if (rejuvenatedLogLevel.equals(Level.WARNING))
 			logInvocation.setAction(Action.CONVERT_TO_WARNING, Level.WARNING);
-		if (rejuvenatedLogLevel == Level.SEVERE)
+		if (rejuvenatedLogLevel.equals(Level.SEVERE))
 			logInvocation.setAction(Action.CONVERT_TO_SEVERE, Level.SEVERE);
 
 		return true;
@@ -634,7 +634,7 @@ public class LogAnalyzer extends ASTVisitor {
 
 		int rejuveLogLevelValue = this.levelToInt.get(currentLevel) + transformationDistance;
 		for (Map.Entry<Level, Integer> entry : this.levelToInt.entrySet()) {
-			if (entry.getValue() == rejuveLogLevelValue)
+			if (entry.getValue().equals(rejuveLogLevelValue))
 				return entry.getKey();
 		}
 
@@ -670,7 +670,7 @@ public class LogAnalyzer extends ASTVisitor {
 
 		int rejuveLogLevelValue = this.levelToIntSlf4j.get(currentLevel) + transformationDistance;
 		for (Map.Entry<org.slf4j.event.Level, Integer> entry : this.levelToIntSlf4j.entrySet()) {
-			if (entry.getValue() == rejuveLogLevelValue)
+			if (entry.getValue().equals(rejuveLogLevelValue))
 				return entry.getKey();
 		}
 
@@ -1005,8 +1005,9 @@ public class LogAnalyzer extends ASTVisitor {
 	 *         statement is not a logging statement.
 	 */
 	private static boolean checkFirstStatementInIf(Statement statement, MethodInvocation loggingExpression) {
-		if (statement == null) return false;
-		
+		if (statement == null)
+			return false;
+
 		// if it's a block.
 		if (statement.getNodeType() == ASTNode.BLOCK) {
 			Block block = (Block) statement;
