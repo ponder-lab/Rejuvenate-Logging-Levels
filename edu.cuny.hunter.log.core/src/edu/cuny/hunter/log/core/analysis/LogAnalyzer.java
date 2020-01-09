@@ -582,28 +582,28 @@ public class LogAnalyzer extends ASTVisitor {
 	 * @return the target log level
 	 */
 	private org.slf4j.event.Level getRejuvenatedLogLevel(ArrayList<Float> boundary, LogInvocationSlf4j logInvocation) {
-		float DOI = logInvocation.getDegreeOfInterestValue();
+		float doiValue = logInvocation.getDegreeOfInterestValue();
 		if (boundary == null || boundary.isEmpty())
 			return null;
 
 		// If we don't consider ERROR and WARN.
 		if (this.useLogCategory) {
-			if (DOI >= boundary.get(0) && DOI < boundary.get(1))
+			if (doiValue >= boundary.get(0) && doiValue < boundary.get(1))
 				return org.slf4j.event.Level.TRACE;
-			if (DOI < boundary.get(2))
+			if (doiValue < boundary.get(2))
 				return org.slf4j.event.Level.DEBUG;
-			if (DOI < boundary.get(3))
+			if (doiValue < boundary.get(3))
 				return org.slf4j.event.Level.INFO;
 		} else {
-			if (DOI >= boundary.get(0) && DOI < boundary.get(1))
+			if (doiValue >= boundary.get(0) && doiValue < boundary.get(1))
 				return org.slf4j.event.Level.TRACE;
-			if (DOI < boundary.get(2))
+			if (doiValue < boundary.get(2))
 				return org.slf4j.event.Level.DEBUG;
-			if (DOI < boundary.get(3))
+			if (doiValue < boundary.get(3))
 				return org.slf4j.event.Level.INFO;
-			if (DOI < boundary.get(4))
+			if (doiValue < boundary.get(4))
 				return org.slf4j.event.Level.WARN;
-			if (DOI < boundary.get(5))
+			if (doiValue < boundary.get(5))
 				return org.slf4j.event.Level.ERROR;
 		}
 		return null;
@@ -733,49 +733,49 @@ public class LogAnalyzer extends ASTVisitor {
 	 * @return the rejuvenated log level
 	 */
 	private Level getRejuvenatedLogLevel(ArrayList<Float> boundary, LogInvocation logInvocation) {
-		float DOI = logInvocation.getDegreeOfInterestValue();
+		float doiValue = logInvocation.getDegreeOfInterestValue();
 		if (boundary == null || boundary.isEmpty())
 			return null;
 
 		if (this.useLogCategory) {
 			LOGGER.info("Use log category: do not consider config/warning/severe.");
-			if (DOI >= boundary.get(0) && DOI < boundary.get(1))
+			if (doiValue >= boundary.get(0) && doiValue < boundary.get(1))
 				return Level.FINEST;
-			if (DOI < boundary.get(2))
+			if (doiValue < boundary.get(2))
 				return Level.FINER;
-			if (DOI < boundary.get(3))
+			if (doiValue < boundary.get(3))
 				return Level.FINE;
-			if (DOI <= boundary.get(4))
+			if (doiValue <= boundary.get(4))
 				return Level.INFO;
 		} else if (this.useLogCategoryWithConfig) {
 			LOGGER.info("Use log category: do not consider config.");
-			if (DOI >= boundary.get(0) && DOI < boundary.get(1))
+			if (doiValue >= boundary.get(0) && doiValue < boundary.get(1))
 				return Level.FINEST;
-			if (DOI < boundary.get(2))
+			if (doiValue < boundary.get(2))
 				return Level.FINER;
-			if (DOI < boundary.get(3))
+			if (doiValue < boundary.get(3))
 				return Level.FINE;
-			if (DOI < boundary.get(4))
+			if (doiValue < boundary.get(4))
 				return Level.INFO;
-			if (DOI < boundary.get(5))
+			if (doiValue < boundary.get(5))
 				return Level.WARNING;
-			if (DOI <= boundary.get(6))
+			if (doiValue <= boundary.get(6))
 				return Level.SEVERE;
 		} else {
 			LOGGER.info("Default log category.");
-			if (DOI >= boundary.get(0) && DOI < boundary.get(1))
+			if (doiValue >= boundary.get(0) && doiValue < boundary.get(1))
 				return Level.FINEST;
-			if (DOI < boundary.get(2))
+			if (doiValue < boundary.get(2))
 				return Level.FINER;
-			if (DOI < boundary.get(3))
+			if (doiValue < boundary.get(3))
 				return Level.FINE;
-			if (DOI < boundary.get(4))
+			if (doiValue < boundary.get(4))
 				return Level.CONFIG;
-			if (DOI < boundary.get(5))
+			if (doiValue < boundary.get(5))
 				return Level.INFO;
-			if (DOI < boundary.get(6))
+			if (doiValue < boundary.get(6))
 				return Level.WARNING;
-			if (DOI <= boundary.get(7))
+			if (doiValue <= boundary.get(7))
 				return Level.SEVERE;
 		}
 		return null;
