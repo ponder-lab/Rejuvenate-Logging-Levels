@@ -42,6 +42,7 @@ We have eight option settings:
 - Never lower the logging level of logging statements within immediate if statements.
 - Never lower logs with particular keywords in their log messages.
 - Never raise logs without particular keywords in their log messages.
+- Consistent log level transformations between overriding methods.
 - Do not change a log level in a logging statement if there exists an immediate if statement whose condition contains a log level.
 - Adjust transformations if their transformation distance is over maximum transformation distance.
 
