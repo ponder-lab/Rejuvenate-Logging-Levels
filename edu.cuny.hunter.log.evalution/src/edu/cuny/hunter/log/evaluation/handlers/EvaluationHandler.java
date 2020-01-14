@@ -718,6 +718,14 @@ public class EvaluationHandler extends AbstractHandler {
 			if (log.getLogLevel() != null)
 				candidates.add(log);
 		});
+		
+
+		if (this.isUseLogCategory()) {
+			for (LogInvocationSlf4j inv : logInvocationSet)
+				if (inv.getLogLevel() != null && !(inv.getLogLevel().equals(org.slf4j.event.Level.WARN)
+						|| inv.getLogLevel().equals(org.slf4j.event.Level.WARN)))
+					candidates.add(inv);
+		}
 
 		return candidates;
 	}
