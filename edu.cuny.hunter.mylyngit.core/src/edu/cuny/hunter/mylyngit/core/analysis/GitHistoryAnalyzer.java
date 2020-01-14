@@ -827,11 +827,6 @@ public class GitHistoryAnalyzer {
 			this.putIntoMethodToOps(this.methodSignaturesToOps, Util.getMethodSignature(methodDec),
 					TypesOfMethodOperations.ADD);
 		});
-
-//		this.methodSignaturesToOps.forEach((methodSig, ops) -> {
-//			System.out.println(methodSig + ": " + ops);
-//		});
-
 	}
 
 	/**
