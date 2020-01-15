@@ -23,10 +23,13 @@ import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.jdt.core.IPackageFragmentRoot;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.core.dom.AST;
+import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.ASTParser;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.SingleVariableDeclaration;
+import org.eclipse.jdt.core.dom.TypeDeclaration;
+import org.eclipse.jdt.internal.corext.dom.ASTNodes;
 import org.eclipse.mylyn.context.core.ContextCore;
 import org.eclipse.mylyn.context.core.IInteractionContextManager;
 import org.eclipse.mylyn.context.core.IInteractionElement;
@@ -42,7 +45,12 @@ public class Util {
 	 */
 	@SuppressWarnings("unchecked")
 	public static String getMethodSignature(MethodDeclaration methodDeclaration) {
-		String signature = "";
+
+		TypeDeclaration typeDeclaration = (TypeDeclaration) ASTNodes.getParent(methodDeclaration,
+				ASTNode.TYPE_DECLARATION);
+
+		String signature = typeDeclaration == null? "": typeDeclaration.getName() + "." ;
+
 		signature += methodDeclaration.getName() + "(";
 
 		Iterator<SingleVariableDeclaration> parameterIterator = methodDeclaration.parameters().iterator();
@@ -54,7 +62,7 @@ public class Util {
 		signature += ")";
 		return signature;
 	}
-
+	
 	/**
 	 * Return the file path for a method.
 	 */
@@ -125,6 +133,7 @@ public class Util {
 	/**
 	 * This method is used to clear mylyn task context. It should be called after
 	 * processing one project.
+	 * 
 	 * @throws NonActiveMylynTaskException When the task is not active.
 	 */
 	public static void clearTaskContext() throws NonActiveMylynTaskException {
@@ -144,7 +153,7 @@ public class Util {
 		IPath location = project.getCorrespondingResource().getLocation();
 		return findEvaluationPropertiesFile(location.toFile(), fileName);
 	}
-	
+
 	/**
 	 * Create CompilationUnit from ICompilationUnit.
 	 */
@@ -155,7 +164,6 @@ public class Util {
 		parser.setSource(unit);
 		return (CompilationUnit) parser.createAST(null);
 	}
-
 
 	private static File findEvaluationPropertiesFile(File directory, String fileName) {
 		if (directory == null)
