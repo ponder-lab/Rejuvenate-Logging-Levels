@@ -136,7 +136,7 @@ public class EvaluationHandler extends AbstractHandler {
 
 	@Override
 	public Object execute(ExecutionEvent event) throws ExecutionException {
-		Job.create("Evaluating log level rejuventation ...", monitor -> {
+		Job.create("Evaluating log level rejuvenation ...", monitor -> {
 			CSVPrinter resultPrinter = null;
 			CSVPrinter resultSlf4jPrinter = null;
 			CSVPrinter repoPrinter = null;
