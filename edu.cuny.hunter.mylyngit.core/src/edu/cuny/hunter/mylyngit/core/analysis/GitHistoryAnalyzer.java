@@ -252,7 +252,7 @@ public class GitHistoryAnalyzer {
 	 * method was renamed before.
 	 */
 	public HashMap<Vertex, Vertex> getHistoricalMethodToCurrentMethods() {
-		return this.renaming.getHistoricalMethodToCurrentMethods();
+		return this.renaming.computeHistoricalMethodToCurrentMethods();
 	}
 
 	/**
@@ -393,6 +393,11 @@ public class GitHistoryAnalyzer {
 			this.renaming.addVertex(vertex2);
 			// add edge
 			this.renaming.addEdge(vertex1, vertex2);
+
+			this.renaming.getTailVertices().forEach(v -> {
+				if (v.isSameMethod(vertex1))
+					this.renaming.addEdge(v, vertex1);
+			});
 		});
 		return diffEntry.getNewPath();
 	}
@@ -827,6 +832,7 @@ public class GitHistoryAnalyzer {
 			this.putIntoMethodToOps(this.methodSignaturesToOps, Util.getMethodSignature(methodDec),
 					TypesOfMethodOperations.ADD);
 		});
+
 	}
 
 	/**
@@ -848,13 +854,20 @@ public class GitHistoryAnalyzer {
 	 */
 	private void addVertexIntoGraph(String targetMethodSig, String oldMethodSig, String file) {
 		// add vertex
-		Vertex vertex1 = new Vertex(targetMethodSig, file, this.commitIndex);
+		Vertex vertex1 = new Vertex(oldMethodSig, file, this.commitIndex);
 		this.renaming.addVertex(vertex1);
+
 		// add vertex
-		Vertex vertex2 = new Vertex(oldMethodSig, file, this.commitIndex);
+		Vertex vertex2 = new Vertex(targetMethodSig, file, this.commitIndex);
 		this.renaming.addVertex(vertex2);
+
 		// add edge
 		this.renaming.addEdge(vertex1, vertex2);
+
+		this.renaming.getTailVertices().forEach(v -> {
+			if (v.isSameMethod(vertex1))
+				this.renaming.addEdge(v, vertex1);
+		});
 	}
 
 	/**

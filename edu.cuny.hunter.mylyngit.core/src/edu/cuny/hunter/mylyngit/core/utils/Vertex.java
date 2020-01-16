@@ -22,7 +22,7 @@ public class Vertex {
 	public Vertex getNextVertex() {
 		return this.next;
 	}
-	
+
 	public void setPriorVertex(Vertex prior) {
 		this.prior = prior;
 	}
@@ -63,5 +63,11 @@ public class Vertex {
 
 	public void setCommit(int commit) {
 		this.commit = commit;
+	}
+
+	public boolean isSameMethod(Vertex v) {
+		if (v.getFile() == this.file && v.getMethod() == this.method)
+			return true;
+		return false;
 	}
 }

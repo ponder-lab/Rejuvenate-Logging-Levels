@@ -3,7 +3,6 @@ package edu.cuny.hunter.mylyngit.core.utils;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.Set;
 
 public class Graph {
@@ -66,12 +65,12 @@ public class Graph {
 	}
 
 	public Set<Vertex> getVertices() {
-		return Collections.unmodifiableSet(vertices);
+		return Collections.unmodifiableSet(this.vertices);
 	}
 
 	public Set<Vertex> getTailVertices() {
 		this.tailVertices.clear();
-		vertices.forEach(v -> {
+		this.vertices.forEach(v -> {
 			if (v.getNextVertex() == null)
 				this.tailVertices.add(v);
 		});
@@ -95,23 +94,13 @@ public class Graph {
 	}
 
 	public HashMap<Vertex, Vertex> computeHistoricalMethodToCurrentMethods() {
-		this.updateEntryVertices();
-		for (Vertex entry : this.headVertices) {
-			LinkedList<Vertex> visitedVertices = new LinkedList<Vertex>();
-
-			Vertex tmp = entry;
-			// traverse all vertices
-			while (tmp != null) {
-				visitedVertices.add(tmp);
-				tmp = tmp.getNextVertex();
+		this.getTailVertices().forEach(v -> {
+			Vertex tmpVertex = v;
+			while (tmpVertex.getPriorVertex() != null) {
+				tmpVertex = tmpVertex.getPriorVertex();
+				this.historicalMethodToCurrentMethods.put(tmpVertex, v);
 			}
-
-			Vertex exist = visitedVertices.getLast();
-			visitedVertices.remove(exist);
-			for (Vertex visitedVertex : visitedVertices) {
-				this.historicalMethodToCurrentMethods.put(visitedVertex, exist);
-			}
-		}
+		});
 		return this.historicalMethodToCurrentMethods;
 	}
 
