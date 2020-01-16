@@ -66,7 +66,7 @@ public class Vertex {
 	}
 
 	public boolean isSameMethod(Vertex v) {
-		if (v.getFile() == this.file && v.getMethod() == this.method)
+		if (v.getFile().equals(this.file) && v.getMethod().equals(this.method))
 			return true;
 		return false;
 	}

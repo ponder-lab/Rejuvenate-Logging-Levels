@@ -56,7 +56,7 @@ public class MylynGitPredictionProvider extends AbstractJavaRelationProvider {
 	private IJavaProject[] javaProjects;
 
 	private HashSet<MethodDeclaration> methodDeclarations = new HashSet<>();
-	
+
 	/**
 	 * A set of methods which are changed before.
 	 */
@@ -74,7 +74,7 @@ public class MylynGitPredictionProvider extends AbstractJavaRelationProvider {
 	 * @throws GitAPIException
 	 * @throws IOException
 	 * @throws NoHeadException
-	 * @throws NonActiveMylynTaskException 
+	 * @throws NonActiveMylynTaskException
 	 */
 	public void processProjects() throws NoHeadException, IOException, GitAPIException, NonActiveMylynTaskException {
 		clearTaskContext();
@@ -195,7 +195,7 @@ public class MylynGitPredictionProvider extends AbstractJavaRelationProvider {
 		Vertex targetVertex = null;
 		Set<Vertex> historicalMethods = historicalMethodToCurrentMethods.keySet();
 		for (Vertex historicalMethod : historicalMethods) {
-			if (historicalMethod.equals(vertex)) {
+			if (historicalMethod.isSameMethod(vertex)) {
 				targetVertex = historicalMethod;
 				break;
 			}
@@ -285,7 +285,7 @@ public class MylynGitPredictionProvider extends AbstractJavaRelationProvider {
 	public void setActualNumberOfCommits(int actualNumberOfCommits) {
 		this.actualNumberOfCommits = actualNumberOfCommits;
 	}
-	
+
 	public HashSet<MethodDeclaration> getMethodDecsForAnalyzedMethod() {
 		return this.methodDecsForAnalyzedMethod;
 	}

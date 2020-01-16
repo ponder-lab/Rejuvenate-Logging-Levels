@@ -25,6 +25,7 @@ import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.core.dom.AST;
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.ASTParser;
+import org.eclipse.jdt.core.dom.AnonymousClassDeclaration;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.SingleVariableDeclaration;
@@ -49,7 +50,15 @@ public class Util {
 		TypeDeclaration typeDeclaration = (TypeDeclaration) ASTNodes.getParent(methodDeclaration,
 				ASTNode.TYPE_DECLARATION);
 
-		String signature = typeDeclaration == null? "": typeDeclaration.getName() + "." ;
+		String signature = typeDeclaration == null ? "" : typeDeclaration.getName() + ".";
+
+		AnonymousClassDeclaration anonymousClassDeclaration = (AnonymousClassDeclaration) ASTNodes
+				.getParent(methodDeclaration, ASTNode.ANONYMOUS_CLASS_DECLARATION);
+
+		if (anonymousClassDeclaration != null
+				&& anonymousClassDeclaration.getStartPosition() > typeDeclaration.getStartPosition()) {
+			signature += "A" + anonymousClassDeclaration.getStartPosition() + ".";
+		}
 
 		signature += methodDeclaration.getName() + "(";
 
@@ -62,7 +71,7 @@ public class Util {
 		signature += ")";
 		return signature;
 	}
-	
+
 	/**
 	 * Return the file path for a method.
 	 */
