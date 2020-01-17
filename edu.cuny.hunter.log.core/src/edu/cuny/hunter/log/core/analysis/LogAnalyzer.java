@@ -14,8 +14,11 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IMethod;
+import org.eclipse.jdt.core.IType;
+import org.eclipse.jdt.core.ITypeHierarchy;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.ASTVisitor;
@@ -45,6 +48,7 @@ public class LogAnalyzer extends ASTVisitor {
 	private HashSet<LogInvocation> logInvsNotLoweredByKeywords = new HashSet<LogInvocation>();
 	private HashSet<LogInvocation> logInvsNotRaisedByKeywords = new HashSet<LogInvocation>();
 	private HashSet<LogInvocation> logInvsAdjustedByDis = new HashSet<LogInvocation>();
+	private HashSet<LogInvocation> logInvsAdjustedByInheritance = new HashSet<LogInvocation>();
 
 	private Set<LogInvocation> logInvocationSet = new HashSet<>();
 
@@ -55,6 +59,7 @@ public class LogAnalyzer extends ASTVisitor {
 	private HashSet<LogInvocationSlf4j> logInvsNotLoweredByKeywordsSlf4j = new HashSet<LogInvocationSlf4j>();
 	private HashSet<LogInvocationSlf4j> logInvsNotRaisedByKeywordsSlf4j = new HashSet<LogInvocationSlf4j>();
 	private HashSet<LogInvocationSlf4j> logInvsAdjustedByDisSlf4j = new HashSet<LogInvocationSlf4j>();
+	private HashSet<LogInvocationSlf4j> logInvsAdjustedByInheritanceSlf4j = new HashSet<LogInvocationSlf4j>();
 
 	private Set<LogInvocationSlf4j> logInvocationSlf4j = new HashSet<LogInvocationSlf4j>();
 
@@ -79,6 +84,8 @@ public class LogAnalyzer extends ASTVisitor {
 	private int maxTransDistance;
 
 	private Map<IMethod, Float> methodToDOI = new HashMap<>();
+
+	IProgressMonitor monitor;
 
 	// A list of boundary for J.U.L
 	private ArrayList<Float> boundary;
@@ -116,7 +123,8 @@ public class LogAnalyzer extends ASTVisitor {
 
 	public LogAnalyzer(boolean useConfigLogLevelCategory, boolean useLogLevelCategory,
 			boolean notLowerLogLevelInCatchBlock, boolean checkIfCondition, boolean notLowerLogLevelInIfStatement,
-			boolean notLowerLogLevelWithKeyWords, boolean notRaiseLogLevelWithoutKeywords, int maxTransDistance) {
+			boolean notLowerLogLevelWithKeyWords, boolean notRaiseLogLevelWithoutKeywords, int maxTransDistance,
+			final IProgressMonitor monitor) {
 		this.useLogCategoryWithConfig = useConfigLogLevelCategory;
 		this.useLogCategory = useLogLevelCategory;
 		this.notLowerLogLevelInCatchBlock = notLowerLogLevelInCatchBlock;
@@ -125,28 +133,33 @@ public class LogAnalyzer extends ASTVisitor {
 		this.notRaiseLogLevelWithoutKeyWords = notRaiseLogLevelWithoutKeywords;
 		this.checkIfCondition = checkIfCondition;
 		this.maxTransDistance = maxTransDistance;
+		this.monitor = monitor;
 	}
 
 	public LogAnalyzer() {
 	}
 
-	public void analyze(HashSet<MethodDeclaration> methodDecsForAnalyzedMethod) {
+	public void analyze(HashSet<MethodDeclaration> methodDecsForAnalyzedMethod) throws JavaModelException {
 		this.collectDOIValues(methodDecsForAnalyzedMethod);
 		this.analyzeLogInvs(methodDecsForAnalyzedMethod);
 	}
 
 	/**
 	 * Analyze project without git history.
+	 * 
+	 * @throws JavaModelException
 	 */
-	public void analyze() {
+	public void analyze() throws JavaModelException {
 		this.collectDOIValues(Collections.emptySet());
 		this.analyzeLogInvs(Collections.emptySet());
 	}
 
 	/**
 	 * Build boundary and analyze log invocations.
+	 * 
+	 * @throws JavaModelException
 	 */
-	private void analyzeLogInvs(Set<MethodDeclaration> methodDecsForAnalyzedMethod) {
+	private void analyzeLogInvs(Set<MethodDeclaration> methodDecsForAnalyzedMethod) throws JavaModelException {
 		// build boundary
 		this.boundary = this.buildBoundary(this.methodToDOI.values());
 		this.boundarySlf4j = this.buildBoundarySlf4j(this.methodToDOI.values());
@@ -181,6 +194,9 @@ public class LogAnalyzer extends ASTVisitor {
 								+ logInvocationSlf4j.getExpression());
 			}
 		}
+
+		this.inheritanceChecking(this.logInvocationSet, this.monitor);
+		this.inheritanceCheckingSlf4j(this.logInvocationSlf4j, this.monitor);
 	}
 
 	private boolean doAction(LogInvocationSlf4j logInvocationSlf4j) {
@@ -255,6 +271,465 @@ public class LogAnalyzer extends ASTVisitor {
 		if (rejuvenatedLogLevel.equals(org.slf4j.event.Level.ERROR))
 			logInvocationSlf4j.setAction(ActionSlf4j.CONVERT_TO_ERROR, org.slf4j.event.Level.ERROR);
 
+		return true;
+	}
+
+	/**
+	 * Process the inconsistent log level transformations in the overriding and
+	 * overridden methods.
+	 */
+	private void inheritanceChecking(Set<LogInvocation> logInvocationSet, IProgressMonitor monitor)
+			throws JavaModelException {
+		Set<IMethod> enclosingMethodsForLogs = this.getEnclosingMethodForLogs(logInvocationSet);
+		for (LogInvocation log : logInvocationSet) {
+			IMethod enclosingMethod = log.getEnclosingEclipseMethod();
+			if (enclosingMethod == null)
+				continue;
+			IType declaringType = enclosingMethod.getDeclaringType();
+			ITypeHierarchy typeHierarchy = declaringType.newTypeHierarchy(monitor);
+
+			IType[] superTypes = typeHierarchy.getAllSupertypes(declaringType);
+
+			// Get all enclosing class types for all logs
+			Set<IType> enclosingTypes = this.getEnclosingClassTypes(logInvocationSet);
+
+			// If we find an super-type with log invocation
+			if (this.checkTypes(superTypes, enclosingTypes)) {
+				this.processTypes(superTypes, enclosingTypes, typeHierarchy, enclosingMethodsForLogs, logInvocationSet,
+						log);
+			}
+
+		}
+	}
+
+	/**
+	 * For slf4j.
+	 * 
+	 * Process the inconsistent log level transformations in the overriding and
+	 * overridden methods.
+	 */
+	private void inheritanceCheckingSlf4j(Set<LogInvocationSlf4j> logInvocationSet, IProgressMonitor monitor)
+			throws JavaModelException {
+		Set<IMethod> enclosingMethodsForLogs = this.getEnclosingMethodForLogsSlf4j(logInvocationSet);
+		for (LogInvocationSlf4j log : logInvocationSet) {
+			IMethod enclosingMethod = log.getEnclosingEclipseMethod();
+			if (enclosingMethod == null)
+				continue;
+			IType declaringType = enclosingMethod.getDeclaringType();
+			ITypeHierarchy typeHierarchy = declaringType.newTypeHierarchy(monitor);
+
+			IType[] superTypes = typeHierarchy.getAllSupertypes(declaringType);
+
+			// Get all enclosing class types for all logs
+			Set<IType> enclosingTypes = this.getEnclosingClassTypesSlf4j(logInvocationSet);
+
+			// If we find an super-type with log invocation
+			if (this.checkTypes(superTypes, enclosingTypes)) {
+				this.processTypesSlf4j(superTypes, enclosingTypes, typeHierarchy, enclosingMethodsForLogs,
+						logInvocationSet, log);
+			}
+
+		}
+	}
+
+	/**
+	 * Get a set of invocations, given an enclosing method.
+	 */
+	private Set<LogInvocation> getInvocationsByMethod(IMethod enclosingMethod, Set<LogInvocation> logSet) {
+		Set<LogInvocation> logs = new HashSet<LogInvocation>();
+		logSet.forEach(log -> {
+			if (log.getEnclosingEclipseMethod() != null && log.getEnclosingEclipseMethod().equals(enclosingMethod))
+				logs.add(log);
+		});
+		return logs;
+	}
+
+	/**
+	 * For slf4j.
+	 * 
+	 * Get a set of invocations, given an enclosing method.
+	 */
+	private Set<LogInvocationSlf4j> getInvocationsByMethodSlf4j(IMethod enclosingMethod,
+			Set<LogInvocationSlf4j> logSet) {
+		Set<LogInvocationSlf4j> logs = new HashSet<LogInvocationSlf4j>();
+		logSet.forEach(log -> {
+			if (log.getEnclosingEclipseMethod() != null && log.getEnclosingEclipseMethod().equals(enclosingMethod))
+				logs.add(log);
+		});
+		return logs;
+	}
+
+	/**
+	 * Adjust all transformations in the overriding method or overridden method in
+	 * same hierarchy. We should make all these transformations the same.
+	 */
+	private void adjustTransformation(Set<LogInvocation> logInvocations, Level newLevel, boolean hasConflicts) {
+		if (hasConflicts) {
+			logInvocations.forEach(logInv -> {
+				Action action = Action.valueOf("NONE");
+				if (!logInv.getAction().equals(action)) {
+					this.logInvsAdjustedByInheritance.add(logInv);
+					logInv.setAction(action, null);
+				}
+			});
+		} else {
+			logInvocations.forEach(logInv -> {
+				Action action;
+				if (newLevel == null)
+					action = Action.valueOf("NONE");
+				else
+					action = Action.valueOf("CONVERT_TO_" + newLevel.getName());
+
+				if ((newLevel == null && logInv == null)
+						|| (newLevel != null && !newLevel.equals(logInv.getNewLogLevel())))
+					this.logInvsAdjustedByInheritance.add(logInv);
+
+				logInv.setAction(action, newLevel);
+			});
+		}
+	}
+
+	/**
+	 * For slf4j.
+	 * 
+	 * Adjust all transformations in the overriding method or overridden method in
+	 * same hierarchy. We should make all these transformations the same.
+	 */
+	private void adjustTransformation(Set<LogInvocationSlf4j> logInvocations, org.slf4j.event.Level newLevel,
+			boolean hasConflicts) {
+		if (hasConflicts) {
+			logInvocations.forEach(logInv -> {
+				ActionSlf4j action = ActionSlf4j.valueOf("NONE");
+				if (!logInv.getAction().equals(action)) {
+					this.logInvsAdjustedByInheritanceSlf4j.add(logInv);
+					logInv.setAction(action, null);
+				}
+			});
+		} else {
+			logInvocations.forEach(logInv -> {
+				ActionSlf4j action;
+				if (newLevel == null)
+					action = ActionSlf4j.valueOf("NONE");
+				else
+					action = ActionSlf4j.valueOf("CONVERT_TO_" + newLevel.name());
+
+				if ((newLevel == null && logInv == null)
+						|| (newLevel != null && !newLevel.equals(logInv.getNewLogLevel())))
+					this.logInvsAdjustedByInheritanceSlf4j.add(logInv);
+
+				logInv.setAction(action, newLevel);
+			});
+		}
+	}
+
+	/**
+	 * Take a majority vote on transformations in the RootDefs
+	 */
+	private Level majorityVote(Set<LogInvocation> logInvs) {
+
+		HashMap<Level, Integer> newLevelToCount = new HashMap<Level, Integer>();
+		logInvs.parallelStream().forEach(logInv -> {
+			Level newLogLevel = logInv.getNewLogLevel();
+			if (newLevelToCount.containsKey(newLogLevel))
+				newLevelToCount.put(newLogLevel, newLevelToCount.get(newLogLevel) + 1);
+			else
+				newLevelToCount.put(newLogLevel, 1);
+		});
+
+		Level newLevel = null;
+		int maxCounting = 0;
+
+		for (Map.Entry<Level, Integer> levelToCount : newLevelToCount.entrySet()) {
+			if (levelToCount.getValue() > maxCounting) {
+				maxCounting = levelToCount.getValue();
+				newLevel = levelToCount.getKey();
+			}
+		}
+
+		return newLevel;
+	}
+
+	/**
+	 * For slf4j.
+	 * 
+	 * Take a majority vote on transformations in the RootDefs
+	 */
+	private org.slf4j.event.Level majorityVoteSlf4j(Set<LogInvocationSlf4j> logInvs) {
+
+		HashMap<org.slf4j.event.Level, Integer> newLevelToCount = new HashMap<org.slf4j.event.Level, Integer>();
+		logInvs.parallelStream().forEach(logInv -> {
+			org.slf4j.event.Level newLogLevel = logInv.getNewLogLevel();
+			if (newLevelToCount.containsKey(newLogLevel))
+				newLevelToCount.put(newLogLevel, newLevelToCount.get(newLogLevel) + 1);
+			else
+				newLevelToCount.put(newLogLevel, 1);
+		});
+
+		org.slf4j.event.Level newLevel = null;
+		int maxCounting = 0;
+
+		for (Map.Entry<org.slf4j.event.Level, Integer> levelToCount : newLevelToCount.entrySet()) {
+			if (levelToCount.getValue() > maxCounting) {
+				maxCounting = levelToCount.getValue();
+				newLevel = levelToCount.getKey();
+			}
+		}
+
+		return newLevel;
+	}
+
+	/**
+	 * Method 1 and method 2 should have the identical signatures.
+	 */
+	private boolean isOverriddenMethod(IMethod method1, IMethod method2) throws JavaModelException {
+		// Check method name
+		if (!method1.getElementName().equals(method2.getElementName()))
+			return false;
+
+		return Util.getMethodIdentifier(method1).equals(Util.getMethodIdentifier(method2));
+	}
+
+	/**
+	 * Check whether there is a super-type with log transformations
+	 */
+	private boolean checkTypes(IType[] types, Set<IType> enclosingTypes) {
+		for (IType type : types) {
+			if (enclosingTypes.contains(type))
+				return true;
+		}
+		return false;
+	}
+
+	/**
+	 * Get a set of enclosing types for all transformed logs
+	 */
+	private Set<IType> getEnclosingClassTypes(Set<LogInvocation> logSet) {
+		HashSet<IType> types = new HashSet<IType>();
+		logSet.forEach(log -> {
+			types.add(log.getEnclosingType());
+		});
+		return types;
+	}
+
+	/**
+	 * For slf4j.
+	 * 
+	 * Get a set of enclosing types for all transformed logs
+	 */
+	private Set<IType> getEnclosingClassTypesSlf4j(Set<LogInvocationSlf4j> logSet) {
+		HashSet<IType> types = new HashSet<IType>();
+		logSet.forEach(log -> {
+			types.add(log.getEnclosingType());
+		});
+		return types;
+	}
+
+	/**
+	 * Get a set of enclosing methods for transformed logs.
+	 */
+	private Set<IMethod> getEnclosingMethodForLogs(Set<LogInvocation> transformedLogs) {
+		return transformedLogs.parallelStream().map(log -> log.getEnclosingEclipseMethod()).filter(Objects::nonNull)
+				.collect(Collectors.toSet());
+	}
+
+	/**
+	 * For slf4j.
+	 * 
+	 * Get a set of enclosing methods for transformed logs.
+	 */
+	private Set<IMethod> getEnclosingMethodForLogsSlf4j(Set<LogInvocationSlf4j> transformedLogs) {
+		return transformedLogs.parallelStream().map(log -> log.getEnclosingEclipseMethod()).filter(Objects::nonNull)
+				.collect(Collectors.toSet());
+	}
+
+	/**
+	 * Process super types.
+	 */
+	private void processTypes(IType[] superTypes, Set<IType> enclosingTypes, ITypeHierarchy typeHierarchy,
+			Set<IMethod> enclosingMethodsForLogs, Set<LogInvocation> logSet, LogInvocation logInvocation)
+			throws JavaModelException {
+		// Store all log invocations in RootDefs.
+		HashSet<LogInvocation> logInvsInRootDefs = new HashSet<LogInvocation>();
+		// Store all log invocations in Hierarchy.
+		HashSet<LogInvocation> logInvsInHierarchy = new HashSet<LogInvocation>();
+		logInvsInHierarchy.add(logInvocation);
+
+		for (IType type : superTypes) {
+			// We find a super-type with log transformation
+			if (enclosingTypes.contains(type)) {
+
+				IMethod[] methods = type.getMethods();
+				for (IMethod method : methods) {
+					// The method should be an overridden method and includes a log invocation.
+					if (this.isOverriddenMethod(method, logInvocation.getEnclosingEclipseMethod())
+							&& enclosingMethodsForLogs.contains(method)) {
+						Set<LogInvocation> logs = this.getInvocationsByMethod(method, logSet);
+						logInvsInHierarchy.addAll(logs);
+						// Check whether it's a RootDef
+						if (this.isRootDef(typeHierarchy, method, enclosingTypes, logInvocation))
+							logInvsInRootDefs.addAll(logs);
+					}
+				}
+			}
+		}
+
+		if (!logInvsInRootDefs.isEmpty()) {
+			Level newLevel = this.majorityVote(logInvsInRootDefs);
+			this.adjustTransformation(logInvsInHierarchy, newLevel,
+					this.conflictChecking(logInvsInHierarchy, newLevel));
+		}
+
+	}
+
+	/**
+	 * For slf4j.
+	 * 
+	 * Process super types.
+	 */
+	private void processTypesSlf4j(IType[] superTypes, Set<IType> enclosingTypes, ITypeHierarchy typeHierarchy,
+			Set<IMethod> enclosingMethodsForLogs, Set<LogInvocationSlf4j> logSet, LogInvocationSlf4j logInvocation)
+			throws JavaModelException {
+		// Store all log invocations in RootDefs.
+		HashSet<LogInvocationSlf4j> logInvsInRootDefs = new HashSet<LogInvocationSlf4j>();
+		// Store all log invocations in Hierarchy.
+		HashSet<LogInvocationSlf4j> logInvsInHierarchy = new HashSet<LogInvocationSlf4j>();
+		logInvsInHierarchy.add(logInvocation);
+
+		for (IType type : superTypes) {
+			// We find a super-type with log transformation
+			if (enclosingTypes.contains(type)) {
+
+				IMethod[] methods = type.getMethods();
+				for (IMethod method : methods) {
+					// The method should be an overridden method and includes a log invocation.
+					if (this.isOverriddenMethod(method, logInvocation.getEnclosingEclipseMethod())
+							&& enclosingMethodsForLogs.contains(method)) {
+						Set<LogInvocationSlf4j> logs = this.getInvocationsByMethodSlf4j(method, logSet);
+						logInvsInHierarchy.addAll(logs);
+						// Check whether it's a RootDef
+						if (this.isRootDef(typeHierarchy, method, enclosingTypes, logInvocation))
+							logInvsInRootDefs.addAll(logs);
+					}
+				}
+			}
+		}
+
+		if (!logInvsInRootDefs.isEmpty()) {
+			org.slf4j.event.Level newLevel = this.majorityVoteSlf4j(logInvsInRootDefs);
+			this.adjustTransformation(logInvsInHierarchy, newLevel,
+					this.conflictChecking(logInvsInHierarchy, newLevel));
+		}
+
+	}
+
+	/**
+	 * For slf4j.
+	 */
+	private boolean conflictChecking(HashSet<LogInvocationSlf4j> logInvsInHierarchy, org.slf4j.event.Level newLevel) {
+		for (LogInvocationSlf4j logInv : logInvsInHierarchy) {
+			if (newLevel != null && logInv.getLogLevel() != null) {
+
+				// Inheritance checking conflicts with log category.
+				if (this.useLogCategory
+						&& (newLevel.equals(org.slf4j.event.Level.ERROR) || newLevel.equals(org.slf4j.event.Level.WARN)
+								|| logInv.getLogLevel().equals(org.slf4j.event.Level.ERROR)
+								|| logInv.getLogLevel().equals(org.slf4j.event.Level.WARN)))
+					return true;
+
+				if (logInv.getLogLevel().compareTo(newLevel) < 0) { // Lowering log level
+					if (this.checkIfCondition) {
+						if (checkIfConditionHavingLevel(logInv.getExpression())
+								|| checkCaseHavingLevel(logInv.getExpression())) {
+							return true;
+						}
+					}
+
+					if (this.notLowerLogLevelInCatchBlock && logInv.inCatchBlock)
+						return true;
+
+					if (this.notLowerLogLevelInIfStatement && checkIfBlock(logInv.getExpression()))
+						return true;
+
+					if (this.notLowerLogLevelWithKeyWords && Util.isLogMessageWithKeywords(logInv.getExpression(),
+							KEYWORDS_IN_LOG_MESSAGES_FOR_LOWERING))
+						return true;
+				}
+
+				if (logInv.getLogLevel().compareTo(newLevel) > 0) { // Raise log level
+					if (this.notRaiseLogLevelWithoutKeyWords && !Util.isLogMessageWithKeywords(logInv.getExpression(),
+							KEYWORDS_IN_LOG_MESSAGES_FOR_RAISING))
+						return true;
+				}
+			}
+		}
+		return false;
+	}
+
+	/**
+	 * For JUL.
+	 */
+	private boolean conflictChecking(HashSet<LogInvocation> logInvsInHierarchy, Level newLevel) {
+		for (LogInvocation logInv : logInvsInHierarchy) {
+			if (newLevel != null && logInv.getLogLevel() != null) {
+
+				// Inheritance checking conflicts with log category.
+				if (this.useLogCategory && (newLevel.equals(Level.SEVERE) || newLevel.equals(Level.CONFIG)
+						|| newLevel.equals(Level.WARNING) || logInv.getLogLevel().equals(Level.SEVERE)
+						|| logInv.getLogLevel().equals(Level.CONFIG) || logInv.getLogLevel().equals(Level.WARNING)))
+					return true;
+
+				// Inheritance checking conflicts with log category with config.
+				if (this.useLogCategory && (newLevel.equals(Level.CONFIG) || logInv.getLogLevel().equals(Level.CONFIG)))
+					return true;
+
+				if (newLevel.intValue() < logInv.getLogLevel().intValue()) { // Lowering log level
+					if (this.checkIfCondition) {
+						if (checkIfConditionHavingLevel(logInv.getExpression())
+								|| checkCaseHavingLevel(logInv.getExpression())) {
+							return true;
+						}
+					}
+
+					if (this.notLowerLogLevelInCatchBlock && logInv.inCatchBlock)
+						return true;
+
+					if (this.notLowerLogLevelInIfStatement && checkIfBlock(logInv.getExpression()))
+						return true;
+
+					if (this.notLowerLogLevelWithKeyWords && Util.isLogMessageWithKeywords(logInv.getExpression(),
+							KEYWORDS_IN_LOG_MESSAGES_FOR_LOWERING))
+						return true;
+				}
+
+				if (newLevel.intValue() > logInv.getLogLevel().intValue()) { // Raise log level
+					if (this.notRaiseLogLevelWithoutKeyWords && !Util.isLogMessageWithKeywords(logInv.getExpression(),
+							KEYWORDS_IN_LOG_MESSAGES_FOR_RAISING))
+						return true;
+				}
+
+			}
+		}
+		return false;
+	}
+
+	/**
+	 * Check whether the current method is a RootDef.
+	 */
+	private boolean isRootDef(ITypeHierarchy typeHierarchy, IMethod enclosingMethod, Set<IType> enclosingTypes,
+			AbstractLogInvocation logInvocation) throws JavaModelException {
+		IType[] types = typeHierarchy.getAllSupertypes(enclosingMethod.getDeclaringType());
+		for (IType type : types) {
+			// We find a super-type with log transformation
+			if (enclosingTypes.contains(type)) {
+				IMethod[] methods = type.getMethods();
+				for (IMethod method : methods) {
+					// The method should be an overridden method and includes a log invocation.
+					if (this.isOverriddenMethod(method, logInvocation.getEnclosingEclipseMethod())) {
+						return false;
+					}
+				}
+			}
+		}
 		return true;
 	}
 
@@ -1188,10 +1663,18 @@ public class LogAnalyzer extends ASTVisitor {
 	}
 
 	public HashSet<LogInvocationSlf4j> getLogInvsAdjustedByDisSlf4j() {
-		return logInvsAdjustedByDisSlf4j;
+		return this.logInvsAdjustedByDisSlf4j;
 	}
 
 	public void setLogInvsAdjustedByDisSlf4j(HashSet<LogInvocationSlf4j> logInvsAdjustedByDisSlf4j) {
 		this.logInvsAdjustedByDisSlf4j = logInvsAdjustedByDisSlf4j;
+	}
+
+	public HashSet<LogInvocation> getLogInvsAdjustedByInheritance() {
+		return this.logInvsAdjustedByInheritance;
+	}
+
+	public HashSet<LogInvocationSlf4j> getLogInvsAdjustedByInheritanceSlf4j() {
+		return this.logInvsAdjustedByInheritanceSlf4j;
 	}
 }
