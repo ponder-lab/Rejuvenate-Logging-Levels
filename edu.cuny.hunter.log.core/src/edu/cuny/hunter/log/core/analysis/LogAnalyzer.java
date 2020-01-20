@@ -786,8 +786,8 @@ public class LogAnalyzer extends ASTVisitor {
 	 */
 	private boolean checkBoundarySize(LogInvocationSlf4j logInvocation) {
 		// DOI not in intervals
-		if (logInvocation.getDegreeOfInterestValue() < this.boundary.get(0)
-				|| logInvocation.getDegreeOfInterestValue() > this.boundary.get(this.boundary.size() - 1)) {
+		if (logInvocation.getDegreeOfInterestValue() < this.boundarySlf4j.get(0)
+				|| logInvocation.getDegreeOfInterestValue() > this.boundarySlf4j.get(this.boundarySlf4j.size() - 1)) {
 			logInvocation.setAction(ActionSlf4j.NONE, null);
 			return true;
 		}
@@ -1295,8 +1295,8 @@ public class LogAnalyzer extends ASTVisitor {
 	 * @return a list of boundary for slf4j.
 	 */
 	private ArrayList<Float> buildBoundarySlf4j(Collection<Float> degreeOfInterests) {
-		float min = getMinDOI(degreeOfInterests);
-		float max = getMaxDOI(degreeOfInterests);
+		float min = this.getMinDOI(degreeOfInterests);
+		float max = this.getMaxDOI(degreeOfInterests);
 		ArrayList<Float> boundarySlf4j = new ArrayList<>();
 		if (min < max) {
 			// Don't consider ERROR and WARN, i.e., we only consider INFO, DEBUG and TRACE
