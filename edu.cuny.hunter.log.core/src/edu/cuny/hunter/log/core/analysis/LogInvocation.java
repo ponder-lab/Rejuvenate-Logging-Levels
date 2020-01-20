@@ -42,8 +42,6 @@ public class LogInvocation extends AbstractLogInvocation {
 			this.addStatusEntry(Failure.CURRENTLY_NOT_HANDLED, this.getExpression()
 					+ " has argument LogRecord or log level variable which cannot be handled yet.");
 		}
-
-		this.updateDOI();
 	}
 
 	public void logInfo() {

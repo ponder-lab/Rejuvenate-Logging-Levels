@@ -75,9 +75,27 @@ public final class Util {
 
 		return ret;
 	}
-
+	
 	/**
 	 * Get DOI value.
+	 */
+	public static float getDOIValue(IMethod method) {
+		IInteractionElement interactionElement = getInteractionElement(method);
+
+		if (interactionElement == null || interactionElement.getContext() == null)
+			// workaround bug ...
+			return 0;
+
+		IDegreeOfInterest degreeOfInterest = interactionElement.getInterest();
+
+		if (degreeOfInterest != null && degreeOfInterest.getValue() > 0) {
+			return degreeOfInterest.getValue();
+		}
+		return 0;
+	}
+
+	/**
+	 * Get DOI value and set decay.
 	 */
 	public static float getDOIValue(IMethod method, Set<IMethod> enclosingMethods) {
 		IInteractionElement interactionElement = getInteractionElement(method);
