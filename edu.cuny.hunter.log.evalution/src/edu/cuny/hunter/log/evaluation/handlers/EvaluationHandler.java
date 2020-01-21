@@ -151,6 +151,8 @@ public class EvaluationHandler extends AbstractHandler {
 			CSVPrinter notLowerLevelsDueToKeywordsPrinter = null;
 			CSVPrinter notRaiseLevelDueToKeywordsPrinter = null;
 			CSVPrinter considerIfConditionPrinter = null;
+			CSVPrinter adjustLogLevelByInheritancePrinter = null;
+			CSVPrinter adjustLogLevelByDistancePritner = null;
 
 			try {
 				IJavaProject[] javaProjects = Util.getSelectedJavaProjectsFromEvent(event);
@@ -215,6 +217,12 @@ public class EvaluationHandler extends AbstractHandler {
 						"not_transform_levels_due_to_if_condition.csv",
 						new String[] { "sequence", "subject", "log expression", "start pos", "log level", "type FQN",
 								"enclosing method", "logging framework" });
+				adjustLogLevelByInheritancePrinter = EvaluationUtil.createCSVPrinter("adjust_level_by_inheritance.csv",
+						new String[] { "sequence", "subject", "log expression", "start pos", "log level", "type FQN",
+								"enclosing method", "logging framework", "DOI value" });
+				adjustLogLevelByDistancePritner = EvaluationUtil.createCSVPrinter("adjust_level_by_distance.csv",
+						new String[] { "sequence", "subject", "log expression", "start pos", "log level", "type FQN",
+								"enclosing method", "logging framework", "DOI value" });
 
 				// we are using 6 settings
 				for (int i = 0; i < 6; ++i) {
@@ -508,6 +516,9 @@ public class EvaluationHandler extends AbstractHandler {
 									this.isCheckIfCondition(), this.isConsistentLevelInInheritance(),
 									resultsTimeCollector.getCollectedTime());
 
+							/**
+							 * Print log invocations (JUL) whose levels are not lowered in catch blocks.
+							 */
 							for (LogInvocation logInvocation : logRejuvenatingProcessor.getLogInvsNotLoweredInCatch())
 								notLowerLevelsInCatchBlockPrinter.printRecord(sequence, project.getElementName(),
 										logInvocation.getExpression(), logInvocation.getStartPosition(),
@@ -516,6 +527,9 @@ public class EvaluationHandler extends AbstractHandler {
 										Util.getMethodIdentifier(logInvocation.getEnclosingEclipseMethod()),
 										LoggingFramework.JAVA_UTIL_LOGGING);
 
+							/**
+							 * Print log invocations (Slf4j) whose levels are not lowered in catch blocks.
+							 */
 							for (LogInvocationSlf4j logInvocationSlf4j : logRejuvenatingProcessor
 									.getLogInvsNotLoweredInCatchSlf4j())
 								notLowerLevelsInCatchBlockPrinter.printRecord(sequence, project.getElementName(),
@@ -525,6 +539,9 @@ public class EvaluationHandler extends AbstractHandler {
 										Util.getMethodIdentifier(logInvocationSlf4j.getEnclosingEclipseMethod()),
 										LoggingFramework.SLF4J);
 
+							/**
+							 * Print log invocations (JUL) whose levels are not lowered in if statement.
+							 */
 							for (LogInvocation logInvocation : logRejuvenatingProcessor.getLogInvsNotLoweredInIf())
 								notLowerLevelsInIfStatementPrinter.printRecord(sequence, project.getElementName(),
 										logInvocation.getExpression(), logInvocation.getStartPosition(),
@@ -533,6 +550,9 @@ public class EvaluationHandler extends AbstractHandler {
 										Util.getMethodIdentifier(logInvocation.getEnclosingEclipseMethod()),
 										LoggingFramework.JAVA_UTIL_LOGGING);
 
+							/**
+							 * Print log invocations (Slf4j) whose levels are not lowered in if statement.
+							 */
 							for (LogInvocationSlf4j logInvocation : logRejuvenatingProcessor
 									.getLogInvsNotLoweredInIfStatementSlf4j())
 								notLowerLevelsInIfStatementPrinter.printRecord(sequence, project.getElementName(),
@@ -542,6 +562,9 @@ public class EvaluationHandler extends AbstractHandler {
 										Util.getMethodIdentifier(logInvocation.getEnclosingEclipseMethod()),
 										LoggingFramework.SLF4J);
 
+							/**
+							 * Print log invocations (JUL) whose levels are not lowered due to keywords.
+							 */
 							for (LogInvocation logInvocation : logRejuvenatingProcessor
 									.getLogInvsNotLoweredWithKeywords())
 								notLowerLevelsDueToKeywordsPrinter.printRecord(sequence, project.getElementName(),
@@ -551,6 +574,9 @@ public class EvaluationHandler extends AbstractHandler {
 										Util.getMethodIdentifier(logInvocation.getEnclosingEclipseMethod()),
 										LoggingFramework.JAVA_UTIL_LOGGING);
 
+							/**
+							 * Print log invocations (Slf4j) whose levels are not lowered due to keywords.
+							 */
 							for (LogInvocationSlf4j logInvocation : logRejuvenatingProcessor
 									.getLogInvsNotLoweredByKeywordsSlf4j())
 								notLowerLevelsDueToKeywordsPrinter.printRecord(sequence, project.getElementName(),
@@ -560,6 +586,9 @@ public class EvaluationHandler extends AbstractHandler {
 										Util.getMethodIdentifier(logInvocation.getEnclosingEclipseMethod()),
 										LoggingFramework.SLF4J);
 
+							/**
+							 * Print log invocations (JUL) whose levels are not raised due to keywords.
+							 */
 							for (LogInvocation logInvocation : logRejuvenatingProcessor
 									.getLogInvsNotRaisedWithoutKeywords())
 								notRaiseLevelDueToKeywordsPrinter.printRecord(sequence, project.getElementName(),
@@ -569,6 +598,9 @@ public class EvaluationHandler extends AbstractHandler {
 										Util.getMethodIdentifier(logInvocation.getEnclosingEclipseMethod()),
 										LoggingFramework.JAVA_UTIL_LOGGING);
 
+							/**
+							 * Print log invocations (Slf4j) whose levels are not raised due to keywords.
+							 */
 							for (LogInvocationSlf4j logInvocation : logRejuvenatingProcessor
 									.getLogInvsNotRaisedWithoutKeywordsSlf4j())
 								notRaiseLevelDueToKeywordsPrinter.printRecord(sequence, project.getElementName(),
@@ -578,6 +610,10 @@ public class EvaluationHandler extends AbstractHandler {
 										Util.getMethodIdentifier(logInvocation.getEnclosingEclipseMethod()),
 										LoggingFramework.SLF4J);
 
+							/**
+							 * Print log invocations (JUL) whose levels are not transformed due to if
+							 * condition.
+							 */
 							for (LogInvocation logInvocation : logRejuvenatingProcessor.getLogInvsNotTransformedInIf())
 								considerIfConditionPrinter.printRecord(sequence, project.getElementName(),
 										logInvocation.getExpression(), logInvocation.getStartPosition(),
@@ -586,8 +622,61 @@ public class EvaluationHandler extends AbstractHandler {
 										Util.getMethodIdentifier(logInvocation.getEnclosingEclipseMethod()),
 										LoggingFramework.JAVA_UTIL_LOGGING);
 
+							/**
+							 * Print log invocations (Slf4j) whose levels are not transformed due to if
+							 * condition.
+							 */
 							for (LogInvocationSlf4j logInvocation : logRejuvenatingProcessor
 									.getLogInvsNotTransformedInIfSlf4j())
+								considerIfConditionPrinter.printRecord(sequence, project.getElementName(),
+										logInvocation.getExpression(), logInvocation.getStartPosition(),
+										logInvocation.getLogLevel(),
+										logInvocation.getEnclosingType().getFullyQualifiedName(),
+										Util.getMethodIdentifier(logInvocation.getEnclosingEclipseMethod()),
+										LoggingFramework.SLF4J);
+
+							/**
+							 * Print log invocations (JUL) whose levels are adjusted due to inheritance.
+							 */
+							for (LogInvocation logInvocation : logRejuvenatingProcessor
+									.getLogInvsAdjustedByInheritance())
+								adjustLogLevelByInheritancePrinter.printRecord(sequence, project.getElementName(),
+										logInvocation.getExpression(), logInvocation.getStartPosition(),
+										logInvocation.getLogLevel(),
+										logInvocation.getEnclosingType().getFullyQualifiedName(),
+										Util.getMethodIdentifier(logInvocation.getEnclosingEclipseMethod()),
+										LoggingFramework.JAVA_UTIL_LOGGING);
+
+							/**
+							 * Print log invocations (Slf4j) whose levels are adjusted due to inheritance.
+							 */
+							for (LogInvocationSlf4j logInvocation : logRejuvenatingProcessor
+									.getLogInvsAdjustedByInheritanceSlf4j())
+								considerIfConditionPrinter.printRecord(sequence, project.getElementName(),
+										logInvocation.getExpression(), logInvocation.getStartPosition(),
+										logInvocation.getLogLevel(),
+										logInvocation.getEnclosingType().getFullyQualifiedName(),
+										Util.getMethodIdentifier(logInvocation.getEnclosingEclipseMethod()),
+										LoggingFramework.SLF4J);
+
+							/**
+							 * Print log invocations (JUL) whose levels are adjusted due to maximum
+							 * distance.
+							 */
+							for (LogInvocation logInvocation : logRejuvenatingProcessor.getLogInvsAdjustedByDis())
+								adjustLogLevelByInheritancePrinter.printRecord(sequence, project.getElementName(),
+										logInvocation.getExpression(), logInvocation.getStartPosition(),
+										logInvocation.getLogLevel(),
+										logInvocation.getEnclosingType().getFullyQualifiedName(),
+										Util.getMethodIdentifier(logInvocation.getEnclosingEclipseMethod()),
+										LoggingFramework.JAVA_UTIL_LOGGING);
+
+							/**
+							 * Print log invocations (Slf4j) whose levels are adjusted due to maximum
+							 * distance.
+							 */
+							for (LogInvocationSlf4j logInvocation : logRejuvenatingProcessor
+									.getLogInvsAdjustedByDistanceSlf4j())
 								considerIfConditionPrinter.printRecord(sequence, project.getElementName(),
 										logInvocation.getExpression(), logInvocation.getStartPosition(),
 										logInvocation.getLogLevel(),
@@ -633,6 +722,10 @@ public class EvaluationHandler extends AbstractHandler {
 						considerIfConditionPrinter.close();
 					if (nonenclosingMethodPrinter != null)
 						nonenclosingMethodPrinter.close();
+					if (adjustLogLevelByInheritancePrinter != null)
+						adjustLogLevelByInheritancePrinter.close();
+					if (adjustLogLevelByDistancePritner != null)
+						adjustLogLevelByDistancePritner.close();
 				} catch (IOException e) {
 					return new Status(IStatus.ERROR, FrameworkUtil.getBundle(this.getClass()).getSymbolicName(),
 							"Encountered exception during file closing", e);

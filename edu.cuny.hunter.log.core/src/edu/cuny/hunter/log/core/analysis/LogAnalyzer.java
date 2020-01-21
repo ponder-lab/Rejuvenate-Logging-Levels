@@ -235,7 +235,7 @@ public class LogAnalyzer extends ASTVisitor {
 				currentLogLevel.compareTo(rejuvenatedLogLevel) < 0))
 			return false;
 
-		if (this.processNotRaiseLogLevelWithKeywords(logInvocationSlf4j,
+		if (this.processNotRaiseLogLevelWithoutKeywords(logInvocationSlf4j,
 				currentLogLevel.compareTo(rejuvenatedLogLevel) > 0))
 			return false;
 
@@ -969,7 +969,7 @@ public class LogAnalyzer extends ASTVisitor {
 	 * Should not raise log level if its corresponding log message contains
 	 * keywords.
 	 */
-	private boolean processNotRaiseLogLevelWithKeywords(LogInvocationSlf4j logInvocation, boolean isRaised) {
+	private boolean processNotRaiseLogLevelWithoutKeywords(LogInvocationSlf4j logInvocation, boolean isRaised) {
 		if (this.notRaiseLogLevelWithoutKeyWords) {
 			if (!Util.isLogMessageWithKeywordsSlf4j(logInvocation.getExpression(), KEYWORDS_IN_LOG_MESSAGES_FOR_RAISING)
 					&& isRaised) {
