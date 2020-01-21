@@ -55,9 +55,10 @@ public class Util {
 		AnonymousClassDeclaration anonymousClassDeclaration = (AnonymousClassDeclaration) ASTNodes
 				.getParent(methodDeclaration, ASTNode.ANONYMOUS_CLASS_DECLARATION);
 
-		if (anonymousClassDeclaration != null
-				&& anonymousClassDeclaration.getStartPosition() > typeDeclaration.getStartPosition()) {
-			signature += "A" + anonymousClassDeclaration.getStartPosition() + ".";
+		if (anonymousClassDeclaration != null) {
+			if (typeDeclaration == null
+					|| anonymousClassDeclaration.getStartPosition() > typeDeclaration.getStartPosition())
+				signature += "A" + anonymousClassDeclaration.getStartPosition() + ".";
 		}
 
 		signature += methodDeclaration.getName() + "(";
