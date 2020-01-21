@@ -138,7 +138,6 @@ public class EvaluationHandler extends AbstractHandler {
 	public Object execute(ExecutionEvent event) throws ExecutionException {
 		Job.create("Evaluating log level rejuvenation ...", monitor -> {
 			CSVPrinter resultPrinter = null;
-			CSVPrinter resultSlf4jPrinter = null;
 			CSVPrinter repoPrinter = null;
 			CSVPrinter actionPrinter = null;
 			CSVPrinter inputLogInvPrinter = null;
@@ -173,22 +172,7 @@ public class EvaluationHandler extends AbstractHandler {
 						"not lower log levels of logs inside of if statements",
 						"not lower log levels in their messages with keywords",
 						"not raise log levels in their message without keywords",
-						"consider if condition having log level", "consistent log level in inheritance",
-						"logging framework", "time (s)" });
-
-				resultSlf4jPrinter = EvaluationUtil.createCSVPrinter("result_slf4j.csv", new String[] { "sequence",
-						"subject", "repo URL", "decay factor", "input logging statements",
-						"candidate logging statements", "passing logging statements", "failures",
-						"transformed logging statements", "log level not lowered in catch blocks",
-						"log level not lowered in if statements", "log level not transformed due to if condition",
-						"log level not lowered due to keywords", "log level adjusted by max transformation distance",
-						"log level adjusted by inheritance", "use log category (ERROR/WARN)",
-						"not lower log levels of logs inside of catch blocks",
-						"not lower log levels of logs inside of if statements",
-						"not lower log levels in their messages with keywords",
-						"not raise log levels in their message without keywords",
-						"consider if condition having log level", "consistent log level in inheritance",
-						"logging framework", "time (s)" });
+						"consider if condition having log level", "consistent log level in inheritance", "time (s)" });
 
 				repoPrinter = EvaluationUtil.createCSVPrinter("repos.csv",
 						new String[] { "sequence", "repo URL", "SHA-1 of head", "N for commits",
@@ -234,6 +218,7 @@ public class EvaluationHandler extends AbstractHandler {
 
 				// we are using 6 settings
 				for (int i = 0; i < 6; ++i) {
+
 					long sequence = this.getRunId();
 
 					for (IJavaProject project : javaProjects) {
@@ -489,35 +474,38 @@ public class EvaluationHandler extends AbstractHandler {
 
 							resultPrinter.printRecord(sequence, project.getElementName(),
 									logRejuvenatingProcessor.getRepoURL(), logRejuvenatingProcessor.getDecayFactor(),
-									logInvocationSet.size(), candidates.size(), passingLogInvocationSet.size(),
-									errorEntries.size(), transformedLogInvocationSet.size(),
-									logRejuvenatingProcessor.getLogInvsNotLoweredInCatch().size(),
-									logRejuvenatingProcessor.getLogInvsNotLoweredInIf().size(),
-									logRejuvenatingProcessor.getLogInvsNotTransformedInIf().size(),
-									logRejuvenatingProcessor.getLogInvsNotLoweredWithKeywords().size(),
-									logRejuvenatingProcessor.getLogInvsAdjustedByDis().size(),
-									logRejuvenatingProcessor.getLogInvsAdjustedByInheritance().size(),
+									logInvocationSet.size() + logInvocationSlf4js.size(),
+									candidates.size() + candidateSlf4js.size(),
+									passingLogInvocationSet.size() + passingLogInvocationSlf4js.size(),
+									errorEntries.size() + errorEntriesSlf4j.size(),
+									transformedLogInvocationSet.size() + transformedInvocationSlf4js.size(),
+									// log level not lowered in catch blocks
+									logRejuvenatingProcessor.getLogInvsNotLoweredInCatch().size()
+											+ logRejuvenatingProcessor.getLogInvsNotLoweredInCatchSlf4j().size(),
+
+									// log level not lowered in if statements
+									logRejuvenatingProcessor.getLogInvsNotLoweredInIf().size()
+											+ logRejuvenatingProcessor.getLogInvsNotLoweredInIfStatementSlf4j().size(),
+
+									// log level not transformed due to if condition
+									logRejuvenatingProcessor.getLogInvsNotTransformedInIf().size()
+											+ logRejuvenatingProcessor.getLogInvsNotTransformedInIfSlf4j().size(),
+
+									// log level not lowered due to keywords
+									logRejuvenatingProcessor.getLogInvsNotLoweredWithKeywords().size()
+											+ logRejuvenatingProcessor.getLogInvsNotLoweredByKeywordsSlf4j().size(),
+
+									// log level adjusted by max transformation distance
+									logRejuvenatingProcessor.getLogInvsAdjustedByDis().size()
+											+ logRejuvenatingProcessor.getLogInvsAdjustedByDistanceSlf4j().size(),
+
+									// log level adjusted by inheritance
+									logRejuvenatingProcessor.getLogInvsAdjustedByInheritance().size()
+											+ logRejuvenatingProcessor.getLogInvsAdjustedByInheritanceSlf4j().size(),
 									this.isUseLogCategory(), this.isUseLogCategoryWithConfig(),
 									this.isNotLowerLogLevelInCatchBlock(), this.isNotLowerLogLevelInIfStatement(),
 									this.isNotLowerLogLevelWithKeywords(), this.isNotRaiseLogLevelWithoutKeywords(),
 									this.isCheckIfCondition(), this.isConsistentLevelInInheritance(),
-									LoggingFramework.JAVA_UTIL_LOGGING, resultsTimeCollector.getCollectedTime());
-
-							resultSlf4jPrinter.printRecord(sequence, project.getElementName(),
-									logRejuvenatingProcessor.getRepoURL(), logRejuvenatingProcessor.getDecayFactor(),
-									logInvocationSlf4js.size(), candidateSlf4js.size(),
-									passingLogInvocationSlf4js.size(), errorEntriesSlf4j.size(),
-									transformedInvocationSlf4js.size(),
-									logRejuvenatingProcessor.getLogInvsNotLoweredInCatchSlf4j().size(),
-									logRejuvenatingProcessor.getLogInvsNotLoweredInIfStatementSlf4j().size(),
-									logRejuvenatingProcessor.getLogInvsNotTransformedInIfSlf4j().size(),
-									logRejuvenatingProcessor.getLogInvsNotLoweredByKeywordsSlf4j().size(),
-									logRejuvenatingProcessor.getLogInvsAdjustedByDistanceSlf4j().size(),
-									logRejuvenatingProcessor.getLogInvsAdjustedByInheritanceSlf4j().size(),
-									this.isUseLogCategory(), this.isNotLowerLogLevelInCatchBlock(),
-									this.isNotLowerLogLevelInIfStatement(), this.isNotLowerLogLevelWithKeywords(),
-									this.isNotRaiseLogLevelWithoutKeywords(), this.isCheckIfCondition(),
-									this.isConsistentLevelInInheritance(), LoggingFramework.SLF4J,
 									resultsTimeCollector.getCollectedTime());
 
 							for (LogInvocation logInvocation : logRejuvenatingProcessor.getLogInvsNotLoweredInCatch())
@@ -619,8 +607,6 @@ public class EvaluationHandler extends AbstractHandler {
 				try {
 					if (resultPrinter != null)
 						resultPrinter.close();
-					if (resultSlf4jPrinter != null)
-						resultSlf4jPrinter.close();
 					if (repoPrinter != null)
 						repoPrinter.close();
 					if (actionPrinter != null)
@@ -718,7 +704,6 @@ public class EvaluationHandler extends AbstractHandler {
 			if (log.getLogLevel() != null)
 				candidates.add(log);
 		});
-		
 
 		if (this.isUseLogCategory()) {
 			for (LogInvocationSlf4j inv : logInvocationSet)
