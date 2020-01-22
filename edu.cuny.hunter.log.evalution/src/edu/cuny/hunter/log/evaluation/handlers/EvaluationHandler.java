@@ -652,7 +652,7 @@ public class EvaluationHandler extends AbstractHandler {
 							 */
 							for (LogInvocationSlf4j logInvocation : logRejuvenatingProcessor
 									.getLogInvsAdjustedByInheritanceSlf4j())
-								considerIfConditionPrinter.printRecord(sequence, project.getElementName(),
+								adjustLogLevelByInheritancePrinter.printRecord(sequence, project.getElementName(),
 										logInvocation.getExpression(), logInvocation.getStartPosition(),
 										logInvocation.getLogLevel(),
 										logInvocation.getEnclosingType().getFullyQualifiedName(),
@@ -664,7 +664,7 @@ public class EvaluationHandler extends AbstractHandler {
 							 * distance.
 							 */
 							for (LogInvocation logInvocation : logRejuvenatingProcessor.getLogInvsAdjustedByDis())
-								adjustLogLevelByInheritancePrinter.printRecord(sequence, project.getElementName(),
+								adjustLogLevelByDistancePritner.printRecord(sequence, project.getElementName(),
 										logInvocation.getExpression(), logInvocation.getStartPosition(),
 										logInvocation.getLogLevel(),
 										logInvocation.getEnclosingType().getFullyQualifiedName(),
@@ -677,7 +677,7 @@ public class EvaluationHandler extends AbstractHandler {
 							 */
 							for (LogInvocationSlf4j logInvocation : logRejuvenatingProcessor
 									.getLogInvsAdjustedByDistanceSlf4j())
-								considerIfConditionPrinter.printRecord(sequence, project.getElementName(),
+								adjustLogLevelByDistancePritner.printRecord(sequence, project.getElementName(),
 										logInvocation.getExpression(), logInvocation.getStartPosition(),
 										logInvocation.getLogLevel(),
 										logInvocation.getEnclosingType().getFullyQualifiedName(),
