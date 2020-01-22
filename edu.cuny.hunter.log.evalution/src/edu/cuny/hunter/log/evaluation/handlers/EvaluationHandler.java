@@ -168,13 +168,14 @@ public class EvaluationHandler extends AbstractHandler {
 						"passing logging statements", "failures", "transformed logging statements",
 						"log level not lowered in catch blocks", "log level not lowered in if statements",
 						"log level not transformed due to if condition", "log level not lowered due to keywords",
-						"log level adjusted by max transformation distance", "log level adjusted by inheritance",
-						"use log category (SEVERE/WARNING/CONFIG)", "use log category (CONFIG)",
-						"not lower log levels of logs inside of catch blocks",
+						"log level not raised without keywords", "log level adjusted by max transformation distance",
+						"log level adjusted by inheritance", "use log category (SEVERE/WARNING/CONFIG)",
+						"use log category (CONFIG)", "not lower log levels of logs inside of catch blocks",
 						"not lower log levels of logs inside of if statements",
 						"not lower log levels in their messages with keywords",
 						"not raise log levels in their message without keywords",
-						"consider if condition having log level", "consistent log level in inheritance", "time (s)" });
+						"consider if condition having log level", "consistent log level in inheritance",
+						"maximum transformation distance", "time (s)" });
 
 				repoPrinter = EvaluationUtil.createCSVPrinter("repos.csv",
 						new String[] { "sequence", "repo URL", "SHA-1 of head", "N for commits",
@@ -503,6 +504,10 @@ public class EvaluationHandler extends AbstractHandler {
 									logRejuvenatingProcessor.getLogInvsNotLoweredWithKeywords().size()
 											+ logRejuvenatingProcessor.getLogInvsNotLoweredByKeywordsSlf4j().size(),
 
+									// log level not raised without keywords
+									logRejuvenatingProcessor.getLogInvsNotRaisedWithoutKeywords().size()
+											+ logRejuvenatingProcessor.getLogInvsNotRaisedWithoutKeywordsSlf4j().size(),
+
 									// log level adjusted by max transformation distance
 									logRejuvenatingProcessor.getLogInvsAdjustedByDis().size()
 											+ logRejuvenatingProcessor.getLogInvsAdjustedByDistanceSlf4j().size(),
@@ -514,7 +519,7 @@ public class EvaluationHandler extends AbstractHandler {
 									this.isNotLowerLogLevelInCatchBlock(), this.isNotLowerLogLevelInIfStatement(),
 									this.isNotLowerLogLevelWithKeywords(), this.isNotRaiseLogLevelWithoutKeywords(),
 									this.isCheckIfCondition(), this.isConsistentLevelInInheritance(),
-									resultsTimeCollector.getCollectedTime());
+									this.getMaxTransDistance(), resultsTimeCollector.getCollectedTime());
 
 							/**
 							 * Print log invocations (JUL) whose levels are not lowered in catch blocks.
