@@ -220,10 +220,10 @@ public class EvaluationHandler extends AbstractHandler {
 								"enclosing method", "logging framework" });
 				adjustLogLevelByInheritancePrinter = EvaluationUtil.createCSVPrinter("adjust_level_by_inheritance.csv",
 						new String[] { "sequence", "subject", "log expression", "start pos", "log level", "type FQN",
-								"enclosing method", "logging framework", "DOI value" });
+								"enclosing method", "logging framework"});
 				adjustLogLevelByDistancePritner = EvaluationUtil.createCSVPrinter("adjust_level_by_distance.csv",
 						new String[] { "sequence", "subject", "log expression", "start pos", "log level", "type FQN",
-								"enclosing method", "logging framework", "DOI value" });
+								"enclosing method", "logging framework"});
 
 				// we are using 6 settings
 				for (int i = 0; i < 6; ++i) {
