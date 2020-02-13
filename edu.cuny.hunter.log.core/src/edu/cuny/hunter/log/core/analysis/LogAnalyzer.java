@@ -1067,7 +1067,7 @@ public class LogAnalyzer extends ASTVisitor {
 				return org.slf4j.event.Level.TRACE;
 			if (doiValue < boundary.get(2))
 				return org.slf4j.event.Level.DEBUG;
-			if (doiValue < boundary.get(3))
+			if (doiValue <= boundary.get(3))
 				return org.slf4j.event.Level.INFO;
 		} else {
 			if (doiValue >= boundary.get(0) && doiValue < boundary.get(1))
@@ -1078,7 +1078,7 @@ public class LogAnalyzer extends ASTVisitor {
 				return org.slf4j.event.Level.INFO;
 			if (doiValue < boundary.get(4))
 				return org.slf4j.event.Level.WARN;
-			if (doiValue < boundary.get(5))
+			if (doiValue <= boundary.get(5))
 				return org.slf4j.event.Level.ERROR;
 		}
 		return null;
