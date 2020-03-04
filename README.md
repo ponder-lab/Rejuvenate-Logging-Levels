@@ -34,7 +34,7 @@ Make sure there must be an **active Mylyn task** before running tool. **Do not u
 
 ## Settings
 
-We have eight option settings:
+We have nine option settings:
 
 - Treat CONFIG/WARNING/SEVERE log levels as category and not traditional levels.
 - Treat CONFIG log level as a category and not a traditional level.
