@@ -1455,7 +1455,7 @@ public class LogAnalyzer extends ASTVisitor {
 
 	/**
 	 * Returns true if the given logging expression is immediately contained within
-	 * an if statement not having an else clause (i.e., guarded) and false
+	 * an if statement (we treat if and else as the same) and false
 	 * otherwise.
 	 */
 	private static boolean checkIfBlock(MethodInvocation loggingExpression) {
