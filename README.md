@@ -1,6 +1,6 @@
 # Logging-Level-Evolution-Plugin
 
-[![Build Status](https://travis-ci.com/ponder-lab/Logging-Level-Evolution-Plugin.svg?token=gywSHb5G1W81zrovzorQ&branch=master)](https://travis-ci.com/ponder-lab/Logging-Level-Evolution-Plugin) [![Coverage Status](https://coveralls.io/repos/github/ponder-lab/Logging-Level-Evolution-Plugin/badge.svg?branch=master&t=SHx1bW)](https://coveralls.io/github/ponder-lab/Logging-Level-Evolution-Plugin?branch=master) [![GitHub license](https://img.shields.io/badge/license-Eclipse-blue.svg)](https://github.com/ponder-lab/Logging-Level-Evolution-Plugin/blob/master/LICENSE.txt) [![Java profiler](https://www.ej-technologies.com/images/product_banners/jprofiler_small.png)](https://www.ej-technologies.com/products/jprofiler/overview.html)
+[![Build Status](https://travis-ci.com/ponder-lab/Logging-Level-Evolution-Plugin.svg?token=gywSHb5G1W81zrovzorQ&branch=master)](https://travis-ci.com/ponder-lab/Logging-Level-Evolution-Plugin) [![Coverage Status](https://coveralls.io/repos/github/ponder-lab/Logging-Level-Evolution-Plugin/badge.svg?branch=master&t=SHx1bW)](https://coveralls.io/github/ponder-lab/Logging-Level-Evolution-Plugin?branch=master) [![GitHub license](https://img.shields.io/badge/license-Eclipse-blue.svg)](https://github.com/ponder-lab/Logging-Level-Evolution-Plugin/blob/master/LICENSE.txt) [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.3700493.svg)](https://doi.org/10.5281/zenodo.3700493) [![Java profiler](https://www.ej-technologies.com/images/product_banners/jprofiler_small.png)](https://www.ej-technologies.com/products/jprofiler/overview.html)
 
 ## Introduction
 
@@ -8,7 +8,7 @@
 
 ## Screenshot
 
-<img src="https://github.com/ponder-lab/Logging-Level-Evolution-Plugin/blob/master/edu.cuny.hunter.log.ui/icons/screenshot.png" alt="Screenshot" width=500px/>
+<img src="https://github.com/ponder-lab/Logging-Level-Evolution-Plugin/blob/master/edu.cuny.hunter.log.ui/icons/screenshot.png" alt="Screenshot" width=700px/>
 
 ## Usage
 
@@ -32,14 +32,19 @@ Our tool could be run in three different purposes. For each purpose, it could be
 **Notice**:
 Make sure there must be an **active Mylyn task** before running tool. **Do not use a real Mylyn task** as the plug-in just uses this task for bookkeeping purposes. Please make a separate (fake) task for this purpose. We will integrate this process in the future.
 
-## Options
+## Settings
 
-We have four categories of option settings:
+We have nine option settings:
 
-- Whether treat some log levels as a category not traditional log levels?
-- Whether use git history?
-- Whether lower log levels of logging statements in catch blocks.
-- Limit the maximum number of git commits.
+- Treat CONFIG/WARNING/SEVERE log levels as category and not traditional levels.
+- Treat CONFIG log level as a category and not a traditional level.
+- Never lower the logging level of logging statements within catch blocks.
+- Never lower the logging level of logging statements within immediate if statements.
+- Never lower logs with particular keywords in their log messages.
+- Never raise logs without particular keywords in their log messages.
+- Consistent log level transformations between overriding methods.
+- Do not change a log level in a logging statement if there exists an immediate if statement whose condition contains a log level.
+- Adjust transformations if their transformation distance is over maximum transformation distance.
 
 ## Installation
 
@@ -49,7 +54,7 @@ Our tool can be installed via Eclipse Update Site at [https://raw.githubusercont
 
 ## Development platform
 
-It is developed on Eclipse for RCP and RAP, and its version is 2018-09. The download page: https://www.eclipse.org/downloads/packages/release/kepler/sr2/eclipse-rcp-and-rap-developers
+It is developed on Eclipse for RCP and RAP, and its version is 2019-06. The download page: https://www.eclipse.org/downloads/packages/release/2019-06
 
 ## Dependencies
 

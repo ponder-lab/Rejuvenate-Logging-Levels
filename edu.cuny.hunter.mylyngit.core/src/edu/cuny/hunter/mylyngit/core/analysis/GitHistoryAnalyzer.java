@@ -54,12 +54,12 @@ import org.eclipse.jgit.patch.HunkHeader;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.revwalk.RevTree;
 import org.eclipse.jgit.revwalk.RevWalk;
+import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
 import org.eclipse.jgit.treewalk.AbstractTreeIterator;
 import org.eclipse.jgit.treewalk.CanonicalTreeParser;
 import org.eclipse.jgit.treewalk.EmptyTreeIterator;
 import org.eclipse.jgit.treewalk.TreeWalk;
 import org.eclipse.jgit.treewalk.filter.PathFilter;
-
 import edu.cuny.hunter.mylyngit.core.utils.Commit;
 import edu.cuny.hunter.mylyngit.core.utils.GitMethod;
 import edu.cuny.hunter.mylyngit.core.utils.Graph;
@@ -103,7 +103,7 @@ public class GitHistoryAnalyzer {
 	private String repoPath;
 
 	private String repoURL;
-	
+
 	private int actualNumberOfCommits;
 
 	// Map repo path to URL
@@ -129,6 +129,8 @@ public class GitHistoryAnalyzer {
 			// Already evaluated before or no repo
 			if (git == null)
 				return;
+
+			this.prepareWorkingDir(new File("tmp/" + Paths.get(repoPath).getFileName()));
 
 			// from the earliest commit to the current commit
 			for (RevCommit currentCommit : this.commitList) {
@@ -162,6 +164,14 @@ public class GitHistoryAnalyzer {
 		}
 	}
 
+	/**
+	 * Checking whether working directory has the directories we need.
+	 */
+	private void prepareWorkingDir(File file) {
+		this.createDirectory(file.getParentFile());
+		this.createDirectory(file);
+	}
+
 	public LinkedList<Commit> getCommits() {
 		return this.commits;
 	}
@@ -181,7 +191,6 @@ public class GitHistoryAnalyzer {
 	 * Remove intermediate files and reset statistical data.
 	 */
 	private void resetDataForOneCommit() {
-		this.clearFiles(new File("").getAbsoluteFile());
 		this.javaLinesAdded = 0;
 		this.javaLinesRemoved = 0;
 		this.methodFound = 0;
@@ -204,10 +213,10 @@ public class GitHistoryAnalyzer {
 	 */
 	private void processMergeCommit(RevCommit headCommit, RevCommit commitToMerge, Git git) throws IOException {
 		ThreeWayMerger merger = MergeStrategy.RECURSIVE.newMerger(git.getRepository(), true);
-		
+
 		try {
 			boolean canMerge = merger.merge(headCommit, commitToMerge);
-			
+
 			// no conflicts for merging
 			if (canMerge)
 				return;
@@ -223,7 +232,6 @@ public class GitHistoryAnalyzer {
 	 * This method is used to JUnit test.
 	 */
 	public GitHistoryAnalyzer(String sha, File repoFile) throws IOException, GitAPIException {
-
 		Git git = Git.init().setDirectory(repoFile).call();
 
 		ObjectId currentCommitId = ObjectId.fromString(sha);
@@ -236,8 +244,6 @@ public class GitHistoryAnalyzer {
 
 		processOneCommit(currentCommit, previousCommit, git);
 
-		this.clearFiles(new File("").getAbsoluteFile());
-
 		git.close();
 	}
 
@@ -246,7 +252,7 @@ public class GitHistoryAnalyzer {
 	 * method was renamed before.
 	 */
 	public HashMap<Vertex, Vertex> getHistoricalMethodToCurrentMethods() {
-		return this.renaming.getHistoricalMethodToCurrentMethods();
+		return this.renaming.computeHistoricalMethodToCurrentMethods();
 	}
 
 	/**
@@ -387,6 +393,11 @@ public class GitHistoryAnalyzer {
 			this.renaming.addVertex(vertex2);
 			// add edge
 			this.renaming.addEdge(vertex1, vertex2);
+
+			this.renaming.getTailVertices().forEach(v -> {
+				if (v.isSameMethod(vertex1))
+					this.renaming.addEdge(v, vertex1);
+			});
 		});
 		return diffEntry.getNewPath();
 	}
@@ -414,9 +425,9 @@ public class GitHistoryAnalyzer {
 				this.commitList.addFirst(commit);
 			commitNumber++;
 		}
-		
+
 		this.setActualNumberOfCommits(commitNumber);
-		
+
 		return git;
 	}
 
@@ -425,16 +436,27 @@ public class GitHistoryAnalyzer {
 	 * 
 	 * @param repoFile
 	 * @return
+	 * @throws IOException
+	 * @throws GitAPIException
+	 * @throws NoHeadException
 	 */
-	private Git preProcessGitHistory(File repoFile, int NToUseForCommits) {
+	private Git preProcessGitHistory(File repoFile, int NToUseForCommits)
+			throws IOException, NoHeadException, GitAPIException {
 		Git git = null;
 		while (repoFile != null) {
-			try {
+
+			Repository repo;
+
+			repo = new FileRepositoryBuilder().setWorkTree(repoFile).build();
+			// if the directory is a valid repo
+			if (repo.getObjectDatabase().exists()) {
 				git = tryPreProcessGitHistory(repoFile, NToUseForCommits);
 				break;
-			} catch (GitAPIException e) {
+			} else {
+				// if not, let's search its parent
 				repoFile = repoFile.getParentFile();
 			}
+
 		}
 
 		if (repoFile != null) {
@@ -549,37 +571,6 @@ public class GitHistoryAnalyzer {
 				this.gitMethods.add(new GitMethod(methodSig, op, path, fileOp, commitIndex, commit.name()));
 			}
 		});
-	}
-
-	/**
-	 * Check whether a directory is a temporary directory.
-	 */
-	private boolean isTemporaryDirectory(File directory) {
-		if (directory.getName().length() >= 7 && directory.getName().substring(0, 4).equals("tmp_"))
-			return true;
-		else
-			return false;
-	}
-
-	/**
-	 * Remove all temporary files
-	 */
-	private boolean clearFiles(File directory) {
-		if (directory.exists()) {
-			File[] files = directory.listFiles();
-			if (null != files) {
-				for (int i = 0; i < files.length; i++) {
-					if (files[i].isDirectory()) {
-						// Need to clear the content of the temporary directory first before remove it
-						if (isTemporaryDirectory(files[i]))
-							clearFiles(files[i]);
-					} else if (isTemporaryDirectory(directory)) {
-						files[i].delete();
-					}
-				}
-			}
-		}
-		return (directory.delete());
 	}
 
 	/**
@@ -722,15 +713,18 @@ public class GitHistoryAnalyzer {
 	 */
 	private File getFile(String fileName, String newDirectory) throws IOException {
 		// ALL files are moved into a new directory
-		File file = new File(newDirectory + commitIndex + "/" + fileName);
-
+		File file = new File(
+				"tmp/" + Paths.get(repoPath).getFileName() + "/" + newDirectory + commitIndex + "/" + fileName);
 		if (!file.exists()) {
-			if (!file.getParentFile().exists())
-				file.getParentFile().mkdir();
-
+			this.createDirectory(file.getParentFile());
 			file.createNewFile();
 		}
 		return file;
+	}
+
+	private void createDirectory(File file) {
+		if (!file.exists())
+			file.mkdir();
 	}
 
 	/**
@@ -839,10 +833,6 @@ public class GitHistoryAnalyzer {
 					TypesOfMethodOperations.ADD);
 		});
 
-//		this.methodSignaturesToOps.forEach((methodSig, ops) -> {
-//			System.out.println(methodSig + ": " + ops);
-//		});
-
 	}
 
 	/**
@@ -864,13 +854,20 @@ public class GitHistoryAnalyzer {
 	 */
 	private void addVertexIntoGraph(String targetMethodSig, String oldMethodSig, String file) {
 		// add vertex
-		Vertex vertex1 = new Vertex(targetMethodSig, file, this.commitIndex);
+		Vertex vertex1 = new Vertex(oldMethodSig, file, this.commitIndex);
 		this.renaming.addVertex(vertex1);
+
 		// add vertex
-		Vertex vertex2 = new Vertex(oldMethodSig, file, this.commitIndex);
+		Vertex vertex2 = new Vertex(targetMethodSig, file, this.commitIndex);
 		this.renaming.addVertex(vertex2);
+
 		// add edge
 		this.renaming.addEdge(vertex1, vertex2);
+
+		this.renaming.getTailVertices().forEach(v -> {
+			if (v.isSameMethod(vertex1))
+				this.renaming.addEdge(v, vertex1);
+		});
 	}
 
 	/**

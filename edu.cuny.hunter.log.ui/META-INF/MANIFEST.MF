@@ -15,6 +15,7 @@ Require-Bundle: org.eclipse.ui,
  edu.cuny.citytech.refactoring.common.core;bundle-version="1.2.0"
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Import-Package: org.eclipse.jdt.internal.core.manipulation
-Export-Package: edu.cuny.hunter.log.ui.messages,
+Export-Package: edu.cuny.hunter.log.ui.handlers,
+ edu.cuny.hunter.log.ui.messages,
  edu.cuny.hunter.log.ui.wizards
 Automatic-Module-Name: edu.cuny.hunter.log.ui

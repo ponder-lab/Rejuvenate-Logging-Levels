@@ -57,6 +57,11 @@ public class MylynGitPredictionProvider extends AbstractJavaRelationProvider {
 
 	private HashSet<MethodDeclaration> methodDeclarations = new HashSet<>();
 
+	/**
+	 * A set of methods which are changed before.
+	 */
+	private HashSet<MethodDeclaration> methodDecsForAnalyzedMethod = new HashSet<>();
+
 	private HashMap<MethodDeclaration, IMethod> methodDecToIMethod = new HashMap<>();
 
 	private static String ID = MylynGitPredictionProvider.class.getName();
@@ -69,7 +74,7 @@ public class MylynGitPredictionProvider extends AbstractJavaRelationProvider {
 	 * @throws GitAPIException
 	 * @throws IOException
 	 * @throws NoHeadException
-	 * @throws NonActiveMylynTaskException 
+	 * @throws NonActiveMylynTaskException
 	 */
 	public void processProjects() throws NoHeadException, IOException, GitAPIException, NonActiveMylynTaskException {
 		clearTaskContext();
@@ -82,6 +87,7 @@ public class MylynGitPredictionProvider extends AbstractJavaRelationProvider {
 	public void processOneProject(IJavaProject javaProject) throws NoHeadException, IOException, GitAPIException {
 		this.methodDeclarations.clear();
 		this.methodDecToIMethod.clear();
+		this.methodDecsForAnalyzedMethod.clear();
 
 		List<ICompilationUnit> cUnits = Util.getCompilationUnits(javaProject);
 		cUnits.forEach(cUnit -> {
@@ -152,6 +158,7 @@ public class MylynGitPredictionProvider extends AbstractJavaRelationProvider {
 		MethodDeclaration methodDec = this.getMethodDeclaration(gitMethod, gitHistoryAnalyzer);
 		if (methodDec == null)
 			return;
+		this.methodDecsForAnalyzedMethod.add(methodDec);
 		IMethod method = this.methodDecToIMethod.get(methodDec);
 		// The historical has its corresponding method in the current source code.
 		if (method != null)
@@ -188,7 +195,7 @@ public class MylynGitPredictionProvider extends AbstractJavaRelationProvider {
 		Vertex targetVertex = null;
 		Set<Vertex> historicalMethods = historicalMethodToCurrentMethods.keySet();
 		for (Vertex historicalMethod : historicalMethods) {
-			if (historicalMethod.equals(vertex)) {
+			if (historicalMethod.isSameMethod(vertex)) {
 				targetVertex = historicalMethod;
 				break;
 			}
@@ -277,6 +284,10 @@ public class MylynGitPredictionProvider extends AbstractJavaRelationProvider {
 
 	public void setActualNumberOfCommits(int actualNumberOfCommits) {
 		this.actualNumberOfCommits = actualNumberOfCommits;
+	}
+
+	public HashSet<MethodDeclaration> getMethodDecsForAnalyzedMethod() {
+		return this.methodDecsForAnalyzedMethod;
 	}
 
 }
