@@ -239,11 +239,20 @@ public class LogWizard extends RefactoringWizard {
 			this.processor.setNotRaiseLogLevelWithoutKeyWords(this.settings.getBoolean(NOT_RAISE_LOG_LEVEL_KEY_WORDS));
 			this.processor.setNotLowerLogLevelWithKeyWords(this.settings.getBoolean(NOT_LOWER_LOG_LEVEL_KEY_WORDS));
 			this.processor.setParticularConfigLogLevel(this.settings.getBoolean(USE_LOG_CATEGORY_CONFIG));
-			this.processor.setMaxTransDistance(this.settings.getInt(MAX_TRANSFORMATION_DISTANCE));
 			this.processor.setParticularLogLevel(this.settings.getBoolean(USE_LOG_CATEGORY));
 			this.processor.setCheckIfCondition(this.settings.getBoolean(CHECK_IF_CONDITION));
 			this.processor.setNToUseForCommits(this.settings.getInt(N_TO_USE_FOR_COMMITS));
 			this.processor.setUseGitHistory(this.settings.getBoolean(USE_GIT_HISTORY));
+			
+			int value;
+			try {
+				value = this.settings.getInt(MAX_TRANSFORMATION_DISTANCE);
+			} catch (NumberFormatException e) {
+				this.settings.put(MAX_TRANSFORMATION_DISTANCE, this.getProcessor().getMaxTransDistance());
+				value = this.settings.getInt(MAX_TRANSFORMATION_DISTANCE);
+			}
+			this.processor.setMaxTransDistance(value);
+			
 		}
 
 		private void setProcessor(LogRejuvenatingProcessor processor) {
