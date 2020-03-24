@@ -48,7 +48,7 @@
                 <jacocoReports>
                   <jacocoReport>${project.basedir}/edu.cuny.hunter.log.tests.report/target/site/jacoco-aggregate/jacoco.xml</jacocoReport>
                 </jacocoReports>
-                <repoToken>A6zEYTCheTRBcuXpjb0pjXXFghpPmDhpU</repoToken>
+                <repoToken>HgxfzLRAUne3v7mZO9gsTY6Kd9wFDpzYK</repoToken>
                 <serviceName>travis-pro</serviceName>
               </configuration>
             </plugin>
