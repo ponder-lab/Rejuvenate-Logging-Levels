@@ -6,11 +6,12 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>edu.cuny.hunter.log</groupId>
   <artifactId>parent</artifactId>
-  <version>1.5.0-SNAPSHOT</version>
+  <version>1.6.0-SNAPSHOT</version>
   <packaging>pom</packaging>
   <modules>
     <module>edu.cuny.hunter.log.ui</module>
     <module>edu.cuny.hunter.log.core</module>
+    <module>edu.cuny.hunter.log.feature</module>
     <module>edu.cuny.hunter.mylyngit.core</module>
 	<module>edu.cuny.hunter.mylyngit.tests</module>
 	<module>edu.cuny.hunter.mylyngit.evaluation</module>
