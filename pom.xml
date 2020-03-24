@@ -6,14 +6,16 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>edu.cuny.hunter.log</groupId>
   <artifactId>parent</artifactId>
-  <version>1.0.0</version>
+  <version>1.4.0-SNAPSHOT</version>
   <packaging>pom</packaging>
   <modules>
     <module>edu.cuny.hunter.log.ui</module>
     <module>edu.cuny.hunter.log.core</module>
     <module>edu.cuny.hunter.mylyngit.core</module>
-	<module>edu.cuny.hunter.mylyngit.tests</module>
-	<module>edu.cuny.hunter.mylyngit.evaluation</module>
+	  <module>edu.cuny.hunter.mylyngit.tests</module>
+	  <module>edu.cuny.hunter.mylyngit.evaluation</module>
+    <module>edu.cuny.hunter.log.feature</module>
+    <module>edu.cuny.hunter.log.updatesite</module>
     <module>edu.cuny.hunter.log.tests</module>
     <module>edu.cuny.hunter.log.tests.report</module>
   </modules>
