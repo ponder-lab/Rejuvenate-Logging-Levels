@@ -3,7 +3,7 @@
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
-	<version>1.5.0-SNAPSHOT</version>
+	<version>1.6.0-SNAPSHOT</version>
 
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
@@ -45,19 +45,19 @@
 		<dependency>
 			<groupId>edu.cuny.hunter.log</groupId>
 			<artifactId>edu.cuny.hunter.log.core</artifactId>
-			<version>1.5.0-SNAPSHOT</version>
+			<version>1.6.0-SNAPSHOT</version>
 			<scope>compile</scope>
 		</dependency>
 		<dependency>
 			<groupId>edu.cuny.hunter.log</groupId>
 			<artifactId>edu.cuny.hunter.log.ui</artifactId>
-			<version>1.5.0-SNAPSHOT</version>
+			<version>1.6.0-SNAPSHOT</version>
 			<scope>compile</scope>
 		</dependency>
 		<dependency>
 			<groupId>edu.cuny.hunter.log</groupId>
 			<artifactId>edu.cuny.hunter.log.tests</artifactId>
-			<version>1.5.0-SNAPSHOT</version>
+			<version>1.6.0-SNAPSHOT</version>
 			<scope>compile</scope>
 		</dependency>
 	</dependencies>
