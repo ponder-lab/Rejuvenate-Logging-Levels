@@ -50,7 +50,7 @@ We have nine option settings:
 
 ### Update Site
 
-Our tool can be installed via Eclipse Update Site at [https://raw.githubusercontent.com/ponder-lab/Logging-Level-Evolution-Plugin/master/edu.cuny.hunter.log.updatesite](https://raw.githubusercontent.com/ponder-lab/Logging-Level-Evolution-Plugin/master/edu.cuny.hunter.log.updatesite)
+Our tool can be installed via Eclipse Update Site at [https://raw.githubusercontent.com/ponder-lab/Logging-Level-Evolution-Plugin/master/edu.cuny.hunter.log.updatesite](https://raw.githubusercontent.com/ponder-lab/Logging-Level-Evolution-Plugin/master/edu.cuny.hunter.log.updatesite). Please install the latest version.
 
 ## Development platform
 
