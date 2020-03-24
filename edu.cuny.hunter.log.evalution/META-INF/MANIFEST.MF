@@ -3,24 +3,22 @@ Bundle-ManifestVersion: 2
 Bundle-Name: Evalution
 Bundle-SymbolicName: edu.cuny.hunter.log.evaluation;singleton:=true
 Bundle-Version: 1.6.0.qualifier
-Require-Bundle: org.eclipse.ui,
- org.eclipse.core.resources;bundle-version="3.12.0",
- org.eclipse.core.runtime;bundle-version="3.13.0",
- edu.cuny.hunter.log.ui;bundle-version="1.0.0",
- org.eclipse.jdt.ui,
- org.eclipse.jdt.core;bundle-version="3.16.0",
- edu.cuny.hunter.mylyngit.core
+Require-Bundle: edu.cuny.hunter.log.ui;bundle-version="1.0.0"
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Import-Package: edu.cuny.citytech.refactoring.common.core,
  edu.cuny.hunter.log.core.analysis,
  edu.cuny.hunter.log.core.refactorings,
  edu.cuny.hunter.log.core.utils,
  edu.cuny.hunter.mylyngit.core.analysis,
+ org.eclipse.core.commands,
+ org.eclipse.core.runtime;version="3.5.0",
+ org.eclipse.core.runtime.jobs,
  org.eclipse.jdt.core,
  org.eclipse.jdt.internal.corext.codemanipulation,
  org.eclipse.jdt.internal.ui.preferences,
  org.eclipse.ltk.core.refactoring,
  org.eclipse.ltk.core.refactoring.participants,
+ org.osgi.framework;version="1.9.0",
  org.slf4j.event
 Bundle-ClassPath: lib/commons-csv-1.1.jar,
  .
