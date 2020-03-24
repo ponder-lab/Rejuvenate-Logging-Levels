@@ -9,7 +9,7 @@
 	<parent>
 		<groupId>edu.cuny.hunter.log</groupId>
 		<artifactId>parent</artifactId>
-		<version>1.0.0</version>
+		<version>1.6.0-SNAPSHOT</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 	<artifactId>edu.cuny.hunter.mylyngit.tests</artifactId>
