@@ -11,7 +11,6 @@
   <modules>
     <module>edu.cuny.hunter.log.ui</module>
     <module>edu.cuny.hunter.log.core</module>
-    <module>edu.cuny.hunter.log.evaluation</module>
     <module>edu.cuny.hunter.log.feature</module>
     <module>edu.cuny.hunter.log.updatesite</module>
     <module>edu.cuny.hunter.mylyngit.core</module>
