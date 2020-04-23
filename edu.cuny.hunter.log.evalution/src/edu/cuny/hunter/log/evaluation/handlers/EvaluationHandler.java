@@ -220,10 +220,10 @@ public class EvaluationHandler extends AbstractHandler {
 								"enclosing method", "logging framework" });
 				adjustLogLevelByInheritancePrinter = EvaluationUtil.createCSVPrinter("adjust_level_by_inheritance.csv",
 						new String[] { "sequence", "subject", "log expression", "start pos", "log level", "type FQN",
-								"enclosing method", "logging framework"});
+								"enclosing method", "logging framework" });
 				adjustLogLevelByDistancePritner = EvaluationUtil.createCSVPrinter("adjust_level_by_distance.csv",
 						new String[] { "sequence", "subject", "log expression", "start pos", "log level", "type FQN",
-								"enclosing method", "logging framework"});
+								"enclosing method", "logging framework" });
 
 				// we are using 6 settings
 				for (int i = 0; i < 6; ++i) {
@@ -775,17 +775,17 @@ public class EvaluationHandler extends AbstractHandler {
 		// Set of candidate log invocations.
 		Set<LogInvocation> candidates = new HashSet<LogInvocation>();
 		if (!this.isUseLogCategory() && !this.isUseLogCategoryWithConfig())
-			candidates.addAll(logInvocationSet);
+			candidates.addAll(candidates);
 
 		if (this.isUseLogCategoryWithConfig()) {
 			for (LogInvocation inv : logInvocationSet)
-				if (inv.getLogLevel() != null && !inv.getLogLevel().equals(Level.CONFIG))
+				if (inv.getLogLevel() == null || !inv.getLogLevel().equals(Level.CONFIG))
 					candidates.add(inv);
 		}
 
 		if (this.isUseLogCategory()) {
 			for (LogInvocation inv : logInvocationSet)
-				if (inv.getLogLevel() != null && !(inv.getLogLevel().equals(Level.CONFIG)
+				if (inv.getLogLevel() == null || !(inv.getLogLevel().equals(Level.CONFIG)
 						|| inv.getLogLevel().equals(Level.WARNING) || inv.getLogLevel().equals(Level.SEVERE)))
 					candidates.add(inv);
 		}
