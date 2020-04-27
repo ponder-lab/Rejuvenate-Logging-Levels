@@ -7,7 +7,7 @@
 	<parent>
 		<groupId>edu.cuny.hunter.log</groupId>
 		<artifactId>parent</artifactId>
-		<version>1.7.0-SNAPSHOT</version>
+		<version>1.8.0-SNAPSHOT</version>
 	</parent>
 	<artifactId>edu.cuny.hunter.log.core</artifactId>
 	<packaging>eclipse-plugin</packaging>

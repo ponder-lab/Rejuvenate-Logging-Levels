@@ -7,7 +7,7 @@
 	<parent>
 		<groupId>edu.cuny.hunter.log</groupId>
 		<artifactId>parent</artifactId>
-		<version>1.7.0-SNAPSHOT</version>
+		<version>1.8.0-SNAPSHOT</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 	<artifactId>edu.cuny.hunter.log.tests.report</artifactId>
@@ -43,19 +43,19 @@
 		<dependency>
 			<groupId>edu.cuny.hunter.log</groupId>
 			<artifactId>edu.cuny.hunter.log.core</artifactId>
-			<version>1.7.0-SNAPSHOT</version>
+			<version>1.8.0-SNAPSHOT</version>
 			<scope>compile</scope>
 		</dependency>
 		<dependency>
 			<groupId>edu.cuny.hunter.log</groupId>
 			<artifactId>edu.cuny.hunter.log.ui</artifactId>
-			<version>1.7.0-SNAPSHOT</version>
+			<version>1.8.0-SNAPSHOT</version>
 			<scope>compile</scope>
 		</dependency>
 		<dependency>
 			<groupId>edu.cuny.hunter.log</groupId>
 			<artifactId>edu.cuny.hunter.log.tests</artifactId>
-			<version>1.7.0-SNAPSHOT</version>
+			<version>1.8.0-SNAPSHOT</version>
 			<scope>compile</scope>
 		</dependency>
 	</dependencies>
