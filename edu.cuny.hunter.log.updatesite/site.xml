@@ -3,7 +3,7 @@
    <description name="Logging Level Evolution Plugin Update Site">
       Developers usually choose log levels to filter information they would like to print. However, developers may not well estimate the cost and benefit for each log level, and log levels may change overtime with requirements. Our tools consist of Eclipse plugins which help developers adjust and rejuvenate log levels by using Degree of Interests (DOI) model. DOI value is a kind of real number for a program element which shows how developers are interested in it. It is computed from the interaction events between developer and element, such as developer edits the element. Transformation decision is made by analyzing the DOI values of enclosing methods for logging invocations.
    </description>
-   <feature url="features/edu.cuny.hunter.log.feature_1.7.0.202003241827.jar" id="edu.cuny.hunter.log.feature" version="1.7.0.202003241827">
+   <feature url="features/edu.cuny.hunter.log.feature_1.8.0.202004271133.jar" id="edu.cuny.hunter.log.feature" version="1.8.0.202004271133">
       <category name="Logging"/>
    </feature>
    <category-def name="Logging" label="Logging"/>
