@@ -99,8 +99,10 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 
 	/**
 	 * Should we use git history to bump DOI values for all methods?
+	 * 
+	 * The default value is true.
 	 */
-	private boolean useGitHistory;
+	private boolean useGitHistory = true;
 
 	/**
 	 * Should we consider logging statements in catch blocks?
