@@ -8,7 +8,7 @@
 
 ## Screenshot
 
-<img src="https://github.com/ponder-lab/Logging-Level-Evolution-Plugin/blob/master/edu.cuny.hunter.log.ui/icons/screenshot.png" alt="Screenshot"/>
+<img src="https://user-images.githubusercontent.com/10117031/80380559-bfdd8500-886d-11ea-9fd4-8955a04ad744.png" alt="Screenshot"/>
 
 ## Usage
 
