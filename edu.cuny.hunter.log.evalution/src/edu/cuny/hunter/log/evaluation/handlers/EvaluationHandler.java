@@ -186,7 +186,9 @@ public class EvaluationHandler extends AbstractHandler {
 								"enclosing method", "DOI value", "action", "new level", "logging framework" });
 				inputLogInvPrinter = EvaluationUtil.createCSVPrinter("input_log_invocations.csv",
 						new String[] { "subject", "log expression", "start pos", "log level", "type FQN",
-								"enclosing method", "logging framework", "DOI value" });
+								"enclosing method", "logging framework", "DOI value", "catch block",
+								"branching statement", "non-lowering keywords", "raising keywords",
+								"logging wrapping" });
 
 				nonenclosingMethodPrinter = EvaluationUtil.createCSVPrinter("nonenclosing_methods.csv",
 						new String[] { "subject", "type FQN", "method", "DOI" });
@@ -284,7 +286,11 @@ public class EvaluationHandler extends AbstractHandler {
 											logInvocation.getEnclosingType().getFullyQualifiedName(),
 											Util.getMethodIdentifier(logInvocation.getEnclosingEclipseMethod()),
 											LoggingFramework.JAVA_UTIL_LOGGING,
-											logInvocation.getDegreeOfInterestValue());
+											logInvocation.getDegreeOfInterestValue(), logInvocation.getInCatchBlock(),
+											logInvocation.getInBranchingStatement(),
+											logInvocation.getHavingNonLoweringKeywords(),
+											logInvocation.getHavingNonRasingKeywords(),
+											logInvocation.getLoggingWrapping());
 								}
 
 								// print input log invocations for slf4j.

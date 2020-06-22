@@ -27,6 +27,10 @@ import edu.cuny.hunter.log.core.utils.Util;
 public abstract class AbstractLogInvocation {
 
 	protected boolean inCatchBlock;
+	protected boolean inBranchingStatement;
+	protected boolean havingNonLoweringKeywords;
+	protected boolean havingNonRasingKeywords;
+	protected boolean loggingWrapping;
 
 	private float degreeOfInterestValue;
 
@@ -51,6 +55,38 @@ public abstract class AbstractLogInvocation {
 
 	public float getDegreeOfInterestValue() {
 		return this.degreeOfInterestValue;
+	}
+
+	public void setInBranchingStatement(boolean inBranchingStatement) {
+		this.inBranchingStatement = inBranchingStatement;
+	}
+
+	public boolean getInBranchingStatement() {
+		return this.inBranchingStatement;
+	}
+
+	public void setHavingNonLoweringKeywords(boolean havingNonLoweringKeywords) {
+		this.havingNonLoweringKeywords = havingNonLoweringKeywords;
+	}
+
+	public boolean getHavingNonLoweringKeywords() {
+		return this.havingNonLoweringKeywords;
+	}
+
+	public void setHavingNonRasingKeywords(boolean havingNonRasingKeywords) {
+		this.havingNonRasingKeywords = havingNonRasingKeywords;
+	}
+
+	public boolean getHavingNonRasingKeywords() {
+		return this.havingNonRasingKeywords;
+	}
+	
+	public void setLoggingWrapping(boolean loggingWrapping) {
+		this.loggingWrapping = loggingWrapping;
+	}
+	
+	public boolean getLoggingWrapping() {
+		return this.loggingWrapping;
 	}
 
 	public void setInCatchBlock(boolean inCatchBlock) {

@@ -181,6 +181,7 @@ public class LogAnalyzer extends ASTVisitor {
 						LOGGER.info("Do action: " + logInvocation.getAction() + "! The changed log expression is "
 								+ logInvocation.getExpression());
 			}
+			this.loggingInfo(logInvocation);
 		}
 
 		for (LogInvocationSlf4j logInvocationSlf4j : this.logInvocationSlf4j) {
@@ -193,10 +194,26 @@ public class LogAnalyzer extends ASTVisitor {
 						LOGGER.info("Do action: " + logInvocationSlf4j.getAction() + "! The changed log expression is "
 								+ logInvocationSlf4j.getExpression());
 			}
+			this.loggingInfo(logInvocationSlf4j);
 		}
 
 		this.inheritanceChecking(this.logInvocationSet, this.monitor);
 		this.inheritanceCheckingSlf4j(this.logInvocationSlf4j, this.monitor);
+	}
+
+	private void loggingInfo(AbstractLogInvocation logInvocation) {
+		if (checkIfConditionHavingLevel(logInvocation.getExpression())
+				|| checkCaseHavingLevel(logInvocation.getExpression()))
+			logInvocation.setLoggingWrapping(true);
+
+		if (Util.isLogMessageWithKeywords(logInvocation.getExpression(), KEYWORDS_IN_LOG_MESSAGES_FOR_LOWERING))
+			logInvocation.setHavingNonLoweringKeywords(true);
+
+		if (Util.isLogMessageWithKeywords(logInvocation.getExpression(), KEYWORDS_IN_LOG_MESSAGES_FOR_RAISING))
+			logInvocation.setHavingNonRasingKeywords(true);
+
+		if (checkIfBlock(logInvocation.getExpression()))
+			logInvocation.setInBranchingStatement(true);
 	}
 
 	private boolean doAction(LogInvocationSlf4j logInvocationSlf4j) {
