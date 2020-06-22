@@ -287,6 +287,8 @@ public class LogAnalyzer extends ASTVisitor {
 				continue;
 			IType declaringType = enclosingMethod.getDeclaringType();
 			ITypeHierarchy typeHierarchy = declaringType.newTypeHierarchy(monitor);
+			
+			if (typeHierarchy == null) return;
 
 			IType[] superTypes = typeHierarchy.getAllSupertypes(declaringType);
 
@@ -1495,7 +1497,7 @@ public class LogAnalyzer extends ASTVisitor {
 				return firstStatement.getNodeType() != ASTNode.BLOCK && contains(firstStatement, loggingExpression);
 			} else
 				// it's an empty block.
-				throw new IllegalStateException("Block shouldn't be empty.");
+				return false;
 		} else
 			// it's not a block. Just check the statement.
 			return contains(statement, loggingExpression);
