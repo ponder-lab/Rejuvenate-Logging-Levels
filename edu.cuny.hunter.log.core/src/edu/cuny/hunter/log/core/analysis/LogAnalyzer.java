@@ -287,8 +287,9 @@ public class LogAnalyzer extends ASTVisitor {
 				continue;
 			IType declaringType = enclosingMethod.getDeclaringType();
 			ITypeHierarchy typeHierarchy = declaringType.newTypeHierarchy(monitor);
-			
-			if (typeHierarchy == null) return;
+
+			if (typeHierarchy == null)
+				return;
 
 			IType[] superTypes = typeHierarchy.getAllSupertypes(declaringType);
 
@@ -1457,8 +1458,7 @@ public class LogAnalyzer extends ASTVisitor {
 
 	/**
 	 * Returns true if the given logging expression is immediately contained within
-	 * an if statement (we treat if and else as the same) and false
-	 * otherwise.
+	 * an if statement (we treat if and else as the same) and false otherwise.
 	 */
 	private static boolean checkIfBlock(MethodInvocation loggingExpression) {
 		ASTNode loggingStatement = loggingExpression.getParent();
