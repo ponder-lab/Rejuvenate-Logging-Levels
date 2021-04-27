@@ -775,7 +775,7 @@ public class EvaluationHandler extends AbstractHandler {
 		// Set of candidate log invocations.
 		Set<LogInvocation> candidates = new HashSet<LogInvocation>();
 		if (!this.isUseLogCategory() && !this.isUseLogCategoryWithConfig())
-			candidates.addAll(candidates);
+			candidates.addAll(logInvocationSet);
 
 		if (this.isUseLogCategoryWithConfig()) {
 			for (LogInvocation inv : logInvocationSet)
