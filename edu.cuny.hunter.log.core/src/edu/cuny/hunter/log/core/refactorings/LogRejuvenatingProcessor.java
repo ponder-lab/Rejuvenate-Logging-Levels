@@ -245,7 +245,7 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 		try {
 			this.javaProjects = javaProjects;
 		} finally {
-			monitor.ifPresent(IProgressMonitor::done);
+			monitor.ifPresent(m -> m.done());
 		}
 	}
 
@@ -270,7 +270,7 @@ public class LogRejuvenatingProcessor extends RefactoringProcessor {
 			this.NToUseForCommits = NToUseForCommits;
 			this.maxTransDistance = maxTransDistance;
 		} finally {
-			monitor.ifPresent(IProgressMonitor::done);
+			monitor.ifPresent(m -> m.done());
 		}
 	}
 
